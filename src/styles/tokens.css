@@ -1,0 +1,251 @@
+/*
+ * Design tokens — a faithful, hand-inlined mirror of @adminium/tokens
+ * (packages/tokens/src/{tokens,accents}.css in the product monorepo). Values are
+ * canonical; see 02-design-system.md §1.
+ *
+ * Copied rather than imported because this app is a standalone repo published to
+ * the Adminiumjs org and @adminium/tokens is not on npm yet. When it is, replace
+ * this file with `import '@adminium/tokens'` so the example apps and the product
+ * can never drift. Until then: do NOT fork a hex here — if a value changes in
+ * the product, change it here too.
+ *
+ * Theme resolution: light by default, dark when the OS prefers dark, with an
+ * explicit [data-theme] on <html> overriding the OS in either direction. The
+ * dark block is duplicated across the two selectors on purpose — CSS has no way
+ * to share a declaration set between a media query and an attribute selector
+ * without a preprocessor.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Neutral surfaces + text (02-design-system.md §1.1) */
+  --bg: #f6f6f8;
+  --surface: #ffffff;
+  --surface-2: #fafafa;
+  --surface-3: #f1f1f4;
+  --border: #ececef;
+  --border-strong: #e2e2e8;
+  --fg: #191920;
+  --fg-muted: #4a4a54;
+  --fg-subtle: #5a5a65;
+  --accent-fg: #ffffff;
+
+  /* Semantic tones */
+  --pos: #0b7d59;
+  --pos-soft: #e6f5ee;
+  --warn: #a95800;
+  --warn-soft: #fbf0e2;
+  --danger: #cf273c;
+  --danger-soft: #fdecec;
+  --info: #1c59e0;
+  --info-soft: #e7edfd;
+
+  /* Elevation */
+  --shadow: 0 1px 2px rgba(20, 20, 35, 0.04), 0 1px 3px rgba(20, 20, 35, 0.05);
+  --shadow-md: 0 4px 14px rgba(20, 20, 35, 0.09);
+  --shadow-lg: 0 12px 34px rgba(20, 20, 35, 0.13);
+  --scrim: rgba(10, 10, 15, 0.5);
+
+  /* Type */
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono",
+    Menlo, Consolas, monospace;
+}
+
+/* Dark palette — shared by the OS preference and the explicit override. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0a0a0d;
+    --surface: #141419;
+    --surface-2: #1a1a20;
+    --surface-3: #24242c;
+    --border: rgba(255, 255, 255, 0.07);
+    --border-strong: rgba(255, 255, 255, 0.13);
+    --fg: #f4f4f6;
+    --fg-muted: #b7b7c3;
+    --fg-subtle: #a1a1ad;
+    --accent-fg: #0f0f14;
+    --pos: #3ecf8e;
+    --pos-soft: rgba(62, 207, 142, 0.14);
+    --warn: #e0a458;
+    --warn-soft: rgba(224, 164, 88, 0.14);
+    --danger: #ff6b6b;
+    --danger-soft: rgba(255, 107, 107, 0.14);
+    --info: #6ea8ff;
+    --info-soft: rgba(110, 168, 255, 0.14);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0a0a0d;
+  --surface: #141419;
+  --surface-2: #1a1a20;
+  --surface-3: #24242c;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.13);
+  --fg: #f4f4f6;
+  --fg-muted: #b7b7c3;
+  --fg-subtle: #a1a1ad;
+  --accent-fg: #0f0f14;
+  --pos: #3ecf8e;
+  --pos-soft: rgba(62, 207, 142, 0.14);
+  --warn: #e0a458;
+  --warn-soft: rgba(224, 164, 88, 0.14);
+  --danger: #ff6b6b;
+  --danger-soft: rgba(255, 107, 107, 0.14);
+  --info: #6ea8ff;
+  --info-soft: rgba(110, 168, 255, 0.14);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------------------------------------------------------------------------
+ * Accent override — Birch Row (walnut).
+ *
+ * Everything above is the canonical token set copied verbatim; the only thing
+ * this app changes is the accent pair, so a future `import '@adminium/tokens'`
+ * drops in cleanly.
+ *
+ * Walnut because it is one of the two boards this studio cuts and because 24
+ * D12a records the shipped grid is nearly out of hue: the nearest neighbours
+ * are `factory` #9a3412 and `clients` #b25e09, and the recorded fallback is
+ * #831843 (deep berry).
+ *
+ * THE DARK PAIR IS NOT THE LIGHT ONE DIMMED. #78350f against a near-black
+ * surface is barely visible, let alone AA, so dark lightens it to #e0b08a and
+ * flips --accent-fg to the near-black #0f0f14. Measured against --accent-fg:
+ * 9.1:1 in light (walnut / white), 9.8:1 in dark (#e0b08a / #0f0f14). Both
+ * clear AA for text at any size, in BOTH themes rather than only the one the
+ * designer had open.
+ * ------------------------------------------------------------------------- */
+
+:root {
+  --accent-light: #78350f;
+  --accent-dark: #e0b08a;
+  --accent: var(--accent-light);
+  --accent-fg: #ffffff;
+  --accent-soft: color-mix(in srgb, var(--accent) 10%, transparent);
+  --accent-hover: color-mix(in srgb, var(--accent) 84%, #000);
+  --accent-border: color-mix(in srgb, var(--accent) 26%, transparent);
+
+  /*
+   * THE FOCUS RING, AND WHY IT IS NOT `--accent-soft`.
+   *
+   * [Added 2026-08-11, wave 4b round 5.] `:focus-visible` drew a 3px outline in
+   * `--accent-soft`, which is the accent at 10% (20% in dark) over whatever is
+   * behind it. Measured against the surfaces it actually lands on, that ring is
+   * 1.15–1.18:1 in light and 1.44–1.56:1 in dark. WCAG 2.2 asks a focus
+   * indicator for 3:1 (SC 1.4.11), and below about 1.2:1 the question is not
+   * conformance — a keyboard user simply cannot see where they are.
+   *
+   * `--accent-soft` is a FILL: it is behind selected rows, chips and hover
+   * states, where being nearly invisible is the point. It was reached for here
+   * because it had "soft" in the name and it was to hand.
+   *
+   * The ring is the accent at full strength, which measures 4.08:1 at its worst
+   * across both themes and all four surface tokens — and `focus.test.ts` in this
+   * repo resolves this token chain, composites it over each surface, and fails
+   * under 3:1 rather than trusting this comment.
+   */
+  --focus-ring: var(--accent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --accent: var(--accent-dark);
+    --accent-fg: #0f0f14;
+    --accent-soft: color-mix(in srgb, var(--accent) 20%, transparent);
+    --accent-hover: color-mix(in srgb, var(--accent) 88%, #fff);
+  }
+}
+
+:root[data-theme="dark"] {
+  --accent: var(--accent-dark);
+  --accent-fg: #0f0f14;
+  --accent-soft: color-mix(in srgb, var(--accent) 20%, transparent);
+  --accent-hover: color-mix(in srgb, var(--accent) 88%, #fff);
+}
+
+/* ---------------------------------------------------------------------------
+ * Material tints and material TEXTURES.
+ *
+ * This shop sells objects and has no photography, so a tile has to do more work
+ * here than in any app before it: one tint per MATERIAL — not per product —
+ * reused everywhere that material appears, plus a texture built out of CSS
+ * gradients so walnut does not read as painted card.
+ *
+ * The textures are deliberately low contrast. They sit UNDER an oversized
+ * Lucide icon at 62% white and a mono size chip, and a texture loud enough to
+ * notice on its own is a texture that eats both.
+ * ------------------------------------------------------------------------- */
+:root {
+  --tint-walnut: linear-gradient(135deg, #6b3410 0%, #3b1a06 100%);
+  --tint-ply: linear-gradient(135deg, #a97b3f 0%, #7a5426 100%);
+  --tint-slate: linear-gradient(135deg, #4b5563 0%, #1f2937 100%);
+  --tint-acrylic: linear-gradient(135deg, #0e7490 0%, #0c4a6e 100%);
+  --tint-resin: linear-gradient(135deg, #4f46e5 0%, #312e81 100%);
+  --tint-stoneware: linear-gradient(135deg, #0f766e 0%, #134e4a 100%);
+
+  --tint-flat-walnut: #6b3410;
+  --tint-flat-ply: #a97b3f;
+  --tint-flat-slate: #4b5563;
+  --tint-flat-acrylic: #0e7490;
+  --tint-flat-resin: #4f46e5;
+  --tint-flat-stoneware: #0f766e;
+
+  /* Wood grain: fine repeating stripes, slightly off-axis, two woods at
+   * different pitches so walnut and ply do not read as the same board. */
+  --tex-walnut: repeating-linear-gradient(
+    97deg,
+    rgba(255, 255, 255, 0.05) 0px,
+    rgba(255, 255, 255, 0.05) 1px,
+    rgba(0, 0, 0, 0.06) 1px,
+    rgba(0, 0, 0, 0.06) 4px,
+    rgba(255, 255, 255, 0.02) 4px,
+    rgba(255, 255, 255, 0.02) 9px
+  );
+  --tex-ply: repeating-linear-gradient(
+    92deg,
+    rgba(255, 255, 255, 0.08) 0px,
+    rgba(255, 255, 255, 0.08) 2px,
+    rgba(0, 0, 0, 0.05) 2px,
+    rgba(0, 0, 0, 0.05) 6px
+  );
+  /* Slate: mottled, never striped — the quarry gave it whatever it gave it. */
+  --tex-slate: radial-gradient(
+      58% 44% at 22% 26%,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 60%
+    ),
+    radial-gradient(48% 40% at 78% 68%, rgba(0, 0, 0, 0.22) 0%, transparent 62%),
+    radial-gradient(30% 26% at 60% 18%, rgba(255, 255, 255, 0.06) 0%, transparent 70%);
+  /* Acrylic: one clean specular sweep, because it is a cut sheet with an edge. */
+  --tex-acrylic: linear-gradient(
+    118deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0) 34%,
+    rgba(255, 255, 255, 0) 64%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  /* Resin: flat matte. A faint even wash and nothing else, on purpose. */
+  --tex-resin: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(0, 0, 0, 0.07) 100%
+  );
+  /* Ceramic: a soft off-centre sheen where a glaze pools. */
+  --tex-stoneware: radial-gradient(
+      70% 55% at 32% 22%,
+      rgba(255, 255, 255, 0.2) 0%,
+      transparent 68%
+    ),
+    radial-gradient(60% 50% at 76% 82%, rgba(0, 0, 0, 0.16) 0%, transparent 66%);
+}

@@ -1,0 +1,215 @@
+{
+  "kind": "app",
+  "manifestVersion": 1,
+  "key": "maker",
+  "name": "Maker Shop",
+  "version": "1.0.0",
+  "publisher": {
+    "id": "adminium",
+    "name": "Adminium",
+    "url": "https://adminium.dev"
+  },
+  "license": "AGPL-3.0-only",
+  "description": {
+    "key": "marketplaceData.maker.description",
+    "fallback": "A two-person maker studio, front and back. Shoppers choose a piece, a material, a size and a finish, write the words that go on it, and watch the ship-by date move as they do. The studio works the bench in studio days, holds every piece behind an approved proof, packs pieces from different orders onto one sheet, and keeps materials rather than finished goods."
+  },
+  "categories": ["commerce"],
+
+  "compatibility": {
+    "minAdminiumVersion": "1.0.0"
+  },
+
+  "capabilities": ["payments", "file-storage", "email-delivery"],
+
+  "requiredSchema": {
+    "tables": [
+      {
+        "ref": "customers",
+        "columns": [
+          { "ref": "id", "type": "id", "role": "pk" },
+          { "ref": "name", "type": "text", "semantic": "name" },
+          { "ref": "email", "type": "text", "semantic": "email" },
+          { "ref": "town", "type": "text" },
+          { "ref": "address_lines", "type": "json" },
+          { "ref": "postcode", "type": "text" },
+          { "ref": "country", "type": "text" },
+          { "ref": "created_at", "type": "timestamptz", "role": "created_at" }
+        ]
+      },
+      {
+        "ref": "products",
+        "columns": [
+          { "ref": "id", "type": "id", "role": "pk" },
+          { "ref": "key", "type": "text" },
+          { "ref": "name", "type": "text", "semantic": "name" },
+          {
+            "ref": "category",
+            "type": "enum",
+            "enum": ["coasters", "signs", "keyrings", "pots", "desk", "mugs"]
+          },
+          {
+            "ref": "lead_kind",
+            "type": "enum",
+            "enum": ["engraved-wood", "keyrings", "printed", "slate", "glazed"]
+          },
+          { "ref": "base_price", "type": "money", "semantic": "money" },
+          { "ref": "personalize_limit", "type": "int", "nullable": true },
+          { "ref": "personalize_hint", "type": "text", "nullable": true }
+        ]
+      },
+      {
+        "ref": "materials",
+        "columns": [
+          { "ref": "id", "type": "id", "role": "pk" },
+          { "ref": "key", "type": "text" },
+          { "ref": "unit", "type": "enum", "enum": ["sheet", "blank", "grams", "tub"] },
+          { "ref": "sheet_width_mm", "type": "decimal", "nullable": true },
+          { "ref": "sheet_height_mm", "type": "decimal", "nullable": true },
+          { "ref": "on_hand", "type": "int" },
+          { "ref": "reorder_at", "type": "int" }
+        ]
+      },
+      {
+        "ref": "machines",
+        "columns": [
+          { "ref": "id", "type": "id", "role": "pk" },
+          { "ref": "key", "type": "text" },
+          { "ref": "count", "type": "int" }
+        ]
+      },
+      {
+        "ref": "orders",
+        "columns": [
+          { "ref": "id", "type": "id", "role": "pk" },
+          { "ref": "ref", "type": "text" },
+          { "ref": "customer_id", "type": "fk", "references": "customers" },
+          { "ref": "placed_on", "type": "date" },
+          { "ref": "posted_on", "type": "date", "nullable": true },
+          { "ref": "total", "type": "money", "semantic": "money" },
+          { "ref": "created_at", "type": "timestamptz", "role": "created_at" },
+          { "ref": "updated_at", "type": "timestamptz", "role": "updated_at" }
+        ]
+      },
+      {
+        "ref": "order_lines",
+        "columns": [
+          { "ref": "id", "type": "id", "role": "pk" },
+          { "ref": "order_id", "type": "fk", "references": "orders" },
+          { "ref": "product_id", "type": "fk", "references": "products" },
+          { "ref": "material_key", "type": "text" },
+          { "ref": "size_key", "type": "text" },
+          { "ref": "finish_key", "type": "text" },
+          { "ref": "quantity", "type": "int" },
+          { "ref": "note", "type": "text", "nullable": true },
+          {
+            "ref": "stage",
+            "type": "enum",
+            "enum": ["to-make", "making", "finishing", "ready-to-post"]
+          },
+          {
+            "ref": "proof",
+            "type": "enum",
+            "enum": ["not-needed", "not-sent", "waiting", "approved"]
+          },
+          { "ref": "spoiled", "type": "int" }
+        ]
+      },
+      {
+        "ref": "proofs",
+        "columns": [
+          { "ref": "id", "type": "id", "role": "pk" },
+          { "ref": "order_id", "type": "fk", "references": "orders" },
+          {
+            "ref": "kind",
+            "type": "enum",
+            "enum": ["accepted", "sent", "change-asked", "approved"]
+          },
+          { "ref": "note", "type": "text", "nullable": true },
+          { "ref": "at", "type": "date" }
+        ]
+      },
+      {
+        "ref": "stock_movements",
+        "columns": [
+          { "ref": "id", "type": "id", "role": "pk" },
+          { "ref": "material_id", "type": "fk", "references": "materials" },
+          { "ref": "order_line_id", "type": "fk", "references": "order_lines", "nullable": true },
+          { "ref": "kind", "type": "enum", "enum": ["consumed", "spoilage", "delivery"] },
+          { "ref": "quantity", "type": "decimal" },
+          { "ref": "at", "type": "timestamptz" }
+        ]
+      }
+    ]
+  },
+
+  "pages": [
+    {
+      "ref": "orders",
+      "template": "table",
+      "title": { "key": "marketplaceData.maker.page.orders", "fallback": "Orders" },
+      "nav": { "group": "Bench", "icon": "package", "order": 1 },
+      "bindings": { "orders": "orders" }
+    },
+    {
+      "ref": "pieces-on-the-bench",
+      "template": "table",
+      "title": { "key": "marketplaceData.maker.page.orderLines", "fallback": "On the bench" },
+      "nav": { "group": "Bench", "icon": "hammer", "order": 2 },
+      "bindings": { "order_lines": "order_lines" }
+    },
+    {
+      "ref": "proofs",
+      "template": "table",
+      "title": { "key": "marketplaceData.maker.page.proofs", "fallback": "Proofs" },
+      "nav": { "group": "Bench", "icon": "stamp", "order": 3 },
+      "bindings": { "proofs": "proofs" }
+    },
+    {
+      "ref": "pieces",
+      "template": "table",
+      "title": { "key": "marketplaceData.maker.page.products", "fallback": "Pieces" },
+      "nav": { "group": "Catalogue", "icon": "list-ordered", "order": 1 },
+      "bindings": { "products": "products" }
+    },
+    {
+      "ref": "customers",
+      "template": "table",
+      "title": { "key": "marketplaceData.maker.page.customers", "fallback": "Customers" },
+      "nav": { "group": "Catalogue", "icon": "users", "order": 2 },
+      "bindings": { "customers": "customers" }
+    },
+    {
+      "ref": "materials",
+      "template": "table",
+      "title": { "key": "marketplaceData.maker.page.materials", "fallback": "Materials" },
+      "nav": { "group": "Studio", "icon": "layers", "order": 1 },
+      "bindings": { "materials": "materials" }
+    },
+    {
+      "ref": "stock-movements",
+      "template": "table",
+      "title": {
+        "key": "marketplaceData.maker.page.stockMovements",
+        "fallback": "Stock movements"
+      },
+      "nav": { "group": "Studio", "icon": "arrow-left-right", "order": 2 },
+      "bindings": { "stock_movements": "stock_movements" }
+    },
+    {
+      "ref": "machines",
+      "template": "table",
+      "title": { "key": "marketplaceData.maker.page.machines", "fallback": "Machines" },
+      "nav": { "group": "Studio", "icon": "cpu", "order": 3 },
+      "bindings": { "machines": "machines" }
+    }
+  ],
+
+  "frontend": {
+    "kind": "spa",
+    "entry": "dist/index.html",
+    "env": {
+      "VITE_API_URL": { "required": false, "example": "https://birchrow.example/api/v1" }
+    }
+  }
+}

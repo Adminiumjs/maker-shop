@@ -1,0 +1,1037 @@
+/*
+ * Shared UI: the two shells, the demo dock, and the primitives every screen
+ * builds from — cards, chips, buttons, fields, tables, overlays and toasts.
+ *
+ * EVERYTHING POSITIONAL IS A CSS LOGICAL PROPERTY. `inline-start` rather than
+ * `left`, `padding-inline` rather than `padding-left/right`, `border-block-end`
+ * rather than `border-bottom`. The whole layout mirrors when the i18n provider
+ * stamps `dir="rtl"` on <html> for Arabic, and there is no RTL stylesheet — a
+ * physical `left` anywhere in this file is a bug that only shows up in one of
+ * the eight locales.
+ */
+
+/* ── layout shells ─────────────────────────────────────────────────────── */
+
+.br-app {
+  min-block-size: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* Customer: a warm public site, centred column, no sidebar. */
+.br-cust-header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--z-header);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: saturate(1.4) blur(10px);
+  border-block-end: 1px solid var(--border);
+}
+.br-wrap {
+  max-inline-size: 1180px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+.br-cust-header .br-wrap {
+  padding-block: 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px 18px;
+  flex-wrap: wrap;
+}
+.br-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: start;
+  color: inherit;
+}
+.br-brand-mark {
+  inline-size: 34px;
+  block-size: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: var(--accent-fg);
+  flex: 0 0 auto;
+}
+.br-brand-name {
+  font-size: 17.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+}
+.br-brand-tag {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--fg-subtle);
+}
+.br-cust-nav {
+  display: flex;
+  gap: 3px;
+  margin-inline-start: auto;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.br-navlink {
+  padding: 8px 13px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.14s ease;
+}
+.br-navlink:hover {
+  background: var(--surface-3);
+}
+.br-navlink[aria-current="page"] {
+  color: var(--fg);
+  font-weight: 700;
+  background: var(--surface-3);
+}
+.br-main {
+  flex: 1;
+  padding-block: clamp(20px, 4vw, 34px) 40px;
+}
+
+/* Print shop: internal chrome with a sidebar. */
+.br-shop {
+  flex: 1;
+  display: flex;
+  min-block-size: 100vh;
+}
+.br-sidebar {
+  inline-size: var(--sidebar-w);
+  flex: 0 0 auto;
+  background: var(--surface);
+  border-inline-end: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  inset-block-start: 0;
+  block-size: 100vh;
+}
+@media (max-width: 899.98px) {
+  .br-sidebar {
+    display: none;
+  }
+}
+.br-sidebar-head {
+  padding: 16px 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-block-end: 1px solid var(--border);
+}
+.br-sidebar-nav {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+.br-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 0;
+  background: transparent;
+  color: var(--fg-muted);
+  border-radius: 9px;
+  padding: 9px 11px;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: start;
+  transition: background 0.13s ease;
+}
+.br-sidebar-item:hover {
+  background: var(--surface-3);
+}
+.br-sidebar-item[aria-current="page"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+.br-sidebar-note {
+  padding: 12px;
+  border-block-start: 1px solid var(--border);
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+  line-height: 1.45;
+}
+.br-shop-body {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+}
+.br-topbar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 25;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  backdrop-filter: blur(10px);
+  border-block-end: 1px solid var(--border);
+  padding: 11px var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.br-shop-main {
+  flex: 1;
+  padding: clamp(16px, 3vw, 26px) var(--gutter) 96px;
+}
+
+.br-footer {
+  border-block-start: 1px solid var(--border);
+  background: var(--surface);
+}
+.br-footer-cols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 26px 52px;
+  padding-block: 28px 18px;
+}
+.br-footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.br-footer-head {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  margin-block-end: 2px;
+}
+.br-footer-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: start;
+  font-size: 13px;
+  color: var(--fg-muted);
+  font-weight: 600;
+}
+.br-footer-link:hover {
+  color: var(--accent);
+}
+.br-footer-bar {
+  border-block-start: 1px solid var(--border);
+}
+.br-footer-bar .br-wrap {
+  padding-block: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+.br-footer-note {
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+
+/* ── the demo dock ─────────────────────────────────────────────────────── */
+
+/*
+ * Fixed, and it MUST NOT COVER A PRIMARY ACTION. The configurator's mobile
+ * quote bar and the job ticket's action row both sit low, so on a narrow
+ * viewport the dock moves to the opposite corner and lifts clear of the bar.
+ */
+.br-dock {
+  position: fixed;
+  z-index: var(--z-dock);
+  inset-block-end: 16px;
+  inset-inline-end: 16px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lift);
+  max-inline-size: calc(100vw - 24px);
+}
+/*
+ * Lifting only matters where the quote bar and the ticket's action row are
+ * actually pinned to the bottom. Above that the dock stays a corner chip —
+ * a full-width bar on a 1440px screen would cover the quote panel it is
+ * supposed to keep clear of.
+ */
+@media (max-width: 1023.98px) {
+  .br-dock[data-lifted="true"] {
+    inset-block-end: 86px;
+    inset-inline-end: 12px;
+    inset-inline-start: 12px;
+    justify-content: center;
+  }
+}
+.br-dock-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  padding-inline-start: 3px;
+}
+.br-seg {
+  display: flex;
+  padding: 2px;
+  background: var(--surface-3);
+  border-radius: 9px;
+}
+.br-seg button {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.br-seg button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--fg);
+  box-shadow: var(--shadow);
+}
+.br-dock-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-2);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.br-dock-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.br-dock-toggles {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding-inline-start: 4px;
+  border-inline-start: 1px solid var(--border);
+}
+.br-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 9px 5px 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.br-toggle[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.br-toggle-dot {
+  inline-size: 24px;
+  block-size: 14px;
+  border-radius: 999px;
+  background: var(--border-strong);
+  position: relative;
+  flex: 0 0 auto;
+  transition: background 0.16s ease;
+}
+.br-toggle-dot::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-start: 2px;
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  transition: transform 0.16s ease;
+}
+.br-toggle[aria-pressed="true"] .br-toggle-dot {
+  background: var(--accent);
+}
+.br-toggle[aria-pressed="true"] .br-toggle-dot::after {
+  transform: translateX(calc(10px * var(--br-dir, 1)));
+}
+
+/* ── primitives ────────────────────────────────────────────────────────── */
+
+.br-panel {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 15px;
+}
+.br-panel-pad {
+  padding: 16px 17px;
+}
+.br-panel-head {
+  padding: 12px 15px;
+  border-block-end: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.br-h1 {
+  margin: 0 0 8px;
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+}
+.br-h2 {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.br-lede {
+  margin: 0 0 22px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+  max-inline-size: 68ch;
+}
+.br-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+.br-button {
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-radius: 11px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.br-button--ghost {
+  background: var(--surface);
+  color: var(--fg);
+  border: 1px solid var(--border-strong);
+  font-weight: 700;
+}
+.br-button--ghost:hover {
+  background: var(--surface-2);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.br-button--pos {
+  background: var(--pos);
+  color: #fff;
+}
+.br-button--block {
+  inline-size: 100%;
+}
+.br-button:disabled {
+  background: var(--surface-3);
+  color: var(--fg-subtle);
+  cursor: not-allowed;
+}
+.br-iconbtn {
+  inline-size: 34px;
+  block-size: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: var(--surface-2);
+  color: var(--fg-muted);
+  flex: 0 0 auto;
+}
+.br-iconbtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/*
+ * The option chip. One control does duty for materials, sizes, sides,
+ * finishes, quantities, packaging and delivery — and the DISABLED state is the
+ * interesting one: it stays readable and carries its reason as text, because a
+ * chip that is merely greyed out tells the customer nothing.
+ */
+.br-chip {
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--fg);
+  border-radius: 10px;
+  padding: 9px 13px;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: start;
+  transition: border-color 0.14s ease, background 0.14s ease;
+}
+.br-chip:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.br-chip[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.br-chip:disabled {
+  cursor: not-allowed;
+  border-style: dashed;
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+  color: var(--fg-subtle);
+  max-inline-size: 34ch;
+}
+.br-chip-sub {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--fg-subtle);
+  white-space: normal;
+  line-height: 1.35;
+}
+.br-chip:disabled .br-chip-sub {
+  color: var(--warn);
+}
+
+.br-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+.br-tag--pos {
+  background: var(--pos-soft);
+  color: var(--pos);
+}
+.br-tag--warn {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.br-tag--danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.br-tag--info {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.br-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.br-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.br-input {
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--fg);
+  padding: 10px 12px;
+  font-size: 13.5px;
+  inline-size: 100%;
+}
+.br-input--mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.br-input:read-only {
+  background: var(--surface-3);
+  color: var(--fg-subtle);
+}
+
+/* The gradient tile that stands in for a photograph, everywhere. */
+.br-tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: var(--tile, var(--surface-3));
+  color: rgba(255, 255, 255, 0.92);
+  overflow: hidden;
+}
+.br-tile-chip {
+  position: absolute;
+  inset-inline-start: 12px;
+  inset-block-end: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(0, 0, 0, 0.24);
+  padding: 3px 7px;
+  border-radius: 6px;
+  max-inline-size: calc(100% - 24px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* A floating badge sits OPPOSITE the tile's own size chip, never on top of it. */
+.br-tile-badge {
+  position: absolute;
+  inset-inline-end: 12px;
+  inset-block-start: 10px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.94);
+  background: rgba(0, 0, 0, 0.22);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+/* Add-on monogram: neutral by design (24 D12) — never a company's colours. */
+.br-monogram {
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  letter-spacing: 0.02em;
+  flex: 0 0 auto;
+}
+.br-monogram--sm {
+  inline-size: 34px;
+  block-size: 34px;
+  border-radius: 9px;
+  font-size: 10px;
+}
+
+/* ── tables ────────────────────────────────────────────────────────────── */
+
+.br-table-wrap {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 14px;
+  overflow: hidden;
+  overflow-x: auto;
+}
+.br-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  min-inline-size: 560px;
+}
+.br-table th {
+  text-align: start;
+  padding: 11px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  background: var(--surface-2);
+  border-block-end: 1px solid var(--border);
+  white-space: nowrap;
+}
+.br-table td {
+  padding: 11px 14px;
+  border-block-end: 1px solid var(--border);
+  font-size: 13px;
+}
+.br-table .br-num {
+  text-align: end;
+}
+.br-table tbody tr[data-clickable="true"] {
+  cursor: pointer;
+}
+.br-table tbody tr[data-clickable="true"]:hover {
+  background: var(--surface-2);
+}
+
+/* ── overlays and toasts ───────────────────────────────────────────────── */
+
+.br-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-drawer);
+  background: var(--scrim-sheet);
+  backdrop-filter: blur(2px);
+  animation: br-scrim 0.16s ease-out;
+}
+.br-modal-scrim {
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+.br-modal {
+  inline-size: min(520px, 94vw);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 17px;
+  box-shadow: var(--shadow-lift);
+  animation: br-pop 0.18s ease-out;
+  max-block-size: 92vh;
+  display: flex;
+  flex-direction: column;
+}
+.br-modal-head {
+  padding: 18px 20px;
+  border-block-end: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.br-modal-body {
+  padding: 18px 20px;
+  overflow-y: auto;
+}
+.br-modal-foot {
+  padding: 14px 20px;
+  border-block-start: 1px solid var(--border);
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.br-drawer-scrim {
+  display: flex;
+  justify-content: flex-end;
+}
+.br-drawer {
+  inline-size: min(460px, 94vw);
+  background: var(--surface);
+  block-size: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lift);
+  animation: br-drawer 0.22s ease-out;
+}
+.br-navsheet {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 250px;
+  background: var(--surface);
+  border-inline-end: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  animation: br-sheet 0.2s ease-out;
+}
+
+/* The quote bar exists only where the sticky panel has detached. */
+.br-quotebar {
+  display: none;
+}
+@media (max-width: 1023.98px) {
+  .br-quotebar {
+    display: flex;
+  }
+}
+
+.br-toasts {
+  position: fixed;
+  inset-block-end: 16px;
+  inset-inline: 0;
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  padding-inline: 12px;
+}
+.br-toast {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--fg);
+  color: var(--bg);
+  padding: 10px 16px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-lift);
+  font-size: 13.5px;
+  font-weight: 600;
+  animation: br-pop 0.2s ease-out;
+  pointer-events: auto;
+  max-inline-size: min(92vw, 460px);
+}
+.br-toast--warn {
+  background: var(--warn);
+  color: #fff;
+}
+.br-toast--pos {
+  background: var(--pos);
+  color: #fff;
+}
+
+/* ── add-on chrome: connect dialog, consent panel, manage drawer ────────── */
+/*
+ * Logical properties only, throughout. The app renders RTL for Arabic with no
+ * separate stylesheet, so a physical `left` here would put the drawer on the
+ * wrong edge and the switch knob on the wrong side of its track for one reader
+ * in eight — which is exactly the bug nobody notices in review.
+ */
+
+.br-modal--narrow {
+  inline-size: min(420px, 94vw);
+}
+.br-drawer-body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  flex: 1;
+  overflow-y: auto;
+}
+.br-drawer-foot {
+  padding: 14px 18px;
+  border-block-start: 1px solid var(--border);
+}
+
+/* One granted permission, ticked. Boxed in the dialog where it is a decision;
+   plain in the drawer where it is a record of one already made. */
+.br-perm {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.br-perm--plain {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fg-muted);
+}
+/* The not-affiliated line (24 AC6). A footnote in weight, because it is a legal
+   fact about a name rather than something the studio has to act on — but it is
+   on the card, not in a page footer, so the screen that names a company is the
+   screen that disclaims it. */
+.br-perm--quiet {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--fg-subtle);
+}
+/* What a connected add-on last did, dated against this studio's own clock. */
+.br-addon-last {
+  font-size: 11px;
+  color: var(--fg-subtle);
+}
+
+.br-perm > svg {
+  color: var(--pos);
+  flex: 0 0 auto;
+  margin-block-start: 2px;
+}
+
+.br-note {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  padding: 12px 13px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface-2);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+.br-note > svg {
+  flex: 0 0 auto;
+  margin-block-start: 1px;
+  color: var(--fg-subtle);
+}
+.br-note--pos {
+  border-color: transparent;
+  background: var(--pos-soft);
+}
+.br-note--pos > svg {
+  color: var(--pos);
+}
+
+.br-switch {
+  text-align: start;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 13px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  inline-size: 100%;
+}
+.br-switch[aria-checked="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.br-switch-track {
+  position: relative;
+  inline-size: 38px;
+  block-size: 22px;
+  border-radius: 999px;
+  background: var(--border-strong);
+  flex: 0 0 auto;
+  margin-block-start: 1px;
+  transition: background 0.16s;
+}
+.br-switch[aria-checked="true"] .br-switch-track {
+  background: var(--accent);
+}
+.br-switch-knob {
+  position: absolute;
+  inset-block-start: 3px;
+  inset-inline-start: 3px;
+  inline-size: 16px;
+  block-size: 16px;
+  border-radius: 999px;
+  background: var(--surface);
+  transition: inset-inline-start 0.16s;
+}
+.br-switch[aria-checked="true"] .br-switch-knob {
+  inset-inline-start: 19px;
+  background: var(--accent-fg);
+}
+.br-switch-body {
+  min-inline-size: 0;
+}
+.br-switch-label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.br-switch-note {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--fg-muted);
+  margin-block-start: 3px;
+}
+
+/* A multi-select chip in the manage drawer — the starting layouts a shop offers. */
+.br-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  border-radius: 9px;
+  padding: 7px 11px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.br-pick[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.br-weights {
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  overflow: hidden;
+}
+.br-weights-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--surface-2);
+  border-block-end: 1px solid var(--border);
+}
+.br-weights-row:last-child {
+  border-block-end: 0;
+}
+
+.br-activity {
+  font-size: 11.5px;
+  color: var(--fg-muted);
+  padding: 7px 10px;
+  background: var(--surface-2);
+  border-radius: 8px;
+}
+
+.br-danger-mark {
+  inline-size: 38px;
+  block-size: 38px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.br-button--danger {
+  background: var(--danger);
+  color: #fff;
+}
+.br-danger-hover:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: var(--surface-2);
+}
+
+/* The shelf's "Not in this demo" chip: a fact, not a disabled button. */
+.br-not-in-demo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 13px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 11px;
+  background: var(--surface-2);
+  color: var(--fg-subtle);
+  font-size: 12.5px;
+  font-weight: 700;
+  inline-size: 100%;
+  justify-content: center;
+}
+.br-tip {
+  margin-block-start: 8px;
+  background: var(--fg);
+  color: var(--bg);
+  border-radius: 11px;
+  padding: 11px 13px;
+  font-size: 12px;
+  line-height: 1.45;
+  box-shadow: var(--shadow-lift);
+  animation: br-pop 0.14s ease-out;
+}

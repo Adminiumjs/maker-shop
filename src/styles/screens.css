@@ -1,0 +1,2176 @@
+/*
+ * Screen-level styles: the shop grid, a piece's page, the basket and till, the
+ * order view, and the five footer pages.
+ *
+ * Last in the cascade (tokens → base → components → screens), so a rule here
+ * always wins a tie with a shared component rule. Everything positional uses
+ * CSS LOGICAL properties, so the whole layout mirrors when the i18n provider
+ * stamps `dir="rtl"` and no RTL stylesheet is needed.
+ */
+
+/* ── shared layout ──────────────────────────────────────────────────────── */
+
+.br-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.br-stack--tight {
+  gap: 10px;
+}
+.br-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(252px, 1fr));
+  gap: 16px;
+}
+.br-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-block-end: 22px;
+}
+.br-narrow {
+  max-inline-size: 860px;
+}
+.br-narrow--tight {
+  max-inline-size: 660px;
+}
+.br-section-head {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin-block: 4px 11px;
+}
+.br-panel-title {
+  font-size: 15px;
+  font-weight: 800;
+  margin-block-end: 11px;
+}
+.br-prose {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+  margin-block-end: 24px;
+}
+.br-prose p,
+.br-prose-p {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+.br-centre-note {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+  text-align: center;
+}
+.br-form-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.br-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-block-end: 18px;
+}
+.br-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  background: var(--surface);
+  padding: 13px 16px;
+  font-size: 13.5px;
+}
+.br-row-strong {
+  font-weight: 700;
+  white-space: nowrap;
+}
+.br-empty {
+  padding: 44px 20px;
+  text-align: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: 16px;
+  color: var(--fg-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.br-empty-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.br-empty-body {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+}
+.br-backlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin-block-end: 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.br-backlink:hover {
+  color: var(--accent);
+}
+.br-linkbtn {
+  margin-inline-start: auto;
+  border: 0;
+  background: transparent;
+  padding: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.br-linkbtn:hover {
+  color: var(--danger);
+}
+.br-button--dark {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+/* ── the shopper's chrome ───────────────────────────────────────────────── */
+
+.br-shopbar {
+  gap: 12px 16px;
+}
+.br-searchbox {
+  position: relative;
+  flex: 1;
+  min-inline-size: 150px;
+  max-inline-size: 280px;
+}
+.br-searchbox input {
+  inline-size: 100%;
+  padding-inline-start: 34px;
+}
+.br-searchbox-icon {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 11px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--fg-subtle);
+}
+.br-shopbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.br-basket-count {
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+.br-footer-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-block: 20px;
+  text-align: center;
+}
+.br-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  margin-block-end: 4px;
+}
+.br-footer-path {
+  font-size: 11px;
+  color: var(--fg-subtle);
+  padding: 4px 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  background: var(--surface-2);
+}
+
+/* The dock gets out of the way of a sheet rather than floating over it. */
+.br-dock[data-hidden="true"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── the shop ───────────────────────────────────────────────────────────── */
+
+.br-hero {
+  max-inline-size: 660px;
+  margin-block-end: 20px;
+}
+.br-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding: 5px 12px;
+  margin-block-end: 14px;
+}
+.br-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-block-end: 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.br-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.br-filter-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--fg-subtle);
+  inline-size: 78px;
+  flex: 0 0 auto;
+}
+.br-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--fg-muted);
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: border-color 0.14s ease;
+}
+.br-pill-btn:hover {
+  border-color: var(--accent);
+}
+.br-pill-btn[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+.br-swatch {
+  inline-size: 11px;
+  block-size: 11px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+
+.br-piece {
+  text-align: start;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 0;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+}
+.br-piece-tile {
+  aspect-ratio: 4 / 3;
+}
+.br-piece-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px 14px 15px;
+  flex: 1;
+}
+.br-piece-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.br-piece-name {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.br-piece-price {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.br-piece-material {
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+.br-piece-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-block-start: 4px;
+}
+.br-piece-note {
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+  margin-block-start: 3px;
+}
+.br-pill {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  background: var(--surface-3);
+  border-radius: 6px;
+  padding: 3px 7px;
+}
+.br-pill--accent {
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 700;
+}
+.br-pill--pos {
+  color: var(--pos);
+  background: var(--pos-soft);
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 6px 11px;
+  border-radius: 8px;
+}
+.br-pill--danger {
+  color: var(--danger);
+  background: var(--danger-soft);
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 6px 11px;
+  border-radius: 8px;
+}
+
+/* ── a piece's page ─────────────────────────────────────────────────────── */
+
+.br-product {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 24px;
+  align-items: start;
+}
+.br-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: sticky;
+  inset-block-start: 86px;
+}
+.br-gallery-main {
+  aspect-ratio: 4 / 3;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.br-thumbs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.br-thumb {
+  border: 2px solid var(--border);
+  border-radius: 11px;
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
+}
+.br-thumb:hover,
+.br-thumb[aria-pressed="true"] {
+  border-color: var(--accent);
+}
+.br-thumb .br-tile {
+  aspect-ratio: 1;
+}
+.br-thumb .br-tile-chip {
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  inset-inline-start: 5px;
+  inset-block-end: 4px;
+}
+
+.br-options {
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+}
+.br-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.br-price-big {
+  font-size: 22px;
+  font-weight: 700;
+}
+.br-price-suffix {
+  font-size: 13px;
+  color: var(--fg-subtle);
+}
+.br-optgroup-head {
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin-block-end: 9px;
+}
+.br-optgroup-head--split {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.br-optgroup-hint {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.br-optrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: stretch;
+}
+.br-chip {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+.br-chip-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  align-items: flex-start;
+  line-height: 1.25;
+}
+.br-chip-tile {
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: 7px;
+  flex: 0 0 auto;
+  background-size: cover;
+}
+.br-chip-swatch {
+  inline-size: 18px;
+  block-size: 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  flex: 0 0 auto;
+}
+.br-chip-foot {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--pos);
+}
+
+.br-stepper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 11px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.br-stepper button {
+  inline-size: 38px;
+  block-size: 38px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--fg-muted);
+}
+.br-stepper button:hover {
+  background: var(--surface-3);
+}
+.br-stepper-value {
+  inline-size: 46px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+}
+.br-stepper--sm button {
+  inline-size: 34px;
+  block-size: 34px;
+}
+.br-stepper--sm .br-stepper-value {
+  inline-size: 40px;
+  font-size: 14px;
+}
+
+/* ── "Make it yours" — the designed empty state (24 D19) ────────────────── */
+
+.br-personal {
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.br-personal-head {
+  padding: 15px 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.br-personal-mark {
+  inline-size: 30px;
+  block-size: 30px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+.br-personal-body {
+  padding: 13px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.br-personal-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+.br-counter {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--fg-subtle);
+}
+.br-counter[data-tone="warn"] {
+  color: var(--warn);
+}
+.br-counter[data-tone="danger"] {
+  color: var(--danger);
+}
+.br-personal textarea[data-tone="warn"] {
+  border-color: var(--warn);
+}
+.br-personal textarea[data-tone="danger"] {
+  border-color: var(--danger);
+}
+.br-personal-hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+.br-personal-promise {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.br-personal-promise svg {
+  color: var(--pos);
+  flex: 0 0 auto;
+}
+/* The one muted line where an add-on's surface would begin. Not a dashed box. */
+.br-slot-line {
+  font-size: 12px;
+  color: var(--fg-subtle);
+  margin-block-start: -12px;
+}
+
+.br-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--border);
+}
+.br-fact {
+  display: grid;
+  grid-template-columns: 138px 1fr;
+  gap: 14px;
+  background: var(--surface);
+  padding: 12px 15px;
+}
+.br-fact-key {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  color: var(--fg-subtle);
+  padding-block-start: 2px;
+}
+.br-fact-value {
+  font-size: 13.5px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.br-buybar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 15px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+.br-buybar-total {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-inline-end: auto;
+}
+.br-buybar-label {
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.br-buybar-price {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.br-buybar .br-button {
+  padding: 14px 22px;
+  font-size: 15px;
+}
+.br-shipline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--fg-muted);
+  margin-block-start: -14px;
+}
+
+/*
+ * WHY THE BUTTON ABOVE IS CLOSED, in the add-on's own words.
+ *
+ * It sits directly under the buy bar rather than up beside the wording,
+ * because the question it answers is "why can't I press that?" and the answer
+ * belongs next to the thing that will not move. The negative top margin pulls
+ * it against the bar for the same reason the ship line has one.
+ */
+.br-blockline {
+  margin-block-start: -14px;
+}
+.br-shipline svg {
+  color: var(--accent);
+}
+
+/* ── basket, till, confirmation ─────────────────────────────────────────── */
+
+.br-line {
+  padding: 15px;
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 15px;
+  align-items: start;
+  box-shadow: var(--shadow);
+}
+.br-line-tile {
+  aspect-ratio: 1;
+  border-radius: 12px;
+}
+.br-line-body {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-inline-size: 0;
+}
+.br-line-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.br-line-name {
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.br-line-total {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.br-line-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.br-quote {
+  border-inline-start: 2px solid var(--accent);
+  padding-inline-start: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.br-quote-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-subtle);
+}
+.br-quote-text {
+  font-size: 13px;
+  color: var(--fg);
+  border-inline-start: 2px solid var(--accent);
+  padding-inline-start: 10px;
+}
+.br-quote .br-quote-text {
+  border-inline-start: 0;
+  padding-inline-start: 0;
+}
+.br-line-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-block-start: 2px;
+}
+.br-line-each {
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+
+.br-summary {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.br-summary--muted {
+  background: var(--surface-2);
+}
+.br-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--fg-muted);
+}
+.br-summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-block-start: 12px;
+  border-block-start: 2px solid var(--border-strong);
+  font-size: 17px;
+  font-weight: 800;
+}
+.br-summary-total .br-mono {
+  font-size: 22px;
+  font-weight: 800;
+}
+.br-summary-note {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+.br-pick {
+  text-align: start;
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 13px 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  inline-size: 100%;
+}
+.br-pick[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.br-pick-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+.br-pick-label {
+  font-size: 14px;
+  font-weight: 700;
+}
+.br-pick-sub {
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+.br-radio {
+  inline-size: 18px;
+  block-size: 18px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border-strong);
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+}
+.br-pick[aria-pressed="true"] .br-radio {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 4px var(--accent);
+}
+
+.br-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--fg-muted);
+}
+.br-note svg {
+  flex: 0 0 auto;
+  margin-block-start: 1px;
+  color: var(--accent);
+}
+.br-note--info {
+  background: var(--info-soft);
+  color: var(--info);
+  font-weight: 600;
+}
+.br-note--info svg {
+  color: var(--info);
+}
+.br-note--danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-weight: 600;
+}
+.br-note--danger svg {
+  color: var(--danger);
+}
+.br-note--accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+  margin-block-end: 22px;
+}
+
+.br-confirm {
+  padding: 26px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.br-confirm-mark {
+  inline-size: 52px;
+  block-size: 52px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--pos-soft);
+  color: var(--pos);
+  margin-block-end: 16px;
+  font-size: 26px;
+  font-weight: 800;
+}
+.br-confirm-mark--mail {
+  font-size: 0;
+}
+.br-confirm .br-rows {
+  inline-size: 100%;
+  text-align: start;
+}
+.br-confirm-proof {
+  margin: 0 0 20px;
+  font-size: 13.5px;
+  color: var(--fg-muted);
+}
+.br-confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ── your order ─────────────────────────────────────────────────────────── */
+
+.br-hints {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.br-hints-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--fg-subtle);
+}
+.br-hint {
+  border: 1px dashed var(--border-strong);
+  background: var(--surface-2);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+.br-hint:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.br-order-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-block-end: 16px;
+}
+.br-order-ref {
+  font-size: 19px;
+  font-weight: 700;
+}
+.br-order-sub {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.br-order-total {
+  margin-inline-start: auto;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/*
+ * The stage strip. A RESERVED GUTTER under each label so a long product name in
+ * a wordy locale never pushes a date out of alignment (rule 4 of the comp's
+ * four layout rules).
+ */
+.br-stages {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.br-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-block-size: 58px;
+}
+.br-stage-bar {
+  block-size: 5px;
+  border-radius: 999px;
+  background: var(--surface-3);
+}
+.br-stage[data-done="true"] .br-stage-bar {
+  background: var(--accent);
+}
+.br-stage-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+}
+.br-stage[data-done="true"] .br-stage-label {
+  font-weight: 700;
+  color: var(--fg);
+}
+.br-stage-date {
+  font-size: 10.5px;
+  color: var(--fg-subtle);
+  margin-block-start: auto;
+}
+
+.br-proof {
+  border: 1.5px solid var(--accent);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.br-proof-head {
+  padding: 15px 16px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: var(--accent-soft);
+  font-size: 15.5px;
+  font-weight: 800;
+  color: var(--accent);
+}
+.br-proof-body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.br-proof-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 200px) 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+/*
+ * WHEN AN ADD-ON DRAWS THE PROOF, IT GETS THE WHOLE ROW.
+ *
+ * The two columns are sized for what this app puts in them: a material tile on
+ * the left and a sentence on the right. A `cart.line.preview` fill is a picture
+ * WITH its own rows beside it — the alphabet, the size, the finish — and squeezed
+ * into a 200px column those rows set one letter per line ("Fen / wic / k"). The
+ * host does not restyle the add-on to fix that, because `lp-` is the add-on's
+ * namespace and reaching into it is how a host breaks an add-on it has never
+ * seen; it changes its OWN grid instead, which is the half it owns.
+ */
+.br-proof-grid:has(> .br-slot-fill) {
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+.br-proof-tile {
+  aspect-ratio: 3 / 2;
+  border-radius: 12px;
+}
+.br-proof-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+.br-proof-detail {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+.br-proof-when {
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+.br-proof-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.br-changer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-block-start: 1px solid var(--border);
+  padding-block-start: 15px;
+}
+.br-changer-foot {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.br-changer-hint {
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+
+.br-orderline {
+  padding: 14px 16px;
+  border-block-end: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.br-orderline-tile {
+  aspect-ratio: 1;
+  border-radius: 10px;
+}
+.br-orderline-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-inline-size: 0;
+}
+.br-orderline-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 14.5px;
+  font-weight: 700;
+}
+.br-orderline-qty {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+.br-orderline-opts {
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+
+.br-log {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.br-log-row {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.br-log-when {
+  font-size: 11px;
+  color: var(--fg-subtle);
+  padding-block-start: 2px;
+}
+.br-log-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.br-log-what {
+  font-size: 13px;
+  font-weight: 700;
+}
+.br-log-what[data-kind="approved"] {
+  color: var(--pos);
+}
+.br-log-what[data-kind="change-asked"] {
+  color: var(--warn);
+}
+.br-log-detail {
+  font-size: 12.5px;
+  color: var(--fg-muted);
+  line-height: 1.5;
+}
+
+.br-dispatch {
+  background: var(--surface-2);
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+.br-dispatch svg {
+  color: var(--fg-subtle);
+  flex: 0 0 auto;
+  margin-block-start: 1px;
+}
+.br-dispatch .br-panel-title {
+  margin-block-end: 3px;
+  font-size: 14px;
+}
+.br-dispatch-body {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+/* ── about us ───────────────────────────────────────────────────────────── */
+
+.br-machine {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: var(--shadow);
+}
+.br-machine-mark {
+  inline-size: 34px;
+  block-size: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.br-machine-name {
+  font-size: 14.5px;
+  font-weight: 800;
+}
+.br-machine-what {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+.br-materials-note {
+  background: var(--surface-2);
+}
+
+/* ── postage and the calendar ───────────────────────────────────────────── */
+
+.br-cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 7px;
+  margin-block-end: 22px;
+}
+.br-cal-day {
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  border-radius: 11px;
+  padding: 9px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-block-size: 66px;
+}
+.br-cal-day[data-open="false"] {
+  background: var(--surface-3);
+}
+.br-cal-day[data-today="true"] {
+  border-color: var(--accent);
+}
+.br-cal-dow {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--fg-subtle);
+}
+.br-cal-date {
+  font-size: 12px;
+  font-weight: 700;
+}
+.br-cal-day[data-open="false"] .br-cal-date {
+  color: var(--fg-subtle);
+}
+.br-cal-note {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+  margin-block-start: auto;
+}
+.br-postrow {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.br-postrow svg {
+  color: var(--fg-subtle);
+  flex: 0 0 auto;
+}
+.br-postrow-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-inline-end: auto;
+}
+
+/* ── looking after it ───────────────────────────────────────────────────── */
+
+.br-care {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow);
+}
+.br-care-head {
+  block-size: 74px;
+  display: flex;
+  align-items: center;
+  padding-inline: 16px;
+}
+.br-care-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: rgba(10, 10, 15, 0.52);
+  border-radius: 9px;
+  padding: 6px 12px;
+  font-size: 15.5px;
+  font-weight: 800;
+  color: #fff;
+}
+.br-care-list {
+  margin: 0;
+  padding: 15px 16px 18px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.br-care-list li {
+  position: relative;
+  padding-inline-start: 16px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+.br-care-list li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 8px;
+  inline-size: 5px;
+  block-size: 5px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* ── search and 404 ─────────────────────────────────────────────────────── */
+
+.br-search-count {
+  display: block;
+  font-size: 13px;
+  color: var(--fg-subtle);
+  margin-block-end: 20px;
+}
+.br-search-pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-block-end: 22px;
+}
+.br-notfound {
+  max-inline-size: 640px;
+  margin-inline: auto;
+  text-align: center;
+  padding-block: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.br-notfound-code {
+  font-size: 44px;
+  font-weight: 700;
+  color: var(--fg-subtle);
+  letter-spacing: -0.03em;
+  margin-block-end: 12px;
+}
+.br-notfound .br-lede {
+  margin-block-end: 20px;
+}
+
+/* ── Arabic: tracked eyebrow labels ─────────────────────────────────────── */
+
+/*
+ * LETTER-SPACING BREAKS ARABIC. The small tracked mono labels — the filter
+ * eyebrows, the fact keys, the calendar's weekday, the wordmark's strapline —
+ * read as intended in the seven Latin locales and pull the Arabic script apart
+ * letter by letter, because a cursive script joins and tracking is exactly the
+ * instruction not to. The same rule swaps the mono face for the sans one,
+ * since the mono family has no Arabic and would fall through to a different
+ * system font mid-line.
+ *
+ * This is the one place where "eight locales" costs a stylesheet rule rather
+ * than a translation, and it is invisible to anyone reviewing in English.
+ */
+[dir="rtl"] .br-filter-label,
+[dir="rtl"] .br-fact-key,
+[dir="rtl"] .br-cal-dow,
+[dir="rtl"] .br-brand-tag,
+[dir="rtl"] .br-eyebrow,
+[dir="rtl"] .br-hints-label {
+  letter-spacing: normal;
+  font-family: var(--font-sans);
+}
+
+/*
+ * Mono runs that carry a MONTH NAME as well as digits — every date chip in the
+ * app. JetBrains Mono has no Arabic, so a date like "٦ أغسطس" picked up
+ * whatever the generic `monospace` fallback happened to be and came out
+ * unjoined beside correctly-shaped text elsewhere on the same screen.
+ *
+ * Listing the mono face FIRST and the sans stack after it is the fix: a
+ * browser resolves the font per codepoint, so the digits still come from
+ * JetBrains Mono and stay tabular, and the Arabic comes from a face that can
+ * actually shape it.
+ */
+[dir="rtl"] .br-mono {
+  font-family: "JetBrains Mono", var(--font-sans);
+}
+
+/* ── the tile's icon ────────────────────────────────────────────────────── */
+
+.br-tile-icon {
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.62);
+  transition: transform 0.3s ease;
+}
+
+/* ── responsive: 1280 → 390 ─────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  /*
+   * A piece's page stacks with THE OPTIONS FIRST — a shopper on a phone is
+   * choosing, not browsing, and the gallery has already done its work in the
+   * grid they came from.
+   */
+  .br-product {
+    grid-template-columns: 1fr;
+  }
+  .br-gallery {
+    order: 2;
+    position: static;
+  }
+  .br-options {
+    order: 1;
+  }
+  .br-form-2 {
+    grid-template-columns: 1fr;
+  }
+  .br-proof-grid {
+    grid-template-columns: 1fr;
+  }
+  .br-cal {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .br-fact {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .br-stages {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .br-line {
+    grid-template-columns: 64px 1fr;
+  }
+  .br-searchbox {
+    max-inline-size: none;
+    order: 2;
+  }
+  .br-shopbar-actions {
+    order: 1;
+    margin-inline-start: auto;
+  }
+  .br-cust-nav {
+    order: 3;
+  }
+}
+
+/* ══ THE BENCH ═══════════════════════════════════════════════════════════════
+
+   Everything below belongs to the maker's side. It is written in logical
+   properties throughout, like the rest of this sheet: the board reads
+   left-to-right in seven languages and right-to-left in the eighth, from one
+   set of rules and no RTL stylesheet.
+
+   The one thing worth knowing before reading it: the board's columns SCROLL
+   sideways under ~900px with scroll-snap rather than stacking, because four
+   columns stacked is a list, and the whole point of the board is that a maker
+   can see where everything is at once. */
+
+.br-muted {
+  color: var(--fg-subtle);
+  font-size: 12.5px;
+}
+.br-num {
+  text-align: end;
+}
+.br-warn-figure {
+  color: var(--warn);
+}
+.br-danger-figure {
+  color: var(--danger);
+}
+.br-pos-figure {
+  color: var(--pos);
+}
+.br-queued {
+  color: var(--accent);
+  font-weight: 700;
+}
+.br-note--warn {
+  border-color: transparent;
+  background: var(--warn-soft);
+}
+.br-note--warn > svg {
+  color: var(--warn);
+}
+
+/* An add-on's fill, wherever it lands. No box of its own — the host's panel
+   already has one, and a second border around every fill would make an add-on
+   look bolted on. */
+.br-slot-fill {
+  min-inline-size: 0;
+}
+
+/*
+ * THE HOST'S OWN CONTENT AT A FILLED SLOT, AND THE ONE QUESTION ONLY CSS CAN
+ * ANSWER (see `components/AddOnSlot.tsx`).
+ *
+ * "Nothing fills this slot" and "the fill had nothing to draw for this record"
+ * are two different states, and only the first is visible to JavaScript. The
+ * personalizer registers a `cart.line.preview` fill and correctly draws nothing
+ * for a piece it has no areas for — so the send-a-proof dialog lost its
+ * material tile to an empty div, because a fill existed. Connecting an add-on
+ * took a picture away.
+ *
+ * `AddOnSlot` therefore renders the fallback after the fills every time, and
+ * these two rules decide which one a person sees. `display: contents` keeps the
+ * fallback in its parent's layout, so an empty slot looks exactly as it did.
+ *
+ * ORDER MATTERS: the spare is always last, so a plain sibling combinator
+ * reaches it and no `:has()` is needed. Do not reorder them in the component.
+ *
+ * TWO CONDITIONS, NOT ONE (round 6). `:empty` is a question about child nodes
+ * and this is a question about paint: a fill returning a bare `<div/>`, or a
+ * wrapper whose only child is `display: none`, is not empty and drew nothing,
+ * and this rule used to hide the studio's own content on its behalf. `SlotFill`
+ * asks the DOM afterwards and marks the wrapper `data-drew="none"`; the
+ * `:empty` half stays because it needs no measurement and is right from the
+ * first paint.
+ */
+.br-slot-spare {
+  display: contents;
+}
+.br-slot-fill:not(:empty):not([data-drew="none"]) ~ .br-slot-spare {
+  display: none;
+}
+
+.br-actionbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.br-actionbar--tight {
+  gap: 8px;
+}
+.br-twocol {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.br-twocol--narrow-first {
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+}
+
+/* ── the day's figures ───────────────────────────────────────────────────── */
+
+.br-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 11px;
+}
+.br-kpi {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--surface);
+}
+.br-kpi[data-tone="warn"] {
+  border-color: transparent;
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.br-kpi[data-tone="danger"] {
+  border-color: transparent;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.br-kpi-n {
+  font-size: 20px;
+  font-weight: 700;
+}
+.br-kpi-label {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--fg-muted);
+}
+.br-kpi[data-tone="warn"] .br-kpi-label,
+.br-kpi[data-tone="danger"] .br-kpi-label {
+  color: inherit;
+  opacity: 0.85;
+}
+
+/* ── "Batch these" ──────────────────────────────────────────────────────── */
+
+.br-batchstrip {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 14px;
+  display: grid;
+  gap: 11px;
+}
+.br-batchstrip-sub {
+  font-size: 12.5px;
+  color: var(--fg-muted);
+  margin-block-start: 3px;
+}
+.br-batchstrip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.br-batchstrip-empty {
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+.br-batchcard {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 13px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+  text-align: start;
+}
+.br-batchcard:hover {
+  border-color: var(--accent);
+}
+.br-batchcard-tile {
+  inline-size: 34px;
+  block-size: 34px;
+  border-radius: 9px;
+  flex: 0 0 auto;
+  background-size: cover;
+}
+.br-batchcard-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+}
+.br-batchcard-sub {
+  display: block;
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+  margin-block-start: 2px;
+}
+
+/* ── the board ──────────────────────────────────────────────────────────── */
+
+.br-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(252px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding-block-end: 4px;
+}
+.br-column {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 11px;
+  min-inline-size: 0;
+  scroll-snap-align: start;
+}
+.br-column-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  padding-block-end: 9px;
+}
+.br-column-count {
+  color: var(--fg-subtle);
+}
+.br-column-body {
+  display: grid;
+  gap: 9px;
+}
+.br-column-empty {
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+  padding: 14px 4px;
+  text-align: center;
+}
+
+.br-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 11px;
+  display: grid;
+  gap: 9px;
+  cursor: grab;
+}
+.br-card[data-dragging="true"] {
+  opacity: 0.45;
+}
+.br-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.br-card-ref {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.br-card-tools {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.br-card-lock {
+  color: var(--warn);
+  display: inline-flex;
+}
+.br-iconbtn--sm {
+  inline-size: 26px;
+  block-size: 26px;
+}
+.br-card-body {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+}
+.br-card-tile {
+  inline-size: 34px;
+  block-size: 34px;
+  border-radius: 9px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.9);
+  background-size: cover;
+}
+.br-card-text {
+  min-inline-size: 0;
+}
+.br-card-name {
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.br-card-qty {
+  color: var(--fg-subtle);
+  font-size: 11.5px;
+}
+.br-card-sub {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-block-start: 3px;
+  line-height: 1.4;
+}
+/* A reserved gutter so a long piece name never pushes the date out of line —
+   rule 4 of the comp's four layout rules. */
+.br-card-foot {
+  display: flex;
+  justify-content: flex-end;
+  min-block-size: 24px;
+}
+.br-cardmenu {
+  position: absolute;
+  inset-inline-end: 8px;
+  inset-block-start: 36px;
+  z-index: 3;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 11px;
+  box-shadow: var(--shadow-lift);
+  padding: 5px;
+  display: grid;
+  gap: 2px;
+  min-inline-size: 178px;
+}
+.br-cardmenu-item {
+  text-align: start;
+  border: 0;
+  background: none;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.br-cardmenu-item:hover {
+  background: var(--surface-3);
+}
+.br-cardmenu-item[data-locked="true"] {
+  color: var(--fg-subtle);
+}
+.br-cardmenu-item--accent {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ── the batch sheet and the cut list ───────────────────────────────────── */
+
+.br-batchgrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.br-sheet {
+  position: relative;
+  inline-size: 100%;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface-3);
+  overflow: hidden;
+  margin-block: 12px;
+}
+.br-sheet-piece {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 3px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background-size: cover;
+  overflow: hidden;
+}
+.br-sheet-piece:hover {
+  outline: 2px solid var(--danger);
+  outline-offset: -2px;
+}
+.br-sheet-ref {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+}
+.br-sheetfigs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: baseline;
+}
+.br-sheetfig {
+  font-size: 16px;
+  font-weight: 700;
+}
+.br-sheetfig--muted {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-subtle);
+}
+.br-crossorder {
+  margin-block: 10px 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--fg-muted);
+}
+
+/* ── proofs, the post run and the people ────────────────────────────────── */
+
+.br-proofrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.br-proofrow-face {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-inline-size: 0;
+}
+.br-proofrow-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.br-proofrow-when {
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+.br-proofrow-when[data-late="true"] {
+  color: var(--warn);
+}
+
+.br-postrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.br-postrow[data-packed="true"] {
+  border-color: var(--pos);
+  background: var(--pos-soft);
+}
+.br-postrow-body {
+  min-inline-size: 0;
+  flex: 1 1 auto;
+}
+.br-postrow-side {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.br-tickbox {
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--accent-fg);
+}
+.br-tickbox[aria-pressed="true"] {
+  background: var(--pos);
+  border-color: var(--pos);
+  color: #fff;
+}
+.br-runsummary {
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+
+.br-personrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  text-align: start;
+}
+.br-personrow[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.br-personrow-body {
+  min-inline-size: 0;
+}
+
+/* ── pieces, materials, machines ────────────────────────────────────────── */
+
+.br-cellpiece {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-inline-size: 0;
+}
+.br-lowline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-start: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--warn);
+}
+.br-countinput {
+  inline-size: 92px;
+  text-align: end;
+}
+.br-countinput[data-changed="true"] {
+  border-color: var(--warn);
+}
+.br-machinecard {
+  display: grid;
+  gap: 12px;
+}
+.br-line-spoiled {
+  font-size: 12px;
+  color: var(--warn);
+}
+.br-orderline-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/*
+ * AN ADD-ON'S FILL TAKES ITS OWN LINE HERE, for the same reason the proof panel
+ * gives one the whole row: this foot is a row of small controls — "Spoiled —
+ * remake it" and whatever else — and `order.line.actions` stopped being a lone
+ * button the moment it carried the picture the customer approved. Left in the
+ * flex row it sat squeezed against the panel's edge with its own sentence
+ * running off it. Again the host changes its OWN layout rather than reaching
+ * into the `lp-` namespace, which belongs to whichever add-on is mounted.
+ */
+.br-orderline-foot > .br-slot-fill {
+  flex: 1 0 100%;
+  min-inline-size: 0;
+}
+
+/* ── the add-on shelf ───────────────────────────────────────────────────── */
+
+.br-slotid {
+  display: block;
+  font-size: 11px;
+  color: var(--fg-subtle);
+  margin-block-start: 2px;
+}
+.br-slotbehaviour {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+}
+.br-slotbehaviour[data-speaks="true"] {
+  color: var(--accent);
+}
+
+/* ── the workshop's search ──────────────────────────────────────────────── */
+
+.br-benchsearch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 220px;
+  max-inline-size: 340px;
+}
+.br-benchsearch .br-input {
+  padding-inline-start: 32px;
+  padding-block: 8px;
+  font-size: 13px;
+}
+.br-benchresults {
+  position: absolute;
+  inset-block-start: calc(100% + 6px);
+  inset-inline-start: 0;
+  inline-size: min(420px, 78vw);
+  z-index: 6;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lift);
+  padding: 5px;
+  display: grid;
+  gap: 2px;
+}
+.br-benchresult {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 10px;
+  border: 0;
+  background: none;
+  border-radius: 9px;
+  font-size: 12.5px;
+  text-align: start;
+  color: var(--fg);
+}
+.br-benchresult:hover {
+  background: var(--surface-3);
+}
+.br-benchresult-empty {
+  padding: 10px;
+  font-size: 12.5px;
+  color: var(--fg-subtle);
+}
+
+/* ── narrow ─────────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .br-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .br-board {
+    grid-template-columns: repeat(4, min(78vw, 292px));
+    scroll-snap-type: x mandatory;
+  }
+  .br-batchgrid,
+  .br-twocol,
+  .br-twocol--narrow-first {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .br-benchsearch {
+    display: none;
+  }
+}
+
+/* A long mono figure — "1 sheet off the shelf · 12 to use after it" — has to be
+   allowed to wrap, or it runs out of the panel in the two languages where it is
+   longest. The label keeps its width; the figure takes the rest and breaks. */
+.br-weights-row > :first-child {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+}
+.br-weights-row > :last-child {
+  min-inline-size: 0;
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+
+/* The blanks on the sheet are small, and a material texture at 40 × 40 px reads
+   as pale card. A touch of ink under it puts the order reference back on a
+   surface it can be read against, in both themes. */
+.br-sheet-piece {
+  box-shadow: inset 0 0 0 100vmax rgba(28, 18, 8, 0.28);
+}
+.br-sheet-ref {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+/* The bench's version of an order line.
+   `.br-orderline` is the SHOPPER's: a two-column grid whose first column is a
+   64px tile, which is right there and wrong here, where the tile sits inside
+   the head beside the name. Its inner classes are reused as they are — this is
+   the wrapper that differs, and giving the bench its own is cheaper than
+   teaching one rule to be two shapes. */
+.br-benchline {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  display: grid;
+  gap: 9px;
+}
+.br-benchline .br-orderline-head {
+  align-items: flex-start;
+}
+.br-benchline .br-orderline-body {
+  flex: 1 1 auto;
+}
+.br-benchline .br-orderline-tile,
+.br-proofrow .br-orderline-tile,
+.br-cellpiece .br-orderline-tile,
+.br-modal .br-orderline-tile {
+  inline-size: 40px;
+  block-size: 40px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.92);
+  background-size: cover;
+}
