@@ -38,7 +38,7 @@ import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 import App from "../app/App.tsx";
-import { DEMO_KEYS } from "../add-ons/registry.ts";
+import { DEFAULT_ADD_ON_SETTINGS, DEMO_KEYS } from "../add-ons/registry.ts";
 import { ORDERS } from "../data/demo.ts";
 import { I18nProvider } from "../i18n/index.tsx";
 import type { LocaleTag } from "../i18n/locales.ts";
@@ -61,6 +61,49 @@ export interface Visit {
   locale: LocaleTag;
   /** The live element, readable only inside the visitor callback. */
   host: HTMLElement;
+}
+
+/**
+ * ── WHAT THE ADD-ONS REMEMBER, WHICH THIS FILE COULD NOT REACH ──────────────
+ *
+ * [Added 2026-08-12, after measuring it.] `reset()` below put the HOST's store
+ * back and stopped there, and the sentence it is written under — "every path is
+ * replayed onto the SAME shop" — was therefore false of everything an add-on
+ * remembers. Module state in a vendored package outlives an unmount, so it
+ * outlived every reset the tour did.
+ *
+ * IT WAS MEASURED, NOT SUSPECTED. The first tour in a process reached 12
+ * surfaces and every tour after it reached 9. The three that vanished were the
+ * delivery add-on's rate quote, its collection booking and the machine file
+ * behind them: the first tour BOOKED a collection into the demo carrier, the
+ * carrier is memoized and rebuilt only when the clock changes, and the clock is
+ * pinned — so from the second tour on the order was already booked and those
+ * controls were not on the page. `add-ons/affiliation.test.tsx` tours once per
+ * locale in one process, which made it eight tours of which seven were missing
+ * the three surfaces where a carrier is NAMED. It was green the whole time.
+ *
+ * The same hole is finer-grained than one tour: the crawl replays every path
+ * from a fresh render, so a path walked after another path had booked something
+ * was replayed onto a shop the previous path had changed.
+ *
+ * ── AND THE RESET BELONGS TO THE ADD-ON ─────────────────────────────────────
+ *
+ * A host cannot write this for itself. What a package remembers is behind seams
+ * only that package names — a memoized transport here, a picture store and a
+ * half-open panel's resolver there — so a host-local reset would be this wave's
+ * most-repeated defect again: correct about the add-ons that existed when it was
+ * written, silent about the next one. Every add-on exports `resetAll` from its
+ * own `test-reset.ts`, the sync vendors it, and this calls whatever is vendored
+ * without knowing what is inside. `tour.test.tsx` fails if one stops exporting.
+ */
+export const VENDORED_RESETS = import.meta.glob<{ resetAll?: () => void }>(
+  "../add-ons/vendor/*/test-reset.ts",
+  { eager: true },
+);
+
+/** Every vendored add-on's own reset, called before the host's own seeding. */
+function resetVendoredAddOns(): void {
+  for (const module of Object.values(VENDORED_RESETS)) module.resetAll?.();
 }
 
 /**
@@ -498,7 +541,24 @@ export async function tourEveryView(
 
   for (const connected of [false, true]) {
     const reset = (): void => {
-      useStore.setState({ enabled: new Set(), basket: [], overlay: { kind: "none" } });
+      // The add-ons first: what they remember survives an unmount, and seeding
+      // below drives store actions that reach into them.
+      resetVendoredAddOns();
+      /*
+       * `addOnSettings` IS PART OF THE SHOP, and it was the half of this the
+       * add-ons' own resets could not put back. The crawl presses what an add-on
+       * drew, and two of the things it draws are settings toggles — so a tour
+       * that walked the delivery add-on's panel left `demo_transport` and the
+       * collection cutoff changed in the HOST's store for every render after it.
+       * It showed up as the settings surfaces reporting different copy on the
+       * second tour: the same control, describing a different setting.
+       */
+      useStore.setState({
+        enabled: new Set(),
+        basket: [],
+        overlay: { kind: "none" },
+        addOnSettings: DEFAULT_ADD_ON_SETTINGS,
+      });
       seedTheTour();
       /*
        * EVERY REGISTERED ADD-ON, off the registry's own list. These were two
