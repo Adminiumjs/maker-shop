@@ -35,6 +35,11 @@ import {
   type InertOrigin,
 } from "./testing/egress.ts";
 import { MESSAGES } from "./i18n/messages/index.ts";
+import {
+  RAW_CONTROL_EXPLANATION,
+  rawControlOffences,
+  rawControlsIn,
+} from "./testing/encoding.ts";
 
 const SRC = fileURLToPath(new URL(".", import.meta.url));
 
@@ -67,6 +72,40 @@ const ALL = walk(SRC).map((path) => {
 
 /** Everything that actually ships — no suites, no fixtures. */
 const SHIPPED = ALL.filter((f) => !/\.test\.tsx?$/.test(f.rel) && !f.rel.startsWith("testing/"));
+
+/**
+ * ── EVERY SOURCE FILE IS TEXT, OR THE TOOLS STOP READING IT ─────────────────
+ *
+ * [Added 2026-08-12, with the three files it found.]
+ *
+ * The rule and the argument for it are in `testing/encoding.ts`, which is the
+ * add-on monorepo's `testing/encoding.ts` byte for byte — the same arrangement
+ * `testing/purity.ts` and `testing/egress.ts` are under, and for the reason
+ * those two give at length: a scanner kept one-per-repo is not one rule, it is
+ * N rules that agree until the day one of them is repaired.
+ *
+ * What is decided HERE is only which files it is pointed at: everything this
+ * suite already walks — `.ts`, `.tsx` and `.css` under `src/`, the vendored
+ * add-ons included, which is where a re-sync would bring a raw byte back in.
+ */
+describe("every source file is text a tool will read", () => {
+  it("writes control characters as escapes, never as raw bytes", () => {
+    const offenders = ALL.flatMap(({ rel, text }) => rawControlOffences(rel, text));
+    expect(offenders, `\n${RAW_CONTROL_EXPLANATION}\n${offenders.join("\n")}\n`).toEqual([]);
+  });
+
+  it("would report one, which is what makes the absence worth reading", () => {
+    // Driven over the scanner rather than over `src/`, so this stays true on a
+    // day every file is clean — which is every day until somebody pastes one.
+    const planted = `const k = \`a${String.fromCharCode(0)}b\`;\nconst j = "x${String.fromCharCode(1)}y";`;
+    expect(rawControlsIn(planted).map((hit) => hit.label)).toEqual(["U+0000", "U+0001"]);
+    expect(rawControlsIn(planted).map((hit) => hit.line)).toEqual([1, 2]);
+    // And the escaped spelling of the same two strings is not a finding.
+    expect(rawControlsIn(String.raw`const k = "a\x00b", j = "x\x01y";`)).toEqual([]);
+    // Tabs and newlines are text, not findings.
+    expect(rawControlsIn("a\tb\r\nc")).toEqual([]);
+  });
+});
 
 describe("the clock is always passed in", () => {
   /*

@@ -115,10 +115,15 @@ FILES_host=(
   contracts/product-personalizer.ts
 )
 
-# Reachable from each client entry point, and nothing else. Kept as an explicit
-# list rather than a glob so that adding a file to a package is a decision here
-# too — a new module appearing in the demo bundle without anyone naming it is
-# how a server half ends up in a browser.
+# Reachable from each client entry point, plus the two files a HOST'S OWN GATES
+# import directly and a shopper never loads: `add-on-facts.ts`, which declares
+# what this package is true of, and `test-reset.ts`, which drops what it
+# remembers between renders. Neither is reachable from `index.ts` and neither
+# may become so — that is the line the packages' own `sources.test.ts` walks.
+#
+# Kept as an explicit list rather than a glob so that adding a file to a package
+# is a decision here too — a new module appearing in the demo bundle without
+# anyone naming it is how a server half ends up in a browser.
 # THE CROSS-APP PROOF (24 D21). This add-on was written for the print works and
 # is vendored here UNCHANGED — the file list below is copied from that app's own
 # sync script and not one entry differs, because not one byte of the package
@@ -126,7 +131,7 @@ FILES_host=(
 # the slot payloads shapes both shops can produce (`src/add-ons/payloads.ts`)
 # and mounting `order.dispatch.actions`, which §8A always said this app carried.
 FILES_shipping_dhl=(
-  add-on-facts.ts
+  add-on-facts.ts test-reset.ts
   label-store.ts clock.ts parcel.ts rates.ts label.ts seed.ts
   demo-carrier.ts settings.ts runtime.ts index.ts
   i18n/strings.ts i18n/t.ts
@@ -135,7 +140,7 @@ FILES_shipping_dhl=(
 )
 
 FILES_personalizer=(
-  add-on-facts.ts
+  add-on-facts.ts test-reset.ts
   faces.ts glyphs.ts pieces.ts template.ts seed.ts store.ts personalizer.ts
   slots.ts index.ts
   i18n/strings.ts i18n/t.ts

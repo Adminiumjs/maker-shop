@@ -33,6 +33,11 @@
  *      perfectly exhaustive over an empty set — no mounts, nothing to press,
  *      zero unpressed — which is the shape every guard in this wave has failed
  *      as. So the surfaces a press opened are named.
+ *
+ *   5. AND THE SECOND TOUR REACHES WHAT THE FIRST ONE DID. Every case above is
+ *      about ONE tour, and the suites that depend on this run eight — one per
+ *      locale, in one process. A tour that leaves state behind narrows the next
+ *      one, silently, in the direction that reads as green.
  */
 
 import { readFileSync } from "node:fs";
@@ -43,7 +48,7 @@ import { describe, expect, it } from "vitest";
 import { LOCALE_TAGS } from "../i18n/locales.ts";
 import { MESSAGES } from "../i18n/messages/index.ts";
 import { ALL_VIEWS, useStore } from "../state/store.ts";
-import { overlaysToTour, tourEveryView } from "./tour.tsx";
+import { VENDORED_RESETS, overlaysToTour, tourEveryView } from "./tour.tsx";
 
 /**
  * The `kind` of every arm of the store's `Overlay` union, read out of the file.
@@ -72,6 +77,16 @@ function declaredOverlayKinds(): string[] {
  * running it once per assertion would quadruple the suite for no more truth.
  */
 const report = await tourEveryView("en-US", () => {});
+
+/**
+ * AND A SECOND ONE, IN THE SAME PROCESS, WHICH IS THE ONE THAT USED TO DIFFER.
+ *
+ * The same locale as the first on purpose: the question is not whether German
+ * renders, it is whether a tour leaves anything behind that narrows the next.
+ * Same locale, same seed, same app — so any difference between the two reports
+ * is state the first tour failed to put back.
+ */
+const again = await tourEveryView("en-US", () => {});
 
 describe("the tour reaches every surface a reader can reach", () => {
   it("renders every view the store declares", () => {
@@ -171,6 +186,47 @@ describe("the tour reaches every surface a reader can reach", () => {
    */
   it("gets inside an add-on's own flow, not just onto its first screen", () => {
     expect(report.deepest).toBeGreaterThanOrEqual(4);
+  });
+
+  /**
+   * ── A TOUR PUTS THE SHOP BACK, INCLUDING THE PARTS IT DOES NOT OWN ─────────
+   *
+   * [Added 2026-08-12, with the defect it reports.] `tour.tsx` reset the HOST's
+   * store between passes and could not reach what a vendored add-on remembers,
+   * so the first tour in a process reached 12 surfaces and every tour after it
+   * reached 9. The three that went missing were the delivery add-on's rate
+   * quote, its collection booking and the machine file behind them: the first
+   * tour booked a collection into a memoized demo carrier that is rebuilt only
+   * when the clock changes, and the clock is pinned.
+   *
+   * WHAT IT COST WAS COVERAGE, NOT A RED SUITE. `affiliation.test.tsx` tours
+   * once per locale in one process — eight tours, of which seven were missing
+   * the three surfaces where a carrier is NAMED, which is the one thing that
+   * suite exists to check. It was green throughout, and would have stayed green
+   * if a translator had dropped the not-affiliated line from any of them.
+   *
+   * Asserted over the SURFACES rather than a count: a number going from 12 to 9
+   * says something moved, and the list says what.
+   */
+  it("leaves the shop as it found it, so a second tour reaches the same surfaces", () => {
+    expect([...new Set(again.clicks)].sort()).toEqual([...new Set(report.clicks)].sort());
+    expect([...new Set(again.views)].sort()).toEqual([...new Set(report.views)].sort());
+    expect([...new Set(again.overlays)].sort()).toEqual([...new Set(report.overlays)].sort());
+    expect(again.deepest).toEqual(report.deepest);
+  });
+
+  /**
+   * The glob is only as honest as what it finds. A renamed export, or a sync
+   * that dropped the file, would leave the tour resetting NOTHING and passing
+   * forever — the defect above with a different cause.
+   */
+  it("calls a reset every add-on it vendors declares for itself", () => {
+    const declared = Object.entries(VENDORED_RESETS);
+    expect(declared.length, "no vendored test-reset modules were found at all").toBeGreaterThan(0);
+    const silent = declared
+      .filter(([, module]) => typeof module.resetAll !== "function")
+      .map(([file]) => file);
+    expect(silent, "these vendored packages export no resetAll").toEqual([]);
   });
 
   it("actually opened surfaces behind a press, in the add-ons' own panels", () => {
