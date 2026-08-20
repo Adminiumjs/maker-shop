@@ -23,6 +23,7 @@
  * registration function checks at boot — and it THROWS, naming the locale and
  * the key.
  */
+import type { Translated } from "../untranslated.ts";
 import { LOCALE_TAGS, type LocaleTag } from "../locales.ts";
 import { bench } from "../strings/bench.ts";
 import { chrome } from "../strings/chrome.ts";
@@ -31,7 +32,7 @@ import { screens } from "../strings/screens.ts";
 
 type Area<EN extends Record<string, string>> = { "en-US": EN } & Record<
   Exclude<LocaleTag, "en-US">,
-  Record<keyof EN, string>
+  Translated<EN>
 >;
 
 const AREAS: [
