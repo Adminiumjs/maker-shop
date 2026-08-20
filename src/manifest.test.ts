@@ -42,11 +42,22 @@
  *
  * `ADMINIUM_REPO` points elsewhere. A clean clone of this app alone must still
  * be green — somebody reading the example app is not required to check out the
- * product — so it prints what it looked for and skips. THE SKIP IS A KNOWN
- * COST: publishing `@adminium/manifest` and `@adminium/add-on-contracts` (both
- * already versioned, AGPL-licensed and `files: ["dist"]`) would turn this into
- * an ordinary devDependency CI cannot be missing. That is a product release
- * decision, not one an example app can take.
+ * product — so it prints what it looked for and skips.
+ *
+ * ── AND THE SKIP IS NO LONGER A HOLE (added 2026-08-20) ────────────────────
+ *
+ * That skip used to be a KNOWN COST written down and left: without a product
+ * checkout this document was held to nothing at all, and the works one repo
+ * over had solved it a wave earlier by VENDORING the validator under
+ * `testing/manifest/`. So the schema block at the bottom of this file runs the
+ * vendored copy and runs ALWAYS, a clean clone included, and the block after it
+ * asks the sharper question a copy makes possible: do the copy and the original
+ * AGREE? A copy nobody compares drifts — the works' copy sat a whole schema
+ * behind the product, refusing a manifest that was in fact valid, which is why
+ * `scripts/sync-manifest-validator.mjs` now owns it instead of a hand-copy.
+ *
+ * Everything above this line still runs the REAL validator when it is reachable,
+ * because a copy agreeing with itself proves nothing.
  *
  * The checks below the validator run either way, so a clean clone still holds
  * this document to the app.
@@ -60,11 +71,12 @@ import { describe, expect, it } from "vitest";
 
 import manifest from "../manifest.json";
 import { HOSTED_SLOTS } from "./add-ons/slots.ts";
+import { validateManifest as validateVendored } from "./testing/manifest/index.ts";
 import { CATEGORY_KEYS, LEAD_STUDIO_DAYS, MATERIAL_STOCK } from "./lib/catalogue.ts";
 import { BENCH_COLUMNS } from "./lib/orders.ts";
 
 const PRODUCT_ROOT =
-  process.env.ADMINIUM_REPO ?? fileURLToPath(new URL("../../adminium", import.meta.url));
+  process.env.ADMINIUM_REPO || fileURLToPath(new URL("../../adminium", import.meta.url));
 
 const VALIDATOR = join(PRODUCT_ROOT, "packages", "manifest", "dist", "index.js");
 
@@ -78,6 +90,30 @@ interface Validator {
 }
 
 const available = existsSync(VALIDATOR);
+
+/** CI sets this beside the product checkout; see .github/workflows/ci.yml. */
+const VALIDATOR_REQUIRED = process.env.ADMINIUM_REQUIRE_VALIDATOR === "true";
+
+/**
+ * ── AND CI MAY NOT SKIP IT (28-T26 follow-up) ──────────────────────────────
+ *
+ * `describe.skipIf` above is right for a developer with no product checkout —
+ * somebody reading the example app is not required to clone the product. It was
+ * WRONG for CI, where it meant half this file, the whole drift check included,
+ * never ran anywhere automated while the job reported green.
+ *
+ * The workflow sets `ADMINIUM_REQUIRE_VALIDATOR` in the same condition that
+ * checks the product out, so the two cannot disagree: if CI promised the
+ * validator and it is not there, that is a failure, not a skip.
+ */
+it.skipIf(!VALIDATOR_REQUIRED)("has the product validator that CI promised", () => {
+  expect(
+    available,
+    `ADMINIUM_REQUIRE_VALIDATOR is set, so the real validator must be present, and ` +
+      `nothing is at ${VALIDATOR}. The checkout or build step did not run.`,
+  ).toBe(true);
+});
+
 
 if (!available) {
   console.info(
@@ -251,5 +287,221 @@ describe("the schema it asks for is the one the app models", () => {
   it("gives every table a page, so nothing is installed and never seen", () => {
     const bound = new Set(manifest.pages.flatMap((p) => Object.values(p.bindings ?? {})));
     expect([...byRef.keys()].filter((ref) => !bound.has(ref))).toEqual([]);
+  });
+});
+
+/**
+ * ── FOUR MISTAKES THE SCHEMA CANNOT SEE, AND NOBODY WAS CHECKING ──────────
+ *
+ * [Added 2026-08-20 from an adversarial pass.] The schema is genuinely
+ * enforced — the drift block below proves the copy agrees with the product on
+ * every mutation thrown at it — but a schema constrains SHAPES, and these four
+ * documents are all correctly shaped and still wrong. Both validators accept
+ * every one of them, and until now so did this suite.
+ *
+ * They are asserted here rather than in the product because each is a fact
+ * about THIS app. The general forms — a duplicate `ref`, a `bindings` target
+ * that is not a table — belong in `packages/manifest` and are worth raising
+ * there; a per-repo assertion is what can be had today without re-vendoring
+ * the validator into fifteen repos.
+ */
+describe("mistakes that are correctly shaped and still wrong", () => {
+  const tables: { ref: string }[] = manifest.requiredSchema.tables;
+
+  it("gives every page a distinct ref", () => {
+    // Two pages with one ref is an install that silently drops a screen.
+    const refs = manifest.pages.map((page) => page.ref);
+    expect(refs.length, "duplicate page refs: " + refs.join(", ")).toBe(new Set(refs).size);
+  });
+
+  it("gives every table a distinct ref", () => {
+    const refs = tables.map((table) => table.ref);
+    expect(refs.length, "duplicate table refs: " + refs.join(", ")).toBe(new Set(refs).size);
+  });
+
+  it("names each facet once", () => {
+    expect(manifest.categories.length).toBe(new Set(manifest.categories).size);
+  });
+
+  it("gives every declared side something to load", () => {
+    // A `frontends[]` entry with no entry point is a side the installer cannot
+    // serve. The schema only requires the entry to be well-formed.
+    for (const frontend of manifest.frontends as { side: string; entry?: string }[]) {
+      expect(typeof frontend.entry, `${frontend.side} has no entry`).toBe("string");
+      expect((frontend.entry ?? "").length, `${frontend.side} entry is blank`).toBeGreaterThan(0);
+    }
+  });
+});
+
+/**
+ * ── THE SAME SCHEMA, WITHOUT A PRODUCT CHECKOUT ────────────────────────────
+ *
+ * No `skipIf`. This is the half a clean clone gets, and it is why the document
+ * is now held to the frozen schema on every machine rather than only on one
+ * with the product beside it.
+ */
+describe("manifest.json passes the vendored validator, always", () => {
+  it("validates against the frozen v1 schema with no issues at all", () => {
+    const result = validateVendored(manifest);
+    expect(result.ok ? [] : result.issues, "the vendored validator rejects this manifest").toEqual(
+      [],
+    );
+    expect(result.ok).toBe(true);
+  });
+
+  it("refuses the same real mistakes, so it is wired up and not a stub", () => {
+    // A validator nobody has watched REFUSE something might not be wired up at
+    // all: an import that resolved to `{ validateManifest: () => ({ ok: true }) }`
+    // would look exactly like the case above passing.
+    for (const patch of [
+      { publisher: { ...manifest.publisher, id: "somebody-else" } },
+      { addOn: { attaches: [], provides: [] } },
+      { manifestVersion: 2 },
+      { categories: ["handmade"] },
+      // The schema this repo's document was normalised INTO. A copy taken
+      // before that change accepts `frontend` and refuses `frontends`, which is
+      // the drift that actually happened next door.
+      { frontends: [] },
+    ]) {
+      expect(validateVendored({ ...manifest, ...patch }).ok, JSON.stringify(patch)).toBe(false);
+    }
+  });
+});
+
+/**
+ * ── AND THE COPY IS HELD TO THE ORIGINAL ───────────────────────────────────
+ *
+ * Runs only where the product is, because that is the only place the question
+ * can be asked. Comparing the VERDICT is not enough on its own — a copy that
+ * refuses the same document for a different reason has drifted too — so the
+ * issue PATHS are compared as well.
+ */
+/**
+ * ── AND THE COPY IS HELD TO THE ORIGINAL ───────────────────────────────────
+ *
+ * Runs only where the product is, because that is the only place the question
+ * can be asked. Comparing the VERDICT is not enough on its own — a copy that
+ * refuses the same document for a different reason has drifted too — so the
+ * issue PATHS are compared as well.
+ *
+ * ── WHY THE CASES ARE GENERATED AND NOT LISTED ────────────────────────────
+ *
+ * [Changed 2026-08-20 by an adversarial pass.] Six hand-written documents stood
+ * here, and six documents can only detect a drift they happen to touch: any
+ * product change tightening or loosening a rule those six do not exercise left
+ * the copy a rule behind with this block green. That is the exact failure the
+ * block exists to prevent — the works' copy sat a whole schema behind the
+ * product — reached from a different direction.
+ *
+ * So the documents are DERIVED from the manifest instead: every top-level key
+ * removed and re-typed in turn, every table removed and its ref duplicated,
+ * every column's type corrupted, every page's binding pointed at nothing, plus
+ * the hand-written ones worth keeping by name. Roughly a hundred and fifty
+ * documents, each one a place the two validators could disagree.
+ */
+function mutations(): { what: string; document: unknown }[] {
+  const out: { what: string; document: unknown }[] = [];
+  const base = manifest as unknown as Record<string, unknown>;
+  const clone = (): Record<string, unknown> =>
+    structuredClone(base) as Record<string, unknown>;
+
+  out.push({ what: "as it ships", document: manifest });
+
+  for (const key of Object.keys(base)) {
+    const dropped = clone();
+    delete dropped[key];
+    out.push({ what: `without ${key}`, document: dropped });
+
+    // A wrong TYPE is a different refusal from a missing key, and a copy can
+    // drift on one without drifting on the other.
+    for (const [label, value] of [
+      ["a number", 42],
+      ["null", null],
+      ["an array", []],
+      ["an object", {}],
+    ] as const) {
+      const retyped = clone();
+      retyped[key] = value;
+      out.push({ what: `${key} as ${label}`, document: retyped });
+    }
+  }
+
+  const tables = (base["requiredSchema"] as { tables: { ref: string; columns: { type: string }[] }[] })
+    .tables;
+  for (let t = 0; t < tables.length; t += 1) {
+    const dropped = clone();
+    (dropped["requiredSchema"] as { tables: unknown[] }).tables.splice(t, 1);
+    out.push({ what: `without table ${tables[t]?.ref ?? t}`, document: dropped });
+
+    const duped = clone();
+    const list = (duped["requiredSchema"] as { tables: { ref: string }[] }).tables;
+    list.push(structuredClone(list[t]!));
+    out.push({ what: `table ${tables[t]?.ref ?? t} declared twice`, document: duped });
+
+    const columns = tables[t]?.columns ?? [];
+    for (let c = 0; c < columns.length; c += 1) {
+      const broken = clone();
+      const target = (broken["requiredSchema"] as { tables: { columns: { type: string }[] }[] })
+        .tables[t]?.columns[c];
+      if (target === undefined) continue;
+      // `varchar` is what somebody who thinks in SQL writes; the abstract types
+      // are the contract.
+      target.type = "varchar";
+      out.push({ what: `${tables[t]?.ref}.column[${c}] typed varchar`, document: broken });
+    }
+  }
+
+  const pages = base["pages"] as { ref: string; bindings?: Record<string, string> }[];
+  for (let i = 0; i < pages.length; i += 1) {
+    const broken = clone();
+    const page = (broken["pages"] as { bindings?: Record<string, string> }[])[i];
+    if (page?.bindings === undefined) continue;
+    for (const key of Object.keys(page.bindings)) page.bindings[key] = "no_such_table";
+    out.push({ what: `page ${pages[i]?.ref} bound to nothing`, document: broken });
+  }
+
+  for (const [what, patch] of [
+    ["a publisher that is not first-party", { publisher: { ...manifest.publisher, id: "somebody-else" } }],
+    ["an add-on block on an app", { addOn: { attaches: [], provides: [] } }],
+    ["a facet outside the closed vocabulary", { categories: ["handmade"] }],
+    ["a capability nobody implements", { capabilities: [...manifest.capabilities, "telepathy"] }],
+    ["an app with no side at all", { frontends: [] }],
+    ["a reserved key", { key: "admin" }],
+    ["a manifest version that is not the frozen one", { manifestVersion: 2 }],
+  ] as const) {
+    out.push({ what, document: { ...manifest, ...patch } });
+  }
+
+  return out;
+}
+
+describe.skipIf(!available)("the vendored validator has not drifted from @adminium/manifest", () => {
+  it("agrees with the real one about every derived document", async () => {
+    const real = await load();
+    const paths = (r: { ok: boolean; issues?: readonly { path: string }[] }): string =>
+      [...(r.issues ?? [])].map((i) => i.path).sort().join("|");
+
+    const disagreements: string[] = [];
+    const cases = mutations();
+    for (const { what, document } of cases) {
+      const theirs = real(document);
+      const ours = validateVendored(document);
+      if (ours.ok !== theirs.ok) {
+        disagreements.push(`${what}: vendored ok=${String(ours.ok)}, real ok=${String(theirs.ok)}`);
+      } else if (paths(ours) !== paths(theirs)) {
+        disagreements.push(`${what}: same verdict, different paths`);
+      }
+    }
+    expect(disagreements, `${String(cases.length)} documents compared`).toEqual([]);
+  });
+
+  it("asks about enough documents, and enough that are REFUSED", () => {
+    // A drift check whose cases all PASS proves nothing: two validators that
+    // accept everything agree perfectly. This keeps the generator honest if a
+    // future manifest happens to survive most of its own mutations.
+    const cases = mutations();
+    expect(cases.length).toBeGreaterThan(40);
+    const refused = cases.filter(({ document }) => !validateVendored(document).ok);
+    expect(refused.length, "too few refused documents to prove anything").toBeGreaterThan(20);
   });
 });
