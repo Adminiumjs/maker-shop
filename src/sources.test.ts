@@ -29,9 +29,13 @@ import { describe, expect, it } from "vitest";
 import { LOCALE_TAGS } from "./i18n/locales.ts";
 import { impuritiesIn, restatementsIn } from "./testing/purity.ts";
 import {
+  connectedBackend,
   foreignImportsIn,
+  foreignModulesIn,
   offendingAddresses,
   sendersIn,
+  withoutComments,
+  type AllowedModule,
   type InertOrigin,
 } from "./testing/egress.ts";
 import { MESSAGES } from "./i18n/messages/index.ts";
@@ -66,7 +70,7 @@ const ALL = walk(SRC).map((path) => {
      * the words `no Date.now()`, and a check that read the comments would
      * report every file that promises to obey it as a file that breaks it.
      */
-    code: text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1"),
+    code: withoutComments(text),
   };
 });
 
@@ -233,6 +237,44 @@ function addOnNeedles(): { text: string; why: string }[] {
  * host's list. It is declared where it belongs now, and this app names no
  * address of its own at all.
  */
+/*
+ * ── AND CONNECTED MODE DOES NOT RELAX THIS LIST, ON PURPOSE (28-T26) ───────
+ *
+ * `builtOutput.test.ts` declares the Adminium instance a connected build was
+ * pointed at, because Vite inlines that origin into the shipped bytes and it
+ * has to be allowed there. This list stays empty, and the asymmetry is the
+ * rule: THE BACKEND ADDRESS COMES FROM CONFIGURATION, NEVER FROM A SOURCE
+ * LITERAL. A source that hardcodes the instance is still a finding here, which
+ * is what stops one tenant's URL from being baked into an app the marketplace
+ * serves to everybody.
+ */
+/**
+ * ── AND THE PACKAGES A SHIPPED SOURCE MAY IMPORT (28-T26 follow-up) ────────
+ *
+ * Net two banned the APIs that send and the dynamic `import()` of anything but
+ * a relative literal, and read as though it covered "reaching outside this
+ * repo". A STATIC import was in neither half: `import { track } from
+ * "some-analytics-sdk"` matched nothing, because the `fetch` is in the SDK and
+ * not in our file. This is the closed set that makes the default a refusal.
+ *
+ * Each entry is a package this studio already declares in its own package.json,
+ * and the `why` is what a reviewer reads. None of them is claimed to be
+ * AUDITED — `react` is here because a React app imports React. What the list
+ * buys is that a name nobody agreed to cannot appear in a shipped source.
+ */
+const ALLOWED_MODULES: readonly AllowedModule[] = [
+  { name: "react", why: "the renderer; this is a React app and every screen imports it" },
+  {
+    name: "react-dom",
+    why: "the renderer\u2019s DOM half \u2014 `react-dom/client` mounts the root, once",
+  },
+  {
+    name: "lucide-react",
+    why: "icons, which compile to inline `<svg>` elements. It fetches nothing: an icon that named an address would be reported by net one over the built output",
+  },
+  { name: "zustand", why: "the in-memory store. It holds state and makes no request" },
+];
+
 const OURS: readonly InertOrigin[] = [];
 
 /** Ours, plus whatever the add-ons this studio vendors declare for themselves. */
@@ -270,8 +312,153 @@ describe("nothing here can reach a host we do not control (24 D11)", () => {
     const offenders = SHIPPED.flatMap((f) => [
       ...sendersIn(f.code).map((means) => `${f.rel} → ${means}`),
       ...foreignImportsIn(f.code).map((spec) => `${f.rel} → ${spec}`),
+      // The static half, which neither of the two above ever looked at.
+      ...foreignModulesIn(f.code, ALLOWED_MODULES).map(
+        (spec) => `${f.rel} → imports ${spec}, which nobody declared`,
+      ),
     ]);
     expect(offenders).toEqual([]);
+  });
+
+  /*
+   * ── THE STATIC-IMPORT RULE, DRIVEN AT ITS EDGES ──────────────────────────
+   *
+   * Over the rule rather than over `src/`, so these stay true on the day this
+   * studio's dependency list changes. The two that matter most are the
+   * side-effect import — no symbol in the file to notice — and the lookalike,
+   * because a `startsWith` would forgive it.
+   */
+  it("sees a static import, in the spellings the old net two could not", () => {
+    const allowed = [{ name: "react", why: "test" }];
+    const seen = (code: string): string[] => foreignModulesIn(code, allowed);
+
+    expect(seen('import { track } from "some-analytics-sdk";')).toEqual(["some-analytics-sdk"]);
+    // No bindings at all: it imports nothing and runs everything in the module.
+    expect(seen('import "some-analytics-sdk";')).toEqual(["some-analytics-sdk"]);
+    expect(seen('export { z } from "exfil-pkg";')).toEqual(["exfil-pkg"]);
+    expect(seen('import {\n  a,\n} from "beacon-pkg";')).toEqual(["beacon-pkg"]);
+    expect(seen('import type { T } from "types-pkg";')).toEqual(["types-pkg"]);
+    expect(seen('export * from "@evil/scope-pkg/deep";')).toEqual(["@evil/scope-pkg/deep"]);
+  });
+
+
+  /*
+   * ── THE FIVE WAYS AN ADVERSARIAL PASS BEAT THIS, ALL DRIVEN ──────────────
+   *
+   * Every one of these was confirmed end to end on 2026-08-20 — planted in a
+   * shipped source, built, and found in `dist/` — against the first draft,
+   * which anchored the pattern to the start of a line instead of lexing. They
+   * are here so no repair quietly drops one.
+   */
+  it("is not blinded by two string literals carrying the comment tokens", () => {
+    // THE WORST OF THEM, because it defeated every static net at once: the
+    // opener inside the first string began a comment that ran to the closer
+    // inside the third, and the harness deleted the import before any scanner
+    // ran. `withoutComments` is string-aware, so nothing is deleted.
+    const open = "/" + "*";
+    const close = "*" + "/";
+    const source = [
+      'const openTok = "x ' + open + '";',
+      'import { track } from "some-analytics-sdk";',
+      'const closeTok = "z ' + close + '";',
+    ].join("\n");
+    expect(foreignModulesIn(source, [])).toEqual(["some-analytics-sdk"]);
+    expect(withoutComments(source)).toContain("some-analytics-sdk");
+  });
+
+  it("sees an import that does not begin its line", () => {
+    // Legal top-level ES that Vite bundles. The line-start anchor missed it.
+    expect(foreignModulesIn('const a = 1; import { t } from "sdk";', [])).toEqual(["sdk"]);
+  });
+
+  it("sees an import behind any ES whitespace, not just tab and space", () => {
+    // The anchor allowed tab and space only. The WhiteSpace production also
+    // admits these, and every one was silent while the bundler resolved it.
+    for (const code of [0x00a0, 0x000b, 0x000c, 0x2000, 0xfeff]) {
+      const source = String.fromCharCode(code) + 'import "sdk";';
+      expect(foreignModulesIn(source, []), "U+" + code.toString(16)).toEqual(["sdk"]);
+    }
+  });
+
+  it("does not read a docs snippet inside a template literal as an import", () => {
+    // The other half of the same defect: a README, an install block or an i18n
+    // message held in a template is prose. Reporting it names a package that
+    // does not exist and blocks the build, which is how gates earn exemptions.
+    const help = "const help = `\nimport { Button } from \"@acme/ui\";\n`;";
+    expect(foreignModulesIn(help, [])).toEqual([]);
+  });
+
+  it("does not let a traversal segment inherit a declared package", () => {
+    // `react/../evil` does not resolve inside react, so it must not borrow
+    // react's allowance. Resolvers mostly refuse it, but that is the package's
+    // exports map protecting us, not this gate.
+    expect(
+      foreignModulesIn('import x from "react/../evil";', [{ name: "react", why: "t" }]),
+    ).toEqual(["react/../evil"]);
+  });
+
+  it("forgives that package and no other, subpaths included", () => {
+    const allowed = [{ name: "react-dom", why: "test" }];
+    expect(foreignModulesIn('import { createRoot } from "react-dom/client";', allowed)).toEqual([]);
+    expect(foreignModulesIn('import x from "react-dom-tracker";', allowed)).toEqual([
+      "react-dom-tracker",
+    ]);
+    expect(foreignModulesIn('import x from "./local.ts";', allowed)).toEqual([]);
+  });
+
+  it("does not mistake the word `import` inside a string for one", () => {
+    // The works really does have `setStep('import')`, and the first draft of
+    // the scanner read the closing quote as an opening one and reported a
+    // paragraph of JSX as a package. A gate that cries wolf gets an exemption
+    // list, and an exemption list is where the last nine defects came from.
+    expect(foreignModulesIn('const step = "import";\nsetStep("import");', [])).toEqual([]);
+  });
+
+  /*
+   * ── THE CONNECTED-BUILD RELAXATION, DRIVEN AT ITS EDGES (28-T26) ─────────
+   *
+   * `connectedBackend` is the only thing that can widen NET ONE, so it is the
+   * only thing worth trying to beat. These run over the rule itself rather than
+   * over `src/`, so they stay true on a day this studio has no connected build
+   * -- which is every day until the rollout reaches it.
+   */
+  it("declares nothing in a demo build, which is what the marketplace ships", () => {
+    expect(connectedBackend(undefined)).toEqual([]);
+    expect(connectedBackend("")).toEqual([]);
+    expect(connectedBackend("   ")).toEqual([]);
+  });
+
+  it("declares exactly the configured origin, port and all", () => {
+    expect(connectedBackend("https://api.tenant.example.test").map((e) => e.origin)).toEqual([
+      "https://api.tenant.example.test",
+    ]);
+    // A path is normal for a base URL and is not part of the origin. A default
+    // port is NOT dropped, because the inlined literal would still carry it and
+    // both sides of the comparison have to spell the host the same way.
+    expect(
+      connectedBackend("https://api.tenant.example.test:8443/api/v1/public").map((e) => e.origin),
+    ).toEqual(["https://api.tenant.example.test:8443"]);
+  });
+
+  it("forgives that host and no other, so a lookalike is still a finding", () => {
+    const inert = connectedBackend("https://api.tenant.example.test");
+    expect(offendingAddresses('const a = "https://api.tenant.example.test/x";', inert)).toEqual([]);
+    expect(
+      offendingAddresses('const a = "https://api.tenant.example.test.attacker.test/x";', inert),
+    ).toEqual(["https://api.tenant.example.test.attacker.test/x"]);
+    // The whole point of an origin and not a file: the declared backend does
+    // not forgive a beacon that happens to sit in the same source.
+    expect(
+      offendingAddresses('img.src = "https://tracking.example-analytics.net/p";', inert),
+    ).toEqual(["https://tracking.example-analytics.net/p"]);
+  });
+
+  it("declares nothing when the value is not exactly one address, so it fails closed", () => {
+    // A half-written value must not quietly widen the net. Each of these leaves
+    // the inlined literal to be reported, which is the loud outcome.
+    for (const bad of ["not a url", "/api/v1/public", "https://a.test https://b.test", "https://"]) {
+      expect(connectedBackend(bad), bad).toEqual([]);
+    }
   });
 
   it("read something, so an empty result is never a pass", () => {
@@ -844,6 +1031,27 @@ describe("secrets are server-only (24 D15)", () => {
         !/\.test\.tsx?$/.test(file.rel) &&
         !file.rel.endsWith("add-on-facts.ts") &&
         needles.some((needle) => file.code.includes(needle.text)),
+    );
+    expect(offenders.map((file) => file.rel)).toEqual([]);
+  });
+
+  /*
+   * ── AND NEITHER DID IT GATE `testing/` ITSELF, WHICH IS THE SAME SHAPE ────
+   *
+   * [Added 2026-08-20 with the vendored manifest validator.] The works has held
+   * this rule since round 1 and this studio never had it. It only started to
+   * MATTER when `src/testing/manifest/` arrived here: that directory imports
+   * `zod`, which is a devDependency and a runtime dependency the host does not
+   * carry (24 D7), so one import from a screen would put a validator — and a
+   * package the customer's browser never loads — into the shipped bundle.
+   *
+   * The vendored barrel's own header claims this test exists. It is asserted
+   * here so that claim is true rather than aspirational, which is the whole
+   * argument the block above makes about porting a gate instead of assuming it.
+   */
+  it("never lets shipped code reach the test-only directory, or zod", () => {
+    const offenders = SHIPPED.filter((file) =>
+      /from ['"][^'"]*\/testing\/|from ['"]zod['"]/.test(file.code),
     );
     expect(offenders.map((file) => file.rel)).toEqual([]);
   });
