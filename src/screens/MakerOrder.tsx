@@ -490,7 +490,8 @@ export function ProofsScreen() {
       <div className="br-section-head">
         <div>
           <h1 className="br-h1">{t("bench.proofs.title")}</h1>
-          <p className="br-lede">
+          <p className="br-lede">{t("bench.proofs.sub")}</p>
+          <p className="br-lede br-lede--tight">
             {t("bench.proofs.count", { waiting: waiting.length, unsent: unsent.length })}
           </p>
         </div>
@@ -614,6 +615,7 @@ export function PostRunScreen() {
           <div>
             <h1 className="br-h1">{t("bench.post.title")}</h1>
             <p className="br-lede">{day(today)}</p>
+            <p className="br-lede br-lede--tight">{t("bench.post.sub")}</p>
           </div>
         </div>
         <EmptyState title={t("bench.post.empty")} body={t("bench.post.emptyBody")} />
@@ -629,6 +631,7 @@ export function PostRunScreen() {
         <div>
           <h1 className="br-h1">{t("bench.post.title")}</h1>
           <p className="br-lede">{day(today)}</p>
+          <p className="br-lede br-lede--tight">{t("bench.post.sub")}</p>
         </div>
         <Mono className="br-runsummary">
           {t(
@@ -692,6 +695,12 @@ export function PostRunScreen() {
           <Truck size={16} aria-hidden="true" />
           {t("bench.post.markRun")}
         </button>
+        {/* Everything on the list is packed, so the run is a bag and a walk.
+            Saying so beside the button is the difference between a screen that
+            tracks work and one that tells you the work is over. */}
+        {packed.length === rows.length && (
+          <span className="br-actionbar-note">{t("bench.post.allDone")}</span>
+        )}
       </div>
     </section>
   );
@@ -732,7 +741,8 @@ export function CustomersScreen() {
       <div className="br-section-head">
         <div>
           <h1 className="br-h1">{t("bench.customers.title")}</h1>
-          <p className="br-lede">{t("bench.customers.pick")}</p>
+          <p className="br-lede">{t("bench.customers.sub")}</p>
+          <p className="br-lede br-lede--tight">{t("bench.customers.pick")}</p>
         </div>
       </div>
 

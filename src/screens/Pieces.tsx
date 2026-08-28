@@ -66,7 +66,6 @@ export function PiecesScreen() {
           <thead>
             <tr>
               <th>{t("bench.pieces.col.piece")}</th>
-              <th className="br-wide-only">{t("bench.pieces.col.material")}</th>
               <th className="br-wide-only">{t("bench.pieces.col.size")}</th>
               <th className="br-num">{t("bench.pieces.col.price")}</th>
               <th className="br-num br-wide-only">{t("bench.pieces.col.lead")}</th>
@@ -91,14 +90,13 @@ export function PiecesScreen() {
                         <div className="br-line-name">
                           {t(`data.product.${product.key}.name` as never)}
                         </div>
-                        {personalizeOn[product.key] === true && (
-                          <div className="br-muted">{t("bench.pieces.takesPersonal")}</div>
-                        )}
+                        <div className="br-muted">
+                          {t(`data.material.${product.material}.name` as never)}
+                          {personalizeOn[product.key] === true &&
+                            ` · ${t("bench.pieces.personalTag")}`}
+                        </div>
                       </div>
                     </div>
-                  </td>
-                  <td className="br-wide-only">
-                    {t(`data.material.${product.material}.name` as never)}
                   </td>
                   <td className="br-wide-only">
                     <Mono>{mm(size.widthMm, size.heightMm)}</Mono>

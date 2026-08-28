@@ -67,7 +67,7 @@ export function MaterialsScreen() {
         <table className="br-table">
           <thead>
             <tr>
-              <th>{t("bench.materials.title")}</th>
+              <th>{t("bench.materials.col.material")}</th>
               <th className="br-num">{t("bench.materials.col.onHand")}</th>
               <th className="br-num">{t("bench.materials.col.committed")}</th>
               <th className="br-num">{t("bench.materials.col.spare")}</th>
@@ -240,7 +240,7 @@ export function StockCountScreen() {
         <table className="br-table">
           <thead>
             <tr>
-              <th>{t("bench.materials.title")}</th>
+              <th>{t("bench.materials.col.material")}</th>
               <th className="br-num">{t("bench.count.book")}</th>
               <th className="br-num">{t("bench.count.counted")}</th>
               <th className="br-num" />

@@ -60,6 +60,9 @@ export const screens = {
     "screen.product.personal.counter": "{used} / {limit}",
     "screen.product.personal.over":
       "That is {over} characters over. We can cut it, but the letters get small — take a few out, or tell us to set them smaller.",
+    "screen.product.limit.title": "That line is too long to cut",
+    "screen.product.limit.body": "Past the limit the letters get too fine for the laser and they chip. Shorten it, or leave a note asking us to set it smaller and we'll write back before we cut.",
+    "screen.product.limit.cta": "Let me shorten it",
     "screen.product.personal.proof": "We'll send you a picture to approve before we make it.",
     "screen.product.facts.madeFrom": "MADE FROM",
     "screen.product.facts.size": "FINISHED SIZE",
@@ -309,6 +312,9 @@ export const screens = {
     "screen.product.personal.counter": "{used} / {limit}",
     "screen.product.personal.over":
       "Das sind {over} Zeichen zu viel. Wir können es schneiden, aber die Buchstaben werden klein — nimm ein paar heraus oder sag uns, wir sollen kleiner setzen.",
+    "screen.product.limit.title": "Diese Zeile ist zu lang zum Schneiden",
+    "screen.product.limit.body": "Über der Grenze werden die Buchstaben zu fein für den Laser und brechen aus. Kürze sie, oder schreib uns eine Notiz, dass wir sie kleiner setzen sollen — wir melden uns, bevor wir schneiden.",
+    "screen.product.limit.cta": "Ich kürze sie",
     "screen.product.personal.proof": "Wir schicken dir vorher ein Bild zur Freigabe.",
     "screen.product.facts.madeFrom": "GEMACHT AUS",
     "screen.product.facts.size": "FERTIGE GRÖSSE",
@@ -550,6 +556,9 @@ export const screens = {
     "screen.product.personal.counter": "{used} / {limit}",
     "screen.product.personal.over":
       "Cela dépasse de {over} caractères. Nous pouvons le graver, mais les lettres deviennent petites — enlevez-en quelques-uns, ou demandez-nous de graver plus petit.",
+    "screen.product.limit.title": "Cette ligne est trop longue à graver",
+    "screen.product.limit.body": "Au-delà de la limite, les lettres deviennent trop fines pour le laser et s'écaillent. Raccourcissez, ou laissez-nous un mot pour qu'on les mette plus petites — on vous répond avant de graver.",
+    "screen.product.limit.cta": "Je vais la raccourcir",
     "screen.product.personal.proof": "Nous vous enverrons une image à valider avant de le faire.",
     "screen.product.facts.madeFrom": "FAIT DE",
     "screen.product.facts.size": "TAILLE FINIE",
@@ -790,6 +799,9 @@ export const screens = {
     "screen.product.personal.counter": "{used} / {limit}",
     "screen.product.personal.over":
       "To je o {over} znaků víc. Vyřezat to umíme, ale písmena budou drobná — pár jich uberte, nebo nám řekněte, ať je vysázíme menší.",
+    "screen.product.limit.title": "Tenhle řádek je na řezání moc dlouhý",
+    "screen.product.limit.body": "Za hranicí jsou písmena na laser moc jemná a vydrolí se. Zkrať to, nebo nám napiš, ať je vysadíme menší — ozveme se dřív, než začneme řezat.",
+    "screen.product.limit.cta": "Zkrátím to",
     "screen.product.personal.proof": "Než to uděláme, pošleme vám obrázek ke schválení.",
     "screen.product.facts.madeFrom": "Z ČEHO JE",
     "screen.product.facts.size": "HOTOVÝ ROZMĚR",
@@ -1026,6 +1038,9 @@ export const screens = {
     "screen.product.personal.counter": "{used} / {limit}",
     "screen.product.personal.over":
       "Det er {over} tegn for meget. Vi kan godt skære det, men bogstaverne bliver små — tag et par ud, eller bed os om at sætte dem mindre.",
+    "screen.product.limit.title": "Den linje er for lang at skære",
+    "screen.product.limit.body": "Over grænsen bliver bogstaverne for fine til laseren, og de skaller. Gør den kortere, eller skriv en note om, at vi skal sætte dem mindre — vi vender tilbage, før vi skærer.",
+    "screen.product.limit.cta": "Jeg gør den kortere",
     "screen.product.personal.proof": "Vi sender dig et billede til godkendelse, før vi går i gang.",
     "screen.product.facts.madeFrom": "LAVET AF",
     "screen.product.facts.size": "FÆRDIGT MÅL",
@@ -1262,6 +1277,9 @@ export const screens = {
     "screen.product.personal.counter": "{used} / {limit}",
     "screen.product.personal.over":
       "超出了 {over} 个字符。我们也能刻，但字会变小——删掉几个，或者让我们刻小一号。",
+    "screen.product.limit.title": "这一行太长，刻不下",
+    "screen.product.limit.body": "超过上限，笔画对激光来说太细，会崩口。删短一点，或者留个话让我们刻小些——动手之前我们会先回复你。",
+    "screen.product.limit.cta": "我改短一点",
     "screen.product.personal.proof": "动手之前我们会先发一张图给你确认。",
     "screen.product.facts.madeFrom": "用什么做的",
     "screen.product.facts.size": "成品尺寸",
@@ -1487,6 +1505,9 @@ export const screens = {
     "screen.product.personal.counter": "{used} / {limit}",
     "screen.product.personal.over":
       "超出了 {over} 個字元。我們也能刻，但字會變小——刪掉幾個，或者讓我們刻小一號。",
+    "screen.product.limit.title": "這一行太長，刻不下",
+    "screen.product.limit.body": "超過上限，筆畫對雷射來說太細，會崩口。刪短一點，或者留個話讓我們刻小些——動手之前我們會先回覆你。",
+    "screen.product.limit.cta": "我改短一點",
     "screen.product.personal.proof": "動手之前我們會先發一張圖給你確認。",
     "screen.product.facts.madeFrom": "用什麼做的",
     "screen.product.facts.size": "成品尺寸",
@@ -1711,6 +1732,9 @@ export const screens = {
     "screen.product.personal.counter": "{used} / {limit}",
     "screen.product.personal.over":
       "زاد {over} حرفًا. نستطيع نقشها، لكن الحروف تصغر — احذف بعضها، أو اطلب منا نقشها أصغر.",
+    "screen.product.limit.title": "هذا السطر أطول من أن يُنقش",
+    "screen.product.limit.body": "بعد الحد تصير الحروف أدقّ من أن يتحمّلها الليزر فتتشظّى. اختصرها، أو اترك لنا ملاحظة لنضبطها أصغر — وسنردّ عليك قبل أن نبدأ النقش.",
+    "screen.product.limit.cta": "سأختصرها",
     "screen.product.personal.proof": "سنرسل لك صورة للموافقة قبل أن نصنعها.",
     "screen.product.facts.madeFrom": "مصنوعة من",
     "screen.product.facts.size": "المقاس النهائي",

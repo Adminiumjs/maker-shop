@@ -124,18 +124,24 @@ export function Overlays() {
     <>
       <div className="br-modal-scrim" onClick={closeOverlay} aria-hidden="true" />
       <div className="br-modal br-modal--narrow" role="dialog" aria-modal="true">
+        {/* Its own title and its own way out. Headed "Make it yours" it read
+            as the panel behind it rather than as the refusal it is, and a
+            "Close" button says nothing about what the shopper should do next. */}
         <div className="br-modal-head">
           <TriangleAlert size={18} aria-hidden="true" style={{ color: "var(--danger)" }} />
-          <span>{t("screen.product.personal.title")}</span>
+          <span>{t("screen.product.limit.title")}</span>
         </div>
         <div className="br-modal-body">
           <p style={{ margin: 0, lineHeight: 1.6 }}>
             {t("screen.product.personal.over", { over })}
           </p>
+          <p style={{ margin: "10px 0 0", lineHeight: 1.6, color: "var(--fg-muted)" }}>
+            {t("screen.product.limit.body")}
+          </p>
         </div>
         <div className="br-modal-foot">
           <button type="button" className="br-button" onClick={closeOverlay}>
-            {t("common.close")}
+            {t("screen.product.limit.cta")}
           </button>
         </div>
       </div>

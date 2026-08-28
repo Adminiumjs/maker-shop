@@ -33,13 +33,14 @@ export const chrome = {
 
     "brand.name": "Birch Row",
     "brand.tagline": "MADE TO ORDER · TUE–SAT",
+    "brand.workshop": "WORKSHOP",
 
     "nav.shop": "Shop",
     "nav.order": "Your order",
     "nav.about": "About us",
     "nav.today": "Today",
     "nav.orders": "Orders",
-    "nav.pieces": "Pieces",
+    "nav.pieces": "Products",
     "nav.materials": "Materials",
 
     "header.search": "Look for a piece",
@@ -49,6 +50,9 @@ export const chrome = {
     "theme.toLight": "Switch to light",
 
     "dock.label": "Demo controls",
+    "dock.collapse": "Put the demo controls away",
+    "dock.expand": "Bring the demo controls back",
+    "dock.short": "DEMO",
     "dock.shopper": "Shopper",
     "dock.maker": "Maker",
     "dock.clockTitle": "The studio clock is pinned. Press to put it back.",
@@ -61,6 +65,7 @@ export const chrome = {
     "footer.reorder": "Order again",
     "footer.ask": "Ask us for something",
     "footer.wrong": "If something's wrong",
+    "footer.oldList": "Last year's list",
 
     "toast.dayAdvanced": "Studio clock moved to {day}.",
     "toast.clockReset": "Clock back to {day}.",
@@ -83,6 +88,8 @@ export const chrome = {
     "gate.noProofSent": "Not yet — the picture hasn't been sent to {customer}.",
 
     "bench.title": "The bench",
+    "bench.calendar.title": "STUDIO CALENDAR",
+    "bench.calendar.body": "Tuesday to Saturday. Closed Sunday and Monday.",
 
     "notFound.code": "404",
     "notFound.title": "Nothing on this bench",
@@ -99,13 +106,14 @@ export const chrome = {
 
     "brand.name": "Birch Row",
     "brand.tagline": "AUF BESTELLUNG · DI–SA",
+    "brand.workshop": "WERKSTATT",
 
     "nav.shop": "Laden",
     "nav.order": "Deine Bestellung",
     "nav.about": "Über uns",
     "nav.today": "Heute",
     "nav.orders": "Bestellungen",
-    "nav.pieces": "Stücke",
+    "nav.pieces": "Produkte",
     "nav.materials": "Material",
 
     "header.search": "Nach einem Stück suchen",
@@ -115,6 +123,9 @@ export const chrome = {
     "theme.toLight": "Auf Hell umschalten",
 
     "dock.label": "Demo-Steuerung",
+    "dock.collapse": "Die Demo-Steuerung wegräumen",
+    "dock.expand": "Die Demo-Steuerung zurückholen",
+    "dock.short": "DEMO",
     "dock.shopper": "Kundin",
     "dock.maker": "Werkstatt",
     "dock.clockTitle": "Die Werkstattuhr steht fest. Drücken, um sie zurückzusetzen.",
@@ -127,6 +138,7 @@ export const chrome = {
     "footer.reorder": "Noch einmal bestellen",
     "footer.ask": "Frag uns nach etwas",
     "footer.wrong": "Wenn etwas nicht stimmt",
+    "footer.oldList": "Die Liste vom letzten Jahr",
 
     "toast.dayAdvanced": "Werkstattuhr steht jetzt auf {day}.",
     "toast.clockReset": "Uhr zurück auf {day}.",
@@ -151,6 +163,8 @@ export const chrome = {
     "gate.noProofSent": "Noch nicht — das Bild ist noch nicht an {customer} raus.",
 
     "bench.title": "Die Werkbank",
+    "bench.calendar.title": "WERKSTATTKALENDER",
+    "bench.calendar.body": "Dienstag bis Samstag. Sonntag und Montag geschlossen.",
 
     "notFound.code": "404",
     "notFound.title": "Auf dieser Werkbank liegt nichts",
@@ -167,13 +181,14 @@ export const chrome = {
 
     "brand.name": "Birch Row",
     "brand.tagline": "FAIT SUR COMMANDE · MAR–SAM",
+    "brand.workshop": "ATELIER",
 
     "nav.shop": "Boutique",
     "nav.order": "Votre commande",
     "nav.about": "À propos",
     "nav.today": "Aujourd'hui",
     "nav.orders": "Commandes",
-    "nav.pieces": "Pièces",
+    "nav.pieces": "Produits",
     "nav.materials": "Matières",
 
     "header.search": "Chercher une pièce",
@@ -183,6 +198,9 @@ export const chrome = {
     "theme.toLight": "Passer en clair",
 
     "dock.label": "Commandes de la démo",
+    "dock.collapse": "Ranger les commandes de démo",
+    "dock.expand": "Ramener les commandes de démo",
+    "dock.short": "DÉMO",
     "dock.shopper": "Client",
     "dock.maker": "Atelier",
     "dock.clockTitle": "L'horloge de l'atelier est figée. Appuyez pour la remettre.",
@@ -195,6 +213,7 @@ export const chrome = {
     "footer.reorder": "Commander à nouveau",
     "footer.ask": "Demandez-nous quelque chose",
     "footer.wrong": "Si quelque chose ne va pas",
+    "footer.oldList": "La liste de l'an dernier",
 
     "toast.dayAdvanced": "L'horloge de l'atelier est passée au {day}.",
     "toast.clockReset": "Horloge remise au {day}.",
@@ -218,6 +237,8 @@ export const chrome = {
     "gate.noProofSent": "Pas encore — l'image n'est pas partie chez {customer}.",
 
     "bench.title": "L'établi",
+    "bench.calendar.title": "CALENDRIER DE L'ATELIER",
+    "bench.calendar.body": "Du mardi au samedi. Fermé dimanche et lundi.",
 
     "notFound.code": "404",
     "notFound.title": "Rien sur cet établi",
@@ -234,13 +255,14 @@ export const chrome = {
 
     "brand.name": "Birch Row",
     "brand.tagline": "DĚLÁME NA OBJEDNÁVKU · ÚT–SO",
+    "brand.workshop": "DÍLNA",
 
     "nav.shop": "Obchod",
     "nav.order": "Vaše objednávka",
     "nav.about": "O nás",
     "nav.today": "Dnešek",
     "nav.orders": "Objednávky",
-    "nav.pieces": "Kousky",
+    "nav.pieces": "Produkty",
     "nav.materials": "Materiál",
 
     "header.search": "Najít kousek",
@@ -250,6 +272,9 @@ export const chrome = {
     "theme.toLight": "Přepnout na světlý režim",
 
     "dock.label": "Ovládání ukázky",
+    "dock.collapse": "Schovat ovládání ukázky",
+    "dock.expand": "Vrátit ovládání ukázky",
+    "dock.short": "UKÁZKA",
     "dock.shopper": "Zákazník",
     "dock.maker": "Dílna",
     "dock.clockTitle": "Dílenské hodiny stojí. Stiskem je vrátíte zpět.",
@@ -262,6 +287,7 @@ export const chrome = {
     "footer.reorder": "Objednat znovu",
     "footer.ask": "Zeptejte se nás na něco",
     "footer.wrong": "Když něco nesedí",
+    "footer.oldList": "Loňský seznam",
 
     "toast.dayAdvanced": "Dílenské hodiny se posunuly na {day}.",
     "toast.clockReset": "Hodiny zpátky na {day}.",
@@ -285,6 +311,8 @@ export const chrome = {
     "gate.noProofSent": "Ještě ne — obrázek zatím nešel k zákazníkovi {customer}.",
 
     "bench.title": "Ponk",
+    "bench.calendar.title": "KALENDÁŘ DÍLNY",
+    "bench.calendar.body": "Úterý až sobota. V neděli a v pondělí zavřeno.",
 
     "notFound.code": "404",
     "notFound.title": "Na tomhle ponku nic není",
@@ -301,13 +329,14 @@ export const chrome = {
 
     "brand.name": "Birch Row",
     "brand.tagline": "LAVES PÅ BESTILLING · TIR–LØR",
+    "brand.workshop": "VÆRKSTED",
 
     "nav.shop": "Butik",
     "nav.order": "Din ordre",
     "nav.about": "Om os",
     "nav.today": "I dag",
     "nav.orders": "Ordrer",
-    "nav.pieces": "Stykker",
+    "nav.pieces": "Produkter",
     "nav.materials": "Materialer",
 
     "header.search": "Søg efter et stykke",
@@ -317,6 +346,9 @@ export const chrome = {
     "theme.toLight": "Skift til lys",
 
     "dock.label": "Demo-knapper",
+    "dock.collapse": "Læg demo-knapperne væk",
+    "dock.expand": "Hent demo-knapperne frem",
+    "dock.short": "DEMO",
     "dock.shopper": "Kunde",
     "dock.maker": "Værksted",
     "dock.clockTitle": "Værkstedsuret står fast. Tryk for at sætte det tilbage.",
@@ -329,6 +361,7 @@ export const chrome = {
     "footer.reorder": "Bestil igen",
     "footer.ask": "Spørg os om noget",
     "footer.wrong": "Hvis noget er galt",
+    "footer.oldList": "Sidste års liste",
 
     "toast.dayAdvanced": "Værkstedsuret er rykket til {day}.",
     "toast.clockReset": "Uret tilbage til {day}.",
@@ -352,6 +385,8 @@ export const chrome = {
     "gate.noProofSent": "Ikke endnu — billedet er ikke sendt til {customer}.",
 
     "bench.title": "Værkstedsbordet",
+    "bench.calendar.title": "VÆRKSTEDETS KALENDER",
+    "bench.calendar.body": "Tirsdag til lørdag. Lukket søndag og mandag.",
 
     "notFound.code": "404",
     "notFound.title": "Der ligger ingenting på dette bord",
@@ -368,13 +403,14 @@ export const chrome = {
 
     "brand.name": "Birch Row",
     "brand.tagline": "接单后现做 · 周二至周六",
+    "brand.workshop": "工坊",
 
     "nav.shop": "店铺",
     "nav.order": "你的订单",
     "nav.about": "关于我们",
     "nav.today": "今天",
     "nav.orders": "订单",
-    "nav.pieces": "作品",
+    "nav.pieces": "产品",
     "nav.materials": "材料",
 
     "header.search": "找一件作品",
@@ -384,6 +420,9 @@ export const chrome = {
     "theme.toLight": "切换到浅色",
 
     "dock.label": "演示控制",
+    "dock.collapse": "收起演示控件",
+    "dock.expand": "重新打开演示控件",
+    "dock.short": "演示",
     "dock.shopper": "顾客",
     "dock.maker": "工坊",
     "dock.clockTitle": "工坊时钟是固定的。按一下可以调回去。",
@@ -396,6 +435,7 @@ export const chrome = {
     "footer.reorder": "再订一次",
     "footer.ask": "跟我们提个要求",
     "footer.wrong": "如果哪里不对",
+    "footer.oldList": "去年的清单",
 
     "toast.dayAdvanced": "工坊时钟已拨到 {day}。",
     "toast.clockReset": "时钟已调回 {day}。",
@@ -418,6 +458,8 @@ export const chrome = {
     "gate.noProofSent": "还不行——那张图还没发给 {customer}。",
 
     "bench.title": "工作台",
+    "bench.calendar.title": "工坊日历",
+    "bench.calendar.body": "周二至周六。周日和周一休息。",
 
     "notFound.code": "404",
     "notFound.title": "这张工作台上什么都没有",
@@ -433,13 +475,14 @@ export const chrome = {
 
     "brand.name": "Birch Row",
     "brand.tagline": "接單後現做 · 週二至週六",
+    "brand.workshop": "工坊",
 
     "nav.shop": "店鋪",
     "nav.order": "你的訂單",
     "nav.about": "關於我們",
     "nav.today": "今天",
     "nav.orders": "訂單",
-    "nav.pieces": "作品",
+    "nav.pieces": "產品",
     "nav.materials": "材料",
 
     "header.search": "找一件作品",
@@ -449,6 +492,9 @@ export const chrome = {
     "theme.toLight": "切換到淺色",
 
     "dock.label": "示範控制",
+    "dock.collapse": "收起示範控制項",
+    "dock.expand": "重新開啟示範控制項",
+    "dock.short": "示範",
     "dock.shopper": "顧客",
     "dock.maker": "工坊",
     "dock.clockTitle": "工坊時鐘是固定的。按一下可以調回去。",
@@ -461,6 +507,7 @@ export const chrome = {
     "footer.reorder": "再訂一次",
     "footer.ask": "跟我們提個要求",
     "footer.wrong": "如果哪裡不對",
+    "footer.oldList": "去年的清單",
 
     "toast.dayAdvanced": "工坊時鐘已撥到 {day}。",
     "toast.clockReset": "時鐘已調回 {day}。",
@@ -483,6 +530,8 @@ export const chrome = {
     "gate.noProofSent": "還不行——那張圖還沒發給 {customer}。",
 
     "bench.title": "工作檯",
+    "bench.calendar.title": "工坊日曆",
+    "bench.calendar.body": "週二至週六。週日與週一休息。",
 
     "notFound.code": "404",
     "notFound.title": "這張工作檯上什麼都沒有",
@@ -498,13 +547,14 @@ export const chrome = {
 
     "brand.name": "Birch Row",
     "brand.tagline": "يُصنع بعد الطلب · الثلاثاء–السبت",
+    "brand.workshop": "الورشة",
 
     "nav.shop": "المتجر",
     "nav.order": "طلبك",
     "nav.about": "من نحن",
     "nav.today": "اليوم",
     "nav.orders": "الطلبات",
-    "nav.pieces": "القطع",
+    "nav.pieces": "المنتجات",
     "nav.materials": "الخامات",
 
     "header.search": "ابحث عن قطعة",
@@ -514,6 +564,9 @@ export const chrome = {
     "theme.toLight": "التحويل إلى الفاتح",
 
     "dock.label": "أدوات العرض",
+    "dock.collapse": "إخفاء أدوات العرض",
+    "dock.expand": "إعادة أدوات العرض",
+    "dock.short": "عرض",
     "dock.shopper": "المشتري",
     "dock.maker": "الورشة",
     "dock.clockTitle": "ساعة الورشة مثبتة. اضغط لإعادتها.",
@@ -526,6 +579,7 @@ export const chrome = {
     "footer.reorder": "اطلبها مرة أخرى",
     "footer.ask": "اطلب منا شيئًا",
     "footer.wrong": "إذا كان هناك خطأ",
+    "footer.oldList": "قائمة العام الماضي",
 
     "toast.dayAdvanced": "انتقلت ساعة الورشة إلى {day}.",
     "toast.clockReset": "عادت الساعة إلى {day}.",
@@ -548,6 +602,8 @@ export const chrome = {
     "gate.noProofSent": "ليس بعد — لم تُرسل الصورة إلى {customer}.",
 
     "bench.title": "طاولة العمل",
+    "bench.calendar.title": "تقويم الورشة",
+    "bench.calendar.body": "من الثلاثاء إلى السبت. مغلق الأحد والاثنين.",
 
     "notFound.code": "404",
     "notFound.title": "لا شيء على هذه الطاولة",

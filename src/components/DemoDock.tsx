@@ -11,10 +11,23 @@
  *
  * The dock is fixed, and it MUST NOT COVER A PRIMARY ACTION (rule 1 of the
  * comp's four layout rules): a piece's page keeps "Add to basket" low on a
- * narrow viewport, so the dock lifts clear of it rather than sitting on top.
+ * narrow viewport, so the dock lifts clear of it rather than sitting on top, it
+ * disappears entirely while a sheet or drawer is open, and it collapses to a
+ * single corner chip for anyone who would rather look at the shop than at the
+ * controls for the shop.
  */
 
-import { Blocks, Clock, FastForward, Globe, Moon, Sun } from "lucide-react";
+import {
+  Blocks,
+  ChevronRight,
+  Clock,
+  FastForward,
+  Globe,
+  Moon,
+  SlidersHorizontal,
+  Sun,
+} from "lucide-react";
+import { useState } from "react";
 
 import { DEMO_KEYS } from "../add-ons/registry.ts";
 import { LOCALES, LOCALE_TAGS, useI18n, useT } from "../i18n/index.tsx";
@@ -109,6 +122,33 @@ export function DemoDock() {
   const lifted = view === "product" || view === "checkout";
   const hidden = overlay.kind !== "none";
 
+  /*
+   * AND IT CAN BE PUT AWAY.
+   *
+   * `lifted` and `hidden` move the dock off a primary action; neither helps on
+   * a phone, where six controls in a fixed bar own a fifth of the viewport
+   * whatever they are sitting over. Collapsed it is one chip in the corner, and
+   * the state is local because it is a preference about looking at the demo,
+   * not a fact about the shop.
+   */
+  const [open, setOpen] = useState(true);
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        className="br-dock br-dock--shut br-btn"
+        data-hidden={hidden}
+        title={t("dock.expand")}
+        aria-label={t("dock.expand")}
+        onClick={() => setOpen(true)}
+      >
+        <SlidersHorizontal size={14} aria-hidden="true" />
+        <span className="br-dock-short">{t("dock.short")}</span>
+      </button>
+    );
+  }
+
   return (
     <div
       className="br-dock"
@@ -191,6 +231,16 @@ export function DemoDock() {
       })}
 
       <ThemeToggle />
+
+      <button
+        type="button"
+        className="br-iconbtn"
+        title={t("dock.collapse")}
+        aria-label={t("dock.collapse")}
+        onClick={() => setOpen(false)}
+      >
+        <ChevronRight size={15} aria-hidden="true" className="br-dock-away" />
+      </button>
     </div>
   );
 }

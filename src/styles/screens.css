@@ -1383,6 +1383,7 @@
 [dir="rtl"] .br-fact-key,
 [dir="rtl"] .br-cal-dow,
 [dir="rtl"] .br-brand-tag,
+[dir="rtl"] .br-sidebar-note-title,
 [dir="rtl"] .br-eyebrow,
 [dir="rtl"] .br-hints-label {
   letter-spacing: normal;
@@ -1549,6 +1550,11 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
+}
+.br-actionbar-note {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--pos);
 }
 .br-actionbar--tight {
   gap: 8px;

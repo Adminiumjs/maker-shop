@@ -30,6 +30,7 @@ import {
 import type { ReactNode } from "react";
 
 import { useT } from "../i18n/index.tsx";
+import { STUDIO } from "../data/demo.ts";
 import { PRODUCTS } from "../lib/catalogue.ts";
 import { useStore, type MakerView, type ShopperView } from "../state/store.ts";
 import { LocalePicker, ThemeToggle } from "./DemoDock.tsx";
@@ -97,7 +98,10 @@ function Brand({ onClick, small = false }: { onClick: () => void; small?: boolea
         <span className="br-brand-name" style={small ? { fontSize: 14.5 } : undefined}>
           {t("brand.name")}
         </span>
-        {!small && <span className="br-brand-tag">{t("brand.tagline")}</span>}
+        {/* Two shells, two second lines. The shop tells a shopper what kind of
+            shop it is; the bench says which half of the app they are on, which
+            is the only thing a maker needs from a wordmark. */}
+        <span className="br-brand-tag">{small ? t("brand.workshop") : t("brand.tagline")}</span>
       </span>
     </button>
   );
@@ -189,6 +193,17 @@ function ShopperFooter() {
               {t(link.key as never)}
             </button>
           ))}
+          {/* A dead link on purpose: last year's catalogue is gone, and this is
+              the one route in the shop that reaches the 404 the way a shopper
+              actually would — from an old link rather than a typed URL. */}
+          <button
+            type="button"
+            className="br-footer-link"
+            aria-current={view === "404" ? "page" : undefined}
+            onClick={() => go("404")}
+          >
+            {t("footer.oldList")}
+          </button>
         </nav>
         <span className="br-footer-note">{t("footer.line")}</span>
         {/* Not a translated string: it is a URL, and it is the same one in
@@ -226,7 +241,13 @@ export function MakerShell({ children }: { children: ReactNode }) {
             </button>
           ))}
         </nav>
-        <div className="br-sidebar-note">{t("brand.tagline")}</div>
+        {/* The studio week, stated where a maker looks for it. Every ship-by
+            chip on every screen is counted against these two shut days, so the
+            calendar belongs in the chrome rather than on one screen. */}
+        <div className="br-sidebar-note">
+          <span className="br-sidebar-note-title">{t("bench.calendar.title")}</span>
+          <span>{t("bench.calendar.body")}</span>
+        </div>
       </aside>
 
       <div className="br-shop-body">
@@ -244,11 +265,32 @@ export function MakerShell({ children }: { children: ReactNode }) {
           <div style={{ marginInlineStart: "auto", display: "flex", alignItems: "center", gap: 9 }}>
             <LocalePicker />
             <ThemeToggle />
+            <MakerChip />
           </div>
         </header>
         <main className="br-shop-main">{children}</main>
       </div>
     </div>
+  );
+}
+
+/**
+ * Who is at the bench.
+ *
+ * A name and an initial, and nothing behind it — there is no sign-in in this
+ * app and inventing a menu that logs nobody out would be worse than the plain
+ * chip the comp draws. `STUDIO.makers[0]` rather than a message key because a
+ * person's name is the same in eight languages.
+ */
+function MakerChip() {
+  const name = STUDIO.makers[0] ?? "";
+  return (
+    <span className="br-makerchip">
+      <span className="br-makerchip-mark" aria-hidden="true">
+        {name.slice(0, 1)}
+      </span>
+      <span className="br-makerchip-name">{name}</span>
+    </span>
   );
 }
 
