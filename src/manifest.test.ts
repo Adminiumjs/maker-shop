@@ -200,7 +200,18 @@ describe("it is the app this wave says it is", () => {
   it("names no slot — a host HOSTS slots, it does not fill them", () => {
     expect(manifest).not.toHaveProperty("slots");
     expect(manifest).not.toHaveProperty("addOn");
-    expect(HOSTED_SLOTS.length).toBe(9);
+    /*
+     * The count is here as the guard on the two absences above: a manifest that
+     * declared nothing because this app had stopped hosting anything would
+     * satisfy them perfectly.
+     *
+     * [Amended 2026-08-28, 31-T11.] Nine became TEN with `record.actions`,
+     * mounted at the foot of a piece's own screen. The number is deliberately
+     * written out rather than compared to itself, so a mount that disappears is
+     * a failure here and a mount that is ADDED is a decision somebody records —
+     * which is the whole of what this line is for.
+     */
+    expect(HOSTED_SLOTS.length).toBe(10);
   });
 });
 

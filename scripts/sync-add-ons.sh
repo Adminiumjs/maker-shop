@@ -103,7 +103,7 @@ VENDOR="$HOST/src/add-ons/vendor"
 # For an add-on the target name is its manifest key AND the directory name under
 # vendor/, so a reader who sees `vendor/shipping-dhl/` knows exactly which
 # package to go and read.
-TARGETS=(host personalizer shipping-dhl)
+TARGETS=(host barcode-labels personalizer shipping-dhl)
 
 # The shared contract, vendored ONCE. `testing/` is not here and must not be —
 # it is where the conformance suites and their `zod` validators live, and 24 D7
@@ -137,6 +137,28 @@ FILES_shipping_dhl=(
   i18n/strings.ts i18n/t.ts
   ui/atoms.tsx ui/labels.ts ui/DispatchAction.tsx ui/DeliveryMethods.tsx
   ui/SettingsPanel.tsx ui/TrackingPanel.tsx
+)
+
+# THE SECOND CROSS-APP PROOF, AND THE ONE THAT IS ABOUT A SLOT RATHER THAN AN
+# ADD-ON (24 D21). The delivery add-on above proved a PACKAGE crosses two shops
+# unchanged. This one is vendored into the print works at the same time, and
+# what that pair proves is different: `record.actions` names a SURFACE — the
+# screen where somebody is looking at one record — and not one app's idea of
+# one. A slot with a single host is a feature of that host; a slot with two is
+# a contract. See `src/add-ons/slots.ts` for what this shop mounts it on.
+#
+# NO `test-reset.ts` IN THIS LIST, and its absence is the package's own doing
+# rather than an omission here. Every engine in it takes the shop's saved values
+# as an ARGUMENT — `codeFor(values, sku)`, `assignCode(current, …)` — so there is
+# no module-level state a second render could inherit and nothing for a reset to
+# drop. `testing/tour.tsx` globs whatever is vendored and calls what it finds, so
+# a package with nothing to forget contributes nothing and costs nothing.
+FILES_barcode_labels=(
+  add-on-facts.ts
+  modules.ts ean13.ts code128.ts geometry.ts codes.ts sheet.ts
+  index.ts
+  i18n/strings.ts i18n/t.ts
+  ui/atoms.tsx ui/SettingsPanel.tsx ui/RecordAction.tsx
 )
 
 FILES_personalizer=(

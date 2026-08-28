@@ -1,5 +1,5 @@
 /**
- * The slot registry, and the nine slots THIS app hosts (24 §5.4, D19, §8A).
+ * The slot registry, and the ten slots THIS app hosts (24 §5.4, D19, §8A).
  *
  * A mirror of the closed registry in `@adminium/add-on-contracts`, copied
  * rather than imported for the same reason `styles/tokens.css` and
@@ -8,8 +8,8 @@
  * do not invent one here.
  *
  * TWO LISTS, AND THE DIFFERENCE MATTERS. `SLOT_IDS` is the whole registry:
- * eleven names an add-on is allowed to declare a fill against, whoever hosts
- * them. `HOSTED_SLOTS` is the nine this shop actually mounts. An add-on
+ * twelve names an add-on is allowed to declare a fill against, whoever hosts
+ * them. `HOSTED_SLOTS` is the ten this shop actually mounts. An add-on
  * written for the print works may fill `artwork.sources`; Birch Row does not
  * mount that, so such a fill simply does not render here — which is exactly what D21 claims when it says the same
  * delivery add-on runs in both shops with no change to either repo. A host that
@@ -23,14 +23,26 @@
  * drew it.
  */
 
-/** The closed registry (24 §5.4). Eleven names, and not a twelfth. */
+/** The closed registry (24 §5.4). Twelve names, and not a thirteenth. */
 /*
  * [Amended 2026-08-28, wave 6.] The closed registry is TWELVE.
- * `record.actions` was bought against the dossier in 31 Appendix A.1 and this
- * app does not mount it: nothing here shows one record with an action to take
- * on it that an add-on would want. It is in the list below because the list IS
- * the registry mirror — an id missing from it fails a manifest the registry
- * accepts — and `isHosted` says no, which is the honest pair.
+ * `record.actions` was bought against the dossier in 31 Appendix A.1 and
+ * shipped with no fill and no mount anywhere.
+ *
+ * [Corrected the same day, 31-T11.] The paragraph that stood here said this app
+ * did not mount it, and gave a reason — "nothing here shows one record with an
+ * action to take on it that an add-on would want". That reason was wrong about
+ * this shop's own bench: `screens/Pieces.tsx` is one piece, on its own screen,
+ * looked at by the maker who is about to make it, which is the slot's sentence
+ * exactly. It is hosted and mounted now, and the first add-on to fill it prints
+ * a sheet of labels for the row in front of you.
+ *
+ * The correction is the same shape as `order.dispatch.actions` two waves ago
+ * and worth noticing twice: an id was declared, a reason for not mounting it
+ * was written down, and the reason was a description of what nobody had looked
+ * for rather than of what the app has. `addOns.test.ts` asserted the absence,
+ * which turned it into an invariant — see that file for the pair of assertions
+ * this correction moved.
  */
 export const SLOT_IDS = [
   'artwork.sources',
@@ -50,17 +62,17 @@ export const SLOT_IDS = [
 export type SlotId = (typeof SLOT_IDS)[number];
 
 /**
- * THE NINE THIS SHOP HOSTS (D19, §8A).
+ * THE TEN THIS SHOP HOSTS (D19, §8A).
  *
  * Three of them a shopper meets — the note field on a piece's page, the postage
- * options at the till, and the dispatch panel on their order. FOUR belong to
- * the bench: a piece's own settings, the actions beside a line on an order, and
- * the two on the dispatch end of a live order. And two are the shop's own
- * management of what is plugged in: the panel an add-on renders inside the
- * manage drawer, and a full-screen route in the maker shell for an add-on that
- * needs a whole page.
+ * options at the till, and the dispatch panel on their order. FIVE belong to
+ * the bench: a piece's own settings, the actions on a piece's own screen, the
+ * actions beside a line on an order, and the two on the dispatch end of a live
+ * order. And two are the shop's own management of what is plugged in: the panel
+ * an add-on renders inside the manage drawer, and a full-screen route in the
+ * maker shell for an add-on that needs a whole page.
  *
- * Three plus four plus two is nine, and the arithmetic is written out because
+ * Three plus five plus two is ten, and the arithmetic is written out because
  * the sentence above said "six" and then "eight" for two revisions after the
  * list had stopped agreeing with either.
  *
@@ -82,6 +94,15 @@ export type SlotId = (typeof SLOT_IDS)[number];
  * `addOns.test.ts` asserts every id in this list appears as a `slot="…"`
  * somewhere in `src/`. A slot a host declares and never mounts is worse than an
  * absent one, because an add-on author reads the list and writes code to it.
+ *
+ * [Amended 2026-08-28, wave 6, 31-T11.] `record.actions` is the tenth, and it
+ * is the first id this shop has mounted that the OTHER example app mounts at
+ * the same moment. That pairing is the whole point of it: a slot id is supposed
+ * to name a SURFACE — "the screen where somebody is already looking at one
+ * record" — and an id with exactly one host is indistinguishable from an id
+ * that names that host's own screen. Two hosts, two completely different
+ * screens (a maker's piece here, a works' job there), one payload and one
+ * unchanged package is what makes the claim checkable rather than asserted.
  */
 export const HOSTED_SLOTS = [
   'product.options.personalize',
@@ -91,6 +112,7 @@ export const HOSTED_SLOTS = [
   'order.dispatch.actions',
   'order.line.actions',
   'product.admin.panel',
+  'record.actions',
   'settings.add-on.panel',
   'nav.add-on.routes',
 ] as const satisfies readonly SlotId[];
@@ -101,14 +123,14 @@ export type HostedSlotId = (typeof HOSTED_SLOTS)[number];
  * How a slot behaves when nothing fills it.
  *
  * `speaks` — the host renders a real, honest empty state IN WORDS. THREE of
- * this app's nine do, and each of them has something a person can act on: the
+ * this app's ten do, and each of them has something a person can act on: the
  * note field with its character counter IS the personalization surface until an
  * add-on replaces it (D19); the till says whose postage options those are; and
  * the order says the studio posts everything itself.
  *
  * `silent` — the host renders NOTHING AT ALL. Not a dashed box, not a muted
  * "no add-ons here", not a heading with a gap under it. A dashed placeholder
- * drawn for one of these SIX is THE DEFECT, and their absence is not: the
+ * drawn for one of these SEVEN is THE DEFECT, and their absence is not: the
  * basket line already quotes the shopper's own words back at them, and a maker
  * looking at their own order does not need to be told that a feature they have
  * not bought is not there.
@@ -159,6 +181,32 @@ export const SLOT_EMPTY_BEHAVIOUR: Readonly<Record<HostedSlotId, 'speaks' | 'sil
   'order.dispatch.actions': 'silent',
   'order.line.actions': 'silent',
   'product.admin.panel': 'silent',
+  /*
+   * SILENT, AND THE REASON IS NOT THE ONE THE SLOT'S NAME SUGGESTS.
+   *
+   * `record.actions` is mounted at the foot of a piece's own screen on the
+   * bench (`screens/Pieces.tsx`) — one record, the maker looking at it, things
+   * to do to it. The tempting empty state is a line reading "no add-on offers
+   * anything to do with this piece", and it is exactly the dashed placeholder
+   * D19 bans: it describes an absence rather than a state of the shop, it is
+   * true of every piece forever until somebody buys something, and it goes
+   * stale the instant an add-on IS connected, because it would then sit under
+   * the panel that add-on had just drawn.
+   *
+   * The test the other three silent bench slots pass is what settles it: a
+   * `speaks` empty state has to be a FINISHED THING a person can use, not a
+   * description of what is missing. The note field is one, the postage lines
+   * are one, "we post everything ourselves" is one. There is no host-owned
+   * action on a piece that this slot would be replacing — the studio does not
+   * ship one — so there is nothing for the shop to say in its own voice, and
+   * the honest rendering of nothing to say is nothing.
+   *
+   * IT IS THE LAST THING IN THE SECTION, which is what makes silence cheap
+   * here: with nothing connected the piece screen simply ends after the
+   * personalization panel, exactly as it did before this slot existed (24 D6),
+   * and `slotRender.test.tsx` asserts that nothing at all follows the mount.
+   */
+  'record.actions': 'silent',
   /*
    * SILENT HERE AND SPEAKING IN THE PRINT WORKS, which is not drift.
    *

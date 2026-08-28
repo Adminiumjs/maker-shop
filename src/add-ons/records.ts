@@ -173,6 +173,50 @@ export function hostProduct(product: Product, label: string): HostProduct {
   };
 }
 
+/**
+ * ONE PIECE AS A RECORD, for `record.actions`.
+ *
+ * ── WHY THIS IS NOT `hostProduct` WITH A DIFFERENT NAME ─────────────────────
+ *
+ * `HostProduct` is a shape the seam declares, with named fields a fill reads by
+ * name. `RecordActionsPayload.record` is `Record<string, unknown>` — a bag —
+ * because the slot's whole premise is that its hosts do not share a record
+ * layout: what a works calls a job and what this studio calls a piece have
+ * nothing in common but being one row somebody is looking at. So the payload
+ * carries the row for whatever a fill can honestly do with a bag it did not
+ * design, and carries `recordId` SEPARATELY for the thing every fill needs.
+ *
+ * WHICH IS WHY THE CONTENTS ARE STILL CHOSEN RATHER THAN SPREAD. `...product`
+ * would be the obvious line and it is the same defect the header of this file
+ * exists for, one level looser: `materialKey`, `finishKey`, `leadKind`,
+ * `footprint` and `breaks` would cross into an add-on's repo through a field
+ * nobody typed, and the first add-on to read one would be an add-on that runs
+ * in this shop only — with no compile error anywhere to say so, because a bag
+ * accepts everything. A bag is not permission to empty a drawer into it.
+ *
+ * So it carries the same vocabulary every other mapper here crosses with — a
+ * key, a translated name, what one weighs, how big it is, what it costs — and
+ * the studio's own words stay behind.
+ *
+ * ── AND THE KEY IS THE CATALOGUE KEY, WHICH IS LOAD-BEARING ─────────────────
+ *
+ * `recordId` at the mount site is `product.key`, the same key
+ * `sampleCatalogue()` puts on every row it hands the settings panel. An add-on
+ * that files something against a piece in its own settings and then looks it up
+ * again on the piece's screen is looking in one namespace, and only the host can
+ * make that true. Hand a row id or an order line id here instead and the lookup
+ * would find nothing, forever, with nothing on either side able to notice.
+ */
+export function pieceRecord(product: Product, label: string): Record<string, unknown> {
+  return {
+    key: product.key,
+    label,
+    unitWeightGrams: unitWeightGrams(product, product.material),
+    unitSize: { widthMm: product.footprint.widthMm, heightMm: product.footprint.heightMm },
+    unitPrice: money(product.basePriceCents),
+  };
+}
+
 /** One line in the basket, as the till's surfaces read it. */
 export function basketItem(line: BasketLine, label: string): SlotItem {
   const product = productOf(line.productKey);

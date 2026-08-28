@@ -221,13 +221,20 @@ beforeEach(() => {
 });
 
 describe("every slot this app hosts is really mounted (24 §5.4, D19)", () => {
-  it("reaches all nine mounts across the two states a reviewer can be in", () => {
+  it("reaches all ten mounts across the two states a reviewer can be in", () => {
     /*
-     * Two passes, because one of the nine is only reachable in the second.
+     * Two passes, because one of the ten is only reachable in the second.
      * `settings.add-on.panel` lives inside the manage drawer of a CONNECTED
      * add-on, so a shop with nothing switched on never draws it — which is
      * correct behaviour, and would have made a one-pass check demand a mount
      * the app is right not to render.
+     *
+     * [Amended 2026-08-28, 31-T11.] Nine became ten with `record.actions`, at
+     * the foot of a piece's own screen. `PieceScreen` was already in the tour
+     * below for `product.admin.panel`, so the new mount arrived under a check
+     * that was already looking at that page — which is the reason a render is
+     * worth more than a grep: the count moved on its own the moment the mount
+     * was real, and would have stayed at nine for a mount in a comment.
      */
     renderEveryHostSurface();
     const withNothingOn = new Set(mounts.map((m) => m.slot));
@@ -237,7 +244,7 @@ describe("every slot this app hosts is really mounted (24 §5.4, D19)", () => {
     renderEveryHostSurface();
 
     expect([...new Set(mounts.map((m) => m.slot))].sort()).toEqual([...HOSTED_SLOTS].sort());
-    // And eight of the nine are there before anybody connects anything.
+    // And nine of the ten are there before anybody connects anything.
     expect([...withNothingOn].sort()).toEqual(
       [...HOSTED_SLOTS].filter((s) => s !== "settings.add-on.panel").sort(),
     );
@@ -578,7 +585,7 @@ describe("NOTHING THE HOST DRAWS SITS UNDER A SILENT SLOT (24 D19, mutant B)", (
       }
     });
 
-    // Eight of the nine; the drawer's own panel needs a connected add-on.
+    // Nine of the ten; the drawer's own panel needs a connected add-on.
     expect([...found].sort()).toEqual(
       [...HOSTED_SLOTS].filter((slot) => slot !== "settings.add-on.panel").sort(),
     );

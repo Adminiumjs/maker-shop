@@ -16,15 +16,23 @@
  * was switched on. `add-ons/slotRender.test.tsx` now asserts the absence, so
  * this paragraph is no longer the only thing holding the line.
  *
+ * [Amended 2026-08-28, wave 6, 31-T11.] THE SCREEN NO LONGER ENDS THERE. A
+ * second mount, `record.actions`, sits after the personalization panel and
+ * outside it — one piece, and whatever an add-on can do with it. It is silent
+ * too, so with nothing connected this screen is byte for byte the screen the
+ * paragraphs above describe; the mount's own comment says why it is where it is
+ * and why it hands over no way to write back.
+ *
  * PRICES ARE READ-ONLY HERE (24 D4a): the SPA is the shop and the bench, and
  * the generated dashboard is the books and the catalogue. A maker changes what
- * a coaster costs in the dashboard, not on the bench.
+ * a coaster costs in the dashboard, not on the bench. That ruling is also what
+ * decides the new mount's payload — see it.
  */
 
 import { ArrowLeft, Hammer } from "lucide-react";
 
 import { AddOnSlot } from "../components/AddOnSlot.tsx";
-import { hostProduct } from "../add-ons/records.ts";
+import { hostProduct, pieceRecord, shopClock } from "../add-ons/records.ts";
 import { Icon } from "../components/Icon.tsx";
 import { Mono, Tag } from "../components/Primitives.tsx";
 import { useT } from "../i18n/index.tsx";
@@ -32,7 +40,7 @@ import { machineFor } from "../lib/batch.ts";
 import { LEAD_STUDIO_DAYS, PRODUCTS, PRODUCT_BY_KEY, type Product } from "../lib/catalogue.ts";
 import { cents, materialSurface, mm, num } from "../lib/format.ts";
 import type { Order } from "../lib/orders.ts";
-import { useStore } from "../state/store.ts";
+import { useStore, useToday } from "../state/store.ts";
 
 /** How many of a piece are on the bench right now, in blanks a maker counts. */
 function queuedFor(productKey: string, orders: readonly Order[]): number {
@@ -131,6 +139,8 @@ export function PieceScreen() {
   const orders = useStore((s) => s.orders);
   const personalizeOn = useStore((s) => s.personalizeOn);
   const togglePersonalize = useStore((s) => s.togglePersonalize);
+  const today = useToday();
+  const now = useStore((s) => s.now);
 
   const product: Product | undefined = key === null ? undefined : PRODUCT_BY_KEY[key];
   if (product === undefined) {
@@ -271,6 +281,63 @@ export function PieceScreen() {
           payload={{ product: hostProduct(product, t(`data.product.${product.key}.name` as never)) }}
         />
       </div>
+
+      {/*
+       * `record.actions` — ONE PIECE, AND THINGS TO DO TO IT.
+       *
+       * ── WHY IT IS HERE AND NOT ON THE PIECES LIST ─────────────────────────
+       *
+       * The slot is one opening on the screen where somebody is already looking
+       * at ONE record. This studio has exactly one such screen for a piece and
+       * this is it: a maker opens it because that piece is what they are
+       * dealing with. The list one view up is a catalogue — fourteen rows and
+       * no subject — so an action there would have to ask "which one?" first,
+       * which is the question this screen has already answered.
+       *
+       * ── AND WHY IT IS THE LAST THING IN THE SECTION ───────────────────────
+       *
+       * Outside the personalization panel, deliberately. That panel is one
+       * subject — what a shopper may ask to have cut into this piece — and a
+       * mount inside it would inherit its heading, so whatever an add-on drew
+       * would read as part of the engraving settings. What lands here is
+       * anything an add-on can do WITH the piece; the first thing that did is a
+       * sheet of labels for it, which has nothing to do with engraving.
+       *
+       * SILENT, so no fallback (see `add-ons/slots.ts` for the reason written
+       * out). With nothing connected the screen ends after the panel above,
+       * exactly as it did before this mount existed (24 D6), and nothing is
+       * drawn here to say so.
+       *
+       * ── NO `patchRecord`, AND THE OMISSION IS THIS SHOP'S ANSWER ──────────
+       *
+       * The payload's write handle is optional because hosts genuinely differ
+       * about whether an add-on may write back. This one may not, and the rule
+       * predates the slot by two waves: PRICES AND CATALOGUE ARE READ-ONLY ON
+       * THE BENCH (24 D4a) — the SPA is the shop and the workshop, and the
+       * generated dashboard is the books and the catalogue. A maker changes
+       * what a coaster is in the dashboard. Passing a handle that wrote into
+       * `PRODUCTS` would put an add-on on the wrong side of that line, and
+       * passing one that silently did nothing would be worse: the payload would
+       * be promising a write this shop has no intention of making.
+       */}
+      <AddOnSlot
+        slot="record.actions"
+        payload={{
+          // The host's own word for what kind of record this is, lower-case.
+          // "piece" is what this studio calls the thing everywhere else on the
+          // bench, and an add-on printing it is printing the shop's word.
+          entity: "piece",
+          // The catalogue key, and it is the same key `sampleCatalogue()` puts
+          // on every row the settings panel is handed. See `records.ts`.
+          recordId: product.key,
+          record: pieceRecord(product, t(`data.product.${product.key}.name` as never)),
+          // WHEN THE STUDIO THINKS IT IS. A document an add-on makes from this
+          // screen is dated, and dating it off any clock but the shop's is how
+          // the delivery add-on once told this bench about another shop's
+          // Wednesday — `add-ons/payloads.ts` records that whole episode.
+          now: shopClock(today, now),
+        }}
+      />
     </section>
   );
 }

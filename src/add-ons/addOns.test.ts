@@ -139,6 +139,38 @@ describe("the registry this build ships", () => {
   });
 
   /**
+   * AND THE ONE THAT IS ABOUT A SLOT RATHER THAN ABOUT A PACKAGE (24 D21).
+   *
+   * The case above proves a package crosses two shops unchanged. This proves
+   * something the delivery add-on cannot: that `record.actions` names a
+   * SURFACE. Both example apps mount it, on the same day, on two screens with
+   * nothing whatever in common — a maker's piece here, a works' job there — and
+   * `barcode-labels` fills it once, for both. An id with a single host is
+   * indistinguishable from an id that names that host's own screen; an id with
+   * two is a contract.
+   *
+   * The fill is asserted through the registry rather than by reading the
+   * add-on's `fills` array, because what a shop draws is what the registry
+   * hands its mounts. `slotRender.test.tsx` closes the other end by rendering
+   * the piece screen and finding the mount there.
+   */
+  it("resolves the label add-on's fills, including the twelfth slot", () => {
+    const registry = createRegistry(ALL);
+    const on = new Set(["barcode-labels"]);
+
+    for (const slot of ["record.actions", "settings.add-on.panel"] as const) {
+      expect(registry.fillsFor(slot, on), slot).toHaveLength(1);
+    }
+
+    // Every slot it fills is one this shop mounts — which was NOT true before
+    // `record.actions` was hosted, and is the concrete thing 31-T11 changed.
+    const labels = ALL.find((addOn) => addOn.key === "barcode-labels")!;
+    for (const fill of labels.fills) {
+      expect(isHosted(fill.slot), `${fill.slot} is filled but not mounted here`).toBe(true);
+    }
+  });
+
+  /**
    * AND A FILL FOR A SLOT THIS SHOP DOES NOT MOUNT IS DROPPED IN SILENCE.
    *
    * The other half of D21, and the half that lets an add-on be written once: a
@@ -226,18 +258,32 @@ describe("the registry this build ships", () => {
 });
 
 describe("the slot registry", () => {
-  it("mirrors the closed twelve, and hosts nine of them (24 §5.4, D19, §8A)", () => {
-    // TWELVE since 2026-08-28: `record.actions` (31 O1). This shop does not
-    // mount it and the count of what it hosts is unchanged, which is the pair
-    // worth asserting together — a registry that grows must not quietly grow
-    // what any one shop claims to draw.
+  it("mirrors the closed twelve, and hosts ten of them (24 §5.4, D19, §8A)", () => {
+    /*
+     * TWELVE since 2026-08-28: `record.actions` (31 O1).
+     *
+     * [Amended the same day, 31-T11.] The hosted count is TEN, and the line
+     * above it used to read "This shop does not mount it and the count of what
+     * it hosts is unchanged" — asserted as `toHaveLength(9)` beside
+     * `isHosted("record.actions") === false` below. Both were true when they
+     * were written and both stopped being true together, which is exactly what
+     * a count is for: this shop now mounts the slot on a piece's own screen,
+     * the first add-on to fill it prints a sheet of labels for that piece, and
+     * the number moved because a real thing changed rather than because
+     * somebody was making a suite pass.
+     *
+     * The PAIR is still the thing worth asserting: a registry that grows must
+     * not quietly grow what any one shop claims to draw. `SLOT_IDS` is
+     * unchanged at twelve here — the twelfth was already mirrored — and only
+     * the hosted list moved.
+     */
     expect(SLOT_IDS).toHaveLength(12);
-    expect(HOSTED_SLOTS).toHaveLength(9);
+    expect(HOSTED_SLOTS).toHaveLength(10);
     for (const slot of HOSTED_SLOTS) expect(SLOT_IDS).toContain(slot);
     expect(Object.keys(SLOT_FILL).sort()).toEqual([...SLOT_IDS].sort());
   });
 
-  it("DECLARES exactly three that speak and six that stay silent", () => {
+  it("DECLARES exactly three that speak and seven that stay silent", () => {
     /*
      * A declaration, and named as one. This block reads a constant back to
      * itself and cannot do otherwise — which is precisely why it used to be a
@@ -261,18 +307,23 @@ describe("the slot registry", () => {
     // The rest are silent for the same reason: an add-on's settings form has
     // nothing to say when there is no add-on, a page nobody navigated to should
     // not draw a placeholder, and a studio that walks its own parcels to the
-    // post office does not need to be told it has no carrier.
+    // post office does not need to be told it has no carrier. `record.actions`
+    // joined them in wave 6 and is the clearest case of the rule: the only
+    // empty state it could have is "no add-on offers anything to do with this
+    // piece", which describes an absence rather than a finished thing, and D19
+    // is precisely the ban on writing that down.
     expect(silent).toEqual([
       "cart.line.preview",
       "order.dispatch.actions",
       "order.line.actions",
       "product.admin.panel",
+      "record.actions",
       "settings.add-on.panel",
       "nav.add-on.routes",
     ]);
   });
 
-  it("knows which of the eleven this build does not mount", () => {
+  it("knows which of the twelve this build does not mount", () => {
     /*
      * `order.dispatch.actions` USED TO BE ASSERTED ABSENT HERE, and that line
      * was the defect rather than the guard it looked like. 24 §8A says the
@@ -282,16 +333,32 @@ describe("the slot registry", () => {
      * for the print works run here unchanged — D21's claim, made concrete.
      */
     expect(isHosted("order.dispatch.actions")).toBe(true);
+    /*
+     * AND `record.actions` HAS JUST DONE THE SAME THING, WHICH IS WHY THIS CASE
+     * IS WORTH READING TWICE.
+     *
+     * [Amended 2026-08-28, 31-T11.] The line here read
+     * `expect(isHosted("record.actions")).toBe(false)`, under a comment saying
+     * "Nothing in this shop shows one record with an add-on's action to take on
+     * it". That sentence was a claim about the app and it was wrong: a piece's
+     * own screen on the bench is one record, opened by the maker who is about
+     * to make it. Two waves apart, in the same file, an id was declared, a
+     * reason for not mounting it was written down, and the reason turned out to
+     * describe what nobody had looked for.
+     *
+     * The assertion is flipped rather than deleted, because the pair of them is
+     * now the interesting fact: a slot id is supposed to name a SURFACE, and an
+     * id with one host cannot be told from an id that names that host's screen.
+     * The print works mounts this same id on a job, on the same day, with the
+     * same add-on and the same payload.
+     */
+    expect(isHosted("record.actions")).toBe(true);
     // An add-on written for the print works may still fill this one; Birch Row
     // does not draw it, and a fill it drops is not an error in either repo.
     expect(isHosted("artwork.sources")).toBe(false);
     // And the one whose host is Adminium's generated dashboard rather than an
     // example app, whose mount is Phase B (24 §5.10, D20).
     expect(isHosted("record.editor.panel")).toBe(false);
-    // And the twelfth, bought 2026-08-28 against a dossier rather than a fill
-    // (31 O1). Nothing in this shop shows one record with an add-on's action to
-    // take on it, so it is declared and not hosted — the same honest pair.
-    expect(isHosted("record.actions")).toBe(false);
   });
 });
 
