@@ -146,6 +146,7 @@ FILES_personalizer=(
   i18n/strings.ts i18n/t.ts
   styles/personalizer.css
   ui/bits.tsx ui/Personalize.tsx ui/Setup.tsx ui/Production.tsx ui/fills.tsx
+  ui/Help.tsx ui/Fonts.tsx ui/Reuse.tsx ui/Bench.tsx
 )
 
 # Modules that must never be reachable from the browser half (D15), and the
