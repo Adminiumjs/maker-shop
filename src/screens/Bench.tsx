@@ -44,7 +44,7 @@ import {
   type Pack,
 } from "../lib/batch.ts";
 import { PRODUCT_BY_KEY } from "../lib/catalogue.ts";
-import { LASER_SETTINGS } from "../data/demo.ts";
+import { source } from "../data/source.ts";
 import { day, materialSurface, mm, pct, trim } from "../lib/format.ts";
 import {
   BENCH_COLUMNS,
@@ -60,6 +60,9 @@ import {
 import { bookedMinutes, countedMaterials, useStore, useToday } from "../state/store.ts";
 
 /** The four columns, in bench order. */
+/** The machine's own numbers, through the seam. See the settings card below. */
+const LASER = source.laser();
+
 const COLUMN_KEYS = BENCH_COLUMNS;
 
 function useOpenOrders(): Order[] {
@@ -450,6 +453,11 @@ export function BatchScreen() {
 
           <SheetDrawing pack={pack} onDrop={dropFromSheet} />
 
+          {/* The sheet is the only drawing in the app you operate by pressing
+              it, so it says what pressing does. Without the line the pieces
+              read as a picture of the batch rather than the batch itself. */}
+          <p className="br-panel-note">{t("bench.batch.takeOutHint")}</p>
+
           <div className="br-sheetfigs">
             <Mono className="br-sheetfig">{t("bench.batch.used", { pct: `${trim(pack.sheetUsePct)}%` })}</Mono>
             <Mono className="br-sheetfig br-sheetfig--muted">
@@ -643,7 +651,10 @@ export function CutListScreen() {
   }
 
   /*
-   * The figures come from `LASER_SETTINGS` rather than out of the sentences.
+   * The figures come from the SEAM rather than out of the sentences — and the
+   * seam rather than `data/demo.ts`, which is where they used to come from: a
+   * connected studio would have printed this shop's 60 W laser and its cut
+   * speeds on somebody else's bench, beside their real orders.
    * A number handed to `t()` is formatted in the reader's numerals; a number
    * TYPED INTO a translation is whatever the translator's keyboard produced,
    * which is how the Arabic pair came to read "18 مم/ث بقدرة 78%".
@@ -651,21 +662,21 @@ export function CutListScreen() {
   const settings: [string, string][] = [
     [
       t("bench.cut.setting.machine"),
-      t("bench.cut.setting.machineValue", { watts: LASER_SETTINGS.watts }),
+      t("bench.cut.setting.machineValue", { watts: LASER.watts }),
     ],
     [
       t("bench.cut.setting.cut"),
       t("bench.cut.setting.cutValue", {
-        speed: LASER_SETTINGS.cut.speedMmPerSec,
-        power: pct(LASER_SETTINGS.cut.power),
+        speed: LASER.cut.speedMmPerSec,
+        power: pct(LASER.cut.power),
       }),
     ],
     [
       t("bench.cut.setting.engrave"),
       t("bench.cut.setting.engraveValue", {
-        speed: LASER_SETTINGS.engrave.speedMmPerSec,
-        power: pct(LASER_SETTINGS.engrave.power),
-        dpi: LASER_SETTINGS.engrave.dpi,
+        speed: LASER.engrave.speedMmPerSec,
+        power: pct(LASER.engrave.power),
+        dpi: LASER.engrave.dpi,
       }),
     ],
     [t("bench.cut.setting.air"), t("bench.cut.setting.airValue")],

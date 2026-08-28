@@ -27,7 +27,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { LOCALE_TAGS } from "./i18n/locales.ts";
-import { impuritiesIn, restatementsIn } from "./testing/purity.ts";
+import { IMPURITIES, impuritiesIn, restatementsIn } from "./testing/purity.ts";
 import {
   connectedBackend,
   foreignImportsIn,
@@ -128,9 +128,23 @@ describe("the clock is always passed in", () => {
     // `new Date(Date.UTC(...))` and `new Date(ms)` stay fine — they are pure
     // arithmetic over a value that came from somewhere the caller controls.
     const hits = SHIPPED.flatMap((f) =>
-      impuritiesIn(f.code).map((means) => `${f.rel} → ${means}`),
+      impuritiesIn(f.code)
+        .filter((means) => !(f.rel === CONNECTED_SOURCE && CLOCKS.includes(means)))
+        .map((means) => `${f.rel} → ${means}`),
     );
     expect(hits).toEqual([]);
+  });
+
+  it("still refuses a die in the connected source, and a clock anywhere else", () => {
+    // The exemption above is two MEANS in one FILE, not a file that may do as
+    // it likes. Driven over the rule rather than over `src/`, so it stays true
+    // on a day this studio has no connected source at all.
+    expect(impuritiesIn("const id = crypto.randomUUID();").filter((m) => !CLOCKS.includes(m)))
+      .toHaveLength(1);
+    // …and every name in the allow-list is a means `purity.ts` actually emits,
+    // so renaming one there fails here instead of quietly widening the net.
+    const known = IMPURITIES.map((impurity) => impurity.means);
+    expect(CLOCKS.filter((means) => !known.includes(means))).toEqual([]);
   });
 
   it("would say so if one arrived, in every spelling the three repos disagreed on", () => {
@@ -273,12 +287,54 @@ const ALLOWED_MODULES: readonly AllowedModule[] = [
     why: "icons, which compile to inline `<svg>` elements. It fetches nothing: an icon that named an address would be reported by net one over the built output",
   },
   { name: "zustand", why: "the in-memory store. It holds state and makes no request" },
+  {
+    name: "@adminiumjs/public-client",
+    why: "the connected mode\u2019s client for this studio\u2019s own Adminium instance (28-T28). It DOES issue requests, which is what it is for, and the address it may reach is not forgiven here \u2014 it is `connectedBackend`\u2019s single declared origin, checked over every file and over the built output",
+  },
 ];
 
 const OURS: readonly InertOrigin[] = [];
 
-/** Ours, plus whatever the add-ons this studio vendors declare for themselves. */
-const INERT: readonly InertOrigin[] = [...OURS, ...addOnOrigins()];
+/*
+ * Ours, plus whatever the add-ons this studio vendors declare for themselves,
+ * plus the backend a CONNECTED build was pointed at (28-T26, 28-T28).
+ *
+ * Empty in every demo build, which is every build the marketplace serves and
+ * every build CI makes. When `VITE_ADMINIUM_API_BASE_URL` is set, Vite inlines
+ * it into `data/adminiumSource.ts` as a literal and this is the declaration
+ * that says so — one host, forgiven in EVERY file, rather than every host
+ * forgiven in one file. `builtOutput.test.ts` carries the same line for the
+ * shipped bytes.
+ */
+const INERT: readonly InertOrigin[] = [
+  ...OURS,
+  ...addOnOrigins(),
+  ...connectedBackend(process.env["VITE_ADMINIUM_API_BASE_URL"]),
+];
+
+/**
+ * ── THE ONE FILE THAT MAY READ THE REAL CLOCK (28-T28) ─────────────────────
+ *
+ * `purity.ts`'s rule is about the DEMO's reproducibility: every date derives
+ * from a pinned instant so that a test can assert a promise date and a
+ * screenshot taken in a year still matches the running app. A CONNECTED build
+ * is the case that rule was never about — its job is to show what the studio is
+ * doing NOW, and the tenant's real clock is the input it is missing.
+ *
+ * So this is not "`adminiumSource.ts` is exempt", which is the shape this file
+ * argues against for egress and would forgive a die as readily as a clock. It
+ * is TWO MEANS, in ONE FILE. A `Math.random()` in the connected source is still
+ * a finding, a clock in any other file is still a finding, and the test below
+ * drives both of those rather than asserting them in prose.
+ */
+const CONNECTED_SOURCE = "data/adminiumSource.ts";
+
+/** The clock half of `IMPURITIES`, by the exact words that file emits. */
+const CLOCKS: readonly string[] = [
+  "Date.now() \u2014 the real clock",
+  "new Date() with no argument \u2014 the real clock",
+  "performance.now() \u2014 a clock under another name",
+];
 
 describe("nothing here can reach a host we do not control (24 D11)", () => {
   /*

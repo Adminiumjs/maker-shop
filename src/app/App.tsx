@@ -9,6 +9,7 @@
 import { useEffect } from "react";
 
 import { DemoDock } from "../components/DemoDock.tsx";
+import { isConnected } from "../data/source.ts";
 import { Overlays, Toasts } from "../components/Overlays.tsx";
 import { ScreenSkeleton } from "../components/Primitives.tsx";
 import { MakerShell, ShopperShell } from "../components/Shell.tsx";
@@ -71,7 +72,7 @@ export default function App() {
       ) : (
         <MakerShell>{body}</MakerShell>
       )}
-      <DemoDock />
+      {!isConnected() && <DemoDock />}
       <Overlays />
       <Toasts />
     </div>

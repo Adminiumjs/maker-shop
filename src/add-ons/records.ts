@@ -57,7 +57,7 @@ import {
   type Product,
 } from "../lib/catalogue.ts";
 import { eachPriceCents, unitPriceCents, type Order, type OrderLine } from "../lib/orders.ts";
-import { CUSTOMERS, STUDIO } from "../data/demo.ts";
+import { source } from "../data/source.ts";
 import type { BasketLine } from "../state/store.ts";
 
 /** What the studio quotes in, and what a carrier therefore bills in. */
@@ -118,13 +118,21 @@ export function unitWeightGrams(product: Product, materialKey: MaterialKey): num
   return (sqm * areal + glaze) * footprint.perUnit;
 }
 
-/** The studio's own address, as the seam wants it. */
+/**
+ * The studio's own address, as the seam wants it.
+ *
+ * Through `source`, not through `data/demo.ts`. Reading the seed here meant a
+ * connected studio would have printed BIRCH ROW on every collection booking
+ * while the orders above it came from the tenant's own database — an add-on
+ * quietly booking one shop's parcels from another shop's yard.
+ */
+const studio = source.studio();
 export const SHOP_ORIGIN: PostalAddress = {
-  name: STUDIO.address.name,
-  lines: [...STUDIO.address.lines],
-  city: STUDIO.address.city,
-  postcode: STUDIO.address.postcode,
-  country: STUDIO.address.countryCode,
+  name: studio.address.name,
+  lines: [...studio.address.lines],
+  city: studio.address.city,
+  postcode: studio.address.postcode,
+  country: studio.address.countryCode,
 };
 
 const productOf = (key: string): Product | undefined => PRODUCTS.find((p) => p.key === key);
@@ -139,7 +147,7 @@ const productOf = (key: string): Product | undefined => PRODUCTS.find((p) => p.k
  * was a guess.
  */
 export function addressFor(customerName: string): PostalAddress | undefined {
-  const found = CUSTOMERS.find((c) => c.name === customerName);
+  const found = source.customers().find((c) => c.name === customerName);
   if (found === undefined) return undefined;
   return {
     name: found.name,
