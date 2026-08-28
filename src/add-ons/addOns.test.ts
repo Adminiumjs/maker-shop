@@ -226,8 +226,12 @@ describe("the registry this build ships", () => {
 });
 
 describe("the slot registry", () => {
-  it("mirrors the closed eleven, and hosts nine of them (24 §5.4, D19, §8A)", () => {
-    expect(SLOT_IDS).toHaveLength(11);
+  it("mirrors the closed twelve, and hosts nine of them (24 §5.4, D19, §8A)", () => {
+    // TWELVE since 2026-08-28: `record.actions` (31 O1). This shop does not
+    // mount it and the count of what it hosts is unchanged, which is the pair
+    // worth asserting together — a registry that grows must not quietly grow
+    // what any one shop claims to draw.
+    expect(SLOT_IDS).toHaveLength(12);
     expect(HOSTED_SLOTS).toHaveLength(9);
     for (const slot of HOSTED_SLOTS) expect(SLOT_IDS).toContain(slot);
     expect(Object.keys(SLOT_FILL).sort()).toEqual([...SLOT_IDS].sort());
@@ -284,6 +288,10 @@ describe("the slot registry", () => {
     // And the one whose host is Adminium's generated dashboard rather than an
     // example app, whose mount is Phase B (24 §5.10, D20).
     expect(isHosted("record.editor.panel")).toBe(false);
+    // And the twelfth, bought 2026-08-28 against a dossier rather than a fill
+    // (31 O1). Nothing in this shop shows one record with an add-on's action to
+    // take on it, so it is declared and not hosted — the same honest pair.
+    expect(isHosted("record.actions")).toBe(false);
   });
 });
 
