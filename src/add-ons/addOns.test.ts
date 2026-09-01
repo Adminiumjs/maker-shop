@@ -92,6 +92,13 @@ describe("the registry this build ships", () => {
     expect(Object.keys(DEFAULT_ADD_ON_SETTINGS["shipping-dhl"]!).sort()).toEqual([
       "collection_cutoff",
       "demo_transport",
+      // The returns depot (31 O4) — five display-text address fields for the
+      // prepaid-return-label surface, empty meaning NOT CONFIGURED.
+      "returns_city",
+      "returns_country",
+      "returns_lines",
+      "returns_name",
+      "returns_postcode",
     ]);
   });
 
