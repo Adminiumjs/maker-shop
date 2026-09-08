@@ -265,7 +265,7 @@ describe("the registry this build ships", () => {
 });
 
 describe("the slot registry", () => {
-  it("mirrors the closed twelve, and hosts ten of them (24 §5.4, D19, §8A)", () => {
+  it("mirrors the closed thirteen, and hosts ten of them (24 §5.4, D19, §8A)", () => {
     /*
      * TWELVE since 2026-08-28: `record.actions` (31 O1).
      *
@@ -283,8 +283,14 @@ describe("the slot registry", () => {
      * not quietly grow what any one shop claims to draw. `SLOT_IDS` is
      * unchanged at twelve here — the twelfth was already mirrored — and only
      * the hosted list moved.
+     *
+     * [Amended 2026-09-01, wave 7.] THIRTEEN, and the hosted count did NOT
+     * move: `shell.overlay` is mirrored and not mounted, and `slots.ts` says
+     * why in a sentence about who would answer rather than about screens. That
+     * is the pair doing its job in the other direction — the registry grew and
+     * what this shop claims to draw did not.
      */
-    expect(SLOT_IDS).toHaveLength(12);
+    expect(SLOT_IDS).toHaveLength(13);
     expect(HOSTED_SLOTS).toHaveLength(10);
     for (const slot of HOSTED_SLOTS) expect(SLOT_IDS).toContain(slot);
     expect(Object.keys(SLOT_FILL).sort()).toEqual([...SLOT_IDS].sort());

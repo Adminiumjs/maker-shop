@@ -23,7 +23,7 @@
  * drew it.
  */
 
-/** The closed registry (24 §5.4). Twelve names, and not a thirteenth. */
+/** The closed registry (24 §5.4). Thirteen names, and not a fourteenth. */
 /*
  * [Amended 2026-08-28, wave 6.] The closed registry is TWELVE.
  * `record.actions` was bought against the dossier in 31 Appendix A.1 and
@@ -43,6 +43,16 @@
  * for rather than of what the app has. `addOns.test.ts` asserted the absence,
  * which turned it into an invariant — see that file for the pair of assertions
  * this correction moved.
+ *
+ * [Amended 2026-09-01, wave 7.] THIRTEEN. `shell.overlay` is the corner of a
+ * customer shell — a floating affordance reachable from every screen, and its
+ * first fill is a chat panel (33 O1). This shop declares it and does not mount
+ * it, and having just been caught writing a reason that was really an absence
+ * of looking, this one names the condition rather than the screen: the shop
+ * would host an overlay the day there is somebody at the other end of it. Two
+ * people, a laser and a kiln do not staff a chat, and a panel promising a reply
+ * in two minutes on a bench nobody is watching is the dishonest screen this
+ * repository exists to refuse. The mount is one line when that changes.
  */
 export const SLOT_IDS = [
   'artwork.sources',
@@ -57,6 +67,7 @@ export const SLOT_IDS = [
   'order.line.actions',
   'record.editor.panel',
   'record.actions',
+  'shell.overlay',
 ] as const;
 
 export type SlotId = (typeof SLOT_IDS)[number];
@@ -241,6 +252,8 @@ export const SLOT_FILL: Readonly<Record<SlotId, 'single' | 'multi' | 'per-add-on
   'order.line.actions': 'multi',
   'record.editor.panel': 'multi',
   'record.actions': 'multi',
+  /* A corner two add-ons can stand in at once; `single` would lose one silently. */
+  'shell.overlay': 'multi',
 };
 
 /** Whether this build mounts a slot at all. */
