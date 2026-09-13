@@ -112,7 +112,7 @@ FILES_host=(
   index.ts host.ts payloads.ts slots.ts delivery.ts
   contracts/index.ts contracts/common.ts
   contracts/artwork-source.ts contracts/shipping-carrier.ts
-  contracts/product-personalizer.ts
+  contracts/product-personalizer.ts contracts/document-render.ts
 )
 
 # Reachable from each client entry point, plus the two files a HOST'S OWN GATES
