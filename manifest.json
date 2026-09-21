@@ -370,7 +370,7 @@
   "pages": [
     {
       "ref": "orders",
-      "template": "table",
+      "template": "page-crud",
       "title": {
         "key": "marketplaceData.maker.page.orders",
         "fallback": "Orders"
@@ -381,12 +381,12 @@
         "order": 1
       },
       "bindings": {
-        "orders": "orders"
+        "rows": "orders"
       }
     },
     {
       "ref": "pieces-on-the-bench",
-      "template": "table",
+      "template": "page-crud",
       "title": {
         "key": "marketplaceData.maker.page.orderLines",
         "fallback": "On the bench"
@@ -397,12 +397,12 @@
         "order": 2
       },
       "bindings": {
-        "order_lines": "order_lines"
+        "rows": "order_lines"
       }
     },
     {
       "ref": "proofs",
-      "template": "table",
+      "template": "page-crud",
       "title": {
         "key": "marketplaceData.maker.page.proofs",
         "fallback": "Proofs"
@@ -413,12 +413,12 @@
         "order": 3
       },
       "bindings": {
-        "proofs": "proofs"
+        "rows": "proofs"
       }
     },
     {
       "ref": "pieces",
-      "template": "table",
+      "template": "page-crud",
       "title": {
         "key": "marketplaceData.maker.page.products",
         "fallback": "Pieces"
@@ -429,12 +429,12 @@
         "order": 1
       },
       "bindings": {
-        "products": "products"
+        "rows": "products"
       }
     },
     {
       "ref": "customers",
-      "template": "table",
+      "template": "page-crud",
       "title": {
         "key": "marketplaceData.maker.page.customers",
         "fallback": "Customers"
@@ -445,12 +445,12 @@
         "order": 2
       },
       "bindings": {
-        "customers": "customers"
+        "rows": "customers"
       }
     },
     {
       "ref": "materials",
-      "template": "table",
+      "template": "page-crud",
       "title": {
         "key": "marketplaceData.maker.page.materials",
         "fallback": "Materials"
@@ -461,12 +461,12 @@
         "order": 1
       },
       "bindings": {
-        "materials": "materials"
+        "rows": "materials"
       }
     },
     {
       "ref": "stock-movements",
-      "template": "table",
+      "template": "page-crud",
       "title": {
         "key": "marketplaceData.maker.page.stockMovements",
         "fallback": "Stock movements"
@@ -477,12 +477,12 @@
         "order": 2
       },
       "bindings": {
-        "stock_movements": "stock_movements"
+        "rows": "stock_movements"
       }
     },
     {
       "ref": "machines",
-      "template": "table",
+      "template": "page-crud",
       "title": {
         "key": "marketplaceData.maker.page.machines",
         "fallback": "Machines"
@@ -493,7 +493,7 @@
         "order": 3
       },
       "bindings": {
-        "machines": "machines"
+        "rows": "machines"
       }
     }
   ],
