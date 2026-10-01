@@ -76,7 +76,7 @@ const SHOWN_IN: Readonly<Record<string, readonly string[]>> = {
     "vite.config.ts",
   ],
   "a-host-greps-its-own-sources-for-an-add-ons-secrets": [
-    // Ported in round 6: this studio had no source-side D15 gate at all.
+    // Ported in round 6: this studio had no source-side secrets gate at all.
     "src/sources.test.ts",
     "src/builtOutput.test.ts",
   ],

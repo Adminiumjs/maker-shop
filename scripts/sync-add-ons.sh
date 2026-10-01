@@ -67,7 +67,7 @@
 # WHAT IS DELIBERATELY NOT COPIED, and none of it is an oversight:
 #   *.test.ts(x)   the monorepo runs its own suites; re-running them here would
 #                  assert the copy rather than the thing (and the conformance
-#                  suites pull in zod, which the host does not carry — 24 D7).
+#                  suites pull in zod, which the host does not carry).
 #   src/testing/   the copied conformance harness and build helpers, same
 #                  reason. The shared package's `testing/` entry point — where
 #                  its zod validators live — is never vendored either.
@@ -75,7 +75,7 @@
 #                  manifest suite. This app has its own `src/add-ons/slots.ts`,
 #                  which is the authoritative list of what it hosts.
 #   src/carrier.ts src/http.ts src/server.ts src/server/artwork-source.ts
-#                  the SERVER halves. Secrets are server-only (24 D15) and the
+#                  the SERVER halves. Secrets are server-only and the
 #                  client bundle must not be able to reach the module that holds
 #                  them. `status` fails if one ever appears under vendor/.
 #   vite-env.d.ts  ambient Vite types the host already has.
@@ -106,8 +106,8 @@ VENDOR="$HOST/src/add-ons/vendor"
 TARGETS=(host barcode-labels personalizer shipping-dhl)
 
 # The shared contract, vendored ONCE. `testing/` is not here and must not be —
-# it is where the conformance suites and their `zod` validators live, and 24 D7
-# forbids a shipped bundle from taking a runtime dependency the host lacks.
+# it is where the conformance suites and their `zod` validators live, and a
+# shipped bundle may not take a runtime dependency the host lacks.
 FILES_host=(
   index.ts host.ts payloads.ts slots.ts delivery.ts
   contracts/index.ts contracts/common.ts
@@ -124,12 +124,13 @@ FILES_host=(
 # Kept as an explicit list rather than a glob so that adding a file to a package
 # is a decision here too — a new module appearing in the demo bundle without
 # anyone naming it is how a server half ends up in a browser.
-# THE CROSS-APP PROOF (24 D21). This add-on was written for the print works and
+# THE CROSS-APP PROOF. This add-on was written for the print works and
 # is vendored here UNCHANGED — the file list below is copied from that app's own
 # sync script and not one entry differs, because not one byte of the package
 # differs. What made it possible was not a change to the add-on: it was giving
 # the slot payloads shapes both shops can produce (`src/add-ons/payloads.ts`)
-# and mounting `order.dispatch.actions`, which §8A always said this app carried.
+# and mounting `order.dispatch.actions`, which this app's design always said it
+# carried.
 FILES_shipping_dhl=(
   add-on-facts.ts test-reset.ts
   label-store.ts clock.ts parcel.ts rates.ts label.ts seed.ts
@@ -140,7 +141,7 @@ FILES_shipping_dhl=(
 )
 
 # THE SECOND CROSS-APP PROOF, AND THE ONE THAT IS ABOUT A SLOT RATHER THAN AN
-# ADD-ON (24 D21). The delivery add-on above proved a PACKAGE crosses two shops
+# ADD-ON. The delivery add-on above proved a PACKAGE crosses two shops
 # unchanged. This one is vendored into the print works at the same time, and
 # what that pair proves is different: `record.actions` names a SURFACE — the
 # screen where somebody is looking at one record — and not one app's idea of
@@ -171,8 +172,9 @@ FILES_personalizer=(
   ui/Help.tsx ui/Fonts.tsx ui/Reuse.tsx ui/Bench.tsx
 )
 
-# Modules that must never be reachable from the browser half (D15), and the
-# server ENTRY POINTS a manifest's `provides[].server` names. `design-studio`
+# Modules that must never be reachable from the browser half (secrets are
+# server-only), and the server ENTRY POINTS a manifest's `provides[].server`
+# names. `design-studio`
 # holds no secret, so its server half is a packaging boundary rather than a leak
 # — but a server entry that turns up in the demo bundle means the split the
 # manifest describes stopped being true, which is worth catching here as well as
@@ -367,7 +369,8 @@ cmd_status() {
       done < <(cd "$dest" && find . -type f | sed 's|^\./||' | sort)
 
       if [ "$key" != host ]; then
-        # D15: the server half must not be reachable from a browser bundle.
+        # Secrets are server-only: the server half must not be reachable from a
+        # browser bundle.
         for f in "${FORBIDDEN[@]}"; do
           [ -e "$dest/$f" ] && { state="SECRET-LEAK $f"; drift=1; }
         done

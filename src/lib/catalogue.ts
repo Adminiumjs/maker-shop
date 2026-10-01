@@ -6,7 +6,7 @@
  * nothing here is a display string, only keys and numbers — so the whole
  * catalogue translates without this file being touched.
  *
- * THERE IS NO STOCK FIELD ON A PRODUCT, and there never will be (24 D5b).
+ * THERE IS NO STOCK FIELD ON A PRODUCT, and there never will be.
  * Nothing here is held on a shelf: every piece is made after it is ordered, so
  * the only inventory this app has is MATERIALS, which live in `MATERIAL_STOCK`
  * below and are the maker's business rather than the shopper's.
@@ -55,7 +55,7 @@ export const CATEGORY_KEYS: readonly CategoryKey[] = [
 /**
  * How long a piece sits on the bench, named by the bench it sits on.
  *
- * The four numbers are 24 D5b's, and they are counted in STUDIO days: coasters
+ * The four numbers are fixed, and they are counted in STUDIO days: coasters
  * and keyrings 3, printed pieces 4, slate signs 5, glazed ceramics 10 (they are
  * fired twice). `engraved-wood` is the three-day laser bench that coasters
  * share — a cutting board and a set of coasters are the same machine and the
@@ -79,9 +79,9 @@ export const QUANTITY_BREAKS: readonly number[] = [1, 4, 8, 12];
  * What each break costs, as a multiplier on the one-off price.
  *
  * A set of twelve is four sheets' worth of setting-up done once, so the saving
- * is real work rather than a lever. Above twelve the curve stops: 24 §8A puts
- * "quantity breaks above 12" on the cutline, and a bench of two people does not
- * pretend to a hundred.
+ * is real work rather than a lever. Above twelve the curve stops: the app's
+ * design puts "quantity breaks above 12" on the cutline, and a bench of two
+ * people does not pretend to a hundred.
  */
 export const BREAK_MULTIPLIER: Readonly<Record<number, number>> = {
   1: 1,
@@ -123,7 +123,7 @@ export interface MaterialOption {
  *
  * `hintKey` points at one of five shared sets of maker's instructions — the
  * words beside the field, in the maker's own voice. With the Live Personalizer
- * add-on connected this whole block is replaced by a preview (24 D19); with it
+ * add-on connected this whole block is replaced by a preview; with it
  * off, this is a finished screen and not a placeholder.
  */
 export interface Personalize {

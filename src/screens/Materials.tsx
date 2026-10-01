@@ -1,7 +1,7 @@
 /**
  * The shelf and the machines, and the Saturday-morning job of counting one.
  *
- * THE ONLY INVENTORY THIS APP HAS IS RAW MATERIAL (24 D5b): sheet stock, slate
+ * THE ONLY INVENTORY THIS APP HAS IS RAW MATERIAL: sheet stock, slate
  * blanks, filament and glaze. There is no finished-goods column here and there
  * is nowhere for one to go — a piece that exists is on its way to somebody.
  *

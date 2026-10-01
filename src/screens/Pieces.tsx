@@ -11,19 +11,19 @@
  * while the comment at the mount itself explained why it had been removed. Two
  * halves of one file disagreeing about what is on the screen is the kind of
  * thing a reader trusts the header for and gets wrong. The line is gone, for
- * the reasons the mount records: it is the dashed placeholder D19 bans, written
- * in prose instead of drawn in a box, and it went stale the moment an add-on
- * was switched on. `add-ons/slotRender.test.tsx` now asserts the absence, so
- * this paragraph is no longer the only thing holding the line.
+ * the reasons the mount records: it is the dashed placeholder this app refuses,
+ * written in prose instead of drawn in a box, and it went stale the moment an
+ * add-on was switched on. `add-ons/slotRender.test.tsx` now asserts the
+ * absence, so this paragraph is no longer the only thing holding the line.
  *
- * [Amended 2026-08-28, wave 6, 31-T11.] THE SCREEN NO LONGER ENDS THERE. A
+ * [Amended 2026-08-28, wave 6.] THE SCREEN NO LONGER ENDS THERE. A
  * second mount, `record.actions`, sits after the personalization panel and
  * outside it — one piece, and whatever an add-on can do with it. It is silent
  * too, so with nothing connected this screen is byte for byte the screen the
  * paragraphs above describe; the mount's own comment says why it is where it is
  * and why it hands over no way to write back.
  *
- * PRICES ARE READ-ONLY HERE (24 D4a): the SPA is the shop and the bench, and
+ * PRICES ARE READ-ONLY HERE: the SPA is the shop and the bench, and
  * the generated dashboard is the books and the catalogue. A maker changes what
  * a coaster costs in the dashboard, not on the bench. That ruling is also what
  * decides the new mount's payload — see it.
@@ -264,17 +264,17 @@ export function PieceScreen() {
          * `product.admin.panel` — SILENT when empty, so no fallback is passed.
          * A setup surface would appear here; with nothing connected the panel
          * above is the whole of this piece's personalization settings, and it
-         * is a finished thing rather than a stub (24 D19).
+         * is a finished thing rather than a stub.
          *
          * AND NOTHING FOLLOWS IT. A muted line reading "this is the only part
          * of this page an add-on changes" used to render here, unconditionally,
-         * directly under this mount — which is the dashed placeholder D19 bans,
-         * written in prose instead of drawn in a box. It also went stale the
-         * moment an add-on WAS switched on, because it then sat under the panel
-         * the add-on had just drawn and told the maker nothing had changed. The
-         * same sentence still renders on the shopper's piece page, where it
-         * belongs to the PAGE beside a slot that speaks; here there was nothing
-         * to explain, so there is nothing.
+         * directly under this mount — which is the dashed placeholder this app
+         * refuses, written in prose instead of drawn in a box. It also went
+         * stale the moment an add-on WAS switched on, because it then sat under
+         * the panel the add-on had just drawn and told the maker nothing had
+         * changed. The same sentence still renders on the shopper's piece page,
+         * where it belongs to the PAGE beside a slot that speaks; here there
+         * was nothing to explain, so there is nothing.
          */}
         <AddOnSlot
           slot="product.admin.panel"
@@ -305,7 +305,7 @@ export function PieceScreen() {
        *
        * SILENT, so no fallback (see `add-ons/slots.ts` for the reason written
        * out). With nothing connected the screen ends after the panel above,
-       * exactly as it did before this mount existed (24 D6), and nothing is
+       * exactly as it did before this mount existed, and nothing is
        * drawn here to say so.
        *
        * ── NO `patchRecord`, AND THE OMISSION IS THIS SHOP'S ANSWER ──────────
@@ -313,7 +313,7 @@ export function PieceScreen() {
        * The payload's write handle is optional because hosts genuinely differ
        * about whether an add-on may write back. This one may not, and the rule
        * predates the slot by two waves: PRICES AND CATALOGUE ARE READ-ONLY ON
-       * THE BENCH (24 D4a) — the SPA is the shop and the workshop, and the
+       * THE BENCH — the SPA is the shop and the workshop, and the
        * generated dashboard is the books and the catalogue. A maker changes
        * what a coaster is in the dashboard. Passing a handle that wrote into
        * `PRODUCTS` would put an add-on on the wrong side of that line, and

@@ -7,7 +7,7 @@
  * `messages/index.ts` refuses to compile.
  *
  * THE VOCABULARY BAN IS THE HARD PART OF THIS FILE, and the bench trips it in
- * ways the shop did not (24 D10b). Nothing here may spell `pricing`, `plan`,
+ * ways the shop did not. Nothing here may spell `pricing`, `plan`,
  * `tier`, `billing`, `upgrade`, `/mo` or `free` as a SUBSTRING in any language,
  * and `pro` may not stand alone as a word. What that ruled out while this was
  * being written, so nobody has to rediscover it:
@@ -296,13 +296,13 @@ export const bench = {
     "bench.addons.route": "Set-up",
 
     /*
-     * CONNECTING AND DISCONNECTING, IN WORDS (24 §5.6, D16).
+     * CONNECTING AND DISCONNECTING, IN WORDS.
      *
      * The shelf used to carry one button labelled with the add-on's own name,
      * and pressing it switched the thing on or off with nothing said either
-     * way. D16 is the half that matters: a disconnect DELETES THE KEY and KEEPS
-     * THE WORK, and a studio that is not told which is which will assume the
-     * worst and never press it.
+     * way. The disconnect is the half that matters: a disconnect DELETES THE
+     * KEY and KEEPS THE WORK, and a studio that is not told which is which will
+     * assume the worst and never press it.
      *
      * ── THREE CREDENTIAL SENTENCES, NOT TWO ─────────────────────────────────
      *
@@ -314,10 +314,10 @@ export const bench = {
      * anything. `credentialState` in `add-ons/host.ts` chooses between the
      * three, so `noAccount` can only ever appear under `connect: "none"`.
      *
-     * `notAffiliated` is the host's half of AC6, and it is generic on purpose:
-     * it names no add-on and no company, so a host carrying it has not learnt
-     * anything about what is plugged into it (AC5). An add-on that names NO
-     * company supplies its own positive sentence instead.
+     * `notAffiliated` is the host's half of the not-affiliated line, and it is
+     * generic on purpose: it names no add-on and no company, so a host carrying
+     * it has not learnt anything about what is plugged into it. An add-on that
+     * names NO company supplies its own positive sentence instead.
      */
     "bench.addons.connect": "Connect",
     "bench.addons.connectTitle": "Connect {name}",

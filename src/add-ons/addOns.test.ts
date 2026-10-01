@@ -2,17 +2,17 @@
  * The add-on seam's own suite.
  *
  * What it tests is the SEAM: that registering an add-on and enabling one are
- * different things (D6), that the registry resolves fills the way each slot's
- * fill rule says it should, and that the shelf carries what 24 D12 and AC6
- * require of it. All of that is data and functions, which is what a suite over
- * modules can honestly hold.
+ * different things, that the registry resolves fills the way each slot's fill
+ * rule says it should, and that the shelf carries what the no-logo rule and the
+ * not-affiliated line require of it. All of that is data and functions, which
+ * is what a suite over modules can honestly hold.
  *
- * WHAT IT NO LONGER CLAIMS TO HOLD IS D19. Two of its assertions used to, and
- * neither did: the empty-state check read `SLOT_EMPTY_BEHAVIOUR` back to
- * itself, and "mounts every id it hosts" was a grep for `slot="…"` that a
- * COMMENT satisfied. Both are proven blind by mutants recorded in
- * `slotRender.test.tsx`, which renders the screens in a DOM and holds the rule
- * where the rule lives — on the page.
+ * WHAT IT NO LONGER CLAIMS TO HOLD IS THE NO-PLACEHOLDER RULE. Two of its
+ * assertions used to, and neither did: the empty-state check read
+ * `SLOT_EMPTY_BEHAVIOUR` back to itself, and "mounts every id it hosts" was a
+ * grep for `slot="…"` that a COMMENT satisfied. Both are proven blind by
+ * mutants recorded in `slotRender.test.tsx`, which renders the screens in a DOM
+ * and holds the rule where the rule lives — on the page.
  */
 
 import { describe, expect, it } from "vitest";
@@ -27,14 +27,14 @@ describe("the registry this build ships", () => {
   /**
    * TWO ADD-ONS ARE VENDORED, AND BOTH START SWITCHED OFF.
    *
-   * The distinction is the whole demo device (24 §5.9, D6): a REGISTERED
-   * add-on is one the build carries, an ENABLED one is one the shop has turned
-   * on, and the app boots with `enabled` empty. So every screen a reviewer
-   * opens first is still the screen a maker with nothing connected sees — the
-   * only way to know the empty states are finished rather than pending (D19) —
-   * and one toggle in the dock turns the plain note field into a live preview.
+   * The distinction is the whole demo device: a REGISTERED add-on is one the
+   * build carries, an ENABLED one is one the shop has turned on, and the app
+   * boots with `enabled` empty. So every screen a reviewer opens first is still
+   * the screen a maker with nothing connected sees — the only way to know the
+   * empty states are finished rather than pending — and one toggle in the dock
+   * turns the plain note field into a live preview.
    *
-   * ── THE SECOND ONE IS THE POINT (D21) ──────────────────────────────────
+   * ── THE SECOND ONE IS THE POINT ────────────────────────────────────────
    *
    * `shipping-dhl` was written for the PRINT WORKS, months before this app
    * existed, and it is vendored here with not one byte changed in its package.
@@ -46,7 +46,8 @@ describe("the registry this build ships", () => {
    * keeping written down: the add-on compiled, then threw in three components,
    * because every payload had been shaped like whichever host happened to send
    * it. The fix was `payloads.ts` — payloads named for the SURFACE — plus
-   * hosting `order.dispatch.actions`, which §8A always said this view carried.
+   * hosting `order.dispatch.actions`, which this app's design always said this
+   * view carried.
    *
    * ── AND IT NO LONGER PINS THE CENSUS ────────────────────────────────────
    *
@@ -92,7 +93,7 @@ describe("the registry this build ships", () => {
     expect(Object.keys(DEFAULT_ADD_ON_SETTINGS["shipping-dhl"]!).sort()).toEqual([
       "collection_cutoff",
       "demo_transport",
-      // The returns depot (31 O4) — five display-text address fields for the
+      // The returns depot — five display-text address fields for the
       // prepaid-return-label surface, empty meaning NOT CONFIGURED.
       "returns_city",
       "returns_country",
@@ -124,7 +125,7 @@ describe("the registry this build ships", () => {
    * it is asserted below with a fill that genuinely names a slot this shop does
    * not mount, rather than borrowed from an add-on that does not have one.
    */
-  it("renders the print works' delivery add-on on THIS app's surfaces (D21)", () => {
+  it("renders the print works' delivery add-on on THIS app's surfaces", () => {
     const registry = createRegistry(ALL);
     const on = new Set(["shipping-dhl"]);
 
@@ -146,7 +147,7 @@ describe("the registry this build ships", () => {
   });
 
   /**
-   * AND THE ONE THAT IS ABOUT A SLOT RATHER THAN ABOUT A PACKAGE (24 D21).
+   * AND THE ONE THAT IS ABOUT A SLOT RATHER THAN ABOUT A PACKAGE.
    *
    * The case above proves a package crosses two shops unchanged. This proves
    * something the delivery add-on cannot: that `record.actions` names a
@@ -170,7 +171,8 @@ describe("the registry this build ships", () => {
     }
 
     // Every slot it fills is one this shop mounts — which was NOT true before
-    // `record.actions` was hosted, and is the concrete thing 31-T11 changed.
+    // `record.actions` was hosted, and is the concrete thing the label add-on's
+    // arrival changed.
     const labels = ALL.find((addOn) => addOn.key === "barcode-labels")!;
     for (const fill of labels.fills) {
       expect(isHosted(fill.slot), `${fill.slot} is filled but not mounted here`).toBe(true);
@@ -180,12 +182,13 @@ describe("the registry this build ships", () => {
   /**
    * AND A FILL FOR A SLOT THIS SHOP DOES NOT MOUNT IS DROPPED IN SILENCE.
    *
-   * The other half of D21, and the half that lets an add-on be written once: a
-   * host is not required to mount everything an add-on fills, and one that
-   * refused such an add-on would make "runs in both shops with no change to
-   * either repo" false. `artwork.sources` is a print works' surface — a way for
-   * a customer to send in artwork — and this studio has no use for it, so an
-   * add-on that fills it is registered like any other and simply never asked.
+   * The other half of the cross-app claim, and the half that lets an add-on be
+   * written once: a host is not required to mount everything an add-on fills,
+   * and one that refused such an add-on would make "runs in both shops with no
+   * change to either repo" false. `artwork.sources` is a print works' surface —
+   * a way for a customer to send in artwork — and this studio has no use for
+   * it, so an add-on that fills it is registered like any other and simply
+   * never asked.
    *
    * WHERE THE DROP HAPPENS IS THE POINT. The registry answers honestly — it
    * holds the fill and would hand it over — and NOTHING EVER ASKS, because the
@@ -222,8 +225,8 @@ describe("the registry this build ships", () => {
   });
 
   it("gives every entry a monogram of two or three letters and no brand colour", () => {
-    // 24 D12. A monogram is the entire visual identity an add-on gets, and the
-    // shelf is where a logo-ish mark would first appear.
+    // No logo, ever. A monogram is the entire visual identity an add-on gets,
+    // and the shelf is where a logo-ish mark would first appear.
     for (const addOn of ALL) {
       expect(addOn.monogram).toMatch(/^[A-Z]{2,3}$/);
       expect(JSON.stringify(addOn)).not.toMatch(/#[0-9a-f]{3,6}/i);
@@ -236,7 +239,7 @@ describe("the registry this build ships", () => {
     }
   });
 
-  it("leaves no detail surface silent about who else is involved (24 AC6)", () => {
+  it("leaves no detail surface silent about who else is involved", () => {
     // An entry that names a company carries the disclaimer; one that names none
     // says so positively, in ITS OWN words. Rendering nothing there is
     // indistinguishable from having forgotten the notice.
@@ -249,7 +252,7 @@ describe("the registry this build ships", () => {
     }
   });
 
-  it("names no other online marketplace anywhere on the shelf (24 D10c)", () => {
+  it("names no other online marketplace anywhere on the shelf", () => {
     // The one file where "sell where you already sell" would be a natural line
     // to write. It is a positioning ruling, and it is cheap to hold here.
     const shelf = JSON.stringify(ALL).toLowerCase();
@@ -265,11 +268,11 @@ describe("the registry this build ships", () => {
 });
 
 describe("the slot registry", () => {
-  it("mirrors the closed thirteen, and hosts ten of them (24 §5.4, D19, §8A)", () => {
+  it("mirrors the closed thirteen, and hosts ten of them", () => {
     /*
-     * TWELVE since 2026-08-28: `record.actions` (31 O1).
+     * TWELVE since 2026-08-28: `record.actions`.
      *
-     * [Amended the same day, 31-T11.] The hosted count is TEN, and the line
+     * [Amended the same day.] The hosted count is TEN, and the line
      * above it used to read "This shop does not mount it and the count of what
      * it hosts is unchanged" — asserted as `toHaveLength(9)` beside
      * `isHosted("record.actions") === false` below. Both were true when they
@@ -300,11 +303,11 @@ describe("the slot registry", () => {
     /*
      * A declaration, and named as one. This block reads a constant back to
      * itself and cannot do otherwise — which is precisely why it used to be a
-     * hole: it was the only thing in the repo claiming to hold D19, and adding
-     * a dashed placeholder to a silent slot in a real screen left it green.
-     * What each slot ACTUALLY renders when it is empty is asserted in
-     * `slotRender.test.tsx`, against the DOM. This says what the table intends;
-     * that says whether the app agrees.
+     * hole: it was the only thing in the repo claiming to hold the
+     * no-placeholder rule, and adding a dashed placeholder to a silent slot in
+     * a real screen left it green. What each slot ACTUALLY renders when it is
+     * empty is asserted in `slotRender.test.tsx`, against the DOM. This says
+     * what the table intends; that says whether the app agrees.
      */
     const speaks = HOSTED_SLOTS.filter((s) => SLOT_EMPTY_BEHAVIOUR[s] === "speaks");
     const silent = HOSTED_SLOTS.filter((s) => SLOT_EMPTY_BEHAVIOUR[s] === "silent");
@@ -323,8 +326,8 @@ describe("the slot registry", () => {
     // post office does not need to be told it has no carrier. `record.actions`
     // joined them in wave 6 and is the clearest case of the rule: the only
     // empty state it could have is "no add-on offers anything to do with this
-    // piece", which describes an absence rather than a finished thing, and D19
-    // is precisely the ban on writing that down.
+    // piece", which describes an absence rather than a finished thing, and the
+    // no-placeholder rule is precisely the ban on writing that down.
     expect(silent).toEqual([
       "cart.line.preview",
       "order.dispatch.actions",
@@ -339,18 +342,19 @@ describe("the slot registry", () => {
   it("knows which of the twelve this build does not mount", () => {
     /*
      * `order.dispatch.actions` USED TO BE ASSERTED ABSENT HERE, and that line
-     * was the defect rather than the guard it looked like. 24 §8A says the
-     * bench Order view carries this slot; it was never mounted, and a test that
-     * wrote the omission down as an invariant is how a gap survives a review.
-     * It is hosted now, and hosting it is what lets a delivery add-on written
-     * for the print works run here unchanged — D21's claim, made concrete.
+     * was the defect rather than the guard it looked like. This app's design
+     * says the bench Order view carries this slot; it was never mounted, and a
+     * test that wrote the omission down as an invariant is how a gap survives a
+     * review. It is hosted now, and hosting it is what lets a delivery add-on
+     * written for the print works run here unchanged — the cross-app claim,
+     * made concrete.
      */
     expect(isHosted("order.dispatch.actions")).toBe(true);
     /*
      * AND `record.actions` HAS JUST DONE THE SAME THING, WHICH IS WHY THIS CASE
      * IS WORTH READING TWICE.
      *
-     * [Amended 2026-08-28, 31-T11.] The line here read
+     * [Amended 2026-08-28.] The line here read
      * `expect(isHosted("record.actions")).toBe(false)`, under a comment saying
      * "Nothing in this shop shows one record with an add-on's action to take on
      * it". That sentence was a claim about the app and it was wrong: a piece's
@@ -370,7 +374,7 @@ describe("the slot registry", () => {
     // does not draw it, and a fill it drops is not an error in either repo.
     expect(isHosted("artwork.sources")).toBe(false);
     // And the one whose host is Adminium's generated dashboard rather than an
-    // example app, whose mount is Phase B (24 §5.10, D20).
+    // example app, whose mount waits for the add-on runtime.
     expect(isHosted("record.editor.panel")).toBe(false);
   });
 });
@@ -401,8 +405,9 @@ describe("slot fills", () => {
    * `slotRender.test.tsx` renders each host surface in a DOM, in both of the
    * states a reviewer can be in, and collects the mounts React actually
    * reached. A slot is proven mounted by being drawn, which is the claim.
-   * The empty-state half of D19 moved there for the same reason: the table
-   * below says what each slot SHOULD do, and only a render can say what it does.
+   * The empty-state half of the no-placeholder rule moved there for the same
+   * reason: the table below says what each slot SHOULD do, and only a render
+   * can say what it does.
    */
 
   it("goes back to exactly nothing when everything is switched off again", () => {

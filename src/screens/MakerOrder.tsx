@@ -240,13 +240,13 @@ export function MakerOrderScreen() {
              * post office, so with nothing connected the two rows above are the
              * finished panel rather than a stub waiting for something.
              *
-             * [Added 2026-08-10, wave 4b.] 24 §8A says this view carries this
-             * slot and it was missing — and the suite ASSERTED the omission
-             * (`isHosted("order.dispatch.actions") === false`), which locked it
-             * in: a guard written around a gap stops being a guard. It is
-             * mounted here, beside what a parcel costs and what it weighs,
-             * because that is where somebody stands when they are about to book
-             * a collection.
+             * [Added 2026-08-10, wave 4b.] This app's design says this view
+             * carries this slot and it was missing — and the suite ASSERTED the
+             * omission (`isHosted("order.dispatch.actions") === false`), which
+             * locked it in: a guard written around a gap stops being a guard.
+             * It is mounted here, beside what a parcel costs and what it
+             * weighs, because that is where somebody stands when they are about
+             * to book a collection.
              */}
             <AddOnSlot
               slot="order.dispatch.actions"

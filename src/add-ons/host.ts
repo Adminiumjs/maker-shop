@@ -1,8 +1,8 @@
 /**
- * AddOnHost — the seam add-ons plug into (24 §5.9).
+ * AddOnHost — the seam add-ons plug into.
  *
- * COPIED FROM `print-shop`, NOT ABSTRACTED (18 D7's rule for the `DataSource`
- * seam, applied here). Two standalone template repos published to the
+ * COPIED FROM `print-shop`, NOT ABSTRACTED (the rule the `DataSource` seam
+ * follows, applied here). Two standalone template repos published to the
  * Adminiumjs org share no package, and a shared one would have to be published,
  * versioned and installed before either could be cloned and read — which is the
  * thing these repos exist to avoid. The file is meant to be recognisable line
@@ -31,10 +31,10 @@ import type { ReactNode } from "react";
 import type { PayloadFor, ShopClock } from "./payloads.ts";
 import { SLOT_FILL, type SlotId } from "./slots.ts";
 
-/** Add-on categories — the closed vocabulary of 24 D2. */
+/** Add-on categories — a closed vocabulary of their own. */
 export type AddOnCategory = "artwork" | "delivery" | "payments" | "email" | "data";
 
-/** What the shop must supply to connect (24 §5.6). */
+/** What the shop must supply to connect. */
 export type ConnectKind = "none" | "api-key" | "oauth2";
 
 /** One ticked row in the connect dialog's permission list. */
@@ -138,7 +138,7 @@ export interface SeededActivityEntry {
  *
  * The words are still the add-on's: they are what THIS add-on did, phrased in
  * its own words (`messageKey` resolves in its own bundle). A real install reads
- * the same list out of `adminium_audit_log` (24 §5.7, category `add-on`) and
+ * the same list out of `adminium_audit_log` (category `add-on`) and
  * this demo has no server to read; what a host must never do is keep a
  * hand-written history of one particular add-on, because that is a host that
  * knows which add-ons exist.
@@ -155,7 +155,7 @@ export interface ActivityEntry {
 
 /**
  * The declaration that lets the connect dialog offer "use the demo instead"
- * without knowing what a carrier is (24 D11).
+ * without knowing what a carrier is.
  *
  * An add-on that reaches a third party says which of ITS settings means "do not
  * reach it", and supplies the words for the switch. The host shows the switch,
@@ -175,11 +175,11 @@ export interface DemoSwitch {
  *
  * This used to read `AddOnFill<P = unknown>` with `AddOn.fills` typed
  * `readonly AddOnFill<never>[]`, and that pair of declarations is the whole
- * architectural defect 24 D21 tripped over. `never` ERASED the payload: a fill
- * could declare `render: (p: anything) => …` and still be assignable, so
- * nothing anywhere compared what a SCREEN passes with what a FILL reads. The
- * seam type-checked perfectly and threw three times on the first screen of the
- * second host.
+ * architectural defect the cross-app claim tripped over. `never` ERASED the
+ * payload: a fill could declare `render: (p: anything) => …` and still be
+ * assignable, so nothing anywhere compared what a SCREEN passes with what a
+ * FILL reads. The seam type-checked perfectly and threw three times on the
+ * first screen of the second host.
  *
  * Now the parameter is the slot id and the payload is derived from it. An
  * add-on may still NARROW what it reads — `render` is contravariant in its
@@ -230,7 +230,7 @@ export interface AddOn {
   whatKey: string;
   /**
    * Two or three letters, rendered in a neutral --surface-3 tile. NEVER a real
-   * company logo, drawn, traced or approximated (24 D12) — a shelf of twenty
+   * company logo, drawn, traced or approximated — a shelf of twenty
    * add-ons has to read as one system rather than twenty logos, and a redrawn
    * mark would be a legal problem rather than a taste problem.
    */
@@ -250,7 +250,7 @@ export interface AddOn {
    * at registration (see `i18n/messages/index.ts`).
    */
   messages?: Readonly<Record<string, Readonly<Record<string, string>>>>;
-  /** i18n keys naming exactly what a disconnect removes and what it keeps (24 D16). */
+  /** i18n keys naming exactly what a disconnect removes and what it keeps. */
   disconnect?: { goesKey: string; staysKey: string };
   /**
    * Seeded "what it last did", newest first — DECLARED relative and referring.
@@ -266,7 +266,7 @@ export interface AddOn {
   namesCompany: boolean;
   /**
    * What the detail surfaces say WHERE the not-affiliated line would go, for an
-   * add-on that reports `namesCompany: false` (24 AC6, as amended).
+   * add-on that reports `namesCompany: false`.
    *
    * An add-on that names no company has no relationship to disclaim, and
    * rendering nothing there is indistinguishable from having forgotten the
@@ -317,7 +317,7 @@ export function isConnectable(addOn: AddOn): boolean {
  *                       is a thing anyone may say.
  *   "key-held"        — it asks, and this studio has handed one over.
  *   "asks-none-given" — it asks, and this studio has not. The state every
- *                       reviewer is in, because the demo transport (D11) is
+ *                       reviewer is in, because the demo transport is
  *                       what the dialog offers first.
  *
  * THE ARGUMENT IS DELIBERATELY THE SET AND NOT THE STORE. A pure function of

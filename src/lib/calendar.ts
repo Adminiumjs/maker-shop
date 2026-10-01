@@ -1,5 +1,5 @@
 /**
- * The studio calendar — the spine of this app (24 D5b).
+ * The studio calendar — the spine of this app.
  *
  * Birch Row is two people and a bench, and the bench runs TUESDAY TO SATURDAY.
  * Sunday and Monday it is shut. That is not decoration: every lead time, every
@@ -8,7 +8,8 @@
  *
  * Three engines and two views read this module, which is why it is separated
  * from `orders.ts` rather than living inside it. Cut it and every date in the
- * app becomes a lie — 24 §8A lists it under "not cuttable" for that reason.
+ * app becomes a lie — the app's design lists it under "not cuttable" for that
+ * reason.
  *
  * PURE AND DETERMINISTIC, like every engine in the house: no `Date.now()`, no
  * `Math.random()`, no DOM, no network. The clock is always passed in. Dates are

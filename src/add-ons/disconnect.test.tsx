@@ -1,6 +1,6 @@
 /**
- * D16, DRIVEN: what a disconnect takes, what it keeps, and what the studio is
- * told before it happens.
+ * THE DISCONNECT RULE, DRIVEN: what a disconnect takes, what it keeps, and what
+ * the studio is told before it happens.
  *
  * @vitest-environment jsdom
  *
@@ -84,7 +84,8 @@ const words = () => (host.textContent ?? "").replace(/\s+/g, " ");
  * `words()` flattens the card into one run, which is exactly the reading that
  * cannot tell a promise from its opposite: "what stays … the account details
  * are deleted" contains both halves and so does any sentence, on any side. The
- * side is the whole of D16, so the assertion has to read the DOM's structure.
+ * side is the whole of the disconnect rule, so the assertion has to read the
+ * DOM's structure.
  */
 function underHeading(heading: string): string {
   const eyebrow = [...host.querySelectorAll(".br-eyebrow")].find(
@@ -146,7 +147,7 @@ afterEach(() => {
   host.remove();
 });
 
-describe("the studio is asked before an add-on is switched off (24 D16)", () => {
+describe("the studio is asked before an add-on is switched off", () => {
   it("opens a confirm rather than disconnecting on the click", () => {
     drive(() => useStore.getState().connectAddOn(CARRIER, { keyGiven: true }));
 
@@ -183,9 +184,10 @@ describe("the studio is asked before an add-on is switched off (24 D16)", () => 
    * The carrier's "what stays" read "Collections already booked keep their
    * labels and tracking numbers. The account details are deleted." — a
    * DELETION, printed under the heading that promises survival, in all eight
-   * locales. D16 is exactly the distinction those two headings draw, so a card
-   * that puts a deletion under "What stays" is not a wording problem: it is the
-   * rule, stated backwards, on the one screen written to state it.
+   * locales. The disconnect rule is exactly the distinction those two headings
+   * draw, so a card that puts a deletion under "What stays" is not a wording
+   * problem: it is the rule, stated backwards, on the one screen written to
+   * state it.
    */
   it("keeps the deletion out of what survives, and says it under what goes", () => {
     drive(() => useStore.getState().connectAddOn(CARRIER, { keyGiven: true }));
@@ -218,7 +220,7 @@ describe("the studio is asked before an add-on is switched off (24 D16)", () => 
      * The half a single sentence would have got wrong. The personalizer's
      * `connect` is `none`: telling a studio its key had been deleted would be
      * describing a credential that never existed, which is the same class of
-     * untruth as the dashed placeholder D19 bans.
+     * untruth as the dashed placeholder the no-placeholder rule bans.
      */
     drive(() => useStore.getState().connectAddOn(ARTWORK));
     expect(useStore.getState().credentialled.has(ARTWORK)).toBe(false);

@@ -1,7 +1,7 @@
 /*
  * Design tokens — a faithful, hand-inlined mirror of @adminium/tokens
  * (packages/tokens/src/{tokens,accents}.css in the product monorepo). Values are
- * canonical; see 02-design-system.md §1.
+ * canonical.
  *
  * Copied rather than imported because this app is a standalone repo published to
  * the Adminiumjs org and @adminium/tokens is not on npm yet. When it is, replace
@@ -19,7 +19,7 @@
 :root {
   color-scheme: light;
 
-  /* Neutral surfaces + text (02-design-system.md §1.1) */
+  /* Neutral surfaces + text */
   --bg: #f6f6f8;
   --surface: #ffffff;
   --surface-2: #fafafa;
@@ -114,10 +114,10 @@
  * this app changes is the accent pair, so a future `import '@adminium/tokens'`
  * drops in cleanly.
  *
- * Walnut because it is one of the two boards this studio cuts and because 24
- * D12a records the shipped grid is nearly out of hue: the nearest neighbours
- * are `factory` #9a3412 and `clients` #b25e09, and the recorded fallback is
- * #831843 (deep berry).
+ * Walnut because it is one of the two boards this studio cuts and because the
+ * shipped grid is nearly out of hue: the nearest neighbours are `factory`
+ * #9a3412 and `clients` #b25e09, and the recorded fallback is #831843 (deep
+ * berry).
  *
  * THE DARK PAIR IS NOT THE LIGHT ONE DIMMED. #78350f against a near-black
  * surface is barely visible, let alone AA, so dark lightens it to #e0b08a and

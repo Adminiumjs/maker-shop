@@ -1,5 +1,5 @@
 /**
- * The made-to-order machine (24 D5b).
+ * The made-to-order machine.
  *
  * Pure and deterministic, like `calendar.ts`: no `Date.now()`, no `Math.random()`,
  * no DOM, no network. The clock is always passed in, and every date this module
@@ -58,7 +58,7 @@ export type BenchColumn = (typeof BENCH_COLUMNS)[number];
  */
 export type ProofState = "not-needed" | "not-sent" | "waiting" | "approved";
 
-/** The order machine, as 24 D5b writes it. */
+/** The order machine, as specified. */
 export const ORDER_STAGES = [
   "placed",
   "proof_sent",
@@ -484,7 +484,7 @@ export interface StockLine extends StockRow {
   /**
    * On hand minus committed.
    *
-   * NOT called `free`: 17 §2's release grep reads built output for `free` as a
+   * NOT called `free`: the release grep reads built output for `free` as a
    * SUBSTRING, and a column header is exactly the kind of word that ships. The
    * shelf still means the same thing, and the app says "to use" where a person
    * would say the other word.

@@ -11,7 +11,7 @@
 -- THE EIGHT TABLES BELOW ARE THE MANIFEST'S, exactly: every table and every
 -- column here appears in `requiredSchema` in manifest.json, and nothing else
 -- does. That document is what an add-on reads — the Live Personalizer mounts
--- its dashboard panel on `products` and `order_lines` by name (24 D20) — so a
+-- its dashboard panel on `products` and `order_lines` by name — so a
 -- column added here and not there is a promise only half made.
 --
 -- THERE IS NO FINISHED-GOODS STOCK IN THIS FILE, and there is nowhere to put

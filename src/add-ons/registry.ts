@@ -1,5 +1,5 @@
 /**
- * The static list the demo registers at startup (24 §5.9).
+ * The static list the demo registers at startup.
  *
  * In DEMO MODE the add-on bundles are compiled into the app and named here; in
  * CONNECTED MODE (Phase B) this list comes from `GET /api/v1/add-ons` and the
@@ -19,26 +19,26 @@
  * its registry mirror and did not draw — so registration alone would have
  * vendored a package, merged its strings, put it on the shelf, and rendered
  * exactly half of it. A slot mount is the one thing a host genuinely has to
- * bring; what D21 claims is that the PACKAGE crosses unchanged, and it does:
- * not one byte of `packages/barcode-labels` differs between this shop and the
- * print works, and the file list in `sync-add-ons.sh` is the same list there.
- * See `slots.ts` and `screens/Pieces.tsx` for the mount and why it is where it
- * is.
+ * bring; what the cross-app claim says is that the PACKAGE crosses unchanged,
+ * and it does: not one byte of `packages/barcode-labels` differs between this
+ * shop and the print works, and the file list in `sync-add-ons.sh` is the same
+ * list there. See `slots.ts` and `screens/Pieces.tsx` for the mount and why it
+ * is where it is.
  *
- * THE SECOND ONE IS THE CROSS-APP PROOF, NOT A LEFTOVER (24 D21, AC20).
+ * THE SECOND ONE IS THE CROSS-APP PROOF, NOT A LEFTOVER.
  * `shipping-dhl` was written for the print works months before this app
  * existed, and it is vendored here with not one byte changed in its package.
  * Registration was the whole integration. It is kept registered rather than
  * removed after the experiment because a claim a reviewer can flip a toggle and
  * watch is worth more than the same claim in a test, and because the surfaces
- * it needs — `order.dispatch.actions` most of all — are surfaces §8A always
- * said this bench had and this app had simply never mounted.
+ * it needs — `order.dispatch.actions` most of all — are surfaces this app's
+ * design always said this bench had and this app had simply never mounted.
  *
  * ALL THREE START SWITCHED OFF (`enabled` is an empty set in the store), and
  * that is the demo device rather than an accident: a reviewer sees the shop as
  * a maker with nothing connected sees it — a plain note field with a character
  * counter, the maker's instructions and a proof promise, which is a FINISHED
- * screen and not a gap (D19) — and then flips one toggle in the dock and
+ * screen and not a gap — and then flips one toggle in the dock and
  * watches the same page become a live preview. Each toggles independently, so a
  * shop can have the carrier and not the personalizer or the other way round,
  * and flipping any of them back leaves no orphan control behind.
@@ -96,7 +96,7 @@ export function demoAddOns(): AddOn[] {
  * What every add-on starts from, keyed by add-on key and OPAQUE to the host.
  *
  * A credentialled add-on's secrets are absent by construction rather than by
- * omission (24 D15): they are `secret: true` settings, they live in its server
+ * omission: they are `secret: true` settings, they live in its server
  * half, and a store the browser can read is precisely where they must never
  * appear. A connect dialog collects them into component state and drops them;
  * nothing here ever holds one.

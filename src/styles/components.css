@@ -672,7 +672,7 @@
   border-radius: 999px;
 }
 
-/* Add-on monogram: neutral by design (24 D12) — never a company's colours. */
+/* Add-on monogram: neutral by design — never a company's colours. */
 .br-monogram {
   inline-size: 44px;
   block-size: 44px;
@@ -894,7 +894,7 @@
   background: none;
   color: var(--fg-muted);
 }
-/* The not-affiliated line (24 AC6). A footnote in weight, because it is a legal
+/* The not-affiliated line. A footnote in weight, because it is a legal
    fact about a name rather than something the studio has to act on — but it is
    on the card, not in a page footer, so the screen that names a company is the
    screen that disclaims it. */

@@ -1,7 +1,7 @@
 /**
  * WHO ELSE IS INVOLVED — the line every add-on surface that names one ends on.
  *
- * ── THE DEFECT THIS EXISTS TO CLOSE (24 AC6) ────────────────────────────────
+ * ── THE DEFECT THIS EXISTS TO CLOSE ─────────────────────────────────────────
  *
  * [Added 2026-08-11, wave 4b round 4.] The shelf rendered `noCompanyKeys` and
  * nothing else, so an add-on that names NO company said so — and the one that
@@ -21,7 +21,7 @@
  * `namesCompany: true`  → the HOST's line, "Adminium is not affiliated with
  *                         this company." It is generic — it names no add-on and
  *                         no company — so carrying it here does not make the
- *                         host know anything about its add-ons (AC5).
+ *                         host know anything about its add-ons.
  * `namesCompany: false` → the ADD-ON's own words, from its own eight-locale
  *                         bundle. The host has no sentence claiming an add-on
  *                         connects to nothing, because that is not the host's

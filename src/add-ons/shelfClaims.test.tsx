@@ -21,7 +21,7 @@
  *    survive three rounds of review — the repair was in the repo and the screen
  *    disagreed with it.
  *
- * 2. THE NOT-AFFILIATED LINE (AC6). The card rendered `noCompanyKeys` and
+ * 2. THE NOT-AFFILIATED LINE. The card rendered `noCompanyKeys` and
  *    nothing else, so every add-on that names NO company disclaimed a
  *    relationship it does not have, and the one that names a real one said
  *    nothing at all. A grep for "affiliat" outside `vendor/` came back empty in
@@ -153,7 +153,7 @@ describe("the card never tells a studio its work stays in when it does not", () 
 
   /**
    * ROUTE TWO: THE CONNECT DIALOG, on its own default. "Use the demo carrier"
-   * starts ON (D11), so `needsKey` is false and Connect reports `keyGiven:
+   * starts ON, so `needsKey` is false and Connect reports `keyGiven:
    * false`. This is the path a reader who never opens the dock takes, and it
    * lands in the same state.
    */
@@ -216,7 +216,7 @@ describe("the card never tells a studio its work stays in when it does not", () 
   });
 });
 
-describe("wherever a company is named, the card says what that is not (AC6)", () => {
+describe("wherever a company is named, the card says what that is not", () => {
   it("carries the disclaimer on the card that names a real company", () => {
     expect(wordsOn("DHL Shipping")).toContain(DISCLAIMER);
   });

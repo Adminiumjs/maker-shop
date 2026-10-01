@@ -6,7 +6,7 @@
  * English is the source of truth. The other seven must carry every key or
  * `messages/index.ts` refuses to compile.
  *
- * THE VOCABULARY BAN IS THE HARD PART OF THIS FILE (24 D10b). Nothing here may
+ * THE VOCABULARY BAN IS THE HARD PART OF THIS FILE. Nothing here may
  * spell `pricing`, `plan`, `tier`, `billing`, `upgrade`, `/mo` or `free` as a
  * SUBSTRING in any language, which in practice means: postage is INCLUDED,
  * engraving is PART OF THE PRICE, a remake is AT NO CHARGE, and the German,

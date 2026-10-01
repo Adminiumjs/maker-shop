@@ -28,18 +28,18 @@
  * connected — connect another in Add-ons", and removing the entry would have
  * pointed that sentence at an empty shelf.
  *
- * THEY NAME NO COMPANY, AND THAT IS THE POINT OF THIS FILE EXISTING (24 D12,
- * and `print-shop` learned it by shipping three real firms' names in its own
+ * THEY NAME NO COMPANY, AND THAT IS THE POINT OF THIS FILE EXISTING
+ * (`print-shop` learned it by shipping three real firms' names in its own
  * source for integrations that did not exist). Each entry says WHAT IT WOULD DO
  * rather than WHO WOULD DO IT: a live preview for personalized pieces, a
  * delivery company, a card payment processor, a mailing-list service. An add-on
  * that IS built names its own company, nominatively, in its own repo, where a
  * `TRADEMARKS.md` sits beside the claim.
  *
- * D10c APPLIES HERE HARDEST. This is the file where "sell on the same places
- * you sell now" would be a natural line to write, and no shipped copy in this
- * repo names another online marketplace, compares us to one, or quotes anyone's
- * commission.
+ * NEVER NAMING ANOTHER MARKETPLACE APPLIES HERE HARDEST. This is the file where
+ * "sell on the same places you sell now" would be a natural line to write, and
+ * no shipped copy in this repo names another online marketplace, compares us to
+ * one, or quotes anyone's commission.
  *
  * `nameKey` rather than `name`: a real add-on's name is a proper noun and does
  * not translate, but these are DESCRIPTIONS, and a description that stayed in
@@ -61,7 +61,7 @@ export const NOT_IN_THIS_DEMO: readonly AddOn[] = [
     shortName: "Second carrier",
     lineKey: "addon.stub.carrier.line",
     whatKey: "addon.stub.carrier.line",
-    // Monograms are letters on a neutral tile (D12). With no company to
+    // Monograms are letters on a neutral tile. With no company to
     // initialise, these initialise the capability instead.
     monogram: "DEL",
     category: "delivery",

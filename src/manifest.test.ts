@@ -14,7 +14,7 @@
  *
  * The add-ons monorepo learned this the expensive way and it is worth writing
  * down here rather than pointing at another repo. Every add-on carried a
- * `manifest.test.ts` that restated "the rules 24 §5.3 names", by hand, because
+ * `manifest.test.ts` that restated the add-on block's rules, by hand, because
  * `@adminium/manifest` is not on a registry. The personalizer's manifest was
  * INVALID on three paths — two attach targets missing `app`, and a setting
  * declared `"type": "text"`, which is not one of the six the settings union
@@ -95,7 +95,7 @@ const available = existsSync(VALIDATOR);
 const VALIDATOR_REQUIRED = process.env.ADMINIUM_REQUIRE_VALIDATOR === "true";
 
 /**
- * ── AND CI MAY NOT SKIP IT (28-T26 follow-up) ──────────────────────────────
+ * ── AND CI MAY NOT SKIP IT ─────────────────────────────────────────────────
  *
  * `describe.skipIf` above is right for a developer with no product checkout —
  * somebody reading the example app is not required to clone the product. It was
@@ -146,10 +146,10 @@ describe.skipIf(!available)("manifest.json passes @adminium/manifest itself", ()
    * would look exactly like the case above passing.
    *
    * Each of these is a real mistake rather than a decorative one: a stranger's
-   * publisher id (v1 accepts only first-party, D13), an app carrying an add-on
-   * block (§5.7 item 6 — the union is discriminated so it is refused rather
-   * than ignored), a column type that is not in the closed list, and a page
-   * whose title is a bare string rather than an i18n message.
+   * publisher id (v1 accepts only first-party), an app carrying an add-on block
+   * (the union is discriminated so it is refused rather than ignored), a column
+   * type that is not in the closed list, and a page whose title is a bare
+   * string rather than an i18n message.
    */
   it.each([
     ["a publisher that is not first-party", { publisher: { ...manifest.publisher, id: "somebody-else" } }],
@@ -182,7 +182,7 @@ describe("it is the app this wave says it is", () => {
     expect(manifest.license).toBe("AGPL-3.0-only");
   });
 
-  it("declares exactly the three capabilities D3a names, and no `realtime`", () => {
+  it("declares exactly its three capabilities, and no `realtime`", () => {
     expect([...manifest.capabilities].sort()).toEqual(
       ["email-delivery", "file-storage", "payments"].sort(),
     );
@@ -205,7 +205,7 @@ describe("it is the app this wave says it is", () => {
      * declared nothing because this app had stopped hosting anything would
      * satisfy them perfectly.
      *
-     * [Amended 2026-08-28, 31-T11.] Nine became TEN with `record.actions`,
+     * [Amended 2026-08-28.] Nine became TEN with `record.actions`,
      * mounted at the foot of a piece's own screen. The number is deliberately
      * written out rather than compared to itself, so a mount that disappears is
      * a failure here and a mount that is ADDED is a decision somebody records —
@@ -236,7 +236,7 @@ describe("the schema it asks for is the one the app models", () => {
 
   /**
    * THE TWO TABLE NAMES ANOTHER REPO DEPENDS ON. The personalizer's manifest
-   * mounts `record.editor.panel` on `products` and `order_lines` (D20), naming
+   * mounts `record.editor.panel` on `products` and `order_lines`, naming
    * them as strings; nothing at install time would tell either side if this
    * document renamed one.
    */
@@ -261,7 +261,7 @@ describe("the schema it asks for is the one the app models", () => {
     ]);
   });
 
-  it("carries no finished-goods stock anywhere (24 D5b)", () => {
+  it("carries no finished-goods stock anywhere", () => {
     /*
      * The rule the whole app is built on, asserted against the DOCUMENT as well
      * as against the code. `orders.test.ts` holds the engine to it; a manifest

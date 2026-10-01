@@ -17,7 +17,7 @@
  * says why is better than both.
  *
  * The monograms are letters on a neutral tile and there is not a company logo
- * anywhere on this page, drawn, traced or approximated (24 D12).
+ * anywhere on this page, drawn, traced or approximated.
  */
 
 import { Blocks, Ear, EyeOff, KeyRound, ShieldCheck } from "lucide-react";
@@ -39,7 +39,7 @@ import { useT, type MessageKey } from "../i18n/index.tsx";
 import { useStore } from "../state/store.ts";
 
 /**
- * The shape of the slot table, counted rather than stated (24 D19).
+ * The shape of the slot table, counted rather than stated.
  *
  * Module scope on purpose: these are facts about the build, not about a render,
  * and computing them here is what makes the copy below unable to disagree with
@@ -101,9 +101,8 @@ export function AddOnsScreen() {
             <p className="br-panel-note">{t(addOn.lineKey as never)}</p>
 
             {/*
-             * 24 AC6, as amended: an add-on that names a company carries the
-             * not-affiliated line; one that names none says so positively, in
-             * ITS OWN words.
+             * An add-on that names a company carries the not-affiliated line;
+             * one that names none says so positively, in ITS OWN words.
              *
              * THIS BLOCK USED TO RENDER ONLY THE SECOND HALF. It printed
              * `noCompanyKeys` and nothing else, so the shelf disclaimed a
@@ -117,7 +116,7 @@ export function AddOnsScreen() {
               <>
                 {/*
                   * CONNECTING AND DISCONNECTING ARE TWO DECISIONS, AND BOTH ARE
-                  * SAID OUT LOUD (24 §5.6, D16).
+                  * SAID OUT LOUD.
                   *
                   * This used to be ONE button labelled with the add-on's own
                   * name, calling `toggleAddOn` straight through: the carrier
@@ -182,11 +181,11 @@ export function AddOnsScreen() {
                       })()}
                     </Mono>
                     {/*
-                      * WHICH OF THE D16 PROMISES THIS ONE IS ABOUT, ON THE CARD
-                      * RATHER THAN ONLY IN THE CONFIRM. An add-on holding a key
-                      * and one that never asked for an account are different
-                      * things to disconnect, and the difference has to be
-                      * visible before somebody presses the button.
+                      * WHICH OF THE DISCONNECT PROMISES THIS ONE IS ABOUT, ON
+                      * THE CARD RATHER THAN ONLY IN THE CONFIRM. An add-on
+                      * holding a key and one that never asked for an account
+                      * are different things to disconnect, and the difference
+                      * has to be visible before somebody presses the button.
                       *
                       * THREE STATES, NOT TWO, AND NOT DERIVED HERE. This block
                       * used to read `credentialled` alone, which folded "asks
@@ -218,7 +217,7 @@ export function AddOnsScreen() {
                      * — it does not know which add-on that is or what the page
                      * contains. Without this the slot would be mounted and
                      * unreachable, which is the same defect as not mounting it
-                     * (24 §5.4's amendment) wearing a different hat.
+                     * wearing a different hat.
                      */}
                     {registry.fillsFor("nav.add-on.routes", enabled, addOn.key).length > 0 && (
                       <button
@@ -266,7 +265,7 @@ export function AddOnsScreen() {
 
                     {/*
                       * What a disconnect takes and what it keeps, in the
-                      * add-on's own words (24 D16) — HERE AS WELL AS in the
+                      * add-on's own words — HERE AS WELL AS in the
                       * confirm, because a studio deciding whether to press
                       * Disconnect should not have to press it to find out.
                       */}

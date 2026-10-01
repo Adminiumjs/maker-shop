@@ -8,7 +8,7 @@
  * being explained), "Looking after it" (real wood behaves in ways a shopper has
  * to be told about) and "If something's wrong" (there is nobody else to go
  * through). Cutting them would leave five footer links pointing at nothing,
- * which is the one thing 18 §1.1 does not allow.
+ * and a dead link is the one thing a shipped app may not have.
  */
 
 import { Calendar, FileText, MailCheck, Truck } from "lucide-react";

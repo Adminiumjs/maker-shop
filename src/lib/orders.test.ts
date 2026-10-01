@@ -1,5 +1,5 @@
 /**
- * The order machine's suite (24 D5b, D9, and acceptance criterion 14).
+ * The order machine's suite.
  *
  * Four things are load-bearing and each has its own block below: the lead times
  * by kind in STUDIO days, the basket taking its longest line, THE PROOF GATE
@@ -65,7 +65,7 @@ const lineOf = (order: Order): OrderLine => order.lines[0]!;
 
 describe("lead times are counted in studio days, by kind", () => {
   it("is 3 for coasters and keyrings, 4 for printed pieces, 5 for slate signs, 10 for glazed", () => {
-    // The table 24 D5b writes, asserted through the products that use it rather
+    // The lead-time table, asserted through the products that use it rather
     // than by reading the constant back to itself.
     expect(leadDaysFor("walnut-coasters")).toBe(3);
     expect(leadDaysFor("ply-coasters")).toBe(3);
@@ -359,7 +359,7 @@ describe("THE PROOF GATE", () => {
 // ── the stage machine ────────────────────────────────────────────────────────
 
 describe("placed → proof_sent → approved → making → finishing → posted", () => {
-  it("names the six stages 24 D5b names", () => {
+  it("names the six stages of the order machine", () => {
     expect([...ORDER_STAGES]).toEqual([
       "placed",
       "proof_sent",

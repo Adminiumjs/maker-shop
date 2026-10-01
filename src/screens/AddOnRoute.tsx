@@ -4,10 +4,9 @@
  * WHY THIS SCREEN EXISTS AT ALL, and it is not "because the registry has a slot
  * for it". The print works declared this id for a release, Design Studio
  * shipped a real fill against it, and nothing anywhere drew it — that app
- * switches views off one store field and has no route for an add-on to occupy
- * (24 §5.4's amendment). The lesson recorded there is that a slot a host
- * declares and never mounts is WORSE than an absent one, because an add-on
- * author reads the list and writes code to it.
+ * switches views off one store field and has no route for an add-on to occupy.
+ * The lesson is that a slot a host declares and never mounts is WORSE than an
+ * absent one, because an add-on author reads the list and writes code to it.
  *
  * So Birch Row hosts it and Birch Row mounts it: the maker's shell has a view,
  * this is the view, and `addOns.test.ts` greps `src/` for a `slot="…"` per
@@ -24,8 +23,8 @@
  * directly above whatever heading the add-on's page began with. Two headings,
  * one page, and the outer one written by the shop about a page it knows nothing
  * about. Both are gone. Their absence is also what makes the empty case honest
- * — with nothing connected this route renders a way back and NOTHING ELSE, per
- * D19, where before it drew a titled, permanently empty page.
+ * — with nothing connected this route renders a way back and NOTHING ELSE,
+ * where before it drew a titled, permanently empty page.
  */
 
 import { ChevronLeft } from "lucide-react";

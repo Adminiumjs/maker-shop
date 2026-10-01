@@ -314,7 +314,7 @@ export const ORDERS: readonly Order[] = [
         sizeKey: "standard",
         finishKey: "oiled",
         /*
-         * EIGHT SETS, AND THE NUMBER IS THE POINT (24 AC15).
+         * EIGHT SETS, AND THE NUMBER IS THE POINT.
          *
          * This was `1`, and with it the whole seeded bench fitted on one sheet:
          * every batchable group packed with an empty overflow list, so half of

@@ -4,8 +4,8 @@
  * Parity is already a COMPILE error in `messages/index.ts`, so what this adds
  * is the three things a type cannot see — that a translation still carries the
  * placeholders its English does, that nobody has reached for a banned word in
- * ANY of the eight languages, and that the craft traps 24 D10b names by name
- * are absent from the English copy that produces them.
+ * ANY of the eight languages, and that the craft traps named for this shop are
+ * absent from the English copy that produces them.
  */
 
 import { describe, expect, it } from "vitest";
@@ -142,7 +142,7 @@ describe("the host and its add-ons measure in the same unit", () => {
   });
 });
 
-describe("the vocabulary ban (24 D10, D10b)", () => {
+describe("the vocabulary ban", () => {
   /*
    * English gets the full list as WORDS as well as substrings. Several of them
    * are this trade's own vocabulary — a quantity break wants to be called a
@@ -183,11 +183,11 @@ describe("the vocabulary ban (24 D10, D10b)", () => {
 
   it("catches them as SUBSTRINGS too, in every locale", () => {
     /*
-     * 17 §2's grep is case-insensitive and UNANCHORED, so "explanation" is a
-     * hit on "plan" and "frontier" is a hit on "tier" — the two traps D10 names
-     * by name, and neither is visible to `\b(plans?|tiers?)\b`. This app's
-     * translations were written around the list rather than into it, so the
-     * substring rule runs over ALL EIGHT locales with no carve-outs at all.
+     * The release grep is case-insensitive and UNANCHORED, so "explanation" is
+     * a hit on "plan" and "frontier" is a hit on "tier" — the two traps the ban
+     * names by name, and neither is visible to `\b(plans?|tiers?)\b`. This
+     * app's translations were written around the list rather than into it, so
+     * the substring rule runs over ALL EIGHT locales with no carve-outs at all.
      */
     for (const locale of LOCALE_TAGS) {
       const hits = Object.entries(MESSAGES[locale])
@@ -237,7 +237,7 @@ describe("the vocabulary ban (24 D10, D10b)", () => {
   });
 });
 
-describe("the craft traps (24 D10b)", () => {
+describe("the craft traps", () => {
   it("says pot and garden markers, never the banned word for either", () => {
     for (const trap of CRAFT_TRAPS) {
       const hits = Object.entries(MESSAGES["en-US"])

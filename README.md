@@ -261,21 +261,21 @@ are invented.
 
 ## Add-ons
 
-The shop hosts **nine** of the eleven slots in the closed registry (24 §5.4)
-and vendors **two** add-ons from the
+The shop hosts **nine** of the eleven slots in the closed registry and
+vendors **two** add-ons from the
 [`add-ons`](https://github.com/Adminiumjs/add-ons) monorepo: the **Live
 Personalizer** and **DHL Shipping**.
 
 Both arrive switched OFF, independently, and that is the demo device rather than
 an oversight: every screen a reviewer opens first is the screen a maker with
 nothing connected sees — a plain note field with a live counter, the maker's
-instructions and a proof promise, which is a *finished* screen and not a gap
-(24 D19) — and one toggle in the dock turns the same block into a live preview
+instructions and a proof promise, which is a *finished* screen and not a gap —
+and one toggle in the dock turns the same block into a live preview
 of the piece with the customer's own words cut into it. Toggling either back
 leaves no orphan control behind, which `addOns.test.ts` and a browser walk both
 check.
 
-**DHL Shipping is the cross-app proof (24 D21, AC20).** It was written for the
+**DHL Shipping is the cross-app proof.** It was written for the
 Print Shop months before this app existed and is vendored here with not one byte
 changed in its package: registration was the whole integration. It fills four
 slots and this shop mounts all four; the fill it does NOT ship — `artwork.sources`

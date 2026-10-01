@@ -2,19 +2,19 @@
  * The release sweep's word list, in one executable place.
  *
  * THE GUARD HAS TO BE THE RELEASE GREP, NOT A POLITER VERSION OF IT. The sweep
- * (17 §2) reads BUILT OUTPUT case-insensitively for
- * `pricing|plan|tier|billing|upgrade|/mo|free` as SUBSTRINGS, and 24 D12 adds
- * `premium` and `pro` for add-ons. A `\b`-anchored version of that list is
- * strictly weaker than the thing it claims to enforce: "explanation",
- * "frontier", "freephone" and "flatplan" all pass a word boundary and all fail
- * the release. Substrings here, no anchors.
+ * reads BUILT OUTPUT case-insensitively for
+ * `pricing|plan|tier|billing|upgrade|/mo|free` as SUBSTRINGS, and the add-on
+ * brand rule adds `premium` and `pro` for add-ons. A `\b`-anchored version of
+ * that list is strictly weaker than the thing it claims to enforce:
+ * "explanation", "frontier", "freephone" and "flatplan" all pass a word
+ * boundary and all fail the release. Substrings here, no anchors.
  *
  * THE LIST IS NEVER SHORTENED TO MAKE A BUILD PASS. Where a genuine non-English
  * homograph has to be allowed it is named — one exact token at a time, with the
  * language it belongs to and what it actually means — so a word the gate has to
  * allow is a word a reviewer gets to read.
  *
- * THIS APP'S OWN TRAPS (24 D10b) are in `CRAFT_TRAPS`. A shop that sells pots
+ * THIS APP'S OWN TRAPS are in `CRAFT_TRAPS`. A shop that sells pots
  * and cake toppers walks into the list on ordinary vocabulary, and the failure
  * mode is a first draft that reads perfectly and fails the release: "plant
  * markers", "free postage", "a tiered cake topper", "upgrade to walnut".
@@ -42,13 +42,14 @@ export const SUBSTRING_BANNED = [
 ] as const;
 
 /**
- * The one 24 D12 adds that is a WORD rather than a substring.
+ * The one the add-on brand rule adds that is a WORD rather than a substring.
  *
- * "pro" is not in 17 §2's run of substrings and must not be turned into one: a
- * made-to-order shop says "proof", "process" and "product" on nearly every
- * screen, and a substring rule over those would trade a real defect for an
- * imaginary one. What D12 forbids is the marketing word — a "Pro" add-on, a
- * "Pro" account — so it is checked as a standalone token.
+ * "pro" is not in the release sweep's run of substrings and must not be turned
+ * into one: a made-to-order shop says "proof", "process" and "product" on
+ * nearly every screen, and a substring rule over those would trade a real
+ * defect for an imaginary one. What the brand rule forbids is the marketing
+ * word — a "Pro" add-on, a "Pro" account — so it is checked as a standalone
+ * token.
  */
 export const WORD_BANNED = ["pro"] as const;
 
@@ -72,7 +73,7 @@ export const WORD_BANNED = ["pro"] as const;
  *
  * A host that must be edited before a portable add-on passes its gates is the
  * `HOSTED_SLOTS` defect wearing different clothes: it makes "runs in both shops
- * with no change to either repo" (24 D21) false by a route nobody would look
+ * with no change to either repo" false by a route nobody would look
  * down. And the fix is not "add the phrase we happen to need" — it is to notice
  * that these entries were never facts about a HOST.
  *
@@ -165,10 +166,10 @@ export const PRO_PHRASES: readonly {
  *
  * ── WHAT THE RULE IS ────────────────────────────────────────────────────────
  *
- * 17 §2 bans a set of IDEAS and happens to spell them in English:
- * `pricing`, `plan`, `tier`, `billing`, `upgrade`, `free`, plus D12's
- * `premium`/`pro`. Copy in the other seven languages says the same things in
- * its own words and the release grep cannot see any of it.
+ * The release sweep bans a set of IDEAS and happens to spell them in English:
+ * `pricing`, `plan`, `tier`, `billing`, `upgrade`, `free`, plus the add-on
+ * brand rule's `premium`/`pro`. Copy in the other seven languages says the same
+ * things in its own words and the release grep cannot see any of it.
  *
  * So the table below is `IDEA × LANGUAGE`, and it is TOTAL BY TYPE: every idea
  * has a cell in every non-English language, and adding a language or an idea is
@@ -249,7 +250,7 @@ export const PRO_PHRASES: readonly {
  */
 
 /**
- * The ideas 17 §2 and 24 D12 forbid, named once.
+ * The ideas the release sweep and the add-on brand rule forbid, named once.
  *
  * `paid` ON ITS OWN IS DELIBERATELY NOT ONE OF THEM, and the attempt is worth
  * recording. It was in this list for one run and came straight back out: a shop
@@ -418,10 +419,11 @@ export const IDEA_IN_LANGUAGE: Record<
  */
 export const TIERING_WORDS: Record<string, RegExp[]> = {
   /*
-   * English's own cell, which is NOT empty and used to be nearly so. 17 §2's
-   * substring run covers `pricing plan tier billing upgrade free /mo` and D12
-   * adds `premium`; none of them appears in "switch to the paid version for
-   * more", which is the round-6 plant written in English. The hole was in every
+   * English's own cell, which is NOT empty and used to be nearly so. The
+   * release sweep's substring run covers
+   * `pricing plan tier billing upgrade free /mo` and the add-on brand rule adds
+   * `premium`; none of them appears in "switch to the paid version for more",
+   * which is the round-6 plant written in English. The hole was in every
    * language including this one.
    */
   "en-US": [/premium/i, /paid version/i, /full version/i, /paid account/i],
@@ -434,7 +436,7 @@ export const TIERING_WORDS: Record<string, RegExp[]> = {
 };
 
 /**
- * The craft vocabulary this shop trips over (24 D10b), and what it says instead.
+ * The craft vocabulary this shop trips over, and what it says instead.
  *
  * Checked as whole phrases against English copy, because each one is a sentence
  * a careful writer produces on the first try. The right-hand column is not a

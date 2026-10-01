@@ -192,7 +192,7 @@ export function Tile({
 }
 
 /*
- * THERE IS NO `SlotEmpty` HERE, AND ITS ABSENCE IS THE POINT (24 D19).
+ * THERE IS NO `SlotEmpty` HERE, AND ITS ABSENCE IS THE POINT.
  *
  * A `SlotEmpty({ title, body })` used to sit at this line: a dashed, muted box
  * with a heading and a sentence, exported and imported by nothing. Six of this
@@ -204,9 +204,10 @@ export function Tile({
  *
  * So what was left was a ready-made dashed placeholder, in the shared
  * primitives file, one import away from every slot that must not have one. It
- * was also the exact shape of the mutant that proved the D19 guard blind. The
- * component is gone, `.br-slot-empty` is gone from `components.css`, and
- * `slotRender.test.tsx` now fails if a silent slot renders so much as a space.
+ * was also the exact shape of the mutant that proved the no-placeholder guard
+ * blind. The component is gone, `.br-slot-empty` is gone from `components.css`,
+ * and `slotRender.test.tsx` now fails if a silent slot renders so much as a
+ * space.
  */
 
 export function Skeleton({ height = 44, width }: { height?: number; width?: number | string }) {

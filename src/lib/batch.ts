@@ -1,5 +1,5 @@
 /**
- * CROSS-ORDER BATCHING (24 D5b), and this is what keeps `maker` distinct from
+ * CROSS-ORDER BATCHING, and this is what keeps `maker` distinct from
  * `printing`. State it once, plainly, so a later reader cannot blur the two:
  *
  *   MARLOW PRESS imposes ONE job onto N sheets — a thousand of the same card,

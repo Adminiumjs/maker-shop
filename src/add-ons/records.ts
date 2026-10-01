@@ -11,7 +11,8 @@
  * THE RIGHT PLACE FOR IT: it is the only party that knows both its own records
  * and the shape it promised.
  *
- * This module did not exist, and its absence is one half of 24 D21's failure.
+ * This module did not exist, and its absence is one half of why the cross-app
+ * claim failed.
  * Every screen passed its own record straight into `<AddOnSlot>` — `{ order }`,
  * `{ line }`, `{ product }`, `{ postage }` — and the personalizer, the only
  * add-on that had ever been mounted here, simply wrote down what it received:

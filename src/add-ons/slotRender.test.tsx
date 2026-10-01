@@ -1,18 +1,18 @@
 /**
- * D19, ASSERTED BY RENDERING THE APP.
+ * THE NO-PLACEHOLDER RULE, ASSERTED BY RENDERING THE APP.
  *
  * @vitest-environment jsdom
  *
  * ── WHY THIS FILE HAD TO EXIST ────────────────────────────────────────────────
  *
- * `addOns.test.ts` said it held D19 and did not. Two holes, both proven with a
- * mutant before this suite was written:
+ * `addOns.test.ts` said it held that rule and did not. Two holes, both proven
+ * with a mutant before this suite was written:
  *
  *   1. THE EMPTY-STATE GUARD WAS A TABLE READ BACK TO ITSELF. It asserted that
  *      `SLOT_EMPTY_BEHAVIOUR` lists three slots as `speaks` and six as
  *      `silent` — which is a fact about a constant, not about the app. Adding
  *      `fallback={<SlotEmpty title="MUTANT" />}` to a SILENT slot in a real
- *      screen left the whole suite green. The rule D19 states is about what a
+ *      screen left the whole suite green. The rule is about what a
  *      person sees, and nothing in this repo had ever rendered a screen.
  *
  *   2. "MOUNTS EVERY ID IT HOSTS" WAS A GREP FOR `slot="…"` OVER THE SOURCES.
@@ -41,7 +41,7 @@
  *     <div className="br-slot-line">Nothing else is connected yet.</div>
  *
  * — and the whole suite stayed green, because a sibling is not a `fallback` and
- * nothing here had ever looked at the page. D19 is a rule about WHAT A PERSON
+ * nothing here had ever looked at the page. The rule is about WHAT A PERSON
  * SEES where a slot is, not about an argument passed to a component.
  *
  * So the recorder now renders a marker into the page as well as recording, the
@@ -120,8 +120,8 @@ const { mounts } = vi.hoisted(() => ({
  * It renders NOTHING and records instead. Rendering nothing is deliberate: this
  * suite is about the mount sites a screen offers and the empty states it hands
  * them, not about what an add-on draws — the fills have their own suites in
- * their own packages, and letting them render here would make a screen's D19
- * behaviour depend on which add-ons happened to be vendored.
+ * their own packages, and letting them render here would make a screen's
+ * empty-state behaviour depend on which add-ons happened to be vendored.
  */
 vi.mock("../components/AddOnSlot.tsx", () => ({
   AddOnSlot: (props: { slot: string; fallback?: ReactNode; payload?: unknown }) => {
@@ -220,7 +220,7 @@ beforeEach(() => {
   useStore.setState({ enabled: new Set(), basket: [] });
 });
 
-describe("every slot this app hosts is really mounted (24 §5.4, D19)", () => {
+describe("every slot this app hosts is really mounted", () => {
   it("reaches all ten mounts across the two states a reviewer can be in", () => {
     /*
      * Two passes, because one of the ten is only reachable in the second.
@@ -229,7 +229,7 @@ describe("every slot this app hosts is really mounted (24 §5.4, D19)", () => {
      * correct behaviour, and would have made a one-pass check demand a mount
      * the app is right not to render.
      *
-     * [Amended 2026-08-28, 31-T11.] Nine became ten with `record.actions`, at
+     * [Amended 2026-08-28.] Nine became ten with `record.actions`, at
      * the foot of a piece's own screen. `PieceScreen` was already in the tour
      * below for `product.admin.panel`, so the new mount arrived under a check
      * that was already looking at that page — which is the reason a render is
@@ -267,7 +267,7 @@ describe("every slot this app hosts is really mounted (24 §5.4, D19)", () => {
   });
 });
 
-describe("A SILENT SLOT RENDERS NOTHING AT ALL (24 D19)", () => {
+describe("A SILENT SLOT RENDERS NOTHING AT ALL", () => {
   beforeEach(() => {
     renderBothStates();
   });
@@ -511,16 +511,16 @@ function captionsAround(mount: Element): string[] {
   return [...captionAbove(mount).map((line) => `above · ${line}`), ...captionsUnder(mount)];
 }
 
-describe("NOTHING THE HOST DRAWS SITS UNDER A SILENT SLOT (24 D19, mutant B)", () => {
+describe("NOTHING THE HOST DRAWS SITS UNDER A SILENT SLOT (mutant B)", () => {
   it("finds every silent mount on the page and nothing captioning it", () => {
     /*
      * THE STATE THE RULE IS ABOUT: nothing connected. That is the shop a
-     * reviewer opens, and the one D19 promises is a finished thing rather than
-     * a set of gaps waiting to be filled.
+     * reviewer opens, and the one the rule promises is a finished thing rather
+     * than a set of gaps waiting to be filled.
      *
      * It also happens to be the state in which the rule is clean. Connect an
      * add-on and the manage drawer prints, under its settings panel, the
-     * sentence naming what a disconnect takes and keeps (D16) — words under a
+     * sentence naming what a disconnect takes and keeps — words under a
      * mount, correctly, because they are about the add-on that is there. A rule
      * scoped to the empty shop needs no carve-out for it, and a carve-out list
      * is the thing that makes a gate stop being one.
@@ -569,7 +569,7 @@ describe("NOTHING THE HOST DRAWS SITS UNDER A SILENT SLOT (24 D19, mutant B)", (
    *
    * So the sibling rule is stated over EVERY mount. The state is still the
    * empty shop — see the case above on why connecting one legitimately puts
-   * D16's sentence under the manage drawer's own panel.
+   * the disconnect sentence under the manage drawer's own panel.
    */
   it("holds for every mount on the page, speaking ones included", () => {
     useStore.setState({ enabled: new Set(), basket: [] });

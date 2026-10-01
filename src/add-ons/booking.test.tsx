@@ -1,6 +1,6 @@
 /**
  * A BOOKING AN ADD-ON MADE OUTLIVES THE SCREEN THAT MADE IT — AND OUTLIVES
- * THE DISCONNECT (24 D16).
+ * THE DISCONNECT.
  *
  * @vitest-environment jsdom
  *
@@ -15,10 +15,10 @@
  * SCREEN was telling the studio it had nothing, and no real carrier owes
  * anybody that idempotence.
  *
- * It also made D16 untestable in the only place it matters. "A disconnect
- * KEEPS THE DATA and deletes the credentials" is a claim about data that
- * survives; there was no data, only a React state, so there was nothing for
- * the promise to be true of. `disconnect.test.tsx` could assert the orders
+ * It also made the disconnect rule untestable in the only place it matters. "A
+ * disconnect KEEPS THE DATA and deletes the credentials" is a claim about data
+ * that survives; there was no data, only a React state, so there was nothing
+ * for the promise to be true of. `disconnect.test.tsx` could assert the orders
  * object was untouched and the key gone, and could not assert the thing a
  * studio actually worries about: the parcel it booked this morning.
  *
@@ -160,7 +160,7 @@ describe("a collection booked on an order stays booked", () => {
     ).not.toContain("Book a collection");
   });
 
-  it("keeps it through a disconnect, and takes the key (D16)", async () => {
+  it("keeps it through a disconnect, and takes the key", async () => {
     await bookACollection();
     const shipment = findShipment(REF)!;
 
@@ -178,7 +178,8 @@ describe("a collection booked on an order stays booked", () => {
     );
 
     // WHAT STAYS: the collection itself, with its label and its scans. This is
-    // the half of D16 that had nothing behind it before this round.
+    // the half of the disconnect rule that had nothing behind it before this
+    // round.
     expect(findShipment(REF)).toEqual(shipment);
 
     // And connecting again shows it, rather than offering to book it twice.

@@ -9,7 +9,7 @@
  *
  * On the workshop side, the two an add-on brings: CONNECT, which says what it
  * will be able to do and takes a key if it needs one, and DISCONNECT, which
- * names what goes and what stays before anything happens (24 D16). Neither
+ * names what goes and what stays before anything happens. Neither
  * existed: the Add-ons shelf carried one button labelled with the add-on's own
  * name and switching it either way said nothing at all.
  *
@@ -201,8 +201,7 @@ function ProofSheet({ refValue }: { refValue: string }) {
             return (
               <div key={line.id} className="br-proofrow-face">
                 {/*
-                 * `cart.line.preview` — THE MAKER SEES WHAT IS BEING SENT
-                 * (24 AC17).
+                 * `cart.line.preview` — THE MAKER SEES WHAT IS BEING SENT.
                  *
                  * This dialog is where somebody presses "send the picture", and
                  * it drew a material tile with a Lucide icon on it: an honest
@@ -345,7 +344,7 @@ function useAddOn(key: string): AddOn | null {
 }
 
 /**
- * SWITCHING ONE ON (24 §5.6, D11, D15).
+ * SWITCHING ONE ON.
  *
  * Three shapes, and the host does not know which add-on is which: it reads
  * `connect` and `demoSwitch` off the object `register()` returned.
@@ -358,8 +357,8 @@ function useAddOn(key: string): AddOn | null {
  *
  * THE KEY NEVER LEAVES THIS COMPONENT. It is `useState` here and is dropped
  * with the dialog; what reaches the store is the boolean `keyGiven`, which is
- * the fact D16's confirm has to be able to state. A key in a browser-readable
- * store is a leak whatever else is true.
+ * the fact the disconnect confirm has to be able to state. A key in a
+ * browser-readable store is a leak whatever else is true.
  */
 function ConnectDialog({ addOnKey }: { addOnKey: string }) {
   const t = useT();
@@ -400,10 +399,11 @@ function ConnectDialog({ addOnKey }: { addOnKey: string }) {
           {addOn.connect === "api-key" && (
             <>
               {/*
-                D11, DECLARED RATHER THAN RECOGNISED. The add-on names which of
-                its OWN settings means "do not reach the third party" and
-                supplies the words; this dialog flips that setting and skips the
-                key while it is on, without learning what the third party is.
+                THE DEMO SWITCH, DECLARED RATHER THAN RECOGNISED. The add-on
+                names which of its OWN settings means "do not reach the third
+                party" and supplies the words; this dialog flips that setting
+                and skips the key while it is on, without learning what the
+                third party is.
                */}
               {demoSwitch !== undefined && (
                 <button
@@ -442,9 +442,10 @@ function ConnectDialog({ addOnKey }: { addOnKey: string }) {
           )}
 
           {/*
-           * AC6, on the dialog as well as on the card. This is the surface that
-           * puts the company's monogram in its own title bar, and a reader who
-           * opened it straight from the dock never saw the shelf.
+           * The not-affiliated line, on the dialog as well as on the card. This
+           * is the surface that puts the company's monogram in its own title
+           * bar, and a reader who opened it straight from the dock never saw
+           * the shelf.
            */}
           <Affiliation addOn={addOn} />
         </div>
@@ -470,7 +471,7 @@ function ConnectDialog({ addOnKey }: { addOnKey: string }) {
 }
 
 /**
- * THE CONFIRM THAT NAMES WHAT DISAPPEARS AND WHAT STAYS (24 D16).
+ * THE CONFIRM THAT NAMES WHAT DISAPPEARS AND WHAT STAYS.
  *
  * Two labelled blocks, never one paragraph: "are you sure?" teaches a studio
  * nothing, and the fear it leaves behind is that switching an add-on off might
@@ -501,7 +502,7 @@ function ConnectDialog({ addOnKey }: { addOnKey: string }) {
  *                                is nothing here to delete
  *
  * The third is the honest sentence for an add-on running on its own demo
- * transport (D11), which is the state every reviewer sees.
+ * transport, which is the state every reviewer sees.
  */
 /** What a disconnect does about the key, for each credential state. */
 const CONFIRM_CREDENTIAL_LINE: Readonly<Record<CredentialState, MessageKey>> = {
@@ -552,7 +553,7 @@ function DisconnectConfirm({ addOnKey }: { addOnKey: string }) {
             <KeyRound size={14} aria-hidden="true" />{" "}
             {t(keyLine)}
           </p>
-          {/* AC6 — this dialog names the company in its own title. */}
+          {/* The not-affiliated line — this dialog names the company in its own title. */}
           <Affiliation addOn={addOn} />
         </div>
         <div className="br-modal-foot">

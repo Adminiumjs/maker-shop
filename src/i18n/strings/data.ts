@@ -6,7 +6,7 @@
  * shopper reads about a piece is here, so the whole catalogue translates
  * without a millimetre being touched.
  *
- * TRAPS THIS FILE WALKS THROUGH (24 D10b). A shop that sells pots and cake
+ * TRAPS THIS FILE WALKS THROUGH. A shop that sells pots and cake
  * toppers trips the release grep on ordinary craft vocabulary: "plant" and
  * "planter" both contain a banned run, so a pot is a POT and the slate ones are
  * GARDEN MARKERS; a two-layer cake topper is never a tiered one; engraving is

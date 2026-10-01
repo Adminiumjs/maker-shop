@@ -128,7 +128,7 @@ describe("packing one sheet (criterion 15)", () => {
 
   it("OVERFLOWS THE STUDIO'S OWN SHEET on the seeded bench", () => {
     /*
-     * THE HALF OF AC15 A REVIEWER COULD NOT SEE.
+     * THE HALF OF THE BATCHING PROOF A REVIEWER COULD NOT SEE.
      *
      * The overflow list was only ever exercised by handing `packSheet` a
      * made-up 200 × 200 offcut (below). On the seeded bench every batchable
@@ -193,7 +193,7 @@ describe("packing one sheet (criterion 15)", () => {
   });
 
   it("returns the OVERFLOW LIST for the next sheet when the sheet runs out", () => {
-    // A stated sheet size, per D5b — the packer takes one rather than assuming
+    // A stated sheet size — the packer takes one rather than assuming
     // the studio's. An offcut 200 × 200 holds some of the walnut and not the rest.
     const group = walnutGroup();
     const pack = packSheet(group.pieces, { widthMm: 200, heightMm: 200 });

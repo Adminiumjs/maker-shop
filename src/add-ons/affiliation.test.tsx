@@ -1,14 +1,14 @@
 /**
- * WHEREVER A COMPANY IS NAMED, THE LINE IS ON THE SAME SCREEN (24 AC6).
+ * WHEREVER A COMPANY IS NAMED, THE LINE IS ON THE SAME SCREEN.
  *
  * @vitest-environment jsdom
  *
  * ── THE DEFECT ──────────────────────────────────────────────────────────────
  *
- * AC6, as amended 2026-08-09, is about a READER: a surface that names a real
- * company carries the line saying Adminium is not affiliated with it. Round 6
- * enforced that over the HOST's own components — `shelfClaims.test.tsx` fails
- * any file of ours that prints `addOn.name` or `addOn.monogram` without
+ * The rule, as amended 2026-08-09, is about a READER: a surface that names a
+ * real company carries the line saying Adminium is not affiliated with it.
+ * Round 6 enforced that over the HOST's own components — `shelfClaims.test.tsx`
+ * fails any file of ours that prints `addOn.name` or `addOn.monogram` without
  * mounting `Affiliation` — and that rule cannot see the surfaces an ADD-ON
  * draws, because the add-on's components are vendored and its copy is its own.
  *
@@ -162,7 +162,7 @@ const asRead = (host: HTMLElement): string[] => {
   return out;
 };
 
-describe("no surface names a company without the line (24 AC6)", () => {
+describe("no surface names a company without the line", () => {
   it("has marks to look for, from the add-ons rather than from here", () => {
     // Guard on the guard. A glob that stopped matching, or a package that
     // stopped exporting, would make every case below pass by having nothing to

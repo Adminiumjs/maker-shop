@@ -5,7 +5,7 @@
  * English is the source of truth; the seven translations must carry every one
  * of its keys or `messages/index.ts` fails to compile.
  *
- * VOCABULARY, and this app trips the list in ways the others did not (24 D10b).
+ * VOCABULARY, and this app trips the list in ways the others did not.
  * Nothing here may contain `pricing`, `plan`, `tier`, `billing`, `upgrade`,
  * `/mo` or `free` as a SUBSTRING, in any language — which rules out "free
  * postage", "explanation" and, in the translations, German "Zeitplan", Danish

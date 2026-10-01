@@ -188,10 +188,10 @@ function endsWithACode(text: string, at: number): boolean {
  * a HOST. A verifier wired Design Studio into the maker studio, registration
  * only, zero bytes changed in any add-on, and that host's suite went red on
  * three Latin tokens it had never heard of. Making a portable add-on pass
- * required editing a list in the app receiving it, which is the exact thing
- * AC20/D21 says must never be necessary — and the third time this wave that a
- * fact about an add-on was kept in the host (after HOSTED_SLOTS and the Czech
- * "pro" carve-out).
+ * required editing a list in the app receiving it, which is the exact thing the
+ * cross-app claim says must never be necessary — and the third time this wave
+ * that a fact about an add-on was kept in the host (after HOSTED_SLOTS and the
+ * Czech "pro" carve-out).
  *
  * So the allowances now travel with the strings: every add-on exports
  * `NOT_A_QUANTITY` from its own `i18n/strings.ts`, and `addOnAllowances()`

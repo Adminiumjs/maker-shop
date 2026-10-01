@@ -90,12 +90,13 @@ export type ShopperView = (typeof SHOPPER_VIEWS)[number];
 /**
  * The maker's views.
  *
- * Fourteen, which is more than 24 §8A's list of six because comp K ships the
- * bench the way a bench actually works: the board is where the day starts, but
- * the cut list is what gets carried to the laser, the post office run is a
- * different job with a different rhythm, and counting the shelf is a thing that
- * happens on a Saturday morning. The six the spec names are all here; the rest
- * are the comp's, ported for the same reason wave 3's extras were.
+ * Fourteen, which is more than the six this app was first planned with because
+ * comp K ships the bench the way a bench actually works: the board is where the
+ * day starts, but the cut list is what gets carried to the laser, the post
+ * office run is a different job with a different rhythm, and counting the shelf
+ * is a thing that happens on a Saturday morning. The six the spec names are all
+ * here; the rest are the comp's, ported for the same reason wave 3's extras
+ * were.
  */
 export const MAKER_VIEWS = [
   "today",
@@ -112,7 +113,7 @@ export const MAKER_VIEWS = [
   "machines",
   "stockcount",
   "addons",
-  /** A whole page lent to an add-on — `nav.add-on.routes` (24 §5.4). */
+  /** A whole page lent to an add-on — `nav.add-on.routes`. */
   "addonroute",
 ] as const;
 
@@ -160,7 +161,7 @@ export type Overlay =
   | { kind: "spoil"; ref: string; lineId: string }
   /** Switching an add-on on: what it will do, and the key if it needs one. */
   | { kind: "connect"; addOn: string }
-  /** Switching one off: what goes, what stays, and the key (24 D16). */
+  /** Switching one off: what goes, what stays, and the key. */
   | { kind: "disconnect"; addOn: string };
 
 interface Forms {
@@ -268,14 +269,14 @@ interface State {
   enabled: Set<string>;
   /**
    * WHICH ADD-ONS THIS STUDIO IS HOLDING A CREDENTIAL FOR — and not the
-   * credential (24 D15).
+   * credential.
    *
    * The key itself lives in the connect dialog's own local state for as long as
    * the dialog is open and is never written here, because this store is
    * readable from the browser and a secret that reaches it is a leak whatever
    * else is true. What is recorded is the FACT that a key was supplied, which
-   * is exactly the fact D16's confirm has to be able to state and the fact a
-   * disconnect has to be able to delete.
+   * is exactly the fact the disconnect confirm has to be able to state and the
+   * fact a disconnect has to be able to delete.
    *
    * Separate from `enabled` because the two are genuinely different things: a
    * credential is something the studio handed over, connecting is a decision.
@@ -471,10 +472,10 @@ export const useStore = create<State & Actions>((set, get) => ({
    * The add-on seam, wired at boot with NOTHING ENABLED.
    *
    * `enabled` starts empty on purpose. The build VENDORS two add-ons and
-   * ENABLES neither, which is the whole demo device (24 §5.9): every screen a
-   * reviewer opens first is therefore the screen a maker with nothing connected
-   * sees, which is the only way to know D19's nine slots are finished in that
-   * state rather than pending. A dock toggle each turns them on.
+   * ENABLES neither, which is the whole demo device: every screen a reviewer
+   * opens first is therefore the screen a maker with nothing connected sees,
+   * which is the only way to know the nine slots are finished in that state
+   * rather than pending. A dock toggle each turns them on.
    */
   registry: createRegistry(demoAddOns()),
   enabled: new Set<string>(),
@@ -1009,17 +1010,17 @@ export const useStore = create<State & Actions>((set, get) => ({
   /**
    * Switch an add-on on or off.
    *
-   * The whole of D6 in four lines: enabling is adding a key to a set, and
-   * disabling is taking it out again. Nothing is copied into the host when an
-   * add-on arrives, so nothing has to be cleaned up when it leaves — which is
-   * why turning one off can be trusted to leave the app exactly where it
+   * The whole add-on model in four lines: enabling is adding a key to a set,
+   * and disabling is taking it out again. Nothing is copied into the host when
+   * an add-on arrives, so nothing has to be cleaned up when it leaves — which
+   * is why turning one off can be trusted to leave the app exactly where it
    * started rather than nearly there.
    */
   /**
    * The demo dock's switch: straight on, straight off, no dialog.
    *
    * That is deliberate and it is what `print-shop` does too. The dock is the
-   * REVIEWER's device for watching a feature arrive and leave (D6); making it
+   * REVIEWER's device for watching a feature arrive and leave; making it
    * ask "are you sure?" would put a confirm in front of the one control whose
    * whole purpose is to be flipped twice in five seconds. The STUDIO's own
    * control is on the Add-ons shelf, and that one goes through the dialogs.
@@ -1034,7 +1035,7 @@ export const useStore = create<State & Actions>((set, get) => ({
    *
    * `keyGiven` is what the connect dialog reports: `true` when the studio typed
    * a key into it, `false` (or absent) when the add-on needs no account or is
-   * running on its own demo transport (D11). The KEY is not passed and could
+   * running on its own demo transport. The KEY is not passed and could
    * not be — see `credentialled`.
    */
   connectAddOn: (key, options) =>
@@ -1047,7 +1048,7 @@ export const useStore = create<State & Actions>((set, get) => ({
     }),
 
   /**
-   * DISCONNECT DELETES THE CREDENTIAL AND KEEPS THE WORK (24 D16).
+   * DISCONNECT DELETES THE CREDENTIAL AND KEEPS THE WORK.
    *
    * WHAT GOES: the add-on's fills stop rendering, so its preview on a basket
    * line, its postage rows and its dispatch panel are gone from the moment the
@@ -1061,7 +1062,7 @@ export const useStore = create<State & Actions>((set, get) => ({
    * reconnects. The confirm says all of this in words before anything happens.
    *
    * This used to be four lines that flipped a Set. Nothing was said, nothing
-   * was deleted, and the studio could not have told which of the two D16
+   * was deleted, and the studio could not have told which of the two disconnect
    * promises it was getting.
    */
   disconnectAddOn: (key) =>
@@ -1075,8 +1076,9 @@ export const useStore = create<State & Actions>((set, get) => ({
        * Without this the till would keep charging for a service from a company
        * that is no longer connected, with no row on the screen to explain where
        * the amount came from — which is the one way this app could fail to
-       * return to exactly its base state (D6). It is not "data" in D16's sense:
-       * a quote is what the add-on was showing, not what the studio recorded.
+       * return to exactly its base state. It is not "data" in the sense a
+       * disconnect keeps: a quote is what the add-on was showing, not what the
+       * studio recorded.
        */
       const dropped = s.deliveryChoice !== null && s.deliveryChoice.addOn === key;
       return {

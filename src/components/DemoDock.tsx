@@ -199,10 +199,10 @@ export function DemoDock() {
       </button>
 
       {/*
-       * THE DEMO DEVICE (24 §5.9). One toggle per add-on this build vendors,
-       * OFF when the app loads, so a reviewer watches the plain note field
-       * become a live preview and go back again — which is what makes D6's
-       * claim about honest empty states checkable rather than asserted. It is
+       * THE DEMO DEVICE. One toggle per add-on this build vendors, OFF when
+       * the app loads, so a reviewer watches the plain note field become a
+       * live preview and go back again — which is what makes the claim about
+       * honest empty states checkable rather than asserted. It is
        * the same `enabled` set the connected mode will use; only where the list
        * comes from changes.
        */}

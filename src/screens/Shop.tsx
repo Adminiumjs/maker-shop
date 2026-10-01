@@ -3,13 +3,13 @@
  *
  * TWO THINGS ON THESE SCREENS ARE LOAD-BEARING and everything else is dressing:
  *
- *   1. THERE ARE NO STOCK COUNTS ANYWHERE (24 D5b). Nothing here is held on a
+ *   1. THERE ARE NO STOCK COUNTS ANYWHERE. Nothing here is held on a
  *      shelf, so a "3 left" chip would be a lie about the business as well as a
  *      lie about the data. Where a material is running short the tile says
  *      "made in small batches while the board lasts" — a plain sentence a
  *      shopper can understand, not a countdown invented to hurry them up.
  *
- *   2. "MAKE IT YOURS" IS A FINISHED SCREEN, NOT A PLACEHOLDER (24 D19). With
+ *   2. "MAKE IT YOURS" IS A FINISHED SCREEN, NOT A PLACEHOLDER. With
  *      no add-on connected, a personalizable piece gets a note field with a
  *      live counter, the maker's own instructions, and the promise of a picture
  *      before anything is cut. That is how most small shops genuinely work, so
@@ -419,7 +419,7 @@ export function ProductScreen() {
             <>
               {/*
                * `product.options.personalize` — the slot that SPEAKS when it is
-               * empty, and whose empty state is this whole panel (24 D19). The
+               * empty, and whose empty state is this whole panel. The
                * note field with its live counter, the maker's instructions and
                * the proof promise are not a placeholder waiting for an add-on:
                * they are how most small shops genuinely work, and they are
@@ -433,11 +433,11 @@ export function ProductScreen() {
                  * this shop's OWN free-text field rather than anything the
                  * add-on invents. What a line stores is the shopper's own words
                  * — a plain string, which is what a shop with nothing connected
-                 * has and what this slot's empty state is built around (D19).
+                 * has and what this slot's empty state is built around.
                  * An add-on that replaces this block writes the words back
                  * through the same setter, so the basket line reads the same
                  * either way and a disconnect leaves the request in plain
-                 * language rather than inside a picture nobody can open (D16).
+                 * language rather than inside a picture nobody can open.
                  *
                  * IT USED TO BE `{ product, config, patchConfig }` — this app's
                  * whole configuration record and its whole setter — and the one
@@ -470,7 +470,7 @@ export function ProductScreen() {
                    * They are resolved here rather than passed as keys because
                    * they are THIS shop's copy in the reader's language, and an
                    * add-on has no business looking anything up in the host's
-                   * bundle (D21).
+                   * bundle.
                    */
                   hostSays: [
                     t(`data.personalHint.${product.personalize.hintKey}` as never),

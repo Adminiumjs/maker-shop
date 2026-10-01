@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * A `DataSource` backed by a real Adminium instance (28-public-surface.md §5.2,
- * 28-T28 wave 3).
+ * A `DataSource` backed by a real Adminium instance.
  *
  * ── READS DO NOT BECOME ASYNC ──────────────────────────────────────────────
  * `loadSnapshot` fetches the whole read-set once, before React mounts, and
@@ -10,13 +9,14 @@
  *
  * ── THE EGRESS GATE IS NOT RELAXED FOR THIS FILE ───────────────────────────
  * This studio bans the MEANS of sending, over sources and over built output,
- * and §5.4 budgeted a "relax NET TWO for one declared file" change here. That
- * turned out to be the wrong shape and 28-T26 measured why: a connected data
- * source NAMES no request-issuing API — it imports a client that does — so NET
- * TWO never fires on it, while NET ONE reports the ORIGIN Vite inlines. So the
- * only widening is `connectedBackend(VITE_ADMINIUM_API_BASE_URL)`, which
- * forgives one host in EVERY file rather than every host in one file. A
- * tracker's address in THIS file is still a finding.
+ * and the original design budgeted a "relax NET TWO for one declared file"
+ * change here. That turned out to be the wrong shape, and measuring it showed
+ * why: a connected data source NAMES no request-issuing API — it imports a
+ * client that does — so NET TWO never fires on it, while NET ONE reports the
+ * ORIGIN Vite inlines. So the only widening is
+ * `connectedBackend(VITE_ADMINIUM_API_BASE_URL)`, which forgives one host in
+ * EVERY file rather than every host in one file. A tracker's address in THIS
+ * file is still a finding.
  *
  * The purity net is narrowed for this file too, and just as narrowly: the two
  * CLOCK means, here and nowhere else. A demo's dates derive from a pinned

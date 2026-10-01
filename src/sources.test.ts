@@ -201,9 +201,9 @@ describe("the clock is always passed in", () => {
  *
  * What stood here was a list of origins this app allows, and two of the entries
  * were Canva's — declared by an app that merely RECEIVES the add-on that names
- * them. That is AC20/D21 broken in both directions, and it was demonstrated in
- * both: vendoring the personalizer into this app unchanged, registration only,
- * turned this suite red on
+ * them. That is the cross-app claim broken in both directions, and it was
+ * demonstrated in both: vendoring the personalizer into this app unchanged,
+ * registration only, turned this suite red on
  * `add-ons/vendor/personalizer/template.ts → http://www.w3.org/2000/svg`, and
  * vendoring Canva Import into the studio turned ITS suite red the same way.
  * Making a portable add-on pass required an edit to an exemption list inside
@@ -252,7 +252,7 @@ function addOnNeedles(): { text: string; why: string }[] {
  * address of its own at all.
  */
 /*
- * ── AND CONNECTED MODE DOES NOT RELAX THIS LIST, ON PURPOSE (28-T26) ───────
+ * ── AND CONNECTED MODE DOES NOT RELAX THIS LIST, ON PURPOSE ────────────────
  *
  * `builtOutput.test.ts` declares the Adminium instance a connected build was
  * pointed at, because Vite inlines that origin into the shipped bytes and it
@@ -263,7 +263,7 @@ function addOnNeedles(): { text: string; why: string }[] {
  * serves to everybody.
  */
 /**
- * ── AND THE PACKAGES A SHIPPED SOURCE MAY IMPORT (28-T26 follow-up) ────────
+ * ── AND THE PACKAGES A SHIPPED SOURCE MAY IMPORT ───────────────────────────
  *
  * Net two banned the APIs that send and the dynamic `import()` of anything but
  * a relative literal, and read as though it covered "reaching outside this
@@ -297,7 +297,7 @@ const OURS: readonly InertOrigin[] = [];
 
 /*
  * Ours, plus whatever the add-ons this studio vendors declare for themselves,
- * plus the backend a CONNECTED build was pointed at (28-T26, 28-T28).
+ * plus the backend a CONNECTED build was pointed at.
  *
  * Empty in every demo build, which is every build the marketplace serves and
  * every build CI makes. When `VITE_ADMINIUM_API_BASE_URL` is set, Vite inlines
@@ -313,7 +313,7 @@ const INERT: readonly InertOrigin[] = [
 ];
 
 /**
- * ── THE ONE FILE THAT MAY READ THE REAL CLOCK (28-T28) ─────────────────────
+ * ── THE ONE FILE THAT MAY READ THE REAL CLOCK ──────────────────────────────
  *
  * `purity.ts`'s rule is about the DEMO's reproducibility: every date derives
  * from a pinned instant so that a test can assert a promise date and a
@@ -336,9 +336,9 @@ const CLOCKS: readonly string[] = [
   "performance.now() \u2014 a clock under another name",
 ];
 
-describe("nothing here can reach a host we do not control (24 D11)", () => {
+describe("nothing here can reach a host we do not control", () => {
   /*
-   * D11 AS A RULE, NOT A WORD LIST.
+   * NO REAL THIRD-PARTY CALL, AS A RULE, NOT A WORD LIST.
    *
    * This was `\bfetch\(|XMLHttpRequest|WebSocket` — three spellings — and a
    * verifier beat the sibling host's copy of it by writing
@@ -471,7 +471,7 @@ describe("nothing here can reach a host we do not control (24 D11)", () => {
   });
 
   /*
-   * ── THE CONNECTED-BUILD RELAXATION, DRIVEN AT ITS EDGES (28-T26) ─────────
+   * ── THE CONNECTED-BUILD RELAXATION, DRIVEN AT ITS EDGES ──────────────────
    *
    * `connectedBackend` is the only thing that can widen NET ONE, so it is the
    * only thing worth trying to beat. These run over the rule itself rather than
@@ -1018,7 +1018,7 @@ describe("the test command a reader is given is the one that is configured", () 
  * — which fails loudly here rather than silently on the day an add-on that
  * really does name an address is vendored.
  */
-describe("an add-on brings its own inert origins with it (24 AC20, D21)", () => {
+describe("an add-on brings its own inert origins with it", () => {
   it("reads a declaration off every add-on this studio vendors", () => {
     const declared = Object.entries(VENDORED_ORIGINS);
     expect(declared.length, "no vendored inert-origin declarations were found").toBeGreaterThan(0);
@@ -1054,7 +1054,7 @@ describe("an add-on brings its own inert origins with it (24 AC20, D21)", () => 
   });
 });
 
-describe("secrets are server-only (24 D15)", () => {
+describe("secrets are server-only", () => {
   /**
    * ── THE SAME NEEDLES, ONE BUILD EARLIER, AND THEY ARE THE ADD-ON"S ────────
    *
@@ -1098,7 +1098,7 @@ describe("secrets are server-only (24 D15)", () => {
    * this rule since round 1 and this studio never had it. It only started to
    * MATTER when `src/testing/manifest/` arrived here: that directory imports
    * `zod`, which is a devDependency and a runtime dependency the host does not
-   * carry (24 D7), so one import from a screen would put a validator — and a
+   * carry, so one import from a screen would put a validator — and a
    * package the customer's browser never loads — into the shipped bundle.
    *
    * The vendored barrel's own header claims this test exists. It is asserted

@@ -8,7 +8,7 @@
  * things is missing.
  *
  * THE BATCH SHEET is what makes this a workshop rather than a task list, and it
- * is the screen 24 D5b names as the difference between this app and the print
+ * is the screen that marks the difference between this app and the print
  * works: pieces from DIFFERENT ORDERS laid out on ONE sheet, with the sheet-use
  * in mono, the overflow listed as the next sheet's work, and one button that
  * moves every included piece to *Making* at once.

@@ -199,18 +199,18 @@ function FoundOrder({ order }: { order: Order }) {
             <div className="br-proof-grid">
               {/*
                * `cart.line.preview` — AND THE PROOF IS THE THIRD OF THE THREE
-               * PICTURES (24 AC17).
+               * PICTURES.
                *
-               * The criterion says the cart thumbnail, THE PROOF and the order
-               * line are the same picture. The proof was not in the set: this
-               * grid drew a material tile with the piece's icon on it and the
-               * customer's words in a chip under it — a good empty state, and
-               * not a picture of anything anybody had personalized. So a
+               * The requirement is that the cart thumbnail, THE PROOF and the
+               * order line are the same picture. The proof was not in the set:
+               * this grid drew a material tile with the piece's icon on it and
+               * the customer's words in a chip under it — a good empty state,
+               * and not a picture of anything anybody had personalized. So a
                * shopper approved one image and the bench worked from another,
                * which is the exact failure a proof exists to prevent.
                *
                * WHY THIS SLOT ID AND NOT A NEW ONE. The registry is CLOSED at
-               * eleven (§5.4) and a twelfth may not be invented for one screen.
+               * eleven and a twelfth may not be invented for one screen.
                * `cart.line.preview` is the id whose surface is "the picture of
                * one line" and whose payload is exactly that — a `SlotItem` and
                * nothing else. It is named for where it first appeared rather
@@ -222,7 +222,7 @@ function FoundOrder({ order }: { order: Order }) {
                * is exactly the screen it has always been. That is not the slot
                * "speaking" in the sense `slots.ts` declares — this is the
                * host's own finished content, the way the note field is on a
-               * piece's page (D19), and an add-on replaces it rather than
+               * piece's page, and an add-on replaces it rather than
                * filling a gap it left.
                */}
               <AddOnSlot
@@ -376,7 +376,7 @@ function FoundOrder({ order }: { order: Order }) {
        * `order.dispatch.panel` — SPEAKS when empty. It says how this studio
        * actually posts things, which is a fact rather than a gap. With a
        * carrier add-on connected, tracking appears here instead — and that is
-       * the cross-app claim 24 D21 makes, because the slot id and the contract
+       * the cross-app claim, because the slot id and the contract
        * name a SURFACE rather than this app.
        */}
       {/*
