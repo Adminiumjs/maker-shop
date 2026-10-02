@@ -307,3 +307,8 @@ scripts/sync-add-ons.sh list     the file list each package contributes
 
 The monorepo is the source of truth; a hand-edit under `src/add-ons/vendor/` is
 invisible until it is a bug in two places at once, which is what `status` is for.
+
+## Building on this app with a coding agent
+
+The Adminium skills teach Claude Code, Codex and other agents to build and change an app:
+`npx skills add Adminiumjs/skills` — https://github.com/Adminiumjs/skills
