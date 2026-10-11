@@ -1086,6 +1086,9 @@ describe("secrets are server-only", () => {
       (file) =>
         !/\.test\.tsx?$/.test(file.rel) &&
         !file.rel.endsWith("add-on-facts.ts") &&
+        // The product's own validator, copied verbatim and never shipped (the
+        // test below gates that). It names setting keys because it checks them.
+        !file.rel.startsWith("testing/manifest/") &&
         needles.some((needle) => file.code.includes(needle.text)),
     );
     expect(offenders.map((file) => file.rel)).toEqual([]);
