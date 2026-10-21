@@ -1,5 +1,8 @@
 # Maker Shop — Birch Row
 
+> **This app will be reworked in Q4 2026.** Until then it is kept as it is and may not show what
+> the newest Adminium can do.
+
 An open-source example app for [Adminium](https://adminium.dev): a made-to-order
 shop and workshop for **Birch Row**, a fictional two-person maker studio that
 sells laser-engraved coasters, slate house signs, keyrings and pet tags,
