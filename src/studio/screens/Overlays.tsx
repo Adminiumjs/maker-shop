@@ -15,7 +15,7 @@ import { TriangleAlert, X } from "lucide-react";
 
 import { sendProofs, spoil } from "../actions.ts";
 import { useData, useEnv, useRun } from "../env.tsx";
-import { dueForProof, productOf, versionOf } from "../facts.ts";
+import { dueForProof, fileSrc, productOf, versionOf } from "../facts.ts";
 import { wordsOfDesign } from "../designs.ts";
 import { wordsOf } from "../picture.ts";
 import { useStudio } from "../store.ts";
@@ -117,7 +117,7 @@ function ProofSheet({ orderId }: { orderId: Row["id"] }) {
           const name = text(line["product_name"]) ?? text(product?.["name"]) ?? "";
           const designed = line["design_id"] !== null && line["design_id"] !== undefined;
           const version = designed ? versionOf(data, line) : undefined;
-          const picture = designed ? text(version?.["proof_file"]) : (urls.get(String(line.id)) ?? null);
+          const picture = designed ? fileSrc(version?.["proof_file"]) : (urls.get(String(line.id)) ?? null);
           const words = designed ? wordsOfDesign(data, line) : wordsOf(line);
           return (
             <div key={String(line.id)} className="st-ps-line">

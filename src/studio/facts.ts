@@ -100,6 +100,13 @@ export function fileIdOf(ref: unknown): string | null {
   return m === null ? null : m[1]!;
 }
 
+/** Where a stored file is read from, at this origin: its content route, whatever spelling its column keeps. */
+export function fileSrc(ref: unknown): string | null {
+  const id = fileIdOf(ref);
+  if (id !== null) return `/api/v1/files/${id}/content`;
+  return text(ref);
+}
+
 /** The studio's closures in effect, as days. */
 export function closuresOf(data: StudioData): Closure[] {
   return data.closures.filter((c) => c["active"] !== false).flatMap((c) => {

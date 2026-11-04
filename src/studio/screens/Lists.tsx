@@ -8,7 +8,7 @@ import { Check, MailCheck } from "lucide-react";
 
 import { postOrders } from "../actions.ts";
 import { useData, useEnv, useRun } from "../env.tsx";
-import { closuresOf, isLive, linesOf, postRun, productOf, proofQueue, serviceOf, type ProofItem } from "../facts.ts";
+import { closuresOf, fileSrc, isLive, linesOf, postRun, productOf, proofQueue, serviceOf, type ProofItem } from "../facts.ts";
 import { useFmt } from "../format.ts";
 import { go, toast, useStudio, type OrderFilter } from "../store.ts";
 import { studioDaysBetween } from "../time.ts";
@@ -187,7 +187,7 @@ function Waiting({ item }: { item: ProofItem }) {
   const today = fmt.today(door.now());
   const waited = sent === null ? 0 : studioDaysBetween(fmt.today(Date.parse(sent)), today, door.facts().studioDays, closuresOf(data));
   const reminded = text(latest?.["reminded_at"]);
-  const picture = text(latest?.["picture"]);
+  const picture = fileSrc(latest?.["picture"]);
   const words = text(line["lettering"]) ?? wordsOfDesign(data, line).join(" / ");
   const name = text(line["product_name"]) ?? "";
   return (

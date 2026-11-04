@@ -27,12 +27,16 @@
  * (`ADD_ONS_REPO`), and says why it skipped otherwise. Postgres and MySQL run
  * with `TEST_POSTGRES_URL` / `TEST_MYSQL_URL`.
  */
+import { rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { moveLine, moveOrderLines, postOrders, sendProofs, spoil } from "../studio/actions.ts";
 import { AdminiumStudio } from "../studio/adminiumStudio.ts";
 import type { StudioData } from "../studio/door.ts";
-import { linesOf, proofsOf } from "../studio/facts.ts";
+import { fileIdOf, fileSrc, linesOf, proofsOf } from "../studio/facts.ts";
 import { createSessionTransport } from "../studio/transport/sessionSource.ts";
 import { loadStaffConfig } from "../studio/transport/staffConnection.ts";
 import { ApiError, num, type Row } from "../studio/wire.ts";
@@ -97,7 +101,21 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         server = await boot(engine as Engine, PORT_BASE + index * PORTS_PER_ENGINE, THURSDAY - 60_000, `maker_studio_contract_${engine}`);
         owner = new Caller(server.base);
         await owner.signIn(ADMIN.email, ADMIN.password);
-        connectionId = ok(await owner.get<{ connections: { id: string; name: string }[] }>("/api/v1/connections")).connections.find((c) => c.name === "northwind")!.id;
+        /*
+         * The studio's own empty database, not the e2e server's Northwind: Northwind holds a
+         * plain `orders` table, and an install that brings an add-on plans its tables a second
+         * time after the add-on's step, then as if the app were already installed, and takes
+         * that `orders` for its own (a core gap, named in the report). On SQLite the database
+         * is a file of its own; Postgres and MySQL keep the e2e server's database.
+         */
+        if (engine === "sqlite") {
+          const file = join(tmpdir(), `maker-studio-contract-${String(PORT_BASE)}.db`);
+          rmSync(file, { force: true });
+          writeFileSync(file, "");
+          connectionId = ok(await owner.post<{ id: string }>("/api/v1/connections", { name: "birch-row", engine: "sqlite", dsn: `sqlite:${file}` }), 201).id;
+        } else {
+          connectionId = ok(await owner.get<{ connections: { id: string; name: string }[] }>("/api/v1/connections")).connections.find((c) => c.name === "northwind")!.id;
+        }
 
         // The Customiser first, then the app that requires it, installed together.
         const customiser = addOnBundle("customiser");
@@ -162,10 +180,10 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
           [1, "superseded", "lettering"],
           [2, "sent", "lettering"],
         ]);
-        expect(String(proofs[1]!["picture"])).toMatch(/\/api\/v1\/files\/file_[0-9A-Z]{26}\/content$/);
+        expect(fileIdOf(proofs[1]!["picture"])).toMatch(/^file_[0-9A-Z]{26}$/);
         expect(proofs[1]!["sent_by"]).toBe("Jo Marsh");
         // Its picture is the bytes the maker's browser drew.
-        const picture = await owner.fetchAs()(String(proofs[1]!["picture"]).replace(/^https?:\/\/[^/]+/, ""));
+        const picture = await owner.fetchAs()(fileSrc(proofs[1]!["picture"])!);
         expect(picture.status).toBe(200);
         expect([...new Uint8Array(await picture.arrayBuffer()).slice(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]);
         // Adminium e-mails it: an outbox row for the order.
@@ -216,7 +234,12 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect(waiting["state"]).toBe("sent");
         await maker.remind(waiting);
         const order = orderOf(data, "BR-2280");
-        await until(async () => (await rows("messages")).find((m) => m["kind"] === "proof-reminder" && String(m["order_id"]) === String(order.id)), "the reminder's e-mail");
+        expect((await rows("proofs")).find((p) => String(p.id) === String(waiting.id))!["reminded_at"]).not.toBeNull();
+        const messages = await rows("messages");
+        expect(
+          messages.find((m) => m["kind"] === "proof-reminder" && String(m["order_id"]) === String(order.id)),
+          JSON.stringify(messages.map((m) => [m["kind"], m["order_id"], m["status"]])),
+        ).toBeDefined();
       });
 
       it("sends a design's proof as the Customiser made it from the design's version", async () => {
@@ -227,7 +250,10 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect([first.sent.length, first.missing.length]).toEqual([0, 1]);
         // The Customiser's panel makes the picture of the version (here, as the panel stores it: the version's proof file).
         const line = linesOf(data, order)[0]!;
-        const version = data.versions.find((v) => String(v["design_id"]) === String(line["design_id"]))!;
+        const schema = ok(await owner.get<{ model: { tables: { name: string }[] } }>(`/api/v1/connections/${connectionId}/schema`)).model.tables.map((t) => t.name).filter((n) => n.startsWith("customiser"));
+        const version = data.versions.find((v) => String(v["design_id"]) === String(line["design_id"]));
+        expect(version, `${JSON.stringify(schema)} ${JSON.stringify(data.designs.length)} ${JSON.stringify(line)}`).toBeDefined();
+        if (version === undefined) return;
         const stored = ok(await owner.send<{ ref: string }>("POST", `/api/v1/files?${new URLSearchParams({ filename: "design-proof.png", connectionId, table: "customiser_design_versions", column: "proof_file" }).toString()}`, png(), { "content-type": "image/png" }), 201);
         ok(await owner.patch(`/api/v1/data/${connectionId}/customiser_design_versions/${String(version.id)}`, { values: { proof_file: stored.ref } }));
         data = await maker.load();
@@ -236,8 +262,8 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         const proof = (await rows("proofs")).find((p) => String(p["line_id"]) === String(line.id))!;
         expect([proof["kind"], String(proof["design_version_id"]), proof["state"]]).toEqual(["design", String(version.id), "sent"]);
         // A copy, its own file: never the Customiser's file itself.
-        expect(String(proof["picture"])).toMatch(/file_[0-9A-Z]{26}/);
-        expect(String(proof["picture"])).not.toBe(stored.ref);
+        expect(fileIdOf(proof["picture"])).toMatch(/^file_[0-9A-Z]{26}$/);
+        expect(fileIdOf(proof["picture"])).not.toBe(fileIdOf(stored.ref));
       });
 
       it("takes a spoil's share of its material off the shelf, as Adminium works it out", async () => {
@@ -252,7 +278,8 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         const again = data.lines.find((l) => String(l.id) === String(coasters.id))!;
         expect([again["stage"], num(again["spoiled"])]).toEqual(["make", 1]);
         const after = (await rows("materials")).find((m) => m["code"] === "wal6")!;
-        expect(Math.round((Number(before["on_hand"]) - Number(after["on_hand"])) * 1000) / 1000).toBe(perUnit);
+        // On hand is kept to two places: the share of a sheet comes off as Adminium rounds it.
+        expect(Number(before["on_hand"]) - Number(after["on_hand"])).toBeCloseTo(perUnit, 2);
         const movement = (await rows("stock_movements")).find((m) => m["kind"] === "spoiled" && String(m["line_id"]) === String(coasters.id))!;
         expect([Number(movement["units"]), Number(movement["per_unit"]), movement["made_by"]]).toEqual([1, perUnit, "Jo Marsh"]);
       });
