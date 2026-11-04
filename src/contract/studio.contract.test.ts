@@ -36,7 +36,7 @@ import { linesOf, proofsOf } from "../studio/facts.ts";
 import { createSessionTransport } from "../studio/transport/sessionSource.ts";
 import { loadStaffConfig } from "../studio/transport/staffConnection.ts";
 import { ApiError, num, type Row } from "../studio/wire.ts";
-import { addOnBundle, appBundle, boot, Caller, ENGINES, missing, newPassword, ok, png, PORTS_PER_ENGINE, until, type Engine, type Server } from "./harness.ts";
+import { addOnBundle, appBundle, boot, Caller, ENGINES, missing, newPassword, ok, png, PORTS_PER_ENGINE, until, type Engine, type Server } from "./studio-harness.ts";
 
 const why = missing();
 if (why !== null && process.env["ADMINIUM_REQUIRE_CONTRACT"] === "1") throw new Error(`the contract must run here, and cannot: ${why}`);
@@ -107,9 +107,16 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         const staged = await owner.post(`/api/v1/apps/upload?expectedSha512=${encodeURIComponent(app.integrity)}`, app.buffer);
         expect([200, 201], JSON.stringify(staged.body).slice(0, 800)).toContain(staged.status);
         const body = { key: app.key, version: app.version, connectionId };
-        const plan = ok(await owner.post<{ plan: { installable: boolean; checksum: string } }>("/api/v1/apps/plan", { ...body, addOns: [{ key: customiser.key, version: customiser.version }] })).plan;
+        const plan = ok(await owner.post<{ plan: { installable: boolean; checksum: string } }>("/api/v1/apps/plan", { ...body, addOns: [customiser.key] })).plan;
         expect(plan.installable, JSON.stringify(plan).slice(0, 3000)).toBe(true);
-        const installed = ok(await owner.post<{ rules: { skipped: unknown[] } }>("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, addOns: [{ key: customiser.key, version: customiser.version }] }));
+        const install = await owner.post<{ rules: { skipped: unknown[] } }>("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, addOns: [{ key: customiser.key, version: customiser.version }] });
+        if (install.status !== 200) {
+          // Said in full: what the plan the install stopped on found.
+          const again = await owner.post<{ plan: { problems?: unknown } }>("/api/v1/apps/plan", body);
+          const retried = await owner.post("/api/v1/apps/install", { ...body, planChecksum: (again.body as { plan?: { checksum?: string } }).plan?.checksum });
+          throw new Error(`install refused: ${JSON.stringify(install.body).slice(0, 800)}\nplan again: ${JSON.stringify(again.body).slice(0, 4000)}\ninstall again: ${JSON.stringify(retried.body).slice(0, 4000)}`);
+        }
+        const installed = install.body;
         expect(JSON.stringify(installed.rules.skipped)).toBe("[]");
         ok(await owner.patch(`/api/v1/connections/${connectionId}`, { timezone: "Europe/London", currency: "GBP" }));
 

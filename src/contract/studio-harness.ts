@@ -175,7 +175,7 @@ export async function boot(engine: Engine, port: number, now: number, database: 
     E2E_DATABASE: database,
     CONTRACT_NOW: String(now),
     CONTRACT_CLOCK_FILE: clockFile,
-    NODE_OPTIONS: `${process.env["NODE_OPTIONS"] ?? ""} --import=${pathToFileURL(fileURLToPath(new URL("./clock.mjs", import.meta.url))).href}`.trim(),
+    NODE_OPTIONS: `${process.env["NODE_OPTIONS"] ?? ""} --import=${pathToFileURL(fileURLToPath(new URL("./studio-clock.mjs", import.meta.url))).href}`.trim(),
   };
   const child: ChildProcess = spawn(process.execPath, [E2E_SERVER], { cwd: join(ADMINIUM_REPO, "apps", "e2e"), env, stdio: ["ignore", "pipe", "pipe"] });
   let log = "";
