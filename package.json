@@ -14,10 +14,11 @@
     "typecheck": "tsc -b",
     "manifest": "vite-node scripts/write-manifest.ts",
     "manifest:check": "vite-node scripts/check-manifest.ts",
-    "sample": "vite-node scripts/write-sample.ts"
+    "sample": "vite-node scripts/write-sample.ts",
+    "sync:customiser": "node scripts/sync-customiser.mjs"
   },
   "dependencies": {
-    "@adminiumjs/public-client": "^0.2.2",
+    "@adminiumjs/public-client": "^0.3.42",
     "lucide-react": "^0.462.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -28,6 +29,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "axe-core": "4.13.0",
     "jsdom": "^29.1.1",
     "typescript": "^5.7.2",
     "vite": "^7.0.0",
