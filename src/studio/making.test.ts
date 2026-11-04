@@ -26,11 +26,17 @@ describe("the sheets to batch", () => {
     expect(groups[0]!.machine?.["code"]).toBe("laser");
   });
 
-  it("leaves out a line already on a batch, one not approved, and one of a cancelled order", () => {
+  it("leaves out a line already making, one not approved, and one of a cancelled order", () => {
     const door = new FakeDoor();
-    door.data.lines.find((l) => l.id === 171)!["batch_id"] = 1;
+    door.data.lines.find((l) => l.id === 171)!["stage"] = "making";
     door.data.orders.find((o) => o.id === 12)!["status"] = "cancelled";
     expect(batchGroups(door.data)).toEqual([]);
+  });
+
+  it("queues again a line a batch took that came back to be made again", () => {
+    const door = new FakeDoor();
+    Object.assign(door.data.lines.find((l) => l.id === 171)!, { batch_id: 1, spoiled: 1 });
+    expect(batchGroups(door.data)[0]!.lines.map((l) => l.id)).toEqual([121, 171]);
   });
 
   it("reads a started batch's lines as its group", () => {

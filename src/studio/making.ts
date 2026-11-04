@@ -82,13 +82,13 @@ export function piecesOf(data: StudioData, line: Row): Piece[] {
 }
 
 /**
- * The lines that may go on a sheet now: still to make, on no batch, their
- * proof approved or nothing on them to proof (Adminium's `proof_ok`), made on
- * the laser from sheet stock.
+ * The lines that may go on a sheet now: still to make, their proof approved
+ * or nothing on them to proof (Adminium's `proof_ok`), made on the laser from
+ * sheet stock. A line a batch took to making that came back to "make" (a
+ * spoil to remake) is queued again, and its next batch takes it.
  */
 export function queuedForSheet(data: StudioData, line: Row): boolean {
   if (line["stage"] !== "make" || num(line["proof_ok"]) !== 1) return false;
-  if (line["batch_id"] !== null && line["batch_id"] !== undefined) return false;
   const order = orderOf(data, line["order_id"]);
   if (order === undefined || order["status"] === "cancelled") return false;
   if (productOf(data, line)?.["machine_kind"] !== "laser") return false;
