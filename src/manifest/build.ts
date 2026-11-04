@@ -45,6 +45,8 @@ export const CUSTOMER_ROUTES = {
   basket: "/basket",
   checkout: "/checkout",
   order: "/order",
+  // The sign-in link Adminium e-mails lands here, its token in the fragment.
+  link: "/c",
   find: "/find",
   ask: "/ask",
   problem: "/something-wrong",

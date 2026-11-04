@@ -275,6 +275,9 @@ export const TABLES: Table[] = [
       text("phone", 32, "Phone", { ...opt, rules: { personal: false, validation: { format: "phone" } } }),
       text("email", 254, "Studio e-mail", { ...opt, rules: { personal: false, validation: { format: "email" } } }),
       text("about", 400, "About the studio", opt),
+      // The shop's About page in the studio's own words, a blank line between paragraphs, and its note on the materials.
+      text("about_page", 1000, "About page", opt),
+      text("materials_note", 600, "A word about the materials", opt),
       // The order number: its prefix and the first number of the series.
       text("ref_prefix", 8, "Order number prefix", { default: "BR-" }),
       int("first_order_number", "First order number", { default: 1001, rules: { validation: { min: 1 } } }),
@@ -297,6 +300,8 @@ export const TABLES: Table[] = [
       choice("kind", "Kind", MACHINE_KINDS),
       text("detail", 120, "Detail", opt),
       text("icon", 32, "Icon", opt),
+      // What the machine does, in a sentence for the shop's About page: a machine without one is not shown there.
+      text("shop_note", 200, "What it does, on the About page", opt),
       bool("active", "In use", true),
       int("position", "Position", opt),
     ],
@@ -618,6 +623,9 @@ export const TABLES: Table[] = [
       }),
       figure("proof_ok", "int", "Ready for the bench", { formula: PROOF_OK }),
       fk("batch_id", "batches", "Batch", opt),
+      // When the line last went on the bench and into finishing: the shopper's timeline shows each.
+      at("started_at", "Started", { ...opt, rules: stamp("now", onState("stage", "making")) }),
+      at("finishing_at", "Into finishing", { ...opt, rules: stamp("now", onState("stage", "finishing")) }),
       at("made_at", "Made", { ...opt, rules: stamp("now", onState("stage", "ready")) }),
       text("made_by", 80, "Made by", { ...opt, rules: stamp("user-name", onState("stage", "ready")) }),
       int("spoiled", "Spoiled and remade", { default: 0, rules: { validation: { min: 0 } } }),
@@ -696,6 +704,9 @@ export const TABLES: Table[] = [
       text("email", 254, "E-mail", { semantic: "email", rules: { validation: { format: "email" } } }),
       language("language"),
       text("idea", 200, "What they would like"),
+      // The material they named, if any, and when they need it, in their own words ("a date, or no rush").
+      text("material", 32, "Material", opt),
+      text("wanted_when", 80, "When they need it", opt),
       int("quantity", "How many", { ...opt, rules: { validation: { min: 1, max: 1000 } } }),
       date("wanted_by", "Wanted by", opt),
       text("budget", 80, "Budget", opt),
@@ -724,7 +735,7 @@ export const TABLES: Table[] = [
       text("name", 80, "Name", { semantic: "name" }),
       text("email", 254, "E-mail", { semantic: "email", rules: { validation: { format: "email" } } }),
       language("language"),
-      choice("what", "What went wrong", { damaged: "It arrived damaged", wrong: "Something is wrong on it", late: "It has not arrived", other: "Something else" }),
+      choice("what", "What went wrong", { damaged: "It arrived damaged", wrong: "Something is wrong on it", late: "It has not arrived", other: "Something else", mind: "They changed their mind" }),
       text("details", 200, "What happened"),
       text("staff_note", 400, "Studio note", opt),
       at("created_at", "Sent", { ...opt, rules: stamp("now", onCreate) }),
