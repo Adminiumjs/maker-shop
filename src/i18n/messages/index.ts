@@ -29,6 +29,7 @@ import { bench } from "../strings/bench.ts";
 import { chrome } from "../strings/chrome.ts";
 import { data } from "../strings/data.ts";
 import { screens } from "../strings/screens.ts";
+import { shop } from "../strings/shop.ts";
 
 type Area<EN extends Record<string, string>> = { "en-US": EN } & Record<
   Exclude<LocaleTag, "en-US">,
@@ -40,7 +41,8 @@ const AREAS: [
   Area<(typeof screens)["en-US"]>,
   Area<(typeof bench)["en-US"]>,
   Area<(typeof data)["en-US"]>,
-] = [chrome, screens, bench, data];
+  Area<(typeof shop)["en-US"]>,
+] = [chrome, screens, bench, data, shop];
 
 export const MESSAGES = Object.fromEntries(
   LOCALE_TAGS.map((t) => [t, Object.assign({}, ...AREAS.map((a) => a[t] ?? {}))]),
@@ -51,7 +53,8 @@ export type MessageKey =
   | keyof (typeof chrome)["en-US"]
   | keyof (typeof screens)["en-US"]
   | keyof (typeof bench)["en-US"]
-  | keyof (typeof data)["en-US"];
+  | keyof (typeof data)["en-US"]
+  | keyof (typeof shop)["en-US"];
 
 /** One add-on's bundle, as it travels on the add-on object. */
 export type AddOnMessages = Readonly<Record<string, Readonly<Record<string, string>>>>;
