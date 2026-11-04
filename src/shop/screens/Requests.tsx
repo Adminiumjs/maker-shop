@@ -74,7 +74,7 @@ function Sent({ title, body, again, onAgain }: { title: MessageKey; body: Messag
 export function AskScreen() {
   const { t } = useI18n();
   const ask = useAfter((s) => s.ask);
-  const materials = useShop((s) => s.catalogue?.materials ?? []);
+  const materials = useShop((s) => s.catalogue?.materials) ?? [];
   const errors = ask.tried ? askErrors(ask.values) : {};
   const refusedOn = ask.refused?.column ?? null;
   const refused = refusalKey(ask.refused);

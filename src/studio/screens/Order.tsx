@@ -46,7 +46,7 @@ export function OrderScreen() {
     return (
       <section className="st-screen st-narrow">
         <div className="st-empty">
-          <div className="st-empty-title">{t("bench.order.none")}</div>
+          <h1 className="st-empty-title">{t("bench.order.none")}</h1>
           <button type="button" className="st-btn" onClick={() => go("today")}>
             {t("bench.back")}
           </button>

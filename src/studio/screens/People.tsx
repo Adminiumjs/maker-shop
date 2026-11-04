@@ -199,7 +199,7 @@ export function ProductScreen() {
     return (
       <section className="st-screen st-narrower">
         <div className="st-empty">
-          <div className="st-empty-title">{t("studio.product.none")}</div>
+          <h1 className="st-empty-title">{t("studio.product.none")}</h1>
           <button type="button" className="st-btn" onClick={() => go("products")}>
             {t("bench.piece.back")}
           </button>

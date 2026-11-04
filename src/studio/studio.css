@@ -146,7 +146,7 @@
 .st-tone-posted { color: var(--pos); background: var(--pos-soft); }
 .st-quote { font-family: var(--font-mono); font-size: 13px; color: var(--fg); border-inline-start: 2px solid var(--accent); padding-inline-start: 11px; line-height: 1.45; }
 .st-empty { padding: 36px 20px; text-align: center; border: 1px dashed var(--border-strong); border-radius: 16px; color: var(--fg-subtle); font-size: 13.5px; }
-.st-empty-title { font-size: 15px; font-weight: 700; color: var(--fg); margin-block-end: 5px; }
+.st-empty-title { font-size: 15px; font-weight: 700; color: var(--fg); margin-block: 0 5px; }
 .st-skel { background: linear-gradient(90deg, var(--surface-3), var(--surface-2), var(--surface-3)); border-radius: 12px; block-size: 64px; margin-block-end: 14px; }
 .st-failed { max-inline-size: 560px; padding: 20px; border: 1px solid var(--border-strong); border-radius: 14px; background: var(--surface); display: flex; flex-direction: column; gap: 12px; }
 

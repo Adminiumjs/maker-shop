@@ -12,7 +12,7 @@ import { Eye, LayoutGrid, Layers, Menu, Moon, Package, ReceiptText, Search, Sun,
 
 import { useData, useEnv } from "./env.tsx";
 import { productOf } from "./facts.ts";
-import { useFmt } from "./format.ts";
+import { useFmt, weekdayName } from "./format.ts";
 import { navOf, STUDIO_NAV } from "./nav.ts";
 import { mayMake, mayPost, mayReadCustomers } from "./roles.ts";
 import { go, useStudio, type View } from "./store.ts";
@@ -122,12 +122,12 @@ function Shell() {
 
   return (
     <div className="st-app">
-      <aside className="st-sidebar">
+      <aside className="st-sidebar" inert={navOpen || undefined}>
         <Brand name={studio} />
         <Nav view={view} reach={reach} />
         <Calendar />
       </aside>
-      <div className="st-column">
+      <div className="st-column" inert={navOpen || undefined}>
         <header className="st-header">
           <button type="button" className="st-iconbtn st-menu-btn" aria-label={t("studio.menu")} aria-expanded={navOpen} onClick={() => useStudio.setState({ navOpen: true })}>
             <Menu size={17} aria-hidden="true" />
@@ -156,7 +156,7 @@ function Shell() {
           <aside className="st-drawer" onClick={(e) => e.stopPropagation()} aria-label={t("studio.menu")}>
             <div className="st-brand">
               <Brand name={studio} />
-              <button type="button" className="st-close" aria-label={t("studio.close")} onClick={() => useStudio.setState({ navOpen: false })}>
+              <button type="button" className="st-close" aria-label={t("studio.close")} autoFocus onClick={() => useStudio.setState({ navOpen: false })}>
                 <X size={16} aria-hidden="true" />
               </button>
             </div>
@@ -249,8 +249,7 @@ function Calendar() {
   const days = door.facts().studioDays;
   const words = useMemo(() => {
     const order = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-    // 5 January 2026 is a Monday.
-    const name = (i: number) => new Intl.DateTimeFormat(locale, { weekday: "long", timeZone: "UTC" }).format(new Date(Date.UTC(2026, 0, 5 + i)));
+    const name = (i: number) => weekdayName(i, locale);
     const open = order.map((d, i) => ({ d, i })).filter(({ d }) => days.includes(d));
     // The days it is shut, in the order they come after its last working day: "Sunday and Monday".
     const after = (open[open.length - 1]?.i ?? 6) + 1;
