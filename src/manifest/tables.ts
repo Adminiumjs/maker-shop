@@ -178,8 +178,12 @@ export const CATEGORIES: Record<string, string> = {
 /** The studio's machines, by kind: what a batch is cut, printed or fired on. */
 export const MACHINE_KINDS: Record<string, string> = { laser: "Laser", printer: "3D printer", kiln: "Kiln" };
 
-/** The kinds of a product's own options. A feature is a priced customising part, flat a piece. */
-export const OPTION_KINDS: Record<string, string> = { material: "Material", size: "Size", finish: "Finish", feature: "Customising feature" };
+/**
+ * The kinds of a product's own options. A feature is a priced customising
+ * part, flat a piece. A break is the product's price off from a quantity on:
+ * coasters 4, 8 and 12, a sign one at a time.
+ */
+export const OPTION_KINDS: Record<string, string> = { material: "Material", size: "Size", finish: "Finish", feature: "Customising feature", break: "Quantity break" };
 
 /** Where a line is on the bench. */
 export const STAGES = ["make", "making", "finishing", "ready", "posted", "cancelled"] as const;
@@ -269,6 +273,8 @@ export const TABLES: Table[] = [
       int("first_order_number", "First order number", { default: 1001, rules: { validation: { min: 1 } } }),
       // A proof waiting this many studio days is worth a reminder.
       int("proof_reminder_days", "Remind about a proof after (days)", { default: 3, rules: { validation: { min: 1, max: 30 } } }),
+      // What the box and its packing weigh, added to every parcel.
+      int("packaging_grams", "Packing weight (g)", { default: 120, rules: { validation: { min: 0, max: 5000 } } }),
       bool("taking_orders", "Taking orders", true),
     ],
   },
@@ -356,7 +362,7 @@ export const TABLES: Table[] = [
     ],
   },
   {
-    // One table for every option of a product: its materials, sizes, finishes and priced customising features.
+    // One table for every option of a product: its materials, sizes, finishes, priced customising features and quantity breaks.
     ref: "options",
     label: l("Option"),
     labelPlural: l("Options"),
@@ -375,21 +381,11 @@ export const TABLES: Table[] = [
       // A feature names the Customiser's feature it pays for, by its code, which the design check compares.
       text("feature_code", 40, "Feature code", { ...opt, rules: { requiredWhen: { column: "kind", in: ["feature"] } } }),
       link("feature_id", "features", "Customiser feature"),
+      // A break: from how many, and the percentage off.
+      int("min_qty", "From (quantity)", { ...opt, rules: { validation: { min: 1, max: 1000 }, requiredWhen: { column: "kind", in: ["break"] } } }),
+      num("percent_off", 2, "Off (%)", { ...opt, rules: { validation: { min: 0, max: 90 } } }),
       bool("active", "Offered", true),
       int("position", "Position", opt),
-    ],
-  },
-  {
-    ref: "quantity_breaks",
-    label: l("Quantity break"),
-    labelPlural: l("Quantity breaks"),
-    keyField: "min_qty",
-    unique: [["product_id", "min_qty"]],
-    columns: [
-      id,
-      fk("product_id", "products", "Product"),
-      int("min_qty", "From", { rules: { validation: { min: 1, max: 1000 } } }),
-      num("percent_off", 2, "Off (%)", { default: 0, rules: { validation: { min: 0, max: 90 } } }),
     ],
   },
   {
@@ -492,7 +488,10 @@ export const TABLES: Table[] = [
       // The postage service the shopper picked, and its rate for the parcel's weight.
       fk("service_id", "postage_services", "Postage"),
       figure("item_count", "int", "Items", { rollup: { from: "order_lines", via: "order_id", sum: "qty" } }),
-      figure("weight_g", "int", "Weight (g)", { rollup: { from: "order_lines", via: "order_id", sum: "weight_g" } }),
+      // The parcel's weight: its pieces and the packing, as the settings say it weighs.
+      figure("pieces_weight_g", "int", "Pieces' weight (g)", { rollup: { from: "order_lines", via: "order_id", sum: "weight_g" } }),
+      figure("packing_g", "int", "Packing (g)", { default: { from: setting("packaging_grams") } }),
+      figure("weight_g", "int", "Weight (g)", { formula: { add: [{ coalesce: ["pieces_weight_g", 0] }, { coalesce: ["packing_g", 0] }] } }),
       fk("postage_rate_id", "postage_rates", "Postage rate", {
         ...opt,
         rules: { band: { table: "postage_rates", min: "min_grams", max: "max_grams", value: "weight_g", scope: [{ column: "service_id", equals: "service_id" }], over: "refuse" } },
@@ -562,9 +561,9 @@ export const TABLES: Table[] = [
       money("finish_delta", "Finish difference", { copy: { via: "finish_id", from: "price", mode: "always" } }),
       money("base_each", "Each before the break", { formula: BASE_EACH }),
       // The product's quantity break, picked by Adminium from the quantity.
-      fk("break_id", "quantity_breaks", "Quantity break", {
+      fk("break_id", "options", "Quantity break", {
         ...opt,
-        rules: { band: { table: "quantity_breaks", min: "min_qty", value: "qty", scope: [{ column: "product_id", equals: "product_id" }] } },
+        rules: { band: { table: "options", min: "min_qty", value: "qty", scope: [{ column: "product_id", equals: "product_id" }] } },
       }),
       figure("percent_off", "decimal", "Off (%)", { copy: { via: "break_id", from: "percent_off", mode: "always" } }, 2),
       money("each", "Each", { formula: EACH }),
@@ -624,6 +623,9 @@ export const TABLES: Table[] = [
         rules: { linkable: { where: [{ column: "kind", eq: "feature" }, { column: "active", eq: true }], same: [{ column: "product_id", as: "line_id.product_id" }] } },
       }),
       text("feature", 40, "Feature", { ...opt, rules: { copy: { via: "option_id", from: "feature_code", mode: "always" } } }),
+      // The Customiser's feature itself, for the studio's screens: a link into an add-on is a person's to name,
+      // never a copy. (It is also what lets the sample's rows for the Customiser carry a line's features.)
+      link("feature_id", "features", "Customiser feature"),
       text("name", 80, "Name", { ...opt, rules: { copy: { via: "option_id", from: "name", mode: "always" } } }),
       money("price", "Price a piece", { copy: { via: "option_id", from: "price", mode: "always" } }),
     ],
@@ -646,7 +648,7 @@ export const TABLES: Table[] = [
       id,
       fk("order_id", "orders", "Order"),
       fk("line_id", "order_lines", "Order line", { index: true }),
-      int("version", "Proof", { ...opt, rules: { sequence: { gapless: true, scope: "line_id" } } }),
+      int("version", "Proof", { ...opt, rules: { sequence: { gapless: true, scope: "line_id", sample: true } } }),
       choice("kind", "Drawn from", { lettering: "The lettering", design: "The Customiser design" }, { default: "lettering" }),
       picture("picture", "Picture"),
       // The Customiser's version of the design this proof shows, when the line has one.

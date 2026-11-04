@@ -394,6 +394,20 @@
             }
           },
           {
+            "ref": "packaging_grams",
+            "type": "int",
+            "label": {
+              "en-US": "Packing weight (g)"
+            },
+            "default": 120,
+            "rules": {
+              "validation": {
+                "min": 0,
+                "max": 5000
+              }
+            }
+          },
+          {
             "ref": "taking_orders",
             "type": "bool",
             "default": true,
@@ -1109,7 +1123,8 @@
               "material",
               "size",
               "finish",
-              "feature"
+              "feature",
+              "break"
             ],
             "label": {
               "en-US": "Kind"
@@ -1128,6 +1143,9 @@
                   },
                   "feature": {
                     "en-US": "Customising feature"
+                  },
+                  "break": {
+                    "en-US": "Quantity break"
                   }
                 }
               }
@@ -1211,6 +1229,41 @@
             }
           },
           {
+            "ref": "min_qty",
+            "type": "int",
+            "label": {
+              "en-US": "From (quantity)"
+            },
+            "nullable": true,
+            "rules": {
+              "validation": {
+                "min": 1,
+                "max": 1000
+              },
+              "requiredWhen": {
+                "column": "kind",
+                "in": [
+                  "break"
+                ]
+              }
+            }
+          },
+          {
+            "ref": "percent_off",
+            "type": "decimal",
+            "scale": 2,
+            "label": {
+              "en-US": "Off (%)"
+            },
+            "nullable": true,
+            "rules": {
+              "validation": {
+                "min": 0,
+                "max": 90
+              }
+            }
+          },
+          {
             "ref": "active",
             "type": "bool",
             "default": true,
@@ -1225,65 +1278,6 @@
               "en-US": "Position"
             },
             "nullable": true
-          }
-        ]
-      },
-      {
-        "ref": "quantity_breaks",
-        "label": {
-          "en-US": "Quantity break"
-        },
-        "labelPlural": {
-          "en-US": "Quantity breaks"
-        },
-        "keyField": "min_qty",
-        "unique": [
-          [
-            "product_id",
-            "min_qty"
-          ]
-        ],
-        "columns": [
-          {
-            "ref": "id",
-            "type": "int",
-            "role": "pk"
-          },
-          {
-            "ref": "product_id",
-            "type": "fk",
-            "references": "products",
-            "label": {
-              "en-US": "Product"
-            }
-          },
-          {
-            "ref": "min_qty",
-            "type": "int",
-            "label": {
-              "en-US": "From"
-            },
-            "rules": {
-              "validation": {
-                "min": 1,
-                "max": 1000
-              }
-            }
-          },
-          {
-            "ref": "percent_off",
-            "type": "decimal",
-            "scale": 2,
-            "label": {
-              "en-US": "Off (%)"
-            },
-            "default": 0,
-            "rules": {
-              "validation": {
-                "min": 0,
-                "max": 90
-              }
-            }
           }
         ]
       },
@@ -1890,6 +1884,37 @@
             }
           },
           {
+            "ref": "pieces_weight_g",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Pieces' weight (g)"
+            },
+            "rules": {
+              "rollup": {
+                "from": "order_lines",
+                "via": "order_id",
+                "sum": "weight_g"
+              }
+            }
+          },
+          {
+            "ref": "packing_g",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Packing (g)"
+            },
+            "rules": {
+              "default": {
+                "from": {
+                  "table": "settings",
+                  "column": "packaging_grams"
+                }
+              }
+            }
+          },
+          {
             "ref": "weight_g",
             "type": "int",
             "nullable": true,
@@ -1897,10 +1922,21 @@
               "en-US": "Weight (g)"
             },
             "rules": {
-              "rollup": {
-                "from": "order_lines",
-                "via": "order_id",
-                "sum": "weight_g"
+              "formula": {
+                "add": [
+                  {
+                    "coalesce": [
+                      "pieces_weight_g",
+                      0
+                    ]
+                  },
+                  {
+                    "coalesce": [
+                      "packing_g",
+                      0
+                    ]
+                  }
+                ]
               }
             }
           },
@@ -2559,14 +2595,14 @@
           {
             "ref": "break_id",
             "type": "fk",
-            "references": "quantity_breaks",
+            "references": "options",
             "label": {
               "en-US": "Quantity break"
             },
             "nullable": true,
             "rules": {
               "band": {
-                "table": "quantity_breaks",
+                "table": "options",
                 "min": "min_qty",
                 "value": "qty",
                 "scope": [
@@ -3096,6 +3132,20 @@
             }
           },
           {
+            "ref": "feature_id",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Customiser feature"
+            },
+            "rules": {
+              "addOnLink": {
+                "addOn": "customiser",
+                "table": "features"
+              }
+            }
+          },
+          {
             "ref": "name",
             "type": "text",
             "maxLength": 80,
@@ -3185,7 +3235,8 @@
             "rules": {
               "sequence": {
                 "gapless": true,
-                "scope": "line_id"
+                "scope": "line_id",
+                "sample": true
               }
             }
           },
@@ -5316,53 +5367,25 @@
                   "column": "feature_code"
                 },
                 {
-                  "column": "active",
-                  "control": "toggle-row"
-                },
-                {
-                  "column": "position",
-                  "control": "stepper"
-                }
-              ]
-            }
-          ]
-        }
-      }
-    },
-    {
-      "ref": "maker-breaks",
-      "template": "page-crud",
-      "title": {
-        "key": "mft.maker.breaks",
-        "fallback": "Quantity breaks"
-      },
-      "titles": {},
-      "nav": {
-        "group": "catalogue",
-        "icon": "layers",
-        "order": 3
-      },
-      "bindings": {
-        "rows": "quantity_breaks"
-      },
-      "config": {
-        "form": {
-          "v": 2,
-          "sections": [
-            {
-              "id": "s1",
-              "fields": [
-                {
-                  "column": "product_id",
-                  "control": "reference"
-                },
-                {
                   "column": "min_qty",
                   "control": "stepper"
                 },
                 {
                   "column": "percent_off",
                   "control": "number"
+                }
+              ]
+            },
+            {
+              "id": "s3",
+              "fields": [
+                {
+                  "column": "active",
+                  "control": "toggle-row"
+                },
+                {
+                  "column": "position",
+                  "control": "stepper"
                 }
               ]
             }
@@ -5381,7 +5404,7 @@
       "nav": {
         "group": "catalogue",
         "icon": "mail",
-        "order": 4
+        "order": 3
       },
       "bindings": {
         "rows": "postage_services"
@@ -5438,7 +5461,7 @@
       "nav": {
         "group": "catalogue",
         "icon": "scale",
-        "order": 5
+        "order": 4
       },
       "bindings": {
         "rows": "postage_rates"
@@ -6097,6 +6120,10 @@
                   "control": "stepper"
                 },
                 {
+                  "column": "packaging_grams",
+                  "control": "number"
+                },
+                {
                   "column": "taking_orders",
                   "control": "toggle-row"
                 }
@@ -6133,10 +6160,6 @@
         "table:@options:create",
         "table:@options:update",
         "table:@options:delete",
-        "table:@quantity_breaks:read",
-        "table:@quantity_breaks:create",
-        "table:@quantity_breaks:update",
-        "table:@quantity_breaks:delete",
         "table:@postage_services:read",
         "table:@postage_services:create",
         "table:@postage_services:update",
@@ -6204,8 +6227,6 @@
         "page:@maker-products:edit",
         "page:@maker-options:view",
         "page:@maker-options:edit",
-        "page:@maker-breaks:view",
-        "page:@maker-breaks:edit",
         "page:@maker-postage:view",
         "page:@maker-postage:edit",
         "page:@maker-postage-rates:view",
@@ -6228,8 +6249,6 @@
         "page:@maker-messages:edit",
         "page:@maker-settings:view",
         "page:@maker-settings:edit",
-        "page:@customiser-line:view",
-        "page:@customiser-product:view",
         "table:@orders:read_pii",
         "table:@customers:read_pii",
         "table:@commission_requests:read_pii",
@@ -6250,6 +6269,7 @@
             "language",
             "customer_id",
             "service_id",
+            "packing_g",
             "tracking",
             "cancel_reason",
             "link_stopped"
@@ -6266,6 +6286,7 @@
             "language",
             "customer_id",
             "service_id",
+            "packing_g",
             "tracking",
             "cancel_reason",
             "link_stopped"
@@ -6321,7 +6342,6 @@
         "table:@materials:read",
         "table:@products:read",
         "table:@options:read",
-        "table:@quantity_breaks:read",
         "table:@postage_services:read",
         "table:@postage_rates:read",
         "table:@closures:read",
@@ -6345,9 +6365,7 @@
         "table:@machine_bookings:delete",
         "table:@stock_movements:create",
         "page:@maker-orders:view",
-        "page:@maker-proofs:view",
-        "page:@customiser-line:view",
-        "page:@customiser-product:view"
+        "page:@maker-proofs:view"
       ],
       "limits": {
         "orders": {
@@ -6470,9 +6488,7 @@
         "table:@orders:read_pii",
         "table:@orders:update",
         "table:@order_lines:update",
-        "page:@maker-orders:view",
-        "page:@customiser-line:view",
-        "page:@customiser-product:view"
+        "page:@maker-orders:view"
       ],
       "limits": {
         "orders": {
@@ -6632,6 +6648,7 @@
         "line_id",
         "option_id",
         "feature",
+        "feature_id",
         "name",
         "price"
       ]
@@ -6740,6 +6757,8 @@
         "swatch",
         "feature_code",
         "feature_id",
+        "min_qty",
+        "percent_off",
         "position"
       ],
       "filters": [
@@ -6748,18 +6767,6 @@
           "op": "eq",
           "value": true
         }
-      ]
-    },
-    {
-      "table": "quantity_breaks",
-      "methods": [
-        "GET"
-      ],
-      "select": [
-        "id",
-        "product_id",
-        "min_qty",
-        "percent_off"
       ]
     },
     {
@@ -7013,6 +7020,7 @@
                 "id",
                 "option_id",
                 "feature",
+                "feature_id",
                 "name",
                 "price"
               ],
@@ -7215,6 +7223,7 @@
         "line_id",
         "option_id",
         "feature",
+        "feature_id",
         "name",
         "price"
       ]

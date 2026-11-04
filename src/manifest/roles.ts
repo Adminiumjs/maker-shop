@@ -11,9 +11,11 @@
  *   packer   the studio's screens: the orders ready to post, marking them
  *            posted with a tracking number. Nothing else changes.
  *
- * Both screens-only roles open the Customiser's panels on a line's design
- * and a product's base (their page grants), reading what the Customiser lets
- * an app's role read.
+ * Every role reads the Customiser's rows its work needs: the design a line
+ * names, its versions and files. The Customiser's panels on a record page
+ * (`customiser-line`, `customiser-product`) open for a person who also holds
+ * one of the Customiser's own roles: an app's role cannot grant an add-on's
+ * panel yet.
  *
  * The screens show or hide a button by the role, but the grants and limits
  * below are what refuse the write: a hidden button is not a lock.
@@ -26,9 +28,6 @@ const grant = (table: string, ...actions: string[]) => actions.map((action) => `
 const view = (page: string) => `page:@${page}:view`;
 /** Seeing a table's personal columns. */
 const pii = (table: string) => `table:@${table}:read_pii`;
-
-/** The Customiser's panels on Adminium's record pages: a line's design and a product's base. */
-export const CUSTOMISER_PANELS = ["customiser-line", "customiser-product"];
 
 /** What the studio reads of the Customiser: the design a line names, its versions and files, a product's base. */
 const CUSTOMISER_READS = [
@@ -66,7 +65,6 @@ const STUDIO_READS = [
   "materials",
   "products",
   "options",
-  "quantity_breaks",
   "postage_services",
   "postage_rates",
   "closures",
@@ -90,7 +88,6 @@ export const ROLES = [
         table === "messages" ? grant(table, "read", "create", "update") : grant(table, "read", "create", "update", "delete"),
       ),
       ...PAGE_REFS.flatMap((page) => [view(page), `page:@${page}:edit`]),
-      ...CUSTOMISER_PANELS.map(view),
       ...["orders", "customers", "commission_requests", "problem_reports", "messages"].map(pii),
     ],
     limits: {
@@ -114,7 +111,6 @@ export const ROLES = [
       ...grant("machine_bookings", "create", "update", "delete"),
       ...grant("stock_movements", "create"),
       ...STUDIO_PAGES.map(view),
-      ...CUSTOMISER_PANELS.map(view),
     ],
     limits: {
       // The order moves along the bench; nothing of the shopper's or its money.
@@ -142,7 +138,6 @@ export const ROLES = [
       ...grant("orders", "update"),
       ...grant("order_lines", "update"),
       view("maker-orders"),
-      ...CUSTOMISER_PANELS.map(view),
     ],
     limits: {
       orders: { writable: ["status", "tracking"], writableValues: { status: ["posted"] }, writableFrom: { status: ["ready"] } },

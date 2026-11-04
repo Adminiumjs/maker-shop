@@ -68,7 +68,7 @@ describe("every price, weight and date is Adminium's", () => {
   });
 
   it("picks the product's quantity break and the postage rate by band", () => {
-    expect(rules("order_lines", "break_id")["band"]).toEqual({ table: "quantity_breaks", min: "min_qty", value: "qty", scope: [{ column: "product_id", equals: "product_id" }] });
+    expect(rules("order_lines", "break_id")["band"]).toEqual({ table: "options", min: "min_qty", value: "qty", scope: [{ column: "product_id", equals: "product_id" }] });
     expect(rules("orders", "postage_rate_id")["band"]).toMatchObject({ table: "postage_rates", value: "weight_g", scope: [{ column: "service_id", equals: "service_id" }] });
     expect(rules("orders", "postage")["copy"]).toEqual({ via: "postage_rate_id", from: "price", mode: "always" });
   });
@@ -184,9 +184,9 @@ describe("the studio writes only what its work needs", () => {
     expect(role("owner")["screensOnly"]).toBeUndefined();
   });
 
-  it("opens the Customiser's panels for every role that sees orders", () => {
+  it("reads the design a line names, for every role that sees orders", () => {
     for (const key of ["owner", "maker", "packer"]) {
-      expect(role(key).permissions, key).toEqual(expect.arrayContaining(["page:@customiser-line:view", "page:@customiser-product:view"]));
+      expect(role(key).tables, key).toEqual(expect.arrayContaining([{ addOn: "customiser", table: "designs", actions: ["read"] }]));
     }
   });
 

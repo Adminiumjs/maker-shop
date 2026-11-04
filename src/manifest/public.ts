@@ -2,7 +2,7 @@
  * What the shop's pages may read and write, through two browser keys.
  *
  * The `customer` key is the shop's: the catalogue (products in the shop,
- * their options, quantity breaks and photos), the postage services and
+ * their options and quantity breaks, their photos), the postage services and
  * their rates, the closures, the materials' names and care notes, the
  * studio's public settings; placing an order with its lines, their features
  * and the shopper's details in one write, priced by Adminium and checked
@@ -77,7 +77,7 @@ export const LINE_SELECT = [
   "stage",
   "proof_state",
 ];
-export const FEATURE_SELECT = ["id", "line_id", "option_id", "feature", "name", "price"];
+export const FEATURE_SELECT = ["id", "line_id", "option_id", "feature", "feature_id", "name", "price"];
 export const PROOF_SELECT = ["id", "order_id", "line_id", "version", "kind", "picture", "design_version_id", "note", "state", "change_note", "sent_at", "answered_at"];
 
 /** The shopper's answer to a proof: approve it, or ask for a change in their own words, while it waits. */
@@ -125,7 +125,7 @@ export const PRODUCT_SELECT = [
   "base_id",
   "position",
 ];
-export const OPTION_SELECT = ["id", "product_id", "kind", "code", "name", "price", "material_id", "swatch", "feature_code", "feature_id", "position"];
+export const OPTION_SELECT = ["id", "product_id", "kind", "code", "name", "price", "material_id", "swatch", "feature_code", "feature_id", "min_qty", "percent_off", "position"];
 
 export const SETTINGS_SELECT = ["id", "studio_name", "address", "phone", "email", "about", "taking_orders"];
 
@@ -151,7 +151,6 @@ export const PUBLIC_ACCESS = [
   // ── the catalogue, the post and the calendar ─────────────────────────────────
   { table: "products", methods: ["GET"], select: PRODUCT_SELECT, filters: [{ column: "published", op: "eq", value: true }], pictures: ["photo"] },
   { table: "options", methods: ["GET"], select: OPTION_SELECT, filters: [{ column: "active", op: "eq", value: true }] },
-  { table: "quantity_breaks", methods: ["GET"], select: ["id", "product_id", "min_qty", "percent_off"] },
   { table: "postage_services", methods: ["GET"], select: ["id", "code", "name", "detail", "tracked", "position"], filters: [{ column: "active", op: "eq", value: true }] },
   { table: "postage_rates", methods: ["GET"], select: ["id", "service_id", "min_grams", "max_grams", "price"] },
   {
