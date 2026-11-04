@@ -241,6 +241,52 @@
           "column": "placed_at"
         }
       }
+    },
+    {
+      "kind": "label-sheet",
+      "addOn": "barcode-labels",
+      "table": "order_lines",
+      "feature": "labels",
+      "name": {
+        "en-US": "Piece labels"
+      },
+      "mapping": {
+        "sku": {
+          "column": "id"
+        },
+        "code": {
+          "column": "label_code"
+        },
+        "reference": {
+          "column": "product_name"
+        },
+        "count": {
+          "column": "pieces"
+        }
+      }
+    },
+    {
+      "kind": "label-sheet",
+      "addOn": "barcode-labels",
+      "table": "orders",
+      "feature": "labels",
+      "name": {
+        "en-US": "Parcel label"
+      },
+      "mapping": {
+        "sku": {
+          "column": "id"
+        },
+        "code": {
+          "column": "number"
+        },
+        "reference": {
+          "column": "town"
+        }
+      },
+      "requestValues": [
+        "count"
+      ]
     }
   ],
   "navGroups": [
@@ -3163,6 +3209,40 @@
             "nullable": true
           },
           {
+            "ref": "order_number",
+            "type": "text",
+            "maxLength": 16,
+            "label": {
+              "en-US": "Order number"
+            },
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "order_id",
+                "from": "number",
+                "mode": "always"
+              }
+            }
+          },
+          {
+            "ref": "label_code",
+            "type": "text",
+            "maxLength": 24,
+            "label": {
+              "en-US": "Label code"
+            },
+            "nullable": true,
+            "rules": {
+              "formula": {
+                "join": [
+                  "order_number",
+                  "/",
+                  "position"
+                ]
+              }
+            }
+          },
+          {
             "ref": "made_at",
             "type": "timestamptz",
             "label": {
@@ -4366,6 +4446,58 @@
           "en-US": "Stock movements"
         },
         "keyField": "kind",
+        "postings": [
+          {
+            "id": "used",
+            "into": {
+              "addOn": "inventory",
+              "ledger": "stock",
+              "action": "use"
+            },
+            "needs": "stock",
+            "post": {
+              "on": {
+                "create": true
+              }
+            },
+            "only": {
+              "column": "kind",
+              "eq": "used"
+            },
+            "map": {
+              "what": "material_id",
+              "quantity": "taken",
+              "kind": {
+                "value": "used"
+              }
+            }
+          },
+          {
+            "id": "spoiled",
+            "into": {
+              "addOn": "inventory",
+              "ledger": "stock",
+              "action": "use"
+            },
+            "needs": "stock",
+            "post": {
+              "on": {
+                "create": true
+              }
+            },
+            "only": {
+              "column": "kind",
+              "eq": "spoiled"
+            },
+            "map": {
+              "what": "material_id",
+              "quantity": "taken",
+              "kind": {
+                "value": "written_off"
+              }
+            }
+          }
+        ],
         "columns": [
           {
             "ref": "id",
@@ -4634,6 +4766,28 @@
               }
             },
             "scale": 2
+          },
+          {
+            "ref": "taken",
+            "type": "decimal",
+            "nullable": true,
+            "label": {
+              "en-US": "Taken off the shelf"
+            },
+            "rules": {
+              "formula": {
+                "sub": [
+                  0,
+                  {
+                    "coalesce": [
+                      "on_hand_change",
+                      0
+                    ]
+                  }
+                ]
+              }
+            },
+            "scale": 3
           },
           {
             "ref": "batch_id",

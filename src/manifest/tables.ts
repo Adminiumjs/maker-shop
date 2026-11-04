@@ -260,6 +260,31 @@ const ON_HAND_CHANGE = {
 };
 const COMMITTED_CHANGE = { if: [{ eq: ["kind", "committed"] }, "qty", { if: [{ eq: ["kind", "released"] }, { sub: [0, "qty"] }, 0] }] };
 
+/**
+ * With Inventory keeping the stock (the feature `stock`), what a batch's
+ * sheets and a spoil take off the shelf is used from Inventory too, in the
+ * same save: the material is the row Inventory links to its item. A delivery
+ * and a count are Inventory's own to record on its own pages.
+ */
+const STOCK_POSTINGS = [
+  {
+    id: "used",
+    into: { addOn: "inventory", ledger: "stock", action: "use" },
+    needs: "stock",
+    post: { on: { create: true } },
+    only: { column: "kind", eq: "used" },
+    map: { what: "material_id", quantity: "taken", kind: { value: "used" } },
+  },
+  {
+    id: "spoiled",
+    into: { addOn: "inventory", ledger: "stock", action: "use" },
+    needs: "stock",
+    post: { on: { create: true } },
+    only: { column: "kind", eq: "spoiled" },
+    map: { what: "material_id", quantity: "taken", kind: { value: "written_off" } },
+  },
+];
+
 // ── the tables ──────────────────────────────────────────────────────────────
 
 export const TABLES: Table[] = [
@@ -629,6 +654,9 @@ export const TABLES: Table[] = [
       }),
       figure("proof_ok", "int", "Ready for the bench", { formula: PROOF_OK }),
       fk("batch_id", "batches", "Batch", opt),
+      // The code on a piece's label: its order's number and its place on the order, "BR-2291/1".
+      text("order_number", 16, "Order number", { ...opt, rules: { copy: { via: "order_id", from: "number", mode: "always" } } }),
+      text("label_code", 24, "Label code", { ...opt, rules: { formula: { join: ["order_number", "/", "position"] } } }),
       at("made_at", "Made", { ...opt, rules: stamp("now", onState("stage", "ready")) }),
       text("made_by", 80, "Made by", { ...opt, rules: stamp("user-name", onState("stage", "ready")) }),
       int("spoiled", "Spoiled and remade", { default: 0, rules: { validation: { min: 0 } } }),
@@ -790,6 +818,7 @@ export const TABLES: Table[] = [
     label: l("Stock movement"),
     labelPlural: l("Stock movements"),
     keyField: "kind",
+    postings: STOCK_POSTINGS,
     columns: [
       id,
       fk("material_id", "materials", "Material", { index: true }),
@@ -803,6 +832,8 @@ export const TABLES: Table[] = [
       figure("on_hand_before", "decimal", "On hand before", { copy: { via: "material_id", from: "on_hand", mode: "always" } }, 2),
       figure("on_hand_change", "decimal", "Change on hand", { formula: ON_HAND_CHANGE }, 2),
       figure("committed_change", "decimal", "Change committed", { formula: COMMITTED_CHANGE }, 2),
+      // What a batch's sheets or a spoil took off the shelf, as an amount: what Inventory is told was used.
+      figure("taken", "decimal", "Taken off the shelf", { formula: { sub: [0, { coalesce: ["on_hand_change", 0] }] } }, 3),
       fk("batch_id", "batches", "Batch", opt),
       fk("line_id", "order_lines", "Order line", opt),
       text("note", 200, "Note", opt),
