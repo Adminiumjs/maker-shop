@@ -6,6 +6,7 @@
  * the decimal text the server sent ("34.00") until it is formatted.
  */
 import type { CustomiserApi } from "../../vendor/customiser/index.js";
+import type { AfterPort } from "./after-port.ts";
 
 export type Id = string | number;
 export type Row = Record<string, unknown>;
@@ -58,6 +59,8 @@ export interface Material {
   name: string;
   family: string;
   tint: string | null;
+  /** Looking after it, a line each, as the studio wrote it. */
+  care?: string | null;
 }
 
 export interface Service {
@@ -72,6 +75,11 @@ export interface Studio {
   name: string;
   address: string | null;
   about: string | null;
+  /** The About page, in the studio's own words (a blank line between paragraphs), and its note on the materials. */
+  aboutPage?: string | null;
+  materialsNote?: string | null;
+  /** What every order number starts with ("BR-"). */
+  refPrefix?: string | null;
   takingOrders: boolean;
 }
 
@@ -142,6 +150,8 @@ export interface ShopPort {
   place(body: OrderBody, clientKey: string, expectTotal: string): Promise<Placed>;
   /** The Customiser's calls, through the shop's own clients. */
   customiser(): CustomiserApi;
+  /** The pages after an order: signing in, an order and its proofs, the two requests, the footer's pages. */
+  after(): AfterPort;
 }
 
 /** A refusal is a thrown `ShopError`; anything else is a failure to reach Adminium. */

@@ -33,7 +33,7 @@ const PAGE = 200;
 export const MOMENTS: Readonly<Partial<Record<Table | AddOnTable, readonly string[]>>> = {
   customers: ["forgotten_at", "created_at"],
   orders: ["placed_at", "posted_at", "cancelled_at", "link_expires"],
-  order_lines: ["placed_at", "made_at"],
+  order_lines: ["placed_at", "started_at", "finishing_at", "made_at"],
   proofs: ["sent_at", "answered_at", "reminded_at"],
   machine_bookings: ["starts_at", "ends_at"],
   stock_movements: ["made_at"],

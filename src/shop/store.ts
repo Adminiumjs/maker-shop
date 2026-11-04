@@ -118,6 +118,8 @@ export interface ShopState {
   basket: BasketLine[];
   /** The basket line the editor is changing, when it opened from one. */
   editing: string | null;
+  /** A saved design the editor opened from "Your designs", when it did. */
+  opened: SavedDesign | null;
   basketQuote: Quoted | null;
   /** Each postage service's charge for this basket's parcel, by service: a dry run of the order with it. */
   servicePostage: Record<string, string>;
@@ -187,6 +189,7 @@ function initial(): Omit<ShopState, "port"> {
     used: [],
     basket: Array.isArray(kept.lines) ? kept.lines : [],
     editing: null,
+    opened: null,
     basketQuote: null,
     servicePostage: {},
     serviceKey: null,
@@ -281,9 +284,9 @@ export function goView(view: ShopView, code: string | null = null): void {
 }
 
 /** A product's page, with its first material, size and finish chosen. */
-export function openProduct(code: string | null, view: "product" | "customise" = "product", editing: string | null = null): void {
+export function openProduct(code: string | null, view: "product" | "customise" = "product", editing: string | null = null, opened: SavedDesign | null = null): void {
   const product = productOf(code);
-  set({ view, productCode: code, editing, used: [], limitWarn: false });
+  set({ view, productCode: code, editing, opened, used: [], limitWarn: false });
   onNavigate?.(view, code);
   if (product === null) return;
   const line = editing === null ? null : (get().basket.find((b) => b.id === editing) ?? null);
@@ -512,6 +515,7 @@ export function addDesignToBasket(design: DesignForBasket): "added" | "updated" 
   delete kept.used;
   keepHeld(design, null);
   const editing = s.editing === null ? null : (s.basket.find((b) => b.id === s.editing) ?? null);
+  set({ opened: null });
   if (editing !== null) {
     set({ basket: s.basket.map((b) => (b.id === editing.id ? { ...b, qty: s.choice.qty, materialId: s.choice.materialId, sizeId: s.choice.sizeId, finishId: s.choice.finishId, design: kept, features } : b)), editing: null });
     keepBasket();
@@ -521,6 +525,34 @@ export function addDesignToBasket(design: DesignForBasket): "added" | "updated" 
   set({ basket: [...s.basket, line] });
   keepBasket();
   return "added";
+}
+
+/** A saved design opened in the editor, on the piece made on its base ("Open" in Your designs). */
+export function openDesign(design: SavedDesign): boolean {
+  const product = get().catalogue?.products.find((p) => p.baseId !== null && String(p.baseId) === String(design.base_id)) ?? null;
+  if (product === null) return false;
+  openProduct(product.code, "customise", null, design);
+  return true;
+}
+
+/**
+ * Lines put back in the basket as they were (Order again): each a new line,
+ * priced again by the basket's dry run. Refused, with the sheet, when words
+ * on one are over its piece's limit today.
+ */
+export function addLinesToBasket(lines: readonly Omit<BasketLine, "id">[]): boolean {
+  const tooLong = lines.find((line) => {
+    const product = productById(line.productId);
+    return line.lettering !== null && product !== null && product.letteringLimit !== null && [...line.lettering].length > product.letteringLimit;
+  });
+  if (tooLong !== undefined) {
+    set({ limitWarn: true });
+    return false;
+  }
+  for (const line of lines) set({ basket: [...get().basket, { ...line, id: lineId() }] });
+  keepBasket();
+  requoteBasket();
+  return true;
 }
 
 /** A design saved for later: its session is kept, for "Your designs". */

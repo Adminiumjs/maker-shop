@@ -7,6 +7,7 @@
  * Tests only; nothing that ships imports it.
  */
 import type { CustomiserApi } from "../../vendor/customiser/index.js";
+import { fakeAfter, type FakeAfter } from "./after-testing.ts";
 import { ShopError, type Catalogue, type Figures, type Id, type Option, type OrderBody, type Placed, type Product, type Refused, type Row, type ShopConfig, type ShopPort } from "./port.ts";
 
 const product = (p: Partial<Product> & Pick<Product, "id" | "code" | "name" | "category" | "unit" | "price" | "leadDays">): Product => ({
@@ -96,6 +97,8 @@ export interface FakePort extends ShopPort {
   /** Hold the next answers until let go. */
   hold: () => () => void;
   customiserApi: CustomiserApi;
+  /** The after-order door's stand-in. */
+  afterFake: FakeAfter;
 }
 
 export function fakePort(catalogue: Catalogue = sampleCatalogue()): FakePort {
@@ -147,9 +150,12 @@ export function fakePort(catalogue: Catalogue = sampleCatalogue()): FakePort {
   };
 
   const api = {} as CustomiserApi;
+  const afterFake = fakeAfter();
   return {
     calls,
     customiserApi: api,
+    afterFake,
+    after: () => afterFake,
     raise: (productId, by) => bump.set(String(productId), (bump.get(String(productId)) ?? 0) + by),
     refuseNext: (r) => {
       refusal = { status: 400, column: null, child: null, index: null, reason: null, changed: null, raw: { code: r.code, params: {} }, ...r };

@@ -132,7 +132,7 @@ export const PRODUCT_SELECT = [
 ];
 export const OPTION_SELECT = ["id", "product_id", "kind", "code", "name", "price", "material_id", "swatch", "feature_code", "feature_id", "min_qty", "percent_off", "position"];
 
-export const SETTINGS_SELECT = ["id", "studio_name", "address", "phone", "email", "about", "about_page", "materials_note", "taking_orders"];
+export const SETTINGS_SELECT = ["id", "studio_name", "address", "phone", "email", "about", "about_page", "materials_note", "ref_prefix", "taking_orders"];
 
 /** The order key: one order, by its own link. */
 export const ORDER_KEY = "order";

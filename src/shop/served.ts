@@ -75,11 +75,13 @@ export async function resolveShop(opts: ResolveOptions = {}): Promise<ShopServed
     const served = doc["baseUrl"];
     const tables = strings(doc["tables"]);
     const publicKeys = strings(doc["publicKeys"]);
+    const settings = doc["settings"];
     return {
       baseUrl: typeof served === "string" && served !== "" ? served : (opts.origin ?? window.location.origin),
       publishableKey: key,
       ...(tables === null ? {} : { tables }),
       ...(publicKeys === null ? {} : { publicKeys }),
+      ...(settings !== null && typeof settings === "object" && !Array.isArray(settings) ? { settings: settings as Record<string, unknown> } : {}),
     };
   } catch {
     // No answer, or the page's own HTML answered for the document: not configured.
