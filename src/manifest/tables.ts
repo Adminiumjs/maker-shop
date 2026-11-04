@@ -7,7 +7,7 @@
  *   - a line's price is its product's price plus the differences of the
  *     options it names (each option a row of that product's own, held to it
  *     by `linkable.same`), less the product's quantity break (`band` over the
- *     quantity, J4), plus each priced customising feature at its own flat
+ *     quantity), plus each priced customising feature at its own flat
  *     price a piece, never lowered by the break;
  *   - an order's postage is its service's rate for the parcel's weight (a
  *     `band` over the lines' weight, scoped to the service), its total the

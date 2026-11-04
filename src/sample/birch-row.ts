@@ -24,7 +24,7 @@
  * is required, so both files always go in together.
  *
  * The data are the comps' (`birch-row-data.js`, `birch-row-customiser-data.js`),
- * with the two modules' disagreements settled one way (BC-F5): one table of
+ * with the two modules' disagreements settled one way: one table of
  * materials, walnut 6 mm, birch ply 3 mm, slate 5 mm and PLA, and one product
  * row each, with its lead, its breaks and its size.
  *
@@ -174,7 +174,7 @@ interface Material {
   cost: number;
 }
 
-/** The materials on the shelf: the only stock the studio keeps. Walnut 6 mm, ply 3 mm, slate 5 mm (BC-F5). */
+/** The materials on the shelf: the only stock the studio keeps. Walnut 6 mm, ply 3 mm, slate 5 mm. */
 export const MATERIALS: Material[] = [
   { code: "wal6", name: "Walnut, 6 mm", family: "Walnut", group: "sheet", thickness: 6, note: "400 × 300 mm sheet", unit: "sheets", machine: "laser", tint: "#6b4423", onHand: 14, committed: 2, reorder: 6, cost: 6.4 },
   { code: "ply3", name: "Birch ply, 3 mm", family: "Birch ply", group: "sheet", thickness: 3, note: "400 × 300 mm sheet", unit: "sheets", machine: "laser", tint: "#c2a175", onHand: 5, committed: 3, reorder: 6, cost: 3.2 },
@@ -244,7 +244,7 @@ interface Product {
 
 const LOGO = { label: "feature:maker-logo", name: "Your own logo", code: "logo", price: 1.5 };
 
-/** The shop's pieces (`birch-row-data.js` 105–186), sizes and materials as BC-F5 settles them. */
+/** The shop's pieces (`birch-row-data.js` 105–186), sizes and materials as the Customiser's comp gives them. */
 export const PRODUCTS: Product[] = [
   { id: "coast-wal", name: "Engraved walnut coasters", cat: "coasters", unit: "set of 4", icon: "disc", mat: "walnut", alts: [{ id: "walnut", delta: 0 }, { id: "ply", delta: -10 }], price: 34, lead: 3, machine: "laser", stock: "wal6", size: "95 × 95 × 6 mm", foot: { w: 95, h: 95, per: 4 }, pieces: 4,
     sizes: [{ id: "s95", label: "95 mm square", delta: 0 }, { id: "s110", label: "110 mm square", delta: 6 }],
@@ -329,7 +329,7 @@ export const PRODUCTS: Product[] = [
 ];
 const productById = new Map(PRODUCTS.map((p) => [p.id, p]));
 
-/** The price off from a quantity on, the same ladder for every product that breaks (B1, CR1). */
+/** The price off from a quantity on, the same ladder for every product that breaks: each product says where its own breaks fall. */
 const PERCENT_OFF: Record<number, number> = { 1: 0, 4: 8, 8: 14, 12: 18 };
 
 /** A unit's weight: the printed piece's own, or its footprint (the comp's one weight rule, `lineWeight`), times its pieces. */
