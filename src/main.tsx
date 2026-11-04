@@ -18,6 +18,7 @@ import "./styles/screens.css";
 import { setDataSource } from "./data/source.ts";
 import { clientFromEnv, loadSnapshot, snapshotSource } from "./data/adminiumSource.ts";
 import { I18nProvider } from "./i18n/index.tsx";
+import { SURFACE_SIDE } from "./surface.ts";
 
 const container = document.getElementById("root");
 if (!container) throw new Error("Missing #root — check index.html");
@@ -41,6 +42,17 @@ if (!container) throw new Error("Missing #root — check index.html");
  * failure is otherwise silent and looks exactly like a working app.
  */
 async function boot(): Promise<void> {
+  /*
+   * The staff build is the studio, served by Adminium on the signed-in
+   * person's session: its own screens and its own start (`studio/boot.tsx`).
+   * `SURFACE_SIDE` folds at build time, so no other build carries it.
+   */
+  if (SURFACE_SIDE === "staff") {
+    const { bootStudio } = await import("./studio/boot.tsx");
+    await bootStudio(container as HTMLElement);
+    return;
+  }
+
   const client = clientFromEnv();
   if (client !== null) {
     const snap = await loadSnapshot(client);

@@ -1,6 +1,10 @@
 import { defineConfig, type UserConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+import { surfaceJsonPlugin } from "./surface-emit.ts";
+import { MESSAGES } from "./src/i18n/messages/index.ts";
+import { APP_KEY, STUDIO_NAV } from "./src/studio/nav.ts";
+
 /**
  * Vite's config type plus the block vitest reads out of the same file.
  *
@@ -22,7 +26,15 @@ interface ViteWithVitest extends UserConfig {
 // with --base=/demo/maker-shop/ so the app can be served from the Adminium demo
 // sub-path.
 const config: ViteWithVitest = {
-  plugins: [react()],
+  plugins: [
+    react(),
+    /*
+     * `surface.json` beside a hosted surface's `index.html`: the screens
+     * Adminium's sidebar offers for this side, read from the same list the
+     * app routes by. A build with no side writes nothing.
+     */
+    surfaceJsonPlugin({ appKey: APP_KEY, appLabelKey: "brand.name", nav: STUDIO_NAV, messages: MESSAGES }),
+  ],
   /*
    * ── THE TEST RUN, AND WHY IT NEEDS A TIMEOUT AT ALL ───────────────────────
    *

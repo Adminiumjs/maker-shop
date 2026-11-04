@@ -9,12 +9,15 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "build:demo": "tsc -b && vite build --base=/demo/maker-shop/",
+    "build:surface:staff": "VITE_ADMINIUM_SURFACE_SIDE=staff tsc -b && VITE_ADMINIUM_SURFACE_SIDE=staff vite build --base=/apps/maker/staff/ --outDir dist-surface/maker/staff",
     "preview": "vite preview",
+    "dev:staff": "VITE_ADMINIUM_SURFACE_SIDE=staff vite",
     "test": "vitest run",
     "typecheck": "tsc -b",
     "manifest": "vite-node scripts/write-manifest.ts",
     "manifest:check": "vite-node scripts/check-manifest.ts",
-    "sample": "vite-node scripts/write-sample.ts"
+    "sample": "vite-node scripts/write-sample.ts",
+    "contract": "CONTRACT=1 vitest run src/contract/"
   },
   "dependencies": {
     "@adminiumjs/public-client": "^0.2.2",
