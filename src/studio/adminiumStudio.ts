@@ -231,8 +231,18 @@ export class AdminiumStudio implements StudioDoor {
     const conn = await this.conn();
     const table = this.real("proofs");
     if ("copyOf" in picture) {
-      const made = await this.t.mutate<{ ref: string }>(`/api/v1/files/${encodeURIComponent(picture.copyOf)}/copy`, "POST", { connectionId: conn, table, column: "picture" });
-      return made.ref;
+      try {
+        const made = await this.t.mutate<{ ref: string }>(`/api/v1/files/${encodeURIComponent(picture.copyOf)}/copy`, "POST", { connectionId: conn, table, column: "picture" });
+        return made.ref;
+      } catch (error) {
+        // The copy route is the dashboard's: someone whose role opens only the app's screens is refused it.
+        // Their own browser carries the bytes across instead, read and stored again as the proof's picture.
+        if (!(error instanceof SessionPortError && error.status === 403)) throw error;
+        const res = await this.fetchImpl(`/api/v1/files/${encodeURIComponent(picture.copyOf)}/content`, { credentials: "same-origin" });
+        if (!res.ok) throw asApiError(error);
+        const blob = await res.blob();
+        return this.storePicture({ blob, filename: `${picture.copyOf}.${blob.type === "image/jpeg" ? "jpg" : blob.type === "application/pdf" ? "pdf" : "png"}` });
+      }
     }
     // The bytes are the body: the files route reads no multipart form. The session's token goes with them.
     await this.t.port.config();

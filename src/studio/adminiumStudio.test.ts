@@ -130,6 +130,24 @@ describe("the studio's writes, as Adminium receives them", () => {
     ]);
   });
 
+  it("carries a design's proof across in the browser when the copy route is the dashboard's alone", async () => {
+    const { t, sent } = transport();
+    const mutate = t.mutate;
+    t.mutate = async <T,>(path: string, method: "POST" | "PUT" | "PATCH" | "DELETE", body?: unknown): Promise<T> => {
+      if (path.endsWith("/copy")) throw new SessionPortError("This account opens its app's own screens, not the dashboard.", 403, "SCREENS_ONLY");
+      return mutate<T>(path, method, body);
+    };
+    const asked: string[] = [];
+    const fetchImpl = (async (url: string) => {
+      asked.push(url);
+      if (url.endsWith("/content")) return new Response(new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47])], { type: "image/png" }), { status: 200 });
+      return new Response(JSON.stringify({ ref: "file_01J8Z6Q3M4N5P6R7S8T9V0W1XD" }), { status: 201 });
+    }) as unknown as typeof fetch;
+    await new AdminiumStudio(t, config(), { fetchImpl }).sendProof({ order: { id: 16 }, line: { id: 161 }, kind: "design", picture: { copyOf: "file_01J8Z6Q3M4N5P6R7S8T9V0W1XA" }, designVersionId: 30, note: null });
+    expect(asked).toEqual(["/api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1XA/content", "/api/v1/files?filename=file_01J8Z6Q3M4N5P6R7S8T9V0W1XA.png&connectionId=conn-1&table=maker_proofs&column=picture"]);
+    expect(sent.at(-1)).toEqual({ path: "/api/v1/data/conn-1/maker_proofs", method: "POST", body: { values: { order_id: 16, line_id: 161, kind: "design", picture: "file_01J8Z6Q3M4N5P6R7S8T9V0W1XD", design_version_id: 30 } } });
+  });
+
   it("refuses a proof whose picture the files route would not store, writing no proof", async () => {
     const { t, sent } = transport();
     const fetchImpl = (async () => new Response(JSON.stringify({ error: { code: "UNSUPPORTED_MEDIA_TYPE", message: "Not a picture." } }), { status: 415 })) as unknown as typeof fetch;

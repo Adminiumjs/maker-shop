@@ -200,7 +200,10 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect(picture.status).toBe(200);
         expect([...new Uint8Array(await picture.arrayBuffer()).slice(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]);
         // Adminium e-mails each proof, and the reminder: outbox rows for the order, to the shopper.
-        await until(async () => ((await rows("messages")).filter((m) => m["kind"] === "proof-ready" && String(m["order_id"]) === String(made.id)).length >= 2 ? true : undefined), "the proofs' e-mails", 45_000);
+        const ready = await until(async () => ((await rows("messages")).filter((m) => m["kind"] === "proof-ready" && String(m["order_id"]) === String(made.id)).length >= 2 ? true : undefined), "the proofs' e-mails", 45_000).catch(async (error: unknown) => {
+          throw new Error(`${String(error)}: ${JSON.stringify((await rows("messages")).map((m) => [m["kind"], m["order_id"], m["status"], m["skip_reason"], m["error"]]))}`);
+        });
+        expect(ready).toBe(true);
         await maker.remind(proofs[1]!);
         const reminder = await until(async () => (await rows("messages")).find((m) => m["kind"] === "proof-reminder" && String(m["order_id"]) === String(made.id)), "the reminder's e-mail", 45_000);
         expect(reminder["to_address"]).toBe("ada.w@example.com");
