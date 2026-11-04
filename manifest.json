@@ -69,6 +69,7 @@
         "basket": "/basket",
         "checkout": "/checkout",
         "order": "/order",
+        "link": "/c",
         "find": "/find",
         "ask": "/ask",
         "problem": "/something-wrong",
@@ -404,6 +405,24 @@
             "nullable": true
           },
           {
+            "ref": "about_page",
+            "type": "text",
+            "maxLength": 1000,
+            "label": {
+              "en-US": "About page"
+            },
+            "nullable": true
+          },
+          {
+            "ref": "materials_note",
+            "type": "text",
+            "maxLength": 600,
+            "label": {
+              "en-US": "A word about the materials"
+            },
+            "nullable": true
+          },
+          {
             "ref": "ref_prefix",
             "type": "text",
             "maxLength": 8,
@@ -587,6 +606,15 @@
             "maxLength": 120,
             "label": {
               "en-US": "Air"
+            },
+            "nullable": true
+          },
+          {
+            "ref": "shop_note",
+            "type": "text",
+            "maxLength": 200,
+            "label": {
+              "en-US": "What it does, on the About page"
             },
             "nullable": true
           },
@@ -3243,6 +3271,44 @@
             }
           },
           {
+            "ref": "started_at",
+            "type": "timestamptz",
+            "label": {
+              "en-US": "Started"
+            },
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "column": "stage",
+                  "values": [
+                    "making"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "ref": "finishing_at",
+            "type": "timestamptz",
+            "label": {
+              "en-US": "Into finishing"
+            },
+            "nullable": true,
+            "rules": {
+              "stamp": {
+                "set": "now",
+                "on": {
+                  "column": "stage",
+                  "values": [
+                    "finishing"
+                  ]
+                }
+              }
+            }
+          },
+          {
             "ref": "made_at",
             "type": "timestamptz",
             "label": {
@@ -3825,6 +3891,24 @@
             }
           },
           {
+            "ref": "material",
+            "type": "text",
+            "maxLength": 32,
+            "label": {
+              "en-US": "Material"
+            },
+            "nullable": true
+          },
+          {
+            "ref": "wanted_when",
+            "type": "text",
+            "maxLength": 80,
+            "label": {
+              "en-US": "When they need it"
+            },
+            "nullable": true
+          },
+          {
             "ref": "quantity",
             "type": "int",
             "label": {
@@ -4080,7 +4164,8 @@
               "damaged",
               "wrong",
               "late",
-              "other"
+              "other",
+              "mind"
             ],
             "label": {
               "en-US": "What went wrong"
@@ -4099,6 +4184,9 @@
                   },
                   "other": {
                     "en-US": "Something else"
+                  },
+                  "mind": {
+                    "en-US": "They changed their mind"
                   }
                 }
               }
@@ -7102,6 +7190,7 @@
         "finish_id",
         "lettering",
         "design_id",
+        "design_code",
         "unit_price",
         "base_each",
         "percent_off",
@@ -7113,7 +7202,10 @@
         "lead_days",
         "post_by",
         "stage",
-        "proof_state"
+        "proof_state",
+        "started_at",
+        "finishing_at",
+        "made_at"
       ]
     },
     {
@@ -7343,7 +7435,31 @@
         "phone",
         "email",
         "about",
+        "about_page",
+        "materials_note",
+        "ref_prefix",
         "taking_orders"
+      ]
+    },
+    {
+      "table": "machines",
+      "methods": [
+        "GET"
+      ],
+      "select": [
+        "id",
+        "name",
+        "kind",
+        "icon",
+        "shop_note",
+        "position"
+      ],
+      "filters": [
+        {
+          "column": "active",
+          "op": "eq",
+          "value": true
+        }
       ]
     },
     {
@@ -7484,6 +7600,7 @@
             "finish_id",
             "lettering",
             "design_id",
+            "design_code",
             "unit_price",
             "base_each",
             "percent_off",
@@ -7495,7 +7612,10 @@
             "lead_days",
             "post_by",
             "stage",
-            "proof_state"
+            "proof_state",
+            "started_at",
+            "finishing_at",
+            "made_at"
           ],
           "position": "position",
           "min": 1,
@@ -7539,8 +7659,10 @@
         "email",
         "language",
         "idea",
+        "material",
         "quantity",
         "wanted_by",
+        "wanted_when",
         "budget",
         "client_key"
       ],
@@ -7560,10 +7682,16 @@
         "perKeyHour": 60,
         "plainText": [
           "name",
+          "material",
           {
             "column": "idea",
             "digits": 4,
             "max": 200
+          },
+          {
+            "column": "wanted_when",
+            "digits": 4,
+            "max": 80
           },
           {
             "column": "budget",
@@ -7683,6 +7811,7 @@
         "finish_id",
         "lettering",
         "design_id",
+        "design_code",
         "unit_price",
         "base_each",
         "percent_off",
@@ -7694,7 +7823,10 @@
         "lead_days",
         "post_by",
         "stage",
-        "proof_state"
+        "proof_state",
+        "started_at",
+        "finishing_at",
+        "made_at"
       ]
     },
     {

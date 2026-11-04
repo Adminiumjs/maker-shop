@@ -9,9 +9,10 @@
  * key, and a save that would come to another total is refused with the
  * figures it came to. A retry of an order already made answers that order.
  */
-import { createPublicClient, newClientKey, pictureUrl, PublicApiError, type PublicClient, type PublicConfig } from "@adminiumjs/public-client";
+import { createPublicClient, newClientKey, pictureUrl, PublicApiError, type HeldSession, type PublicClient, type PublicConfig } from "@adminiumjs/public-client";
 
 import { customiserApi, REFS as CUSTOMISER_REFS, type ClientLike, type CustomiserApi } from "../../vendor/customiser/index.js";
+import { AdminiumAfter, afterRefs, type AfterPort } from "./after-port.ts";
 import { KEYS, shopRefs, type ShopRefs } from "./refs.ts";
 import { ShopError, type Catalogue, type Figures, type Id, type Material, type Option, type OptionKind, type OrderBody, type Placed, type Product, type Refused, type Row, type Service, type ShopConfig, type ShopPort } from "./port.ts";
 
@@ -20,6 +21,8 @@ export interface ShopServed {
   publishableKey: string;
   tables?: Record<string, string>;
   publicKeys?: Record<string, string>;
+  /** The app's own settings, as `surface-config.json` serves them (its studio days, its cut-off). */
+  settings?: Record<string, unknown>;
 }
 
 export interface ShopDoorOptions {
@@ -30,6 +33,30 @@ export interface ShopDoorOptions {
 }
 
 const PAGE = 200;
+
+/** Where a client's session is kept for the tab, so a reload of the order's page stays signed in. */
+const sessionSlot = (purpose: string) => `maker.shop.session.${purpose}`;
+
+function keptSession(purpose: string): HeldSession | undefined {
+  try {
+    const raw = typeof sessionStorage === "undefined" ? null : sessionStorage.getItem(sessionSlot(purpose));
+    if (raw === null) return undefined;
+    const held = JSON.parse(raw) as HeldSession;
+    return typeof held?.token === "string" && typeof held.expiresAt === "number" ? held : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function keepSession(purpose: string, session: HeldSession | null): void {
+  try {
+    if (typeof sessionStorage === "undefined") return;
+    if (session === null) sessionStorage.removeItem(sessionSlot(purpose));
+    else sessionStorage.setItem(sessionSlot(purpose), JSON.stringify(session));
+  } catch {
+    // not kept: the session lasts until the page goes
+  }
+}
 
 const text = (value: unknown): string | null => (value === null || value === undefined || value === "" ? null : String(value));
 const num = (value: unknown): number | null => (value === null || value === undefined || value === "" || Number.isNaN(Number(value)) ? null : Number(value));
@@ -106,7 +133,7 @@ function option(row: Row): Option {
   };
 }
 
-const material = (row: Row): Material => ({ id: row["id"] as Id, code: String(row["code"] ?? ""), name: String(row["name"] ?? ""), family: String(row["family"] ?? row["name"] ?? ""), tint: text(row["tint"]) });
+const material = (row: Row): Material => ({ id: row["id"] as Id, code: String(row["code"] ?? ""), name: String(row["name"] ?? ""), family: String(row["family"] ?? row["name"] ?? ""), tint: text(row["tint"]), care: text(row["care"]) });
 const service = (row: Row): Service => ({ id: row["id"] as Id, code: String(row["code"] ?? ""), name: String(row["name"] ?? ""), detail: text(row["detail"]), tracked: yes(row["tracked"]) });
 
 export class AdminiumShop implements ShopPort {
@@ -118,19 +145,31 @@ export class AdminiumShop implements ShopPort {
   readonly orderClient: PublicClient | null;
   private config$: Promise<PublicConfig> | null = null;
   private api: CustomiserApi | null = null;
+  private afterDoor: AfterPort | null = null;
 
   constructor(served: ShopServed, options: ShopDoorOptions = {}) {
     this.served = served;
     this.refs = shopRefs(served.tables);
     this.fetchImpl = options.fetch;
-    const make = (publishableKey: string, humanCheck: ShopDoorOptions["humanCheck"]) =>
-      createPublicClient({ baseUrl: served.baseUrl, publishableKey, ...(options.fetch === undefined ? {} : { fetch: options.fetch }), ...(humanCheck === undefined ? {} : { humanCheck }) });
-    // Placing an order and saving a design both ask the human check: solved before they are sent.
-    const client = make(served.publishableKey, options.humanCheck ?? { refs: [this.refs.placeOrder, CUSTOMISER_REFS.designs] });
+    // Each client keeps its session for the tab: a reload of the order's page is still signed in.
+    const make = (publishableKey: string, humanCheck: ShopDoorOptions["humanCheck"], purpose: string) => {
+      const held = keptSession(purpose);
+      return createPublicClient({
+        baseUrl: served.baseUrl,
+        publishableKey,
+        ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
+        ...(humanCheck === undefined ? {} : { humanCheck }),
+        ...(held === undefined ? {} : { session: held }),
+        onSessionChange: (session) => keepSession(purpose, session),
+      });
+    };
+    const after = afterRefs(served.tables);
+    // Placing an order, saving a design, signing in and the two requests all ask the human check: solved before they are sent.
+    const client = make(served.publishableKey, options.humanCheck ?? { refs: [this.refs.placeOrder, CUSTOMISER_REFS.designs, after.askUs, after.somethingWrong], claim: true }, "customer");
     if (client === null) throw new Error("The shop's key could not be used.");
     this.client = client;
     const orderKey = served.publicKeys?.[KEYS.order];
-    this.orderClient = orderKey === undefined ? null : make(orderKey, false);
+    this.orderClient = orderKey === undefined ? null : make(orderKey, false, KEYS.order);
   }
 
   private clientConfig(): Promise<PublicConfig> {
@@ -171,7 +210,7 @@ export class AdminiumShop implements ShopPort {
         options: options!.map(option),
         materials: materials!.map(material),
         services: services!.map(service),
-        studio: { name: String(studio["studio_name"] ?? ""), address: text(studio["address"]), about: text(studio["about"]), takingOrders: studio["taking_orders"] === undefined ? true : yes(studio["taking_orders"]) },
+        studio: { name: String(studio["studio_name"] ?? ""), address: text(studio["address"]), about: text(studio["about"]), aboutPage: text(studio["about_page"]), materialsNote: text(studio["materials_note"]), refPrefix: text(studio["ref_prefix"]), takingOrders: studio["taking_orders"] === undefined ? true : yes(studio["taking_orders"]) },
       };
     });
   }
@@ -201,6 +240,11 @@ export class AdminiumShop implements ShopPort {
         link: made.link === null ? null : { token: made.link.token },
       };
     });
+  }
+
+  after(): AfterPort {
+    this.afterDoor ??= new AdminiumAfter({ client: this.client, orderClient: this.orderClient }, this.served.tables, this.served.settings);
+    return this.afterDoor;
   }
 
   customiser(): CustomiserApi {

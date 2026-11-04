@@ -12,8 +12,8 @@
  *   - the maker sends a proof: the picture stored through the files route,
  *     the proof before it superseded, the new one numbered by Adminium and
  *     e-mailed (an outbox row);
- *   - the shopper approves it (a stand-in for their claimed write: the owner
- *     moves the proof as the shopper's own page would);
+ *   - the shopper approves it by their own write: the order's link from its
+ *     e-mail opened by the shop's door, the proof answered through it;
  *   - the piece goes to making (its order with it), is made, is ready;
  *   - the packer posts it, and Adminium stamps it and e-mails the customer.
  *
@@ -33,6 +33,7 @@ import { join } from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { AdminiumShop } from "../shop/door.ts";
 import { moveLine, moveOrderLines, postOrders, sendProofs, spoil } from "../studio/actions.ts";
 import { AdminiumStudio } from "../studio/adminiumStudio.ts";
 import type { StudioData } from "../studio/door.ts";
@@ -143,6 +144,9 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         ok(await owner.post("/api/v1/apps/maker/sample-data"));
         await until(async () => (ok(await owner.get<{ loaded: boolean }>("/api/v1/apps/maker/sample-data")).loaded ? true : undefined), "the sample to be added");
         await server.setClock(THURSDAY);
+        // The shop's side is open, and an e-mail's links name this server: the shopper answers a proof there.
+        ok(await owner.put("/api/v1/public-api", { enabled: true }));
+        ok(await owner.put("/api/v1/settings/email", { publicOrigin: server.base }));
 
         maker = await doorFor(await person("maker"));
         packer = await doorFor(await person("packer"));
@@ -162,15 +166,24 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
 
       it("walks a lettered piece from its proof to the post", async () => {
         // A real order (a sample's rows send no e-mail, Adminium's rule): a slate house sign with words on it,
-        // taken by the owner as the shop's checkout would take it.
+        // placed through the shop's own door as its checkout places it, so the shopper holds the order's link.
         let data = await maker.load();
         const sign = data.products.find((p) => p["code"] === "sign-house")!;
         const option = (kind: string) => data.options.find((o) => String(o["product_id"]) === String(sign.id) && o["kind"] === kind)!.id;
         const second = data.services.find((s) => s["code"] === "second")!.id;
-        const ordersTable = encodeURIComponent(tables["orders"] ?? "maker_orders");
-        const linesTable = encodeURIComponent(tables["order_lines"] ?? "maker_order_lines");
-        const made = ok(await owner.post<{ data: Row }>(`/api/v1/data/${connectionId}/${ordersTable}`, { values: { name: "Ada W.", email: "ada.w@example.com", address_line1: "3 Mill Lane", town: "Settle", postcode: "BD24 0AA", service_id: second } }), 201).data;
-        ok(await owner.post(`/api/v1/data/${connectionId}/${linesTable}`, { values: { order_id: made.id, product_id: sign.id, qty: 1, material_id: option("material"), size_id: option("size"), finish_id: option("finish"), lettering: "Mill House" } }), 201);
+        const served = ok(await new Caller(server.base).get<{ publishableKey: string; publicKeys?: Record<string, string>; tables?: Record<string, string> }>("/apps/maker/customer/surface-config.json"));
+        const originFetch: typeof fetch = (input, init) => {
+          const headers = new Headers(init?.headers);
+          headers.set("origin", server.base);
+          return fetch(input, { ...init, headers });
+        };
+        const shop = new AdminiumShop({ ...served, baseUrl: server.base }, { fetch: originFetch });
+        const body = {
+          values: { name: "Ada W.", email: "ada.w@example.com", address_line1: "3 Mill Lane", town: "Settle", postcode: "BD24 0AA", service_id: second, language: "en-US" },
+          children: { order_lines: [{ values: { product_id: sign.id, qty: 1, material_id: option("material"), size_id: option("size"), finish_id: option("finish"), lettering: "Mill House" } }] },
+        };
+        const placed = await shop.place(body, `maker-studio-${engine}-0000000001`, String((await shop.quote(body)).order["total"]));
+        const made = placed.order;
         data = await maker.load();
         const mine = () => data.orders.find((o) => String(o.id) === String(made.id))!;
         expect(mine()["number"]).toBe("BR-2291");
@@ -209,8 +222,13 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         const reminder = await until(async () => (await rows("messages")).find((m) => m["kind"] === "proof-reminder" && String(m["order_id"]) === String(made.id)), "the reminder's e-mail", 45_000);
         expect(reminder["to_address"]).toBe("ada.w@example.com");
 
-        // The shopper approves it (their claimed write; here the owner moves the proof as the shopper's page would).
-        ok(await owner.patch(`/api/v1/data/${connectionId}/${encodeURIComponent(tables["proofs"] ?? "maker_proofs")}/${String(proofs[1]!.id)}`, { values: { state: "approved" }, from: "sent" }));
+        // The shopper approves it, their own write: the order's own link (the one its confirmation holds and its
+        // e-mail carries), opened by the shop's door in another browser.
+        const token = placed.link!.token;
+        const shopper = new AdminiumShop({ ...served, baseUrl: server.base }, { fetch: originFetch }).after();
+        expect(await shopper.openShared(token)).toBe("opened");
+        expect((await shopper.readShared())?.proofs.find((p) => String(p["id"]) === String(proofs[1]!.id))?.["state"]).toBe("sent");
+        expect((await shopper.answerProof("link", proofs[1]!.id as number, { state: "approved" }))["state"]).toBe("approved");
         data = await maker.load();
         const approved = data.lines.find((l) => String(l.id) === String(line.id))!;
         expect([approved["proof_state"], num(approved["proof_ok"])]).toEqual(["approved", 1]);

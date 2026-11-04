@@ -20,6 +20,8 @@ export const ELSEWHERE = {
   about: "about",
   design: "design",
   search: "search",
+  // The sign-in link Adminium e-mails: `/c#<code>`.
+  link: "c",
 } as const;
 export type Elsewhere = keyof typeof ELSEWHERE;
 

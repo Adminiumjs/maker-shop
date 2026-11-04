@@ -64,6 +64,8 @@ export const LINE_SELECT = [
   "finish_id",
   "lettering",
   "design_id",
+  // The design's code: the shopper's page opens each of their designs by it.
+  "design_code",
   "unit_price",
   "base_each",
   "percent_off",
@@ -76,6 +78,9 @@ export const LINE_SELECT = [
   "post_by",
   "stage",
   "proof_state",
+  "started_at",
+  "finishing_at",
+  "made_at",
 ];
 export const FEATURE_SELECT = ["id", "line_id", "option_id", "feature", "feature_id", "name", "price"];
 export const PROOF_SELECT = ["id", "order_id", "line_id", "version", "kind", "picture", "design_version_id", "note", "state", "change_note", "sent_at", "answered_at"];
@@ -127,7 +132,7 @@ export const PRODUCT_SELECT = [
 ];
 export const OPTION_SELECT = ["id", "product_id", "kind", "code", "name", "price", "material_id", "swatch", "feature_code", "feature_id", "min_qty", "percent_off", "position"];
 
-export const SETTINGS_SELECT = ["id", "studio_name", "address", "phone", "email", "about", "taking_orders"];
+export const SETTINGS_SELECT = ["id", "studio_name", "address", "phone", "email", "about", "about_page", "materials_note", "ref_prefix", "taking_orders"];
 
 /** The order key: one order, by its own link. */
 export const ORDER_KEY = "order";
@@ -164,6 +169,8 @@ export const PUBLIC_ACCESS = [
   },
   { table: "materials", methods: ["GET"], select: ["id", "code", "name", "family", "thickness_mm", "tint", "care"], filters: [{ column: "active", op: "eq", value: true }] },
   { table: "settings", methods: ["GET"], select: SETTINGS_SELECT },
+  // The machines the About page names, each with the studio's sentence about it.
+  { table: "machines", methods: ["GET"], select: ["id", "name", "kind", "icon", "shop_note", "position"], filters: [{ column: "active", op: "eq", value: true }] },
 
   // ── placing an order ─────────────────────────────────────────────────────────
   {
@@ -215,9 +222,14 @@ export const PUBLIC_ACCESS = [
     methods: ["POST"],
     humanCheck: true,
     select: ["id", "ref", "status"],
-    writable: ["name", "email", "language", "idea", "quantity", "wanted_by", "budget", "client_key"],
+    writable: ["name", "email", "language", "idea", "material", "quantity", "wanted_by", "wanted_when", "budget", "client_key"],
     requires: ["name", "email", "idea"],
-    anonymous: { perValue: { columns: ["email"], n: 3 }, perIpHour: 3, perKeyHour: 60, plainText: ["name", { column: "idea", digits: 4, max: 200 }, { column: "budget", digits: 4, max: 80 }] },
+    anonymous: {
+      perValue: { columns: ["email"], n: 3 },
+      perIpHour: 3,
+      perKeyHour: 60,
+      plainText: ["name", "material", { column: "idea", digits: 4, max: 200 }, { column: "wanted_when", digits: 4, max: 80 }, { column: "budget", digits: 4, max: 80 }],
+    },
     clientKey: "client_key",
   },
   {
@@ -264,6 +276,7 @@ export const PUBLIC_REFS = {
   closures: "maker_closures",
   materials: "maker_materials",
   settings: "maker_settings",
+  machines: "maker_machines",
   placeOrder: "maker_orders_verified_2",
   askUs: "maker_commission_requests",
   somethingWrong: "maker_problem_reports",

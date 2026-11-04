@@ -28,6 +28,7 @@ export function CustomiseScreen() {
   const basket = useShop((s) => s.basket);
   const refusedLine = useShop((s) => s.refusedLine);
   const email = useShop((s) => s.details.email);
+  const opened = useShop((s) => s.opened);
   const product = productOf(code);
   const plain = catalogue !== null && (product === null || product.baseId === null);
   // A piece the Customiser does not make: its own page instead.
@@ -39,7 +40,7 @@ export function CustomiseScreen() {
   const m = (value: unknown) => money(value, currency, locale);
   const line = figuresFor(choice.qty);
   const at = editing === null ? -1 : basket.findIndex((b) => b.id === editing);
-  const design = at === -1 ? undefined : (basket[at]!.design ?? undefined);
+  const design = at === -1 ? (opened ?? undefined) : (basket[at]!.design ?? undefined);
   const refused = refusedLine !== null && refusedLine.index === at ? designRefusal(refusedLine.raw) : null;
   const breaks = breaksOf(product.id).filter((b) => (b.minQty ?? 1) > 1);
   const featurePrices = Object.fromEntries(

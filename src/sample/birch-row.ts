@@ -110,6 +110,11 @@ const SETTINGS: Row = {
   address: "Unit 4, Station Yard, Settle BD24 9AA",
   email: "studio@birchrow.example",
   about: "Two of us, a laser, two printers and a kiln, in a unit by the station in Settle. Everything is made to order.",
+  // The About page (K - Birch Row 656–673), as the studio wrote it.
+  about_page:
+    "Birch Row is Ada and Nell. Ada came from a joinery shop and does the cutting and the wood; Nell throws the mugs and runs the kiln. We work from a unit behind the station, Tuesday to Saturday, and between us we make everything ourselves.\n\nWe don't hold finished pieces. When an order comes in we cut it, print it or throw it that week, then send you a picture before anything is engraved. That is why a coaster takes three days and a mug takes ten — the mug is fired twice.",
+  materials_note:
+    "Walnut, ply and slate are all real, so the grain and the mottling change from piece to piece. Two coasters cut from the same board will not match exactly, and a slate sign has whatever the quarry gave it. We pick the nicest face for the lettering and let the rest be what it is.",
   ref_prefix: "BR-",
   first_order_number: 2291,
   proof_reminder_days: 3,
@@ -119,6 +124,7 @@ const SETTINGS: Row = {
 
 /** The machines, and how long one run keeps each: a sheet on the laser (the comp's walnut sheet, 09:00–11:15), a print, a firing. */
 const MACHINES = [
+  // Each with the sentence the About page shows beside it ("What's in the unit", K - Birch Row 2585–2589).
   {
     code: "laser",
     name: "The laser",
@@ -130,10 +136,11 @@ const MACHINES = [
     cut_settings: "18 mm/s at 78% power, one pass",
     engrave_settings: "300 mm/s at 22% power, 500 dpi",
     air_settings: "On. Check the lens before the run.",
+    shop_note: "Cuts and engraves the wood, ply, acrylic and slate. It runs most of the day.",
   },
-  { code: "printer-a", name: "Printer A", kind: "printer", detail: "0.4 mm nozzle", icon: "box", run_minutes: 200 },
-  { code: "printer-b", name: "Printer B", kind: "printer", detail: "0.4 mm nozzle", icon: "box", run_minutes: 200 },
-  { code: "kiln", name: "The kiln", kind: "kiln", detail: "60 litre, top loader", icon: "flame", run_minutes: 540 },
+  { code: "printer-a", name: "Printer A", kind: "printer", detail: "0.4 mm nozzle", icon: "box", run_minutes: 200, shop_note: "Prints the trays and the pots in matte PLA, usually overnight." },
+  { code: "printer-b", name: "Printer B", kind: "printer", detail: "0.4 mm nozzle", icon: "box", run_minutes: 200, shop_note: "Prints the trays and the pots in matte PLA, usually overnight." },
+  { code: "kiln", name: "The kiln", kind: "kiln", detail: "60 litre, top loader", icon: "flame", run_minutes: 540, shop_note: "Fires the mugs twice — bisque first, then glaze at 1240°C." },
 ];
 
 /** Looking after each material, as the care page lists it. */

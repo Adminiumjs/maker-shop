@@ -6,10 +6,13 @@
  * footer's pages, search) are routed here and drawn by their own modules
  * (`ELSEWHERE` in `route.ts`).
  */
-import { CircleCheck, Info, Moon, Search, ShoppingBag, Sun, TreePine, TriangleAlert } from "lucide-react";
+import { CircleCheck, FolderHeart, Info, Moon, Search, ShoppingBag, Sun, TreePine, TriangleAlert } from "lucide-react";
+
+import { hasSavedDesigns } from "../../vendor/customiser/index.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import "./shop.css";
+import "./after.css";
 
 import { useI18n, type MessageKey } from "../i18n/index.tsx";
 import { count } from "./format.ts";
@@ -21,6 +24,11 @@ import { ConfirmScreen } from "./screens/Confirm.tsx";
 import { CustomiseScreen } from "./screens/Customise.tsx";
 import { ProductScreen } from "./screens/Product.tsx";
 import { ShopScreen } from "./screens/Shop.tsx";
+import { searchFor } from "./after.ts";
+import { AgainScreen } from "./screens/Again.tsx";
+import { OrderScreen } from "./screens/Order.tsx";
+import { AboutScreen, CareScreen, DesignsScreen, MissingScreen, PostageScreen, SearchScreen, SignInScreen } from "./screens/Pages.tsx";
+import { AskScreen, ProblemScreen } from "./screens/Requests.tsx";
 
 const NAV: [ShopView, MessageKey][] = [
   ["shop", "shop.nav.shop"],
@@ -69,24 +77,29 @@ function Screen({ view }: { view: ShopView }): ReactNode {
       return <CheckoutScreen />;
     case "confirm":
       return <ConfirmScreen />;
-    default:
-      return <Elsewhere />;
+    case "order":
+      return <OrderScreen />;
+    case "find":
+      return <AgainScreen />;
+    case "ask":
+      return <AskScreen />;
+    case "problem":
+      return <ProblemScreen />;
+    case "postage":
+      return <PostageScreen />;
+    case "care":
+      return <CareScreen />;
+    case "about":
+      return <AboutScreen />;
+    case "search":
+      return <SearchScreen />;
+    case "design":
+      return <DesignsScreen />;
+    case "link":
+      return <SignInScreen />;
+    case "missing":
+      return <MissingScreen />;
   }
-}
-
-/** A screen the shop's other parts draw, not in this build. */
-function Elsewhere() {
-  const { t } = useI18n();
-  return (
-    <section className="sh-screen sh-empty" aria-labelledby="sh-elsewhere-title">
-      <h1 id="sh-elsewhere-title" className="sh-empty-title">
-        {t("shop.elsewhere.title")}
-      </h1>
-      <button type="button" className="sh-button sh-button--accent" onClick={() => goView("shop")}>
-        {t("shop.back.shop")}
-      </button>
-    </section>
-  );
 }
 
 function Loading() {
@@ -173,6 +186,8 @@ export default function ShopApp() {
   const loading = useShop((s) => s.loading);
   const studio = useShop((s) => s.catalogue?.studio ?? null);
   const pieces = useShop((s) => s.basket.length);
+  // "Your designs" shows only when this device holds a design's link.
+  const designs = useShop((s) => hasSavedDesigns(s.held));
   const [theme, setTheme] = useState(initialTheme);
   const [query, setQuery] = useState("");
   const main = useRef<HTMLElement>(null);
@@ -220,7 +235,7 @@ export default function ShopApp() {
             role="search"
             onSubmit={(e) => {
               e.preventDefault();
-              if (query.trim() !== "") goView("search");
+              if (query.trim() !== "") searchFor(query);
             }}
           >
             <Search size={15} aria-hidden="true" className="sh-search-icon" />
@@ -245,6 +260,12 @@ export default function ShopApp() {
                 {t(key)}
               </button>
             ))}
+            {designs && (
+              <button type="button" className="sh-nav-item" aria-current={view === "design" ? "page" : undefined} onClick={() => goView("design")}>
+                <FolderHeart size={15} aria-hidden="true" />
+                {t("after.designs.label")}
+              </button>
+            )}
           </nav>
         </div>
       </header>
