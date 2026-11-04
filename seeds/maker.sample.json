@@ -31,6 +31,11 @@
           "kind": "laser",
           "detail": "60 W CO₂, 300 × 200 bed",
           "icon": "zap",
+          "run_minutes": 135,
+          "power": "60 W",
+          "cut_settings": "18 mm/s at 78% power, one pass",
+          "engrave_settings": "300 mm/s at 22% power, 500 dpi",
+          "air_settings": "On. Check the lens before the run.",
           "active": true,
           "position": 1
         },
@@ -41,6 +46,7 @@
           "kind": "printer",
           "detail": "0.4 mm nozzle",
           "icon": "box",
+          "run_minutes": 200,
           "active": true,
           "position": 2
         },
@@ -51,6 +57,7 @@
           "kind": "printer",
           "detail": "0.4 mm nozzle",
           "icon": "box",
+          "run_minutes": 200,
           "active": true,
           "position": 3
         },
@@ -61,6 +68,7 @@
           "kind": "kiln",
           "detail": "60 litre, top loader",
           "icon": "flame",
+          "run_minutes": 540,
           "active": true,
           "position": 4
         }
@@ -77,6 +85,8 @@
           "group": "sheet",
           "thickness_mm": 6,
           "size_note": "400 × 300 mm sheet",
+          "sheet_w_mm": 400,
+          "sheet_h_mm": 300,
           "unit": "sheets",
           "machine_id": {
             "@ref": "machine:laser"
@@ -96,6 +106,8 @@
           "group": "sheet",
           "thickness_mm": 3,
           "size_note": "400 × 300 mm sheet",
+          "sheet_w_mm": 400,
+          "sheet_h_mm": 300,
           "unit": "sheets",
           "machine_id": {
             "@ref": "machine:laser"
@@ -115,6 +127,8 @@
           "group": "sheet",
           "thickness_mm": 3,
           "size_note": "400 × 300 mm sheet",
+          "sheet_w_mm": 400,
+          "sheet_h_mm": 300,
           "unit": "sheets",
           "machine_id": {
             "@ref": "machine:laser"
@@ -134,6 +148,8 @@
           "group": "blank",
           "thickness_mm": 18,
           "size_note": "400 × 280 mm blank",
+          "sheet_w_mm": null,
+          "sheet_h_mm": null,
           "unit": "blanks",
           "machine_id": {
             "@ref": "machine:laser"
@@ -153,6 +169,8 @@
           "group": "filament",
           "thickness_mm": null,
           "size_note": "1.75 mm, matte",
+          "sheet_w_mm": null,
+          "sheet_h_mm": null,
           "unit": "g",
           "machine_id": {
             "@ref": "machine:printer-a"
@@ -172,6 +190,8 @@
           "group": "filament",
           "thickness_mm": null,
           "size_note": "1.75 mm, matte",
+          "sheet_w_mm": null,
+          "sheet_h_mm": null,
           "unit": "g",
           "machine_id": {
             "@ref": "machine:printer-a"
@@ -191,6 +211,8 @@
           "group": "blank",
           "thickness_mm": 5,
           "size_note": "300 × 200 mm, riven",
+          "sheet_w_mm": null,
+          "sheet_h_mm": null,
           "unit": "blanks",
           "machine_id": {
             "@ref": "machine:laser"
@@ -210,6 +232,8 @@
           "group": "glaze",
           "thickness_mm": null,
           "size_note": "2 kg tub",
+          "sheet_w_mm": null,
+          "sheet_h_mm": null,
           "unit": "tubs",
           "machine_id": {
             "@ref": "machine:kiln"
@@ -229,6 +253,8 @@
           "group": "glaze",
           "thickness_mm": null,
           "size_note": "2 kg tub",
+          "sheet_w_mm": null,
+          "sheet_h_mm": null,
           "unit": "tubs",
           "machine_id": {
             "@ref": "machine:kiln"
@@ -248,6 +274,8 @@
           "group": "glaze",
           "thickness_mm": null,
           "size_note": "2 kg tub",
+          "sheet_w_mm": null,
+          "sheet_h_mm": null,
           "unit": "tubs",
           "machine_id": {
             "@ref": "machine:kiln"

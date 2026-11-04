@@ -495,6 +495,56 @@
             "nullable": true
           },
           {
+            "ref": "run_minutes",
+            "type": "int",
+            "label": {
+              "en-US": "A run takes (min)"
+            },
+            "default": 60,
+            "rules": {
+              "validation": {
+                "min": 1,
+                "max": 1440
+              }
+            }
+          },
+          {
+            "ref": "power",
+            "type": "text",
+            "maxLength": 16,
+            "label": {
+              "en-US": "Power"
+            },
+            "nullable": true
+          },
+          {
+            "ref": "cut_settings",
+            "type": "text",
+            "maxLength": 120,
+            "label": {
+              "en-US": "Cut settings"
+            },
+            "nullable": true
+          },
+          {
+            "ref": "engrave_settings",
+            "type": "text",
+            "maxLength": 120,
+            "label": {
+              "en-US": "Engrave settings"
+            },
+            "nullable": true
+          },
+          {
+            "ref": "air_settings",
+            "type": "text",
+            "maxLength": 120,
+            "label": {
+              "en-US": "Air"
+            },
+            "nullable": true
+          },
+          {
             "ref": "active",
             "type": "bool",
             "default": true,
@@ -600,6 +650,34 @@
               "en-US": "Size"
             },
             "nullable": true
+          },
+          {
+            "ref": "sheet_w_mm",
+            "type": "int",
+            "label": {
+              "en-US": "Sheet width (mm)"
+            },
+            "nullable": true,
+            "rules": {
+              "validation": {
+                "min": 1,
+                "max": 5000
+              }
+            }
+          },
+          {
+            "ref": "sheet_h_mm",
+            "type": "int",
+            "label": {
+              "en-US": "Sheet height (mm)"
+            },
+            "nullable": true,
+            "rules": {
+              "validation": {
+                "min": 1,
+                "max": 5000
+              }
+            }
           },
           {
             "ref": "unit",
@@ -4182,6 +4260,11 @@
           "en-US": "Machine bookings"
         },
         "keyField": "label",
+        "occupies": {
+          "resource": "machine_id",
+          "start": "starts_at",
+          "end": "ends_at"
+        },
         "columns": [
           {
             "ref": "id",

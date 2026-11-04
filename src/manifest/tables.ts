@@ -59,6 +59,7 @@ export interface Table {
   postings?: Record<string, unknown>[];
   check?: Record<string, unknown>;
   keep?: { law: "tax" | "health" | "contract" | "safety" };
+  occupies?: Record<string, unknown>;
   columns: Column[];
 }
 
@@ -297,6 +298,13 @@ export const TABLES: Table[] = [
       choice("kind", "Kind", MACHINE_KINDS),
       text("detail", 120, "Detail", opt),
       text("icon", 32, "Icon", opt),
+      // How long one sheet, one print or one firing keeps the machine: what a batch books it for, a sheet at a time.
+      int("run_minutes", "A run takes (min)", { default: 60, rules: { validation: { min: 1, max: 1440 } } }),
+      // What the cut list tells the bench: the machine's power and its settings for a run, as the studio writes them.
+      text("power", 16, "Power", opt),
+      text("cut_settings", 120, "Cut settings", opt),
+      text("engrave_settings", 120, "Engrave settings", opt),
+      text("air_settings", 120, "Air", opt),
       bool("active", "In use", true),
       int("position", "Position", opt),
     ],
@@ -315,6 +323,9 @@ export const TABLES: Table[] = [
       choice("group", "Kind of stock", { sheet: "Sheet stock", blank: "Blanks", filament: "Filament", glaze: "Glaze" }),
       num("thickness_mm", 1, "Thickness (mm)", opt),
       text("size_note", 80, "Size", opt),
+      // A sheet's size: what the batch sheet packs its pieces onto.
+      int("sheet_w_mm", "Sheet width (mm)", { ...opt, rules: { validation: { min: 1, max: 5000 } } }),
+      int("sheet_h_mm", "Sheet height (mm)", { ...opt, rules: { validation: { min: 1, max: 5000 } } }),
       choice("unit", "Counted in", { sheets: "Sheets", blanks: "Blanks", g: "Grams", tubs: "Tubs" }),
       fk("machine_id", "machines", "Machine", opt),
       text("tint", 16, "Tint", opt),
@@ -760,6 +771,8 @@ export const TABLES: Table[] = [
     label: l("Machine booking"),
     labelPlural: l("Machine bookings"),
     keyField: "label",
+    // A machine is booked by one row at a time: a booking that overlaps another on the same machine is refused.
+    occupies: { resource: "machine_id", start: "starts_at", end: "ends_at" },
     columns: [
       id,
       fk("machine_id", "machines", "Machine"),

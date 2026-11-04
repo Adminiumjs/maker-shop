@@ -117,11 +117,23 @@ const SETTINGS: Row = {
   taking_orders: true,
 };
 
+/** The machines, and how long one run keeps each: a sheet on the laser (the comp's walnut sheet, 09:00–11:15), a print, a firing. */
 const MACHINES = [
-  { code: "laser", name: "The laser", kind: "laser", detail: "60 W CO₂, 300 × 200 bed", icon: "zap" },
-  { code: "printer-a", name: "Printer A", kind: "printer", detail: "0.4 mm nozzle", icon: "box" },
-  { code: "printer-b", name: "Printer B", kind: "printer", detail: "0.4 mm nozzle", icon: "box" },
-  { code: "kiln", name: "The kiln", kind: "kiln", detail: "60 litre, top loader", icon: "flame" },
+  {
+    code: "laser",
+    name: "The laser",
+    kind: "laser",
+    detail: "60 W CO₂, 300 × 200 bed",
+    icon: "zap",
+    run_minutes: 135,
+    power: "60 W",
+    cut_settings: "18 mm/s at 78% power, one pass",
+    engrave_settings: "300 mm/s at 22% power, 500 dpi",
+    air_settings: "On. Check the lens before the run.",
+  },
+  { code: "printer-a", name: "Printer A", kind: "printer", detail: "0.4 mm nozzle", icon: "box", run_minutes: 200 },
+  { code: "printer-b", name: "Printer B", kind: "printer", detail: "0.4 mm nozzle", icon: "box", run_minutes: 200 },
+  { code: "kiln", name: "The kiln", kind: "kiln", detail: "60 litre, top loader", icon: "flame", run_minutes: 540 },
 ];
 
 /** Looking after each material, as the care page lists it. */
@@ -334,6 +346,12 @@ const PERCENT_OFF: Record<number, number> = { 1: 0, 4: 8, 8: 14, 12: 18 };
 
 /** The comp's sheet (`birch-row-data.js` SHEET), and the share of it a nest of pieces fills (`sheetsFor`). */
 const SHEET_MM2 = 400 * 300;
+
+/** A sheet's size from its note ("400 × 300 mm sheet"): sheet stock only, what the batch sheet packs onto. */
+function sheetSize(m: Material): { sheet_w_mm: number | null; sheet_h_mm: number | null } {
+  const found = /^(\d+) × (\d+) mm/.exec(m.note);
+  return m.group === "sheet" && found !== null ? { sheet_w_mm: Number(found[1]), sheet_h_mm: Number(found[2]) } : { sheet_w_mm: null, sheet_h_mm: null };
+}
 const NESTED = 0.72;
 
 /**
@@ -527,6 +545,7 @@ export function sampleBundle(): SampleBundle {
           group: m.group,
           thickness_mm: m.thickness ?? null,
           size_note: m.note,
+          ...sheetSize(m),
           unit: m.unit,
           machine_id: { "@ref": `machine:${m.machine}` },
           tint: m.tint,
