@@ -79,7 +79,11 @@ const ALL = walk(SRC).map((path) => {
  * `manifest/` and `sample/` write `manifest.json` and the sample bundle at
  * build time: no screen imports them, so nothing in them reaches a browser.
  */
-const BUILD_TIME = ["testing/", "manifest/", "sample/"];
+/*
+ * `contract/` boots a built Adminium to check this app against it: a test
+ * harness, never imported by a screen.
+ */
+const BUILD_TIME = ["testing/", "manifest/", "sample/", "contract/"];
 const SHIPPED = ALL.filter((f) => !/\.test\.tsx?$/.test(f.rel) && !BUILD_TIME.some((dir) => f.rel.startsWith(dir)));
 
 /**
@@ -134,7 +138,7 @@ describe("the clock is always passed in", () => {
     // arithmetic over a value that came from somewhere the caller controls.
     const hits = SHIPPED.flatMap((f) =>
       impuritiesIn(f.code)
-        .filter((means) => !(f.rel === CONNECTED_SOURCE && CLOCKS.includes(means)))
+        .filter((means) => !(f.rel === CONNECTED_SOURCE && CLOCKS.includes(means)) && !allowedHere(f.rel, means))
         .map((means) => `${f.rel} → ${means}`),
     );
     expect(hits).toEqual([]);
@@ -334,6 +338,28 @@ const INERT: readonly InertOrigin[] = [
  */
 const CONNECTED_SOURCE = "data/adminiumSource.ts";
 
+/**
+ * ── THE STUDIO'S DOOR, SERVED BY ADMINIUM ITSELF ───────────────────────────
+ *
+ * The staff build (`build:surface:staff`) is served by Adminium at
+ * `/apps/maker/staff/` and reads and writes through the signed-in person's
+ * own session, at the origin that served it: every address it asks is a path
+ * (`/api/v1/data/…`, `/api/v1/files…`), never a host, so the address net above
+ * still holds over these files word for word. What they may do that no other
+ * file may is named here, means by means, file by file, as the connected
+ * source's clock is: the door issues requests (that is what it is for), it
+ * keeps the server's clock (the device's time moved by the difference the
+ * server said), and the start sends someone not signed in to Adminium's own
+ * sign-in. A means not listed, or the same means in any other file, is still
+ * a finding.
+ */
+const HOSTED_STAFF: Readonly<Record<string, readonly string[]>> = {
+  "studio/transport/sessionSource.ts": ["fetch reached through a global"],
+  "studio/adminiumStudio.ts": ["fetch reached through a global", "Date.now() \u2014 the real clock"],
+  "studio/boot.tsx": ["location.assign()/replace(), a navigation", "Date.now() \u2014 the real clock"],
+};
+const allowedHere = (rel: string, means: string): boolean => HOSTED_STAFF[rel]?.includes(means) === true;
+
 /** The clock half of `IMPURITIES`, by the exact words that file emits. */
 const CLOCKS: readonly string[] = [
   "Date.now() \u2014 the real clock",
@@ -371,7 +397,9 @@ describe("nothing here can reach a host we do not control", () => {
 
   it("carries nothing that can issue a request", () => {
     const offenders = SHIPPED.flatMap((f) => [
-      ...sendersIn(f.code).map((means) => `${f.rel} → ${means}`),
+      ...sendersIn(f.code)
+        .filter((means) => !allowedHere(f.rel, means))
+        .map((means) => `${f.rel} → ${means}`),
       ...foreignImportsIn(f.code).map((spec) => `${f.rel} → ${spec}`),
       // The static half, which neither of the two above ever looked at.
       ...foreignModulesIn(f.code, ALLOWED_MODULES).map(
@@ -677,7 +705,7 @@ describe("no finished-goods stock, verifiable by grep (criterion 14)", () => {
    * finished piece. Named by key prefix so the carve-out is a property of what
    * the string says rather than of which file somebody put it in.
    */
-  const MAKER_KEY = /^(bench\.|data\.stock\.|addon\.)/;
+  const MAKER_KEY = /^(bench\.|studio\.|data\.stock\.|addon\.)/;
 
   /**
    * The same three rules over the SOURCE of everything that renders.
