@@ -136,6 +136,28 @@ function option(row: Row): Option {
 const material = (row: Row): Material => ({ id: row["id"] as Id, code: String(row["code"] ?? ""), name: String(row["name"] ?? ""), family: String(row["family"] ?? row["name"] ?? ""), tint: text(row["tint"]), care: text(row["care"]) });
 const service = (row: Row): Service => ({ id: row["id"] as Id, code: String(row["code"] ?? ""), name: String(row["name"] ?? ""), detail: text(row["detail"]), tracked: yes(row["tracked"]) });
 
+/** The rows the catalogue is read from, each table's in its own order. */
+export interface CatalogueRows {
+  products: Row[];
+  options: Row[];
+  materials: Row[];
+  services: Row[];
+  settings: Row[];
+}
+
+/** The catalogue the pages read, from its rows as the public API answers them, with each product's photo address. */
+export function catalogueFrom(rows: CatalogueRows, photo: (row: Row) => string | null): Catalogue {
+  const studio = rows.settings[0] ?? {};
+  const sorted = (list: Row[]) => [...list].sort(byPosition);
+  return {
+    products: sorted(rows.products).map((row) => product(row, photo(row))),
+    options: sorted(rows.options).map(option),
+    materials: sorted(rows.materials).map(material),
+    services: sorted(rows.services).map(service),
+    studio: { name: String(studio["studio_name"] ?? ""), address: text(studio["address"]), about: text(studio["about"]), aboutPage: text(studio["about_page"]), materialsNote: text(studio["materials_note"]), refPrefix: text(studio["ref_prefix"]), takingOrders: studio["taking_orders"] === undefined ? true : yes(studio["taking_orders"]) },
+  };
+}
+
 export class AdminiumShop implements ShopPort {
   private readonly served: ShopServed;
   private readonly refs: ShopRefs;
@@ -204,14 +226,7 @@ export class AdminiumShop implements ShopPort {
       );
       const config = await this.clientConfig();
       const photo = (row: Row) => pictureUrl(this.served.baseUrl, config, this.refs.products, String(row["id"]), "photo", row["photo"]);
-      const studio = settings![0] ?? {};
-      return {
-        products: products!.map((row) => product(row, photo(row))),
-        options: options!.map(option),
-        materials: materials!.map(material),
-        services: services!.map(service),
-        studio: { name: String(studio["studio_name"] ?? ""), address: text(studio["address"]), about: text(studio["about"]), aboutPage: text(studio["about_page"]), materialsNote: text(studio["materials_note"]), refPrefix: text(studio["ref_prefix"]), takingOrders: studio["taking_orders"] === undefined ? true : yes(studio["taking_orders"]) },
-      };
+      return catalogueFrom({ products: products!, options: options!, materials: materials!, services: services!, settings: settings! }, photo);
     });
   }
 

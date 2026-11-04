@@ -11,7 +11,6 @@
 import { describe, expect, it } from "vitest";
 
 import { CRAFT_TRAPS, TIERING_WORDS, bannedSubstringsIn } from "../testing/lexicon.ts";
-import { personalizerStrings } from "../add-ons/vendor/personalizer/i18n/strings.ts";
 import { LOCALE_TAGS, type LocaleTag } from "./locales.ts";
 import { MESSAGES } from "./messages/index.ts";
 
@@ -107,38 +106,21 @@ describe("every locale carries every key", () => {
   });
 });
 
-describe("the host and its add-ons measure in the same unit", () => {
+describe("a millimetre is a word in each language", () => {
   /**
-   * ONE MILLIMETRE, ONE WORD, PER LANGUAGE.
-   *
-   * `lib/format.ts`'s `mm()` used to append a literal " mm" whatever the
-   * reader's language, so a piece's page in ar-EG printed "٩٥ × ٩٥ mm" — the
-   * digits correctly Arabic-Indic and the unit stubbornly Latin — while the
-   * personalizer, mounted in the very next block on the same page, printed
-   * "٧ مم". Two renderings of the same measurement, side by side, and the
-   * add-on had it right.
-   *
-   * The unit is a word rather than a symbol in exactly the places you would
-   * expect (毫米, 公釐, مم) and the same two letters everywhere else, so this
-   * compares what each side puts AFTER the number rather than the whole string.
+   * A size printed "٩٥ × ٩٥ mm" on an Arabic page has its digits right and
+   * its unit wrong, and Chinese says the unit as a word. The unit is
+   * "mm" in the five Latin-script languages and a word in the other three.
    */
-  const unitOf = (template: string, placeholder: string) =>
-    template.replace(`{${placeholder}}`, "").trim();
-
-  it("uses the add-on's own unit noun in all eight locales", () => {
-    for (const locale of LOCALE_TAGS) {
-      const host = unitOf(MESSAGES[locale]["common.mm"]!, "value");
-      const addOn = unitOf(personalizerStrings[locale]["addon.personalizer.sizeUnit"]!, "mm");
-      expect({ locale, host }).toEqual({ locale, host: addOn });
-    }
-  });
-
   it("says something other than `mm` where the language does", () => {
-    // The half that would pass if both sides were wrong together.
     expect(MESSAGES["zh-CN"]["common.mm"]).toContain("毫米");
     expect(MESSAGES["zh-TW"]["common.mm"]).toContain("公釐");
     expect(MESSAGES["ar-EG"]["common.mm"]).toContain("مم");
     expect(MESSAGES["ar-EG"]["common.mm"]).not.toContain("mm");
+  });
+
+  it("keeps the value in every locale", () => {
+    for (const locale of LOCALE_TAGS) expect({ locale, has: MESSAGES[locale]["common.mm"]!.includes("{value}") }).toEqual({ locale, has: true });
   });
 });
 

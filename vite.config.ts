@@ -2,6 +2,8 @@ import { defineConfig, type UserConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 import { surfaceJsonPlugin } from "./surface-emit.ts";
+import { demoJsonPlugin } from "./demo-emit.ts";
+import { CARD_MESSAGES, DEMO_CARD } from "./src/demo/card.ts";
 import { MESSAGES } from "./src/i18n/messages/index.ts";
 import { APP_KEY, APP_LABEL_KEY, SURFACE_NAV } from "./src/surface-nav.ts";
 
@@ -39,8 +41,7 @@ interface ViteWithVitest extends UserConfig {
 
 // https://vite.dev/config/
 // `base` defaults to "/" (root deploy). The `build:demo` script overrides it
-// with --base=/demo/maker-shop/ so the app can be served from the Adminium demo
-// sub-path.
+// with --base=/demo/maker-shop/app/, where the website frames the demo.
 const config: ViteWithVitest = {
   define,
   plugins: [
@@ -51,40 +52,21 @@ const config: ViteWithVitest = {
      * nothing, so the demo and standalone builds stay as they were.
      */
     surfaceJsonPlugin({ appKey: APP_KEY, appLabelKey: APP_LABEL_KEY, nav: SURFACE_NAV, messages: MESSAGES }),
+    /*
+     * `demo.json` beside the demo build's `index.html`, for the website's demo
+     * card: the shopper's screens and the studio's, the shortcuts, the two
+     * people, the clock and the add-ons, in the card's eight languages. Only a
+     * `/demo/` build writes it.
+     */
+    demoJsonPlugin({ ...DEMO_CARD, messages: CARD_MESSAGES }),
   ],
   /*
-   * ── THE TEST RUN, AND WHY IT NEEDS A TIMEOUT AT ALL ───────────────────────
-   *
-   * `npm test` was RED on a clean tree for a whole round. Three suites —
-   * `a11y.test.tsx`, `add-ons/egress.test.tsx` and `i18n/numerals.arabic.test.tsx`
-   * — each failed with "Test timed out in 5000ms", and every one of them passes.
-   * Nothing was wrong with them; nothing here said how long they are allowed to
-   * take, so vitest's 5 s default applied, and the round that wrote them only
-   * ever ran vitest directly with `--testTimeout` on the command line. A gate
-   * that is green only when it is run with a flag the README does not mention is
-   * not a gate. This is that flag, in the file, where the documented command
-   * picks it up.
-   *
-   * ── WHY THOSE THREE ARE SLOW, WHICH IS NOT A DEFECT ───────────────────────
-   *
-   * All three are the same thing: `testing/tour.tsx` mounts the whole app and
-   * CRAWLS it — every view, every overlay, every surface a press opens, with the
-   * add-ons off and on, up to a 400-render budget. That crawl is the coverage.
-   * It is what reaches inside an add-on's own flow, and the three questions
-   * asked of it (is everything named, does anything reach off-origin, is there a
-   * Latin digit on an Arabic page) are only as wide as it is. Measured on this
-   * repo: about 17 s per suite, ~40 ms per render.
-   *
-   * The three files run in PARALLEL, so the whole documented run is about 19 s
-   * of wall clock — the cost of one crawl, not three. That is a gate a developer
-   * waits for. Making the number smaller would mean crawling less, which is the
-   * one saving not worth having.
-   *
-   * So the timeout is generous rather than tight: enough headroom for a loaded
-   * CI box (3× the measured worst case), still short enough that a genuinely
-   * hung test fails the run instead of hanging it. `src/sources.test.ts` asserts
-   * it is still here — this is the sort of line that gets lost in a merge and is
-   * missed only by whoever next runs the command as documented.
+   * How long a suite may take, here rather than as a flag on the command
+   * line, so `npm test` as the README gives it is the run CI makes. The
+   * screens' render suites draw whole pages in jsdom and the demo's bundle
+   * check builds four bundles, so vitest's 5 s default is not enough; a hung
+   * test still fails the run instead of holding it. `src/sources.test.ts`
+   * checks the line is still here.
    */
   test: {
     testTimeout: 60_000,
@@ -103,12 +85,14 @@ const config: ViteWithVitest = {
           if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) return "react";
           if (id.includes("node_modules/lucide-react")) return "icons";
           /*
-           * Add-ons compiled into the demo get a chunk of their own, drawing the
-           * same line in the build output that `src/add-ons/vendor/` draws in
-           * the tree. Session 2 populates it; the rule is here first so the
-           * bundle's shape does not change when it does.
+           * The vendored Customiser's editor in a chunk of its own: it is
+           * another repo's code, reviewed there, and `builtOutput.test.ts`
+           * tells it from this app's by the chunk's provenance, which a chunk
+           * that mixed the two would not have. Its 3D preview (`stage3d.js`)
+           * is left to the editor's own `import()`, so it still loads only
+           * when a shopper turns the piece round.
            */
-          if (id.includes("/src/add-ons/vendor/")) return "add-ons";
+          if (id.endsWith("/vendor/customiser/index.js")) return "customiser";
           return undefined;
         },
       },

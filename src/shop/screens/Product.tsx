@@ -57,9 +57,9 @@ export function ProductScreen() {
   const takesWords = product.takesLettering && product.baseId === null;
   const limit = product.letteringLimit ?? 0;
   const used = [...choice.lettering].length;
-  const left = limit - used;
-  const over = takesWords && limit > 0 && left < 0;
-  const nearEdge = takesWords && used > 0 && left >= 0 && left <= 3;
+  const room = limit - used;
+  const over = takesWords && limit > 0 && room < 0;
+  const nearEdge = takesWords && used > 0 && room >= 0 && room <= 3;
   const customiseHref = `${import.meta.env.BASE_URL ?? "/"}piece/${encodeURIComponent(product.code)}/customise`;
   const facts: [string, string | null][] = [
     [t("shop.product.fact.madeFrom"), product.madeFrom],
@@ -243,7 +243,7 @@ export function ProductScreen() {
                 {over && (
                   <div id="sh-words-help" className="sh-note sh-note--bad">
                     <TriangleAlert size={16} aria-hidden="true" />
-                    <span>{t("shop.product.overLimit", { over: -left })}</span>
+                    <span>{t("shop.product.overLimit", { over: -room })}</span>
                   </div>
                 )}
                 {product.letteringHint !== null && <p className="sh-small">{product.letteringHint}</p>}

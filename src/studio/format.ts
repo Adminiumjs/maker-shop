@@ -70,3 +70,8 @@ export function useFmt(): Fmt {
     };
   }, [locale, money, number, zone, currency]);
 }
+
+/** A weekday's name in the reader's language, Monday first (0 is Monday): 5 January 2026 is a Monday. */
+export function weekdayName(index: number, locale: string): string {
+  return new Intl.DateTimeFormat(locale, { weekday: "long", timeZone: "UTC" }).format(new Date(Date.UTC(2026, 0, 5 + index)));
+}

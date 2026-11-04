@@ -8,9 +8,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:demo": "tsc -b && vite build --base=/demo/maker-shop/",
+    "build:demo": "tsc -b && vite build --base=/demo/maker-shop/app/",
     "build:surface:customer": "VITE_ADMINIUM_SURFACE_SIDE=customer tsc -b && VITE_ADMINIUM_SURFACE_SIDE=customer vite build --base=/apps/maker/customer/ --outDir dist-surface/maker/customer",
     "build:surface:staff": "VITE_ADMINIUM_SURFACE_SIDE=staff tsc -b && VITE_ADMINIUM_SURFACE_SIDE=staff vite build --base=/apps/maker/staff/ --outDir dist-surface/maker/staff",
+    "build:surface": "npm run build:surface:staff && npm run build:surface:customer",
     "preview": "vite preview",
     "dev:staff": "VITE_ADMINIUM_SURFACE_SIDE=staff vite",
     "test": "vitest run",

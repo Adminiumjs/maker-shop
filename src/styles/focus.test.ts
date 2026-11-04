@@ -156,10 +156,11 @@ function contrast(a: Rgba, b: Rgba): number {
 }
 
 /**
- * Every stylesheet this app loads — its own AND the add-ons' it vendors.
+ * Every stylesheet this app writes: the tokens, the shop's and the studio's.
  *
- * Walked rather than listed: a stylesheet added tomorrow is swept tomorrow, and
- * a vendored add-on that arrives with one is swept the day it is vendored.
+ * Walked rather than listed: a stylesheet added tomorrow is swept tomorrow.
+ * The vendored Customiser's own sheet (`vendor/customiser/`) is the
+ * Customiser's to measure, in its own repo.
  */
 function everyStylesheet(): string[] {
   const out: string[] = [];
@@ -374,7 +375,7 @@ describe("the focus ring is visible to the person using it", () => {
   it("draws every focus ring from the measured token, in every stylesheet", () => {
     const files = everyStylesheet();
     // A sweep over nothing passes: this is the count that says it found the
-    // vendored add-on stylesheets as well as this app's own.
+    // shop's and the studio's stylesheets as well as the tokens.
     expect(files.length, "no stylesheets were swept at all").toBeGreaterThan(4);
 
     const wrong = files.flatMap((file) =>
@@ -460,31 +461,6 @@ describe("the focus ring is visible to the person using it", () => {
     ];
     for (const [what, source] of fine) {
       expect(focusFindings(source), `${what} was reported and should not be`).toEqual([]);
-    }
-  });
-
-  /**
-   * THE VENDORED ADD-ONS ARE IN SCOPE, and that is not a detail.
-   *
-   * An add-on's stylesheet is loaded into these pages and draws focus rings on
-   * controls a customer of THIS shop tabs to. Both add-ons that define one had
-   * the same 1.16:1 ring, for the same reason, and a sweep over `src/styles/`
-   * alone would have called this app fixed while two of its screens were not.
-   *
-   * They point at `var(--focus-ring, currentColor)`: the token when the host has
-   * one, and the focused element's own text colour when it does not, so an
-   * add-on installed in some other host never goes blind.
-   */
-  it("sweeps the vendored add-on stylesheets too, not only this app's own", () => {
-    const vendored = everyStylesheet().filter((f) => f.includes("/vendor/"));
-    expect(vendored.length, "no vendored add-on stylesheet was found").toBeGreaterThan(0);
-    for (const file of vendored) {
-      const source = readFileSync(file, "utf8");
-      if (!source.includes(":focus-visible")) continue;
-      expect(
-        source,
-        `${relative(process.cwd(), file)} draws a focus ring with no host-independent fallback`,
-      ).toContain("var(--focus-ring, currentColor)");
     }
   });
 

@@ -48,3 +48,42 @@ export function dayLong(iso: unknown, locale: string): string {
   const date = typeof iso === "string" ? asDate(iso) : null;
   return date === null ? "" : new Intl.DateTimeFormat(dateLocale(locale), { timeZone: "UTC", weekday: "long", day: "numeric", month: "long" }).format(date);
 }
+
+// ── the studio's week, as the postage page lays it out ──
+
+export const WEEK = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
+
+/** The studio's week from its setting ("tue,wed,thu,fri,sat"), or null when it is not one. */
+export function studioDays(setting: unknown): Set<string> | null {
+  if (typeof setting !== "string") return null;
+  const days = setting
+    .split(",")
+    .map((d) => d.trim().toLowerCase())
+    .filter((d) => (WEEK as readonly string[]).includes(d));
+  return days.length === 0 ? null : new Set(days);
+}
+
+/** `YYYY-MM-DD` and the n-th calendar day after it: laying a calendar out, not dating a promise. */
+export function plusDays(day: string, n: number): string {
+  const [y, m, d] = day.split("-").map(Number);
+  return new Date(Date.UTC(y!, m! - 1, d! + n)).toISOString().slice(0, 10);
+}
+export const weekdayOf = (day: string) => WEEK[new Date(`${day}T12:00:00Z`).getUTCDay()]!;
+
+/** The cut-off as the reader's clock writes it ("17:00", "5:00 PM"). */
+export function cutoffTime(cutoff: unknown, locale: string): string {
+  const match = typeof cutoff === "string" ? /^(\d{1,2}):(\d{2})$/.exec(cutoff.trim()) : null;
+  if (match === null) return "";
+  return new Intl.DateTimeFormat(locale === "en-US" ? "en-GB" : locale, { hour: "numeric", minute: "2-digit", timeZone: "UTC" }).format(new Date(Date.UTC(2026, 0, 1, Number(match[1]), Number(match[2]))));
+}
+
+/** Days of the week by name, in the reader's language, as a list ("Tuesday to Saturday" is the studio's to say; this lists them). */
+export function dayNames(days: readonly string[], locale: string): string {
+  const tag = locale === "en-US" ? "en-GB" : locale;
+  const names = days.map((d) => new Intl.DateTimeFormat(tag, { weekday: "long", timeZone: "UTC" }).format(new Date(Date.UTC(2026, 7, 2 + WEEK.indexOf(d as (typeof WEEK)[number])))));
+  try {
+    return new Intl.ListFormat(tag, { type: "conjunction" }).format(names);
+  } catch {
+    return names.join(", ");
+  }
+}

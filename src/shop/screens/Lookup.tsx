@@ -28,14 +28,14 @@ function FieldError({ id, children }: { id: string; children: string }) {
 }
 
 /** The seconds left before another code may be asked for, counted down from each code sent. */
-function useLeft(sends: number, canResend: boolean): number {
-  const [left, setLeft] = useState(30);
+function useResendWait(sends: number, canResend: boolean): number {
+  const [wait, setWait] = useState(30);
   useEffect(() => {
-    setLeft(30);
-    const timer = setInterval(() => setLeft((n) => Math.max(0, n - 1)), 1000);
+    setWait(30);
+    const timer = setInterval(() => setWait((n) => Math.max(0, n - 1)), 1000);
     return () => clearInterval(timer);
   }, [sends]);
-  return canResend ? 0 : Math.max(1, left);
+  return canResend ? 0 : Math.max(1, wait);
 }
 
 export function LookupForm({ which }: { which: LookupKey }) {
@@ -123,7 +123,7 @@ export function LookupForm({ which }: { which: LookupKey }) {
 function CodeStep({ which }: { which: LookupKey }) {
   const { t, locale } = useI18n();
   const lookup = useAfter((s) => s.lookups[which]);
-  const left = useLeft(lookup.sends, lookup.canResend);
+  const waitFor = useResendWait(lookup.sends, lookup.canResend);
   const id = `sh-lk-${which}`;
   const first = useRef(false);
   useEffect(() => {
@@ -154,7 +154,7 @@ function CodeStep({ which }: { which: LookupKey }) {
               ? "after.err.unreachable"
               : null;
   const nf = (n: number, digitsMin = 1) => new Intl.NumberFormat(locale, { minimumIntegerDigits: digitsMin, useGrouping: false }).format(n);
-  const wait = `${nf(Math.floor(left / 60))}:${nf(left % 60, 2)}`;
+  const wait = `${nf(Math.floor(waitFor / 60))}:${nf(waitFor % 60, 2)}`;
 
   return (
     <div className="sh-card sa-lookup sa-code">
@@ -225,8 +225,8 @@ function CodeStep({ which }: { which: LookupKey }) {
         <button type="button" className="sh-button sh-button--accent" onClick={() => void check()} aria-busy={lookup.busy || undefined}>
           {lookup.busy ? t("after.code.checking") : which === "order" ? t("after.code.open") : t("after.code.show")}
         </button>
-        <button type="button" className="sh-button sa-resend" aria-disabled={left > 0} onClick={() => void resendCode(which).then((sent) => sent && focusSoon(`${id}-code-0`))}>
-          {left > 0 ? t("after.code.resendIn", { time: wait }) : t("after.code.resend")}
+        <button type="button" className="sh-button sa-resend" aria-disabled={waitFor > 0} onClick={() => void resendCode(which).then((sent) => sent && focusSoon(`${id}-code-0`))}>
+          {waitFor > 0 ? t("after.code.resendIn", { time: wait }) : t("after.code.resend")}
         </button>
         <button type="button" className="sa-text-button" onClick={() => backToFind(which)}>
           {t("after.code.back")}

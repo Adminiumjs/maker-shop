@@ -180,7 +180,14 @@ function Toasts() {
   );
 }
 
-export default function ShopApp() {
+export interface ShopAppProps {
+  /** The theme someone outside the shop holds (the demo card); the shop keeps its own when it is not given. */
+  theme?: "light" | "dark";
+  /** Told when the shopper switches the theme themselves. */
+  onTheme?: (theme: "light" | "dark") => void;
+}
+
+export default function ShopApp({ theme: held, onTheme }: ShopAppProps = {}) {
   const { t, locale } = useI18n();
   const view = useShop((s) => s.view);
   const loading = useShop((s) => s.loading);
@@ -188,7 +195,12 @@ export default function ShopApp() {
   const pieces = useShop((s) => s.basket.length);
   // "Your designs" shows only when this device holds a design's link.
   const designs = useShop((s) => hasSavedDesigns(s.held));
-  const [theme, setTheme] = useState(initialTheme);
+  const [own, setOwn] = useState(initialTheme);
+  const theme = held ?? own;
+  const setTheme = (next: "light" | "dark") => {
+    setOwn(next);
+    onTheme?.(next);
+  };
   const [query, setQuery] = useState("");
   const main = useRef<HTMLElement>(null);
 

@@ -72,7 +72,7 @@ const LATIN = /[0-9]/;
 
 describe("a number in a sentence is in the reader's numerals", () => {
   it("writes the lead time in Arabic-Indic digits for ar-EG", () => {
-    const arabic = say("ar-EG", "screen.shop.tile.lead", { days: 3 });
+    const arabic = say("ar-EG", "shop.home.tile.lead", { days: 3 });
     expect({ arabic, arabicIndic: ARABIC_INDIC.test(arabic), latin: LATIN.test(arabic) }).toEqual({
       arabic,
       arabicIndic: true,
@@ -81,7 +81,7 @@ describe("a number in a sentence is in the reader's numerals", () => {
   });
 
   it("leaves English alone", () => {
-    expect(say("en-US", "screen.shop.tile.lead", { days: 3 })).toContain("3");
+    expect(say("en-US", "shop.home.tile.lead", { days: 3 })).toContain("3");
   });
 
   it("formats a PLURAL's own count too, which is where most of them are", () => {
@@ -98,9 +98,9 @@ describe("a number in a sentence is in the reader's numerals", () => {
   });
 
   it("passes an already-formatted string straight through", () => {
-    // Money and percentages arrive as strings from `lib/format.ts`, and a
+    // Money and dates arrive as strings from the screens' formatters, and a
     // second pass through a number formatter would wreck them.
-    const money = say("ar-EG", "screen.order.postedBy", { day: "١١ أغسطس" });
+    const money = say("ar-EG", "shop.product.postBy", { day: "١١ أغسطس" });
     expect(money).toContain("١١ أغسطس");
   });
 
@@ -112,11 +112,11 @@ describe("a number in a sentence is in the reader's numerals", () => {
      */
     const rendered = LOCALE_TAGS.map((locale) => ({
       locale,
-      text: say(locale, "screen.shop.tile.lead", { days: 1234 }),
+      text: say(locale, "shop.home.tile.lead", { days: 1234 }),
     }));
     for (const { locale, text } of rendered) {
       // Every locale substituted something.
-      expect({ locale, has: text !== MESSAGES[locale]["screen.shop.tile.lead"] }).toEqual({
+      expect({ locale, has: text !== MESSAGES[locale]["shop.home.tile.lead"] }).toEqual({
         locale,
         has: true,
       });
