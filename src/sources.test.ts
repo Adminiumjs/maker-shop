@@ -79,7 +79,8 @@ const ALL = walk(SRC).map((path) => {
  * `manifest/` and `sample/` write `manifest.json` and the sample bundle at
  * build time: no screen imports them, so nothing in them reaches a browser.
  */
-const BUILD_TIME = ["testing/", "manifest/", "sample/"];
+// `contract/` boots a real Adminium for the contract tests: it never ships either.
+const BUILD_TIME = ["testing/", "manifest/", "sample/", "contract/"];
 const SHIPPED = ALL.filter((f) => !/\.test\.tsx?$/.test(f.rel) && !BUILD_TIME.some((dir) => f.rel.startsWith(dir)));
 
 /**

@@ -12,6 +12,7 @@
     "build:surface:customer": "VITE_ADMINIUM_SURFACE_SIDE=customer tsc -b && VITE_ADMINIUM_SURFACE_SIDE=customer vite build --base=/apps/maker/customer/ --outDir dist-surface/maker/customer",
     "preview": "vite preview",
     "test": "vitest run",
+    "contract": "CONTRACT=1 vitest run src/contract/",
     "typecheck": "tsc -b",
     "manifest": "vite-node scripts/write-manifest.ts",
     "manifest:check": "vite-node scripts/check-manifest.ts",
