@@ -42,6 +42,8 @@ export function placeOf(relative: string): Place {
   const parts = relative.split("/").filter((p) => p !== "").map((p) => decodeURIComponent(p));
   if (parts.length === 0) return { view: "shop", code: null };
   const [first, code, more] = parts;
+  // `/piece` alone (the manifest's product route, with no piece named): the shop's pieces.
+  if (first === "piece" && code === undefined) return { view: "shop", code: null };
   if (first === "piece" && code !== undefined) {
     if (more === undefined) return { view: "product", code };
     if (more === "customise" && parts.length === 3) return { view: "customise", code };

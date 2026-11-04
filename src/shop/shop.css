@@ -13,9 +13,8 @@
   color: var(--fg);
   font-family: var(--font-sans);
 }
-.sh-app button,
-.sh-app input,
-.sh-app textarea {
+/* Weightless, so a control's own class (its size, its colour) always wins over it. */
+:where(.sh-app) :where(button, input, textarea) {
   font: inherit;
   color: inherit;
 }
