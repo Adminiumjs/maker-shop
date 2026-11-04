@@ -23,8 +23,17 @@ export const NEWS_TICK = {
   purpose: "newsletter",
   wording: {
     version: 1,
-    // The other languages come with the checkout's own words.
-    text: { "en-US": "E-mail me news from the workshop: new pieces, and when we're away. Now and then, never more than once a month." },
+    // The checkout shows this sentence beside the box, in the shopper's language: the consent log keeps which.
+    text: {
+      "en-US": "Send me news from the studio now and then",
+      "de-DE": "Schickt mir ab und zu Neuigkeiten aus der Werkstatt",
+      "fr-FR": "Envoyez-moi de temps en temps des nouvelles de l'atelier",
+      "cs-CZ": "Občas mi pošlete novinky z dílny",
+      "da-DK": "Send mig nyheder fra værkstedet en gang imellem",
+      "ar-EG": "أرسلوا لي أخبار الورشة من حين لآخر",
+      "zh-CN": "偶尔给我发送工作室的消息",
+      "zh-TW": "偶爾寄給我工作室的消息",
+    },
   },
 };
 
