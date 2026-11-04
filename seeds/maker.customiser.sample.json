@@ -1,0 +1,5490 @@
+{
+  "format": "adminium.sample/1",
+  "app": "maker",
+  "addOn": "customiser",
+  "weekAnchor": "thu",
+  "tables": [
+    {
+      "ref": "features",
+      "rows": [
+        {
+          "@label": "feature:maker-logo",
+          "app": "maker",
+          "code": "logo",
+          "name": "Your own logo",
+          "active": true
+        },
+        {
+          "@label": "feature:maker-both-sides",
+          "app": "maker",
+          "code": "engrave-both-sides",
+          "name": "Engrave both sides",
+          "active": true
+        }
+      ]
+    },
+    {
+      "ref": "palettes",
+      "rows": [
+        {
+          "@label": "palette:maker-finishes",
+          "app": "maker",
+          "kind": "finishes",
+          "code": "finishes",
+          "name": "Finishes",
+          "position": 1
+        },
+        {
+          "@label": "palette:maker-pla",
+          "app": "maker",
+          "kind": "colours",
+          "code": "pla",
+          "name": "PLA colours",
+          "position": 2
+        }
+      ]
+    },
+    {
+      "ref": "palette_colours",
+      "rows": [
+        {
+          "app": "maker",
+          "palette_id": {
+            "@ref": "palette:maker-finishes"
+          },
+          "code": "engraved",
+          "name": "Engraved",
+          "hex": "#3a2414",
+          "position": 1
+        },
+        {
+          "app": "maker",
+          "palette_id": {
+            "@ref": "palette:maker-finishes"
+          },
+          "code": "paint-white",
+          "name": "Painted white",
+          "hex": "#f2f1ec",
+          "position": 2
+        },
+        {
+          "app": "maker",
+          "palette_id": {
+            "@ref": "palette:maker-finishes"
+          },
+          "code": "paint-black",
+          "name": "Painted black",
+          "hex": "#17140f",
+          "position": 3
+        },
+        {
+          "app": "maker",
+          "palette_id": {
+            "@ref": "palette:maker-pla"
+          },
+          "code": "chalk",
+          "name": "Chalk",
+          "hex": "#e6e1d7",
+          "position": 4
+        },
+        {
+          "app": "maker",
+          "palette_id": {
+            "@ref": "palette:maker-pla"
+          },
+          "code": "grey",
+          "name": "Warm grey",
+          "hex": "#8a8378",
+          "position": 5
+        },
+        {
+          "app": "maker",
+          "palette_id": {
+            "@ref": "palette:maker-pla"
+          },
+          "code": "ink",
+          "name": "Ink",
+          "hex": "#2b3340",
+          "position": 6
+        },
+        {
+          "app": "maker",
+          "palette_id": {
+            "@ref": "palette:maker-pla"
+          },
+          "code": "amber",
+          "name": "Amber",
+          "hex": "#c98a2e",
+          "position": 7
+        }
+      ]
+    },
+    {
+      "ref": "bases",
+      "rows": [
+        {
+          "@label": "base:coasters",
+          "app": "maker",
+          "offered": {
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope",
+              "Caveat",
+              "Zilla Slab",
+              "Oswald"
+            ],
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ]
+          },
+          "name": "Engraved walnut coasters",
+          "kind": "piece",
+          "width_mm": 95,
+          "height_mm": 95,
+          "corner_mm": 9,
+          "sides": 2,
+          "back_feature_id": {
+            "@ref": "feature:maker-both-sides"
+          },
+          "material": "Walnut",
+          "thickness_mm": 6,
+          "state": "published",
+          "position": 1
+        },
+        {
+          "@label": "base:nook",
+          "app": "maker",
+          "offered": {
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope",
+              "Caveat",
+              "Zilla Slab",
+              "Oswald"
+            ],
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ]
+          },
+          "name": "The Little Bookshop",
+          "kind": "kit",
+          "width_mm": 110,
+          "height_mm": 180,
+          "depth_mm": 150,
+          "material": "Birch ply",
+          "thickness_mm": 3,
+          "state": "published",
+          "position": 2
+        },
+        {
+          "@label": "base:keyring",
+          "app": "maker",
+          "offered": {
+            "fonts": [
+              "Manrope",
+              "Oswald"
+            ],
+            "finishes": []
+          },
+          "name": "Name keyring",
+          "kind": "printed",
+          "width_mm": 56,
+          "height_mm": 24,
+          "corner_mm": 11,
+          "material": "PLA",
+          "thickness_mm": 4,
+          "state": "published",
+          "position": 3
+        },
+        {
+          "@label": "base:board",
+          "app": "maker",
+          "offered": {
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope",
+              "Caveat",
+              "Zilla Slab",
+              "Oswald"
+            ],
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ]
+          },
+          "name": "Walnut cutting board",
+          "kind": "piece",
+          "width_mm": 380,
+          "height_mm": 260,
+          "corner_mm": 16,
+          "material": "Walnut",
+          "thickness_mm": 18,
+          "state": "published",
+          "position": 4
+        },
+        {
+          "@label": "base:sign",
+          "app": "maker",
+          "offered": {
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope",
+              "Caveat",
+              "Zilla Slab",
+              "Oswald"
+            ],
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ]
+          },
+          "name": "Slate house sign",
+          "kind": "piece",
+          "width_mm": 300,
+          "height_mm": 200,
+          "corner_mm": 10,
+          "material": "Slate",
+          "thickness_mm": 5,
+          "state": "draft",
+          "position": 5
+        }
+      ]
+    },
+    {
+      "ref": "base_pieces",
+      "rows": [
+        {
+          "@label": "piece:nook-01",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "01",
+          "name": "Base",
+          "width_mm": 110,
+          "height_mm": 150,
+          "layers": [
+            "CUT"
+          ],
+          "position": 1
+        },
+        {
+          "@label": "piece:nook-02",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "02",
+          "name": "Back wall",
+          "width_mm": 110,
+          "height_mm": 180,
+          "layers": [
+            "CUT",
+            "SCORE"
+          ],
+          "position": 2
+        },
+        {
+          "@label": "piece:nook-03",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "03",
+          "name": "Left wall",
+          "width_mm": 150,
+          "height_mm": 180,
+          "layers": [
+            "CUT",
+            "SCORE"
+          ],
+          "position": 3
+        },
+        {
+          "@label": "piece:nook-04",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "04",
+          "name": "Right wall",
+          "width_mm": 150,
+          "height_mm": 180,
+          "layers": [
+            "CUT",
+            "SCORE"
+          ],
+          "position": 4
+        },
+        {
+          "@label": "piece:nook-05",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "05",
+          "name": "Roof",
+          "width_mm": 110,
+          "height_mm": 150,
+          "layers": [
+            "CUT",
+            "SCORE"
+          ],
+          "position": 5
+        },
+        {
+          "@label": "piece:nook-06",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "06",
+          "name": "Shop front",
+          "width_mm": 110,
+          "height_mm": 180,
+          "layers": [
+            "CUT",
+            "ENGRAVE"
+          ],
+          "position": 6
+        },
+        {
+          "@label": "piece:nook-07",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "07",
+          "name": "Floor",
+          "width_mm": 104,
+          "height_mm": 140,
+          "layers": [
+            "CUT",
+            "SCORE"
+          ],
+          "position": 7
+        },
+        {
+          "@label": "piece:nook-08",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "08",
+          "name": "Bookcase",
+          "width_mm": 104,
+          "height_mm": 120,
+          "layers": [
+            "CUT"
+          ],
+          "position": 8
+        },
+        {
+          "@label": "piece:nook-09",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "09",
+          "name": "Shop sign",
+          "width_mm": 92,
+          "height_mm": 22,
+          "layers": [
+            "CUT",
+            "ENGRAVE"
+          ],
+          "position": 9
+        },
+        {
+          "@label": "piece:nook-10",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "10",
+          "name": "Left window",
+          "width_mm": 42,
+          "height_mm": 54,
+          "layers": [
+            "CUT"
+          ],
+          "position": 10
+        },
+        {
+          "@label": "piece:nook-11",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "11",
+          "name": "Right window",
+          "width_mm": 42,
+          "height_mm": 54,
+          "layers": [
+            "CUT",
+            "ENGRAVE"
+          ],
+          "position": 11
+        },
+        {
+          "@label": "piece:nook-12",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "12",
+          "name": "Door",
+          "width_mm": 36,
+          "height_mm": 68,
+          "layers": [
+            "CUT",
+            "SCORE"
+          ],
+          "position": 12
+        },
+        {
+          "@label": "piece:nook-13",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "13",
+          "name": "Lamp bracket",
+          "width_mm": 20,
+          "height_mm": 30,
+          "layers": [
+            "CUT"
+          ],
+          "position": 13
+        },
+        {
+          "@label": "piece:nook-14",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "14",
+          "name": "Counter",
+          "width_mm": 60,
+          "height_mm": 24,
+          "layers": [
+            "CUT"
+          ],
+          "position": 14
+        }
+      ]
+    },
+    {
+      "ref": "base_areas",
+      "rows": [
+        {
+          "@label": "area:coasters-logo",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:coasters"
+          },
+          "code": "logo",
+          "name": "Your logo",
+          "shape": "rect",
+          "x_mm": 28.5,
+          "y_mm": 13.3,
+          "w_mm": 38,
+          "h_mm": 36.1,
+          "takes": "logo",
+          "required": false,
+          "rules": {
+            "picture": "logo",
+            "fit": "inside",
+            "colour": "one",
+            "file": "logo_file"
+          },
+          "feature_id": {
+            "@ref": "feature:maker-logo"
+          },
+          "position": 1
+        },
+        {
+          "@label": "area:coasters-words",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:coasters"
+          },
+          "code": "words",
+          "name": "Your words",
+          "shape": "rect",
+          "x_mm": 11.4,
+          "y_mm": 57,
+          "w_mm": 72.2,
+          "h_mm": 13.3,
+          "takes": "words",
+          "required": false,
+          "rules": {
+            "chars": 24,
+            "grows": true,
+            "unit": "mm",
+            "size": 6,
+            "min": 4,
+            "max": 8,
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope",
+              "Caveat"
+            ],
+            "font": "Manrope",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "The Hartleys"
+          },
+          "position": 2
+        },
+        {
+          "@label": "area:nook-sign",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "sign",
+          "name": "The shop sign",
+          "piece_id": {
+            "@ref": "piece:nook-09"
+          },
+          "face": "front",
+          "shape": "rect",
+          "x_mm": 8.8,
+          "y_mm": 9,
+          "w_mm": 92.4,
+          "h_mm": 19.8,
+          "takes": "words",
+          "required": true,
+          "rules": {
+            "chars": 14,
+            "grows": true,
+            "unit": "mm",
+            "size": 9,
+            "min": 6,
+            "max": 11,
+            "fonts": [
+              "Cormorant Garamond",
+              "Zilla Slab",
+              "Caveat"
+            ],
+            "font": "Cormorant Garamond",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "The Corner Shop"
+          },
+          "position": 3
+        },
+        {
+          "@label": "area:nook-lwin",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "code": "lwin",
+          "name": "The left window",
+          "piece_id": {
+            "@ref": "piece:nook-10"
+          },
+          "face": "front",
+          "shape": "rect",
+          "x_mm": 8.8,
+          "y_mm": 45,
+          "w_mm": 41.8,
+          "h_mm": 54,
+          "takes": "both",
+          "required": false,
+          "rules": {
+            "chars": 10,
+            "grows": true,
+            "unit": "mm",
+            "size": 5,
+            "min": 4,
+            "max": 7,
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope"
+            ],
+            "font": "Manrope",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "Open late",
+            "alsoLogo": {
+              "picture": "logo",
+              "fit": "inside",
+              "colour": "one",
+              "file": "logo_file"
+            }
+          },
+          "feature_id": {
+            "@ref": "feature:maker-logo"
+          },
+          "position": 4
+        },
+        {
+          "@label": "area:keyring-front",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:keyring"
+          },
+          "code": "front",
+          "name": "The front",
+          "face": "front",
+          "shape": "rect",
+          "x_mm": 0,
+          "y_mm": 0,
+          "w_mm": 56,
+          "h_mm": 24,
+          "takes": "words",
+          "required": true,
+          "rules": {
+            "chars": 8,
+            "grows": true,
+            "unit": "mm",
+            "size": 11,
+            "min": 6,
+            "max": 14,
+            "fonts": [
+              "Manrope",
+              "Oswald",
+              "Zilla Slab"
+            ],
+            "font": "Manrope",
+            "upper": true,
+            "raisedMm": 1,
+            "placeholder": "ALEX",
+            "mode": "raised",
+            "depthMm": 1,
+            "smallestLetterMm": 4
+          },
+          "position": 5
+        },
+        {
+          "@label": "area:board-corner",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:board"
+          },
+          "code": "corner",
+          "name": "In the corner",
+          "shape": "rect",
+          "x_mm": 205.2,
+          "y_mm": 208,
+          "w_mm": 152,
+          "h_mm": 26,
+          "takes": "words",
+          "required": false,
+          "rules": {
+            "chars": 32,
+            "grows": true,
+            "unit": "mm",
+            "size": 8,
+            "min": 6,
+            "max": 10,
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope"
+            ],
+            "font": "Cormorant Garamond",
+            "finishes": [
+              "engraved"
+            ],
+            "placeholder": "The Sharmas · 2019"
+          },
+          "position": 6
+        }
+      ]
+    },
+    {
+      "ref": "ready_designs",
+      "rows": [
+        {
+          "@label": "ready:coasters-ring",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:coasters"
+          },
+          "name": "Ring",
+          "tags": [
+            "words",
+            "logo"
+          ],
+          "state": "published",
+          "position": 1
+        },
+        {
+          "@label": "ready:coasters-two-lines",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:coasters"
+          },
+          "name": "Two lines",
+          "tags": [
+            "words"
+          ],
+          "state": "published",
+          "position": 2
+        },
+        {
+          "@label": "ready:coasters-monogram",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:coasters"
+          },
+          "name": "Monogram",
+          "tags": [
+            "words"
+          ],
+          "state": "published",
+          "position": 3
+        },
+        {
+          "@label": "ready:coasters-sprig",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:coasters"
+          },
+          "name": "Sprig",
+          "tags": [
+            "words",
+            "motif"
+          ],
+          "state": "published",
+          "position": 4
+        },
+        {
+          "@label": "ready:coasters-badge",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:coasters"
+          },
+          "name": "Badge",
+          "tags": [
+            "words",
+            "logo"
+          ],
+          "state": "published",
+          "position": 5
+        },
+        {
+          "@label": "ready:coasters-stamp",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:coasters"
+          },
+          "name": "Stamp",
+          "tags": [
+            "words"
+          ],
+          "state": "published",
+          "position": 6
+        },
+        {
+          "@label": "ready:nook-corner",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "name": "Corner shop",
+          "tags": [
+            "words",
+            "logo"
+          ],
+          "state": "published",
+          "position": 7
+        },
+        {
+          "@label": "ready:nook-night",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "name": "Night shop",
+          "tags": [
+            "words",
+            "logo",
+            "motif"
+          ],
+          "state": "published",
+          "position": 8
+        },
+        {
+          "@label": "ready:nook-reading",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "name": "Reading room",
+          "tags": [
+            "words"
+          ],
+          "state": "published",
+          "position": 9
+        },
+        {
+          "@label": "ready:keyring-name",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:keyring"
+          },
+          "name": "Name",
+          "tags": [
+            "words"
+          ],
+          "state": "published",
+          "position": 10
+        },
+        {
+          "@label": "ready:keyring-heart",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:keyring"
+          },
+          "name": "Name and a heart",
+          "tags": [
+            "words"
+          ],
+          "state": "published",
+          "position": 11
+        }
+      ]
+    },
+    {
+      "ref": "ready_parts",
+      "rows": [
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:coasters-ring"
+          },
+          "code": "ring",
+          "name": "The ring",
+          "kind": "shape",
+          "locked": true,
+          "required": false,
+          "x_mm": 6.65,
+          "y_mm": 6.65,
+          "w_mm": 81.7,
+          "h_mm": 81.7,
+          "rules": {
+            "shape": "ring"
+          },
+          "value": {
+            "text": "Engraved ring, 1 mm"
+          },
+          "position": 1
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:coasters-ring"
+          },
+          "code": "logo",
+          "name": "Your logo",
+          "kind": "picture",
+          "locked": false,
+          "required": false,
+          "x_mm": 29.45,
+          "y_mm": 16.15,
+          "w_mm": 36.1,
+          "h_mm": 36.1,
+          "rules": {
+            "picture": "logo",
+            "fit": "inside",
+            "colour": "one",
+            "file": "logo_file"
+          },
+          "feature_id": {
+            "@ref": "feature:maker-logo"
+          },
+          "position": 2
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:coasters-ring"
+          },
+          "code": "words",
+          "name": "Your words",
+          "kind": "text",
+          "locked": false,
+          "required": true,
+          "x_mm": 13.3,
+          "y_mm": 57,
+          "w_mm": 68.4,
+          "h_mm": 12.35,
+          "rules": {
+            "chars": 22,
+            "grows": true,
+            "unit": "mm",
+            "size": 6,
+            "min": 4,
+            "max": 8,
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope",
+              "Caveat"
+            ],
+            "font": "Manrope",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "The Hartleys · 2019"
+          },
+          "position": 3
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:coasters-two-lines"
+          },
+          "code": "top",
+          "name": "Top line",
+          "kind": "text",
+          "locked": false,
+          "required": true,
+          "x_mm": 7.6,
+          "y_mm": 31.35,
+          "w_mm": 79.8,
+          "h_mm": 17.1,
+          "rules": {
+            "chars": 16,
+            "grows": true,
+            "unit": "mm",
+            "size": 10,
+            "min": 6,
+            "max": 12,
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope",
+              "Caveat"
+            ],
+            "font": "Cormorant Garamond",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "Anna & Ben"
+          },
+          "position": 4
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:coasters-two-lines"
+          },
+          "code": "date",
+          "name": "Date",
+          "kind": "text",
+          "locked": false,
+          "required": true,
+          "x_mm": 17.1,
+          "y_mm": 53.2,
+          "w_mm": 60.8,
+          "h_mm": 9.5,
+          "rules": {
+            "chars": 14,
+            "grows": true,
+            "unit": "mm",
+            "size": 5,
+            "min": 4,
+            "max": 7,
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope",
+              "Caveat"
+            ],
+            "font": "Manrope",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "5.9.2026"
+          },
+          "position": 5
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:coasters-monogram"
+          },
+          "code": "initial",
+          "name": "Initial",
+          "kind": "text",
+          "locked": false,
+          "required": true,
+          "x_mm": 23.75,
+          "y_mm": 11.4,
+          "w_mm": 47.5,
+          "h_mm": 49.4,
+          "rules": {
+            "chars": 1,
+            "grows": true,
+            "unit": "mm",
+            "size": 40,
+            "min": 30,
+            "max": 46,
+            "fonts": [
+              "Cormorant Garamond",
+              "Caveat"
+            ],
+            "font": "Cormorant Garamond",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "H"
+          },
+          "position": 6
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:coasters-monogram"
+          },
+          "code": "name",
+          "name": "Name",
+          "kind": "text",
+          "locked": false,
+          "required": false,
+          "x_mm": 13.3,
+          "y_mm": 66.5,
+          "w_mm": 68.4,
+          "h_mm": 9.5,
+          "rules": {
+            "chars": 18,
+            "grows": true,
+            "unit": "mm",
+            "size": 5,
+            "min": 4,
+            "max": 6,
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope",
+              "Caveat"
+            ],
+            "font": "Manrope",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "The Hartleys"
+          },
+          "position": 7
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:coasters-sprig"
+          },
+          "code": "motif",
+          "name": "Motif",
+          "kind": "choice",
+          "locked": false,
+          "required": false,
+          "x_mm": 30.4,
+          "y_mm": 15.2,
+          "w_mm": 34.2,
+          "h_mm": 34.2,
+          "rules": {
+            "choices": [
+              "sprout",
+              "leaf",
+              "wheat"
+            ]
+          },
+          "value": {
+            "choice": "sprout"
+          },
+          "position": 8
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:coasters-sprig"
+          },
+          "code": "words",
+          "name": "Your words",
+          "kind": "text",
+          "locked": false,
+          "required": false,
+          "x_mm": 11.4,
+          "y_mm": 58.9,
+          "w_mm": 72.2,
+          "h_mm": 11.4,
+          "rules": {
+            "chars": 20,
+            "grows": true,
+            "unit": "mm",
+            "size": 6,
+            "min": 4,
+            "max": 8,
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope",
+              "Caveat"
+            ],
+            "font": "Caveat",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "Allotment 14"
+          },
+          "position": 9
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:coasters-badge"
+          },
+          "code": "frame",
+          "name": "The frame",
+          "kind": "shape",
+          "locked": true,
+          "required": false,
+          "x_mm": 9.5,
+          "y_mm": 9.5,
+          "w_mm": 76,
+          "h_mm": 76,
+          "rules": {
+            "shape": "rect"
+          },
+          "value": {
+            "text": "Engraved frame, 1 mm"
+          },
+          "position": 10
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:coasters-badge"
+          },
+          "code": "logo",
+          "name": "Your logo",
+          "kind": "picture",
+          "locked": false,
+          "required": false,
+          "x_mm": 26.6,
+          "y_mm": 18.05,
+          "w_mm": 41.8,
+          "h_mm": 38,
+          "rules": {
+            "picture": "logo",
+            "fit": "inside",
+            "colour": "one",
+            "file": "logo_file"
+          },
+          "feature_id": {
+            "@ref": "feature:maker-logo"
+          },
+          "position": 11
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:coasters-badge"
+          },
+          "code": "words",
+          "name": "Your words",
+          "kind": "text",
+          "locked": false,
+          "required": false,
+          "x_mm": 15.2,
+          "y_mm": 61.75,
+          "w_mm": 64.6,
+          "h_mm": 11.4,
+          "rules": {
+            "chars": 18,
+            "grows": true,
+            "unit": "mm",
+            "size": 5.5,
+            "min": 4,
+            "max": 7,
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope",
+              "Caveat"
+            ],
+            "font": "Manrope",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "Since 2019"
+          },
+          "position": 12
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:coasters-stamp"
+          },
+          "code": "home",
+          "name": "Heading",
+          "kind": "text",
+          "locked": true,
+          "required": false,
+          "x_mm": 9.5,
+          "y_mm": 26.6,
+          "w_mm": 76,
+          "h_mm": 22.8,
+          "rules": {
+            "unit": "mm",
+            "size": 17,
+            "fonts": [
+              "Oswald"
+            ],
+            "font": "Oswald",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ]
+          },
+          "value": {
+            "text": "HOME"
+          },
+          "position": 13
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:coasters-stamp"
+          },
+          "code": "date",
+          "name": "Your words",
+          "kind": "text",
+          "locked": false,
+          "required": true,
+          "x_mm": 17.1,
+          "y_mm": 55.1,
+          "w_mm": 60.8,
+          "h_mm": 10.45,
+          "rules": {
+            "chars": 14,
+            "grows": true,
+            "unit": "mm",
+            "size": 5,
+            "min": 4,
+            "max": 7,
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope",
+              "Caveat"
+            ],
+            "font": "Manrope",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "est. 2019"
+          },
+          "position": 14
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:nook-corner"
+          },
+          "code": "sign",
+          "name": "The shop sign",
+          "kind": "text",
+          "locked": false,
+          "required": true,
+          "piece_id": {
+            "@ref": "piece:nook-09"
+          },
+          "x_mm": 8.8,
+          "y_mm": 9,
+          "w_mm": 92.4,
+          "h_mm": 19.8,
+          "area_id": {
+            "@ref": "area:nook-sign"
+          },
+          "rules": {
+            "chars": 14,
+            "grows": true,
+            "unit": "mm",
+            "size": 9,
+            "min": 6,
+            "max": 11,
+            "fonts": [
+              "Cormorant Garamond",
+              "Zilla Slab",
+              "Caveat"
+            ],
+            "font": "Cormorant Garamond",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "The Corner Shop"
+          },
+          "position": 15
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:nook-corner"
+          },
+          "code": "lwin",
+          "name": "The left window",
+          "kind": "text",
+          "locked": false,
+          "required": false,
+          "piece_id": {
+            "@ref": "piece:nook-10"
+          },
+          "x_mm": 8.8,
+          "y_mm": 45,
+          "w_mm": 41.8,
+          "h_mm": 54,
+          "area_id": {
+            "@ref": "area:nook-lwin"
+          },
+          "rules": {
+            "chars": 10,
+            "grows": true,
+            "unit": "mm",
+            "size": 5,
+            "min": 4,
+            "max": 7,
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope"
+            ],
+            "font": "Manrope",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "Open late",
+            "alsoLogo": {
+              "picture": "logo",
+              "fit": "inside",
+              "colour": "one",
+              "file": "logo_file"
+            }
+          },
+          "feature_id": {
+            "@ref": "feature:maker-logo"
+          },
+          "position": 16
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:nook-corner"
+          },
+          "code": "rwin",
+          "name": "The right window",
+          "kind": "choice",
+          "locked": true,
+          "required": false,
+          "piece_id": {
+            "@ref": "piece:nook-11"
+          },
+          "x_mm": 59.4,
+          "y_mm": 45,
+          "w_mm": 41.8,
+          "h_mm": 54,
+          "value": {
+            "choice": "library",
+            "text": "Books on the shelf"
+          },
+          "position": 17
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:nook-corner"
+          },
+          "code": "door",
+          "name": "The door",
+          "kind": "shape",
+          "locked": true,
+          "required": false,
+          "piece_id": {
+            "@ref": "piece:nook-12"
+          },
+          "x_mm": 37.4,
+          "y_mm": 111.6,
+          "w_mm": 35.2,
+          "h_mm": 68.4,
+          "rules": {
+            "shape": "door"
+          },
+          "value": {
+            "text": "Panelled door"
+          },
+          "position": 18
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:nook-night"
+          },
+          "code": "sign",
+          "name": "The shop sign",
+          "kind": "text",
+          "locked": false,
+          "required": true,
+          "piece_id": {
+            "@ref": "piece:nook-09"
+          },
+          "x_mm": 8.8,
+          "y_mm": 9,
+          "w_mm": 92.4,
+          "h_mm": 19.8,
+          "area_id": {
+            "@ref": "area:nook-sign"
+          },
+          "rules": {
+            "chars": 14,
+            "grows": true,
+            "unit": "mm",
+            "size": 9,
+            "min": 6,
+            "max": 11,
+            "fonts": [
+              "Cormorant Garamond",
+              "Zilla Slab",
+              "Caveat"
+            ],
+            "font": "Caveat",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "The Corner Shop",
+            "finish": "paint-black"
+          },
+          "position": 19
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:nook-night"
+          },
+          "code": "lwin",
+          "name": "The left window",
+          "kind": "text",
+          "locked": false,
+          "required": false,
+          "piece_id": {
+            "@ref": "piece:nook-10"
+          },
+          "x_mm": 8.8,
+          "y_mm": 45,
+          "w_mm": 41.8,
+          "h_mm": 54,
+          "area_id": {
+            "@ref": "area:nook-lwin"
+          },
+          "rules": {
+            "chars": 10,
+            "grows": true,
+            "unit": "mm",
+            "size": 5,
+            "min": 4,
+            "max": 7,
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope"
+            ],
+            "font": "Manrope",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "Open late",
+            "alsoLogo": {
+              "picture": "logo",
+              "fit": "inside",
+              "colour": "one",
+              "file": "logo_file"
+            }
+          },
+          "feature_id": {
+            "@ref": "feature:maker-logo"
+          },
+          "position": 20
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:nook-night"
+          },
+          "code": "rwin",
+          "name": "The right window",
+          "kind": "choice",
+          "locked": false,
+          "required": false,
+          "piece_id": {
+            "@ref": "piece:nook-11"
+          },
+          "x_mm": 59.4,
+          "y_mm": 45,
+          "w_mm": 41.8,
+          "h_mm": 54,
+          "rules": {
+            "choices": [
+              "moon",
+              "star",
+              "lamp"
+            ]
+          },
+          "value": {
+            "choice": "moon"
+          },
+          "position": 21
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:nook-night"
+          },
+          "code": "door",
+          "name": "The door",
+          "kind": "shape",
+          "locked": true,
+          "required": false,
+          "piece_id": {
+            "@ref": "piece:nook-12"
+          },
+          "x_mm": 37.4,
+          "y_mm": 111.6,
+          "w_mm": 35.2,
+          "h_mm": 68.4,
+          "rules": {
+            "shape": "door"
+          },
+          "value": {
+            "text": "Panelled door"
+          },
+          "position": 22
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:nook-reading"
+          },
+          "code": "sign",
+          "name": "The shop sign",
+          "kind": "text",
+          "locked": false,
+          "required": true,
+          "piece_id": {
+            "@ref": "piece:nook-09"
+          },
+          "x_mm": 8.8,
+          "y_mm": 9,
+          "w_mm": 92.4,
+          "h_mm": 19.8,
+          "area_id": {
+            "@ref": "area:nook-sign"
+          },
+          "rules": {
+            "chars": 14,
+            "grows": true,
+            "unit": "mm",
+            "size": 9,
+            "min": 6,
+            "max": 11,
+            "fonts": [
+              "Cormorant Garamond",
+              "Zilla Slab"
+            ],
+            "font": "Zilla Slab",
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ],
+            "placeholder": "Reading Room"
+          },
+          "position": 23
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:nook-reading"
+          },
+          "code": "rwin",
+          "name": "The windows",
+          "kind": "choice",
+          "locked": true,
+          "required": false,
+          "piece_id": {
+            "@ref": "piece:nook-11"
+          },
+          "x_mm": 8.8,
+          "y_mm": 45,
+          "w_mm": 92.4,
+          "h_mm": 54,
+          "value": {
+            "choice": "book-open",
+            "text": "An open book across both"
+          },
+          "position": 24
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:nook-reading"
+          },
+          "code": "door",
+          "name": "The door",
+          "kind": "shape",
+          "locked": true,
+          "required": false,
+          "piece_id": {
+            "@ref": "piece:nook-12"
+          },
+          "x_mm": 37.4,
+          "y_mm": 111.6,
+          "w_mm": 35.2,
+          "h_mm": 68.4,
+          "rules": {
+            "shape": "door"
+          },
+          "value": {
+            "text": "Panelled door"
+          },
+          "position": 25
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:keyring-name"
+          },
+          "code": "name",
+          "name": "Your name",
+          "kind": "text",
+          "locked": false,
+          "required": true,
+          "area_id": {
+            "@ref": "area:keyring-front"
+          },
+          "x_mm": 14,
+          "y_mm": 3.84,
+          "w_mm": 38.08,
+          "h_mm": 16.32,
+          "rules": {
+            "chars": 8,
+            "grows": true,
+            "unit": "mm",
+            "size": 11,
+            "min": 6,
+            "max": 14,
+            "fonts": [
+              "Manrope",
+              "Oswald",
+              "Zilla Slab"
+            ],
+            "font": "Manrope",
+            "upper": true,
+            "raisedMm": 1,
+            "placeholder": "ALEX"
+          },
+          "position": 26
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:keyring-name"
+          },
+          "code": "colour",
+          "name": "Colour",
+          "kind": "colour",
+          "locked": false,
+          "required": false,
+          "rules": {
+            "palette": "pla",
+            "choices": [
+              "chalk",
+              "grey",
+              "ink",
+              "amber"
+            ]
+          },
+          "value": {
+            "choice": "amber"
+          },
+          "position": 27
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:keyring-heart"
+          },
+          "code": "name",
+          "name": "Your name",
+          "kind": "text",
+          "locked": false,
+          "required": true,
+          "area_id": {
+            "@ref": "area:keyring-front"
+          },
+          "x_mm": 12.32,
+          "y_mm": 3.84,
+          "w_mm": 31.36,
+          "h_mm": 16.32,
+          "rules": {
+            "chars": 6,
+            "grows": true,
+            "unit": "mm",
+            "size": 10,
+            "min": 6,
+            "max": 12,
+            "fonts": [
+              "Manrope",
+              "Oswald"
+            ],
+            "font": "Manrope",
+            "upper": true,
+            "raisedMm": 1,
+            "placeholder": "ALEX"
+          },
+          "position": 28
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:keyring-heart"
+          },
+          "code": "heart",
+          "name": "The heart",
+          "kind": "choice",
+          "locked": true,
+          "required": false,
+          "x_mm": 44.8,
+          "y_mm": 7.2,
+          "w_mm": 7.84,
+          "h_mm": 9.6,
+          "rules": {
+            "raisedMm": 1
+          },
+          "value": {
+            "choice": "heart",
+            "text": "Raised heart"
+          },
+          "position": 29
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:keyring-heart"
+          },
+          "code": "colour",
+          "name": "Colour",
+          "kind": "colour",
+          "locked": false,
+          "required": false,
+          "rules": {
+            "palette": "pla",
+            "choices": [
+              "chalk",
+              "grey",
+              "ink",
+              "amber"
+            ]
+          },
+          "value": {
+            "choice": "chalk"
+          },
+          "position": 30
+        }
+      ]
+    },
+    {
+      "ref": "designs",
+      "rows": [
+        {
+          "@label": "design:br-2288",
+          "app": "maker",
+          "code": "BR2288K7Q4X3M9ZD",
+          "format": 1,
+          "ready_design_id": {
+            "@ref": "ready:nook-corner"
+          },
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "values": {
+            "finish": "engraved",
+            "parts": {
+              "sign": {
+                "text": "Iris's Books",
+                "font": "Cormorant Garamond",
+                "size": 10
+              }
+            }
+          },
+          "state": "ordered"
+        },
+        {
+          "@label": "design:br-2289",
+          "app": "maker",
+          "code": "BR2289R4W8N2T6JC",
+          "format": 1,
+          "ready_design_id": {
+            "@ref": "ready:keyring-name"
+          },
+          "base_id": {
+            "@ref": "base:keyring"
+          },
+          "values": {
+            "parts": {
+              "name": {
+                "text": "SAM"
+              },
+              "colour": {
+                "choice": "amber"
+              }
+            }
+          },
+          "state": "ordered"
+        },
+        {
+          "@label": "design:br-2290",
+          "app": "maker",
+          "code": "BR2290H5F3P9V8YA",
+          "format": 1,
+          "ready_design_id": {
+            "@ref": "ready:coasters-ring"
+          },
+          "base_id": {
+            "@ref": "base:coasters"
+          },
+          "values": {
+            "finish": "engraved",
+            "parts": {
+              "words": {
+                "text": "The Pinfold · 2019"
+              },
+              "logo": {
+                "file": "logo_file"
+              }
+            }
+          },
+          "state": "ordered"
+        }
+      ]
+    },
+    {
+      "ref": "design_versions",
+      "rows": [
+        {
+          "app": "maker",
+          "design_id": {
+            "@ref": "design:br-2288"
+          },
+          "version": 1,
+          "values": {
+            "finish": "engraved",
+            "parts": {
+              "sign": {
+                "text": "Iris's Books",
+                "font": "Cormorant Garamond",
+                "size": 9
+              }
+            }
+          },
+          "@label": "version:br-2288-1"
+        },
+        {
+          "app": "maker",
+          "design_id": {
+            "@ref": "design:br-2288"
+          },
+          "version": 2,
+          "values": {
+            "finish": "engraved",
+            "parts": {
+              "sign": {
+                "text": "Iris's Books",
+                "font": "Cormorant Garamond",
+                "size": 10
+              }
+            }
+          },
+          "note": "Sign set at 10 mm.",
+          "@label": "version:br-2288-2"
+        },
+        {
+          "app": "maker",
+          "design_id": {
+            "@ref": "design:br-2289"
+          },
+          "version": 1,
+          "values": {
+            "parts": {
+              "name": {
+                "text": "SAM"
+              },
+              "colour": {
+                "choice": "amber"
+              }
+            }
+          },
+          "note": "Raised 1 mm, amber.",
+          "@label": "version:br-2289-1"
+        }
+      ]
+    },
+    {
+      "ref": "products",
+      "own": true,
+      "rows": [
+        {
+          "@label": "product:coast-wal",
+          "code": "coast-wal",
+          "name": "Engraved walnut coasters",
+          "category": "coasters",
+          "unit": "set of 4",
+          "pieces": 4,
+          "price": 34,
+          "lead_days": 3,
+          "machine_kind": "laser",
+          "material_id": {
+            "@ref": "material:wal6"
+          },
+          "grams": 40,
+          "size_text": "95 × 95 × 6 mm",
+          "width_mm": 95,
+          "height_mm": 95,
+          "finish_label": "Finish",
+          "made_from": "American black walnut, 6 mm, cut and engraved on the laser.",
+          "finished_with": "Sanded to 240 grit, then two coats of Danish oil.",
+          "care": "Wipe with a damp cloth. Keep them out of the dishwasher.",
+          "icon": "disc",
+          "takes_lettering": true,
+          "lettering_limit": 24,
+          "lettering_prompt": "One line, up to 24 characters",
+          "lettering_hint": "Tell us the name and the date. We set it in the font shown in the photos — if you want something else, say so and we'll reply before we cut.",
+          "base_id": {
+            "@ref": "base:coasters"
+          },
+          "published": true,
+          "position": 1
+        },
+        {
+          "@label": "product:coast-ply",
+          "code": "coast-ply",
+          "name": "Birch ply coasters",
+          "category": "coasters",
+          "unit": "set of 4",
+          "pieces": 4,
+          "price": 24,
+          "lead_days": 3,
+          "machine_kind": "laser",
+          "material_id": {
+            "@ref": "material:ply3"
+          },
+          "grams": 40,
+          "size_text": "95 × 95 × 3 mm",
+          "width_mm": 95,
+          "height_mm": 95,
+          "finish_label": "Finish",
+          "made_from": "Baltic birch ply, 3 mm, cut and engraved on the laser.",
+          "finished_with": "Sanded and left bare, or waxed if you ask.",
+          "care": "Wipe with a damp cloth. Keep them out of the dishwasher.",
+          "icon": "disc",
+          "takes_lettering": true,
+          "lettering_limit": 24,
+          "lettering_prompt": "One line, up to 24 characters",
+          "lettering_hint": "Tell us the name and the date. We set it in the font shown in the photos — if you want something else, say so and we'll reply before we cut.",
+          "base_id": null,
+          "published": true,
+          "position": 2
+        },
+        {
+          "@label": "product:sign-house",
+          "code": "sign-house",
+          "name": "Slate house sign",
+          "category": "signs",
+          "unit": "each",
+          "pieces": 1,
+          "price": 48,
+          "lead_days": 5,
+          "machine_kind": "laser",
+          "material_id": {
+            "@ref": "material:slate5"
+          },
+          "grams": 67,
+          "size_text": "300 × 200 × 5 mm",
+          "width_mm": 300,
+          "height_mm": 200,
+          "finish_label": "Lettering",
+          "made_from": "Welsh slate blanks, riven face, 5 mm.",
+          "finished_with": "Etched on the laser, lettering filled by hand and sealed.",
+          "care": "It lives outside quite happily. Wipe the face clean once a year.",
+          "icon": "house",
+          "takes_lettering": true,
+          "lettering_limit": 28,
+          "lettering_prompt": "House name or number, up to 28 characters",
+          "lettering_hint": "Tell us exactly how you want it written, including any punctuation. We set it in the font shown in the photos — if you want something else, say so and we'll reply before we cut.",
+          "base_id": {
+            "@ref": "base:sign"
+          },
+          "published": true,
+          "position": 3
+        },
+        {
+          "@label": "product:mark-slate",
+          "code": "mark-slate",
+          "name": "Slate garden markers",
+          "category": "signs",
+          "unit": "set of 6",
+          "pieces": 6,
+          "price": 22,
+          "lead_days": 5,
+          "machine_kind": "laser",
+          "material_id": {
+            "@ref": "material:slate5"
+          },
+          "grams": 42,
+          "size_text": "150 × 40 × 5 mm",
+          "width_mm": 150,
+          "height_mm": 40,
+          "finish_label": "Lettering",
+          "made_from": "Slate offcuts from the sign blanks, 5 mm.",
+          "finished_with": "Etched on the laser and left raw.",
+          "care": "Rinse them off at the end of the season.",
+          "icon": "sprout",
+          "takes_lettering": true,
+          "lettering_limit": 12,
+          "lettering_prompt": "One word per marker, up to 12 characters each",
+          "lettering_hint": "List what you'd like on each of the six — basil, thyme, and so on. We'll set them all the same way.",
+          "base_id": null,
+          "published": true,
+          "position": 4
+        },
+        {
+          "@label": "product:key-acr",
+          "code": "key-acr",
+          "name": "Acrylic keyring",
+          "category": "keyrings",
+          "unit": "each",
+          "pieces": 1,
+          "price": 9,
+          "lead_days": 3,
+          "machine_kind": "laser",
+          "material_id": {
+            "@ref": "material:acr3"
+          },
+          "grams": 2,
+          "size_text": "50 × 32 × 3 mm",
+          "width_mm": 50,
+          "height_mm": 32,
+          "finish_label": "Colour",
+          "made_from": "Cast acrylic, 3 mm, with a split ring.",
+          "finished_with": "Flame-polished edges.",
+          "care": "It will scuff eventually. That is what keys do.",
+          "icon": "key-round",
+          "takes_lettering": true,
+          "lettering_limit": 16,
+          "lettering_prompt": "One line, up to 16 characters",
+          "lettering_hint": "A name, a nickname, a date. We set it in the font shown in the photos.",
+          "base_id": null,
+          "published": true,
+          "position": 5
+        },
+        {
+          "@label": "product:tag-pet",
+          "code": "tag-pet",
+          "name": "Engraved pet tag",
+          "category": "keyrings",
+          "unit": "each",
+          "pieces": 1,
+          "price": 12,
+          "lead_days": 3,
+          "machine_kind": "laser",
+          "material_id": {
+            "@ref": "material:acr3"
+          },
+          "grams": 1,
+          "size_text": "32 × 32 × 3 mm",
+          "width_mm": 32,
+          "height_mm": 32,
+          "finish_label": "Colour",
+          "made_from": "Cast acrylic, 3 mm, with a small split ring.",
+          "finished_with": "Engraved both sides, edges polished.",
+          "care": "Check the ring every few months.",
+          "icon": "bone",
+          "takes_lettering": true,
+          "lettering_limit": 20,
+          "lettering_prompt": "Name on the front, number on the back — up to 20 characters each",
+          "lettering_hint": "Give us the name and the number you want us to reach you on. We cut both sides in one pass.",
+          "base_id": null,
+          "published": true,
+          "position": 6
+        },
+        {
+          "@label": "product:tray-3d",
+          "code": "tray-3d",
+          "name": "3D-printed desk tray",
+          "category": "desk",
+          "unit": "each",
+          "pieces": 1,
+          "price": 38,
+          "lead_days": 4,
+          "machine_kind": "printer",
+          "material_id": {
+            "@ref": "material:pla-chalk"
+          },
+          "grams": 165,
+          "size_text": "220 × 120 × 30 mm",
+          "width_mm": 220,
+          "height_mm": 120,
+          "finish_label": "Colour",
+          "made_from": "Matte PLA, printed at 0.2 mm on the small printers.",
+          "finished_with": "Base sanded flat, feet trimmed by hand.",
+          "care": "Keep it off a sunny windowsill — PLA softens in a hot car.",
+          "icon": "inbox",
+          "takes_lettering": false,
+          "lettering_limit": null,
+          "lettering_prompt": null,
+          "lettering_hint": null,
+          "base_id": null,
+          "published": true,
+          "position": 7
+        },
+        {
+          "@label": "product:pot-3d",
+          "code": "pot-3d",
+          "name": "3D-printed herb pot",
+          "category": "pots",
+          "unit": "each",
+          "pieces": 1,
+          "price": 26,
+          "lead_days": 4,
+          "machine_kind": "printer",
+          "material_id": {
+            "@ref": "material:pla-grey"
+          },
+          "grams": 120,
+          "size_text": "110 × 110 × 105 mm",
+          "width_mm": 110,
+          "height_mm": 110,
+          "finish_label": "Colour",
+          "made_from": "Matte PLA, printed at 0.2 mm, with a saucer that prints with it.",
+          "finished_with": "Ribbed outside, sealed inside with two extra walls.",
+          "care": "For the windowsill, not the garden. Empty the saucer.",
+          "icon": "flower-2",
+          "takes_lettering": false,
+          "lettering_limit": null,
+          "lettering_prompt": null,
+          "lettering_hint": null,
+          "base_id": null,
+          "published": true,
+          "position": 8
+        },
+        {
+          "@label": "product:mug-stone",
+          "code": "mug-stone",
+          "name": "Stoneware mug",
+          "category": "mugs",
+          "unit": "each",
+          "pieces": 1,
+          "price": 32,
+          "lead_days": 10,
+          "machine_kind": "kiln",
+          "material_id": {
+            "@ref": "material:glaze-oat"
+          },
+          "grams": 16,
+          "size_text": "85 × 95 mm · 350 ml",
+          "width_mm": 120,
+          "height_mm": 120,
+          "finish_label": "Glaze",
+          "made_from": "Stoneware clay, thrown by hand and fired twice.",
+          "finished_with": "Bisque fired, glazed, then fired again to 1240°C.",
+          "care": "Dishwasher and microwave are both fine.",
+          "icon": "coffee",
+          "takes_lettering": true,
+          "lettering_limit": 18,
+          "lettering_prompt": "One line, up to 18 characters",
+          "lettering_hint": "We letter the mug by hand under the glaze, so the line stays soft at the edges. Tell us what it should say.",
+          "base_id": null,
+          "published": true,
+          "position": 9
+        },
+        {
+          "@label": "product:cake-top",
+          "code": "cake-top",
+          "name": "Two-layer cake topper",
+          "category": "signs",
+          "unit": "each",
+          "pieces": 1,
+          "price": 28,
+          "lead_days": 3,
+          "machine_kind": "laser",
+          "material_id": {
+            "@ref": "material:acr3"
+          },
+          "grams": 21,
+          "size_text": "160 × 120 × 3 mm",
+          "width_mm": 160,
+          "height_mm": 120,
+          "finish_label": "Colour",
+          "made_from": "Cast acrylic, 3 mm, cut in two layers that sit slightly apart.",
+          "finished_with": "Edges flame-polished, spike glued and left overnight.",
+          "care": "Wash it and keep it — most people do.",
+          "icon": "cake",
+          "takes_lettering": true,
+          "lettering_limit": 24,
+          "lettering_prompt": "Two lines, up to 24 characters in total",
+          "lettering_hint": "Give us both lines and we'll cut them as one piece with a spike on the back.",
+          "base_id": null,
+          "published": true,
+          "position": 10
+        },
+        {
+          "@label": "product:board-cut",
+          "code": "board-cut",
+          "name": "Walnut cutting board",
+          "category": "desk",
+          "unit": "each",
+          "pieces": 1,
+          "price": 68,
+          "lead_days": 3,
+          "machine_kind": "laser",
+          "material_id": {
+            "@ref": "material:wal18"
+          },
+          "grams": 110,
+          "size_text": "380 × 260 × 18 mm",
+          "width_mm": 380,
+          "height_mm": 260,
+          "finish_label": "Finish",
+          "made_from": "One board of American black walnut, 18 mm, edges rounded.",
+          "finished_with": "Sanded to 320 grit and oiled three times.",
+          "care": "Hand wash and re-oil it when it looks thirsty.",
+          "icon": "utensils-crossed",
+          "takes_lettering": true,
+          "lettering_limit": 32,
+          "lettering_prompt": "One line, up to 32 characters",
+          "lettering_hint": "We engrave into the face, off to one corner so the middle stays flat for the knife.",
+          "base_id": {
+            "@ref": "base:board"
+          },
+          "published": true,
+          "position": 11
+        },
+        {
+          "@label": "product:sign-wed",
+          "code": "sign-wed",
+          "name": "Wedding sign",
+          "category": "signs",
+          "unit": "each",
+          "pieces": 1,
+          "price": 58,
+          "lead_days": 3,
+          "machine_kind": "laser",
+          "material_id": {
+            "@ref": "material:ply3"
+          },
+          "grams": 140,
+          "size_text": "420 × 300 × 3 mm",
+          "width_mm": 420,
+          "height_mm": 300,
+          "finish_label": "Finish",
+          "made_from": "Baltic birch ply, 3 mm, cut and engraved on the laser.",
+          "finished_with": "Sanded, with a standing foot cut from the same sheet.",
+          "care": "Indoors only — ply and rain do not get on.",
+          "icon": "heart",
+          "takes_lettering": true,
+          "lettering_limit": 40,
+          "lettering_prompt": "Up to 40 characters across two lines",
+          "lettering_hint": "Names and the date, usually. Send us the wording exactly as you want it and we'll send a picture back before we cut.",
+          "base_id": null,
+          "published": true,
+          "position": 12
+        },
+        {
+          "@label": "product:book-wal",
+          "code": "book-wal",
+          "name": "Walnut bookmark",
+          "category": "desk",
+          "unit": "each",
+          "pieces": 1,
+          "price": 14,
+          "lead_days": 3,
+          "machine_kind": "laser",
+          "material_id": {
+            "@ref": "material:wal6"
+          },
+          "grams": 7,
+          "size_text": "150 × 40 × 6 mm",
+          "width_mm": 150,
+          "height_mm": 40,
+          "finish_label": "Finish",
+          "made_from": "American black walnut, 6 mm, cut from the same boards as the coasters.",
+          "finished_with": "Sanded thin at the tip and oiled.",
+          "care": "Wipe it. That is all it asks.",
+          "icon": "bookmark",
+          "takes_lettering": true,
+          "lettering_limit": 24,
+          "lettering_prompt": "One line, up to 24 characters",
+          "lettering_hint": "A name or a short line. It runs down the length of the bookmark.",
+          "base_id": null,
+          "published": true,
+          "position": 13
+        },
+        {
+          "@label": "product:block-photo",
+          "code": "block-photo",
+          "name": "Photo block",
+          "category": "desk",
+          "unit": "each",
+          "pieces": 1,
+          "price": 42,
+          "lead_days": 3,
+          "machine_kind": "laser",
+          "material_id": {
+            "@ref": "material:ply3"
+          },
+          "grams": 16,
+          "size_text": "120 × 120 × 20 mm",
+          "width_mm": 120,
+          "height_mm": 120,
+          "finish_label": "Finish",
+          "made_from": "Layers of birch ply pressed to a 20 mm block.",
+          "finished_with": "Engraved in greyscale, edges sanded round.",
+          "care": "Keep it out of direct sun so the engraving stays dark.",
+          "icon": "image",
+          "takes_lettering": true,
+          "lettering_limit": 30,
+          "lettering_prompt": "One line under the picture, up to 30 characters",
+          "lettering_hint": "Send the picture and the line you want under it. We engrave the picture in greyscale, so high contrast works best.",
+          "base_id": null,
+          "published": true,
+          "position": 14
+        },
+        {
+          "@label": "product:nook",
+          "code": "nook",
+          "name": "The Little Bookshop",
+          "category": "desk",
+          "unit": "kit of 14 pieces",
+          "pieces": 1,
+          "price": 64,
+          "lead_days": 4,
+          "machine_kind": "laser",
+          "material_id": {
+            "@ref": "material:ply3"
+          },
+          "grams": 120,
+          "size_text": "110 × 180 × 150 mm",
+          "width_mm": 150,
+          "height_mm": 180,
+          "finish_label": "Finish",
+          "made_from": "Birch ply, 3 mm, fourteen pieces cut on the laser.",
+          "finished_with": "Engraved, sanded, packed flat with a sheet of instructions.",
+          "care": "Dust it with a soft brush. Keep it out of damp rooms.",
+          "icon": "house",
+          "takes_lettering": true,
+          "lettering_limit": 14,
+          "lettering_prompt": "The shop sign, up to 14 characters",
+          "lettering_hint": "Name the shop. You can put your own words or logo in the left window too.",
+          "base_id": {
+            "@ref": "base:nook"
+          },
+          "published": true,
+          "position": 15
+        },
+        {
+          "@label": "product:key-name",
+          "code": "key-name",
+          "name": "Name keyring",
+          "category": "keyrings",
+          "unit": "each",
+          "pieces": 1,
+          "price": 12,
+          "lead_days": 4,
+          "machine_kind": "printer",
+          "material_id": {
+            "@ref": "material:pla-chalk"
+          },
+          "grams": 6,
+          "size_text": "56 × 24 × 4 mm",
+          "width_mm": 56,
+          "height_mm": 24,
+          "finish_label": "Colour",
+          "made_from": "Matte PLA, printed at 0.2 mm, with a split ring.",
+          "finished_with": "Edges cleaned by hand, letters raised 1 mm.",
+          "care": "Keep it out of a hot car — PLA softens at about 60°C.",
+          "icon": "key-round",
+          "takes_lettering": true,
+          "lettering_limit": 8,
+          "lettering_prompt": "A name, up to 8 letters",
+          "lettering_hint": "Printed in PLA with the letters raised 1 mm.",
+          "base_id": {
+            "@ref": "base:keyring"
+          },
+          "published": true,
+          "position": 16
+        }
+      ]
+    },
+    {
+      "ref": "options",
+      "own": true,
+      "rows": [
+        {
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:coast-wal:material:walnut",
+          "kind": "material",
+          "code": "walnut",
+          "name": "Walnut",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:wal6"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:coast-wal:material:ply",
+          "kind": "material",
+          "code": "ply",
+          "name": "Birch ply",
+          "price": -10,
+          "material_id": {
+            "@ref": "material:ply3"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:coast-wal:size:s95",
+          "kind": "size",
+          "code": "s95",
+          "name": "95 mm square",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:coast-wal:size:s110",
+          "kind": "size",
+          "code": "s110",
+          "name": "110 mm square",
+          "price": 6
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:coast-wal:finish:oil",
+          "kind": "finish",
+          "code": "oil",
+          "name": "Danish oil",
+          "price": 0,
+          "swatch": "#6b4423"
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "active": true,
+          "position": 6,
+          "@label": "option:coast-wal:finish:wax",
+          "kind": "finish",
+          "code": "wax",
+          "name": "Beeswax",
+          "price": 0,
+          "swatch": "#a3763f"
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "active": true,
+          "position": 7,
+          "@label": "option:coast-wal:finish:bare",
+          "kind": "finish",
+          "code": "bare",
+          "name": "Left bare",
+          "price": 0,
+          "swatch": "#c9a97a"
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "active": true,
+          "position": 8,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "active": true,
+          "position": 9,
+          "kind": "break",
+          "code": "from-4",
+          "name": "4 or more",
+          "price": 0,
+          "min_qty": 4,
+          "percent_off": 8
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "active": true,
+          "position": 10,
+          "kind": "break",
+          "code": "from-8",
+          "name": "8 or more",
+          "price": 0,
+          "min_qty": 8,
+          "percent_off": 14
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "active": true,
+          "position": 11,
+          "kind": "break",
+          "code": "from-12",
+          "name": "12 or more",
+          "price": 0,
+          "min_qty": 12,
+          "percent_off": 18
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "active": true,
+          "position": 12,
+          "@label": "option:coast-wal:feature:logo",
+          "kind": "feature",
+          "code": "logo",
+          "name": "Your own logo",
+          "price": 1.5,
+          "feature_code": "logo",
+          "feature_id": {
+            "@ref": "feature:maker-logo"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-ply"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:coast-ply:material:ply",
+          "kind": "material",
+          "code": "ply",
+          "name": "Birch ply",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:ply3"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-ply"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:coast-ply:material:walnut",
+          "kind": "material",
+          "code": "walnut",
+          "name": "Walnut",
+          "price": 10,
+          "material_id": {
+            "@ref": "material:wal6"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-ply"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:coast-ply:size:s95",
+          "kind": "size",
+          "code": "s95",
+          "name": "95 mm square",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-ply"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:coast-ply:size:s110",
+          "kind": "size",
+          "code": "s110",
+          "name": "110 mm square",
+          "price": 4
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-ply"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:coast-ply:finish:bare",
+          "kind": "finish",
+          "code": "bare",
+          "name": "Left bare",
+          "price": 0,
+          "swatch": "#e0c69e"
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-ply"
+          },
+          "active": true,
+          "position": 6,
+          "@label": "option:coast-ply:finish:wax",
+          "kind": "finish",
+          "code": "wax",
+          "name": "Beeswax",
+          "price": 0,
+          "swatch": "#c8a26a"
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-ply"
+          },
+          "active": true,
+          "position": 7,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-ply"
+          },
+          "active": true,
+          "position": 8,
+          "kind": "break",
+          "code": "from-4",
+          "name": "4 or more",
+          "price": 0,
+          "min_qty": 4,
+          "percent_off": 8
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-ply"
+          },
+          "active": true,
+          "position": 9,
+          "kind": "break",
+          "code": "from-8",
+          "name": "8 or more",
+          "price": 0,
+          "min_qty": 8,
+          "percent_off": 14
+        },
+        {
+          "product_id": {
+            "@ref": "product:coast-ply"
+          },
+          "active": true,
+          "position": 10,
+          "kind": "break",
+          "code": "from-12",
+          "name": "12 or more",
+          "price": 0,
+          "min_qty": 12,
+          "percent_off": 18
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-house"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:sign-house:material:slate",
+          "kind": "material",
+          "code": "slate",
+          "name": "Slate",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:slate5"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-house"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:sign-house:size:s300",
+          "kind": "size",
+          "code": "s300",
+          "name": "300 × 200 mm",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-house"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:sign-house:size:s400",
+          "kind": "size",
+          "code": "s400",
+          "name": "400 × 250 mm",
+          "price": 14
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-house"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:sign-house:finish:white",
+          "kind": "finish",
+          "code": "white",
+          "name": "Filled white",
+          "price": 0,
+          "swatch": "#f2f2f0"
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-house"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:sign-house:finish:etch",
+          "kind": "finish",
+          "code": "etch",
+          "name": "Etched only",
+          "price": 0,
+          "swatch": "#6d757c"
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-house"
+          },
+          "active": true,
+          "position": 6,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:mark-slate"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:mark-slate:material:slate",
+          "kind": "material",
+          "code": "slate",
+          "name": "Slate",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:slate5"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:mark-slate"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:mark-slate:size:s150",
+          "kind": "size",
+          "code": "s150",
+          "name": "150 × 40 mm",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:mark-slate"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:mark-slate:finish:etch",
+          "kind": "finish",
+          "code": "etch",
+          "name": "Etched only",
+          "price": 0,
+          "swatch": "#6d757c"
+        },
+        {
+          "product_id": {
+            "@ref": "product:mark-slate"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:mark-slate:finish:white",
+          "kind": "finish",
+          "code": "white",
+          "name": "Filled white",
+          "price": 0,
+          "swatch": "#f2f2f0"
+        },
+        {
+          "product_id": {
+            "@ref": "product:mark-slate"
+          },
+          "active": true,
+          "position": 5,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:mark-slate"
+          },
+          "active": true,
+          "position": 6,
+          "kind": "break",
+          "code": "from-4",
+          "name": "4 or more",
+          "price": 0,
+          "min_qty": 4,
+          "percent_off": 8
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-acr"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:key-acr:material:acrylic",
+          "kind": "material",
+          "code": "acrylic",
+          "name": "Acrylic",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:acr3"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-acr"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:key-acr:material:walnut",
+          "kind": "material",
+          "code": "walnut",
+          "name": "Walnut",
+          "price": 3,
+          "material_id": {
+            "@ref": "material:wal6"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-acr"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:key-acr:size:s50",
+          "kind": "size",
+          "code": "s50",
+          "name": "50 × 32 mm",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-acr"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:key-acr:size:s64",
+          "kind": "size",
+          "code": "s64",
+          "name": "64 × 40 mm",
+          "price": 2
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-acr"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:key-acr:finish:frost",
+          "kind": "finish",
+          "code": "frost",
+          "name": "Frosted",
+          "price": 0,
+          "swatch": "#cfd8e2"
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-acr"
+          },
+          "active": true,
+          "position": 6,
+          "@label": "option:key-acr:finish:amber",
+          "kind": "finish",
+          "code": "amber",
+          "name": "Amber",
+          "price": 0,
+          "swatch": "#c98a2e"
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-acr"
+          },
+          "active": true,
+          "position": 7,
+          "@label": "option:key-acr:finish:ink",
+          "kind": "finish",
+          "code": "ink",
+          "name": "Ink",
+          "price": 0,
+          "swatch": "#2b3340"
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-acr"
+          },
+          "active": true,
+          "position": 8,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-acr"
+          },
+          "active": true,
+          "position": 9,
+          "kind": "break",
+          "code": "from-4",
+          "name": "4 or more",
+          "price": 0,
+          "min_qty": 4,
+          "percent_off": 8
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-acr"
+          },
+          "active": true,
+          "position": 10,
+          "kind": "break",
+          "code": "from-8",
+          "name": "8 or more",
+          "price": 0,
+          "min_qty": 8,
+          "percent_off": 14
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-acr"
+          },
+          "active": true,
+          "position": 11,
+          "kind": "break",
+          "code": "from-12",
+          "name": "12 or more",
+          "price": 0,
+          "min_qty": 12,
+          "percent_off": 18
+        },
+        {
+          "product_id": {
+            "@ref": "product:tag-pet"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:tag-pet:material:acrylic",
+          "kind": "material",
+          "code": "acrylic",
+          "name": "Acrylic",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:acr3"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:tag-pet"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:tag-pet:size:s32",
+          "kind": "size",
+          "code": "s32",
+          "name": "32 mm round",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:tag-pet"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:tag-pet:size:s25",
+          "kind": "size",
+          "code": "s25",
+          "name": "25 mm round",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:tag-pet"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:tag-pet:finish:amber",
+          "kind": "finish",
+          "code": "amber",
+          "name": "Amber",
+          "price": 0,
+          "swatch": "#c98a2e"
+        },
+        {
+          "product_id": {
+            "@ref": "product:tag-pet"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:tag-pet:finish:frost",
+          "kind": "finish",
+          "code": "frost",
+          "name": "Frosted",
+          "price": 0,
+          "swatch": "#cfd8e2"
+        },
+        {
+          "product_id": {
+            "@ref": "product:tag-pet"
+          },
+          "active": true,
+          "position": 6,
+          "@label": "option:tag-pet:finish:ink",
+          "kind": "finish",
+          "code": "ink",
+          "name": "Ink",
+          "price": 0,
+          "swatch": "#2b3340"
+        },
+        {
+          "product_id": {
+            "@ref": "product:tag-pet"
+          },
+          "active": true,
+          "position": 7,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:tag-pet"
+          },
+          "active": true,
+          "position": 8,
+          "kind": "break",
+          "code": "from-4",
+          "name": "4 or more",
+          "price": 0,
+          "min_qty": 4,
+          "percent_off": 8
+        },
+        {
+          "product_id": {
+            "@ref": "product:tray-3d"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:tray-3d:material:resin",
+          "kind": "material",
+          "code": "resin",
+          "name": "PLA",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:pla-chalk"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:tray-3d"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:tray-3d:size:s220",
+          "kind": "size",
+          "code": "s220",
+          "name": "220 × 120 mm",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:tray-3d"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:tray-3d:size:s280",
+          "kind": "size",
+          "code": "s280",
+          "name": "280 × 150 mm",
+          "price": 9
+        },
+        {
+          "product_id": {
+            "@ref": "product:tray-3d"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:tray-3d:finish:chalk",
+          "kind": "finish",
+          "code": "chalk",
+          "name": "Chalk",
+          "price": 0,
+          "swatch": "#e8e4dc"
+        },
+        {
+          "product_id": {
+            "@ref": "product:tray-3d"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:tray-3d:finish:warm",
+          "kind": "finish",
+          "code": "warm",
+          "name": "Warm grey",
+          "price": 0,
+          "swatch": "#8a8378"
+        },
+        {
+          "product_id": {
+            "@ref": "product:tray-3d"
+          },
+          "active": true,
+          "position": 6,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:pot-3d"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:pot-3d:material:resin",
+          "kind": "material",
+          "code": "resin",
+          "name": "PLA",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:pla-grey"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:pot-3d"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:pot-3d:size:s110",
+          "kind": "size",
+          "code": "s110",
+          "name": "110 mm across",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:pot-3d"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:pot-3d:size:s140",
+          "kind": "size",
+          "code": "s140",
+          "name": "140 mm across",
+          "price": 7
+        },
+        {
+          "product_id": {
+            "@ref": "product:pot-3d"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:pot-3d:finish:warm",
+          "kind": "finish",
+          "code": "warm",
+          "name": "Warm grey",
+          "price": 0,
+          "swatch": "#8a8378"
+        },
+        {
+          "product_id": {
+            "@ref": "product:pot-3d"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:pot-3d:finish:chalk",
+          "kind": "finish",
+          "code": "chalk",
+          "name": "Chalk",
+          "price": 0,
+          "swatch": "#e8e4dc"
+        },
+        {
+          "product_id": {
+            "@ref": "product:pot-3d"
+          },
+          "active": true,
+          "position": 6,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:pot-3d"
+          },
+          "active": true,
+          "position": 7,
+          "kind": "break",
+          "code": "from-4",
+          "name": "4 or more",
+          "price": 0,
+          "min_qty": 4,
+          "percent_off": 8
+        },
+        {
+          "product_id": {
+            "@ref": "product:mug-stone"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:mug-stone:material:stoneware",
+          "kind": "material",
+          "code": "stoneware",
+          "name": "Stoneware",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:glaze-oat"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:mug-stone"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:mug-stone:size:s350",
+          "kind": "size",
+          "code": "s350",
+          "name": "350 ml",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:mug-stone"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:mug-stone:size:s450",
+          "kind": "size",
+          "code": "s450",
+          "name": "450 ml",
+          "price": 5
+        },
+        {
+          "product_id": {
+            "@ref": "product:mug-stone"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:mug-stone:finish:oat",
+          "kind": "finish",
+          "code": "oat",
+          "name": "Oatmeal",
+          "price": 0,
+          "swatch": "#cbb9a1"
+        },
+        {
+          "product_id": {
+            "@ref": "product:mug-stone"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:mug-stone:finish:sea",
+          "kind": "finish",
+          "code": "sea",
+          "name": "Sea green",
+          "price": 0,
+          "swatch": "#6f8f80"
+        },
+        {
+          "product_id": {
+            "@ref": "product:mug-stone"
+          },
+          "active": true,
+          "position": 6,
+          "@label": "option:mug-stone:finish:chalk",
+          "kind": "finish",
+          "code": "chalk",
+          "name": "Chalk white",
+          "price": 0,
+          "swatch": "#ece7de"
+        },
+        {
+          "product_id": {
+            "@ref": "product:mug-stone"
+          },
+          "active": true,
+          "position": 7,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:mug-stone"
+          },
+          "active": true,
+          "position": 8,
+          "kind": "break",
+          "code": "from-4",
+          "name": "4 or more",
+          "price": 0,
+          "min_qty": 4,
+          "percent_off": 8
+        },
+        {
+          "product_id": {
+            "@ref": "product:cake-top"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:cake-top:material:acrylic",
+          "kind": "material",
+          "code": "acrylic",
+          "name": "Acrylic",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:acr3"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:cake-top"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:cake-top:material:ply",
+          "kind": "material",
+          "code": "ply",
+          "name": "Birch ply",
+          "price": -6,
+          "material_id": {
+            "@ref": "material:ply3"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:cake-top"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:cake-top:size:s160",
+          "kind": "size",
+          "code": "s160",
+          "name": "160 × 120 mm",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:cake-top"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:cake-top:size:s200",
+          "kind": "size",
+          "code": "s200",
+          "name": "200 × 150 mm",
+          "price": 6
+        },
+        {
+          "product_id": {
+            "@ref": "product:cake-top"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:cake-top:finish:ink",
+          "kind": "finish",
+          "code": "ink",
+          "name": "Ink",
+          "price": 0,
+          "swatch": "#2b3340"
+        },
+        {
+          "product_id": {
+            "@ref": "product:cake-top"
+          },
+          "active": true,
+          "position": 6,
+          "@label": "option:cake-top:finish:frost",
+          "kind": "finish",
+          "code": "frost",
+          "name": "Frosted",
+          "price": 0,
+          "swatch": "#cfd8e2"
+        },
+        {
+          "product_id": {
+            "@ref": "product:cake-top"
+          },
+          "active": true,
+          "position": 7,
+          "@label": "option:cake-top:finish:amber",
+          "kind": "finish",
+          "code": "amber",
+          "name": "Amber",
+          "price": 0,
+          "swatch": "#c98a2e"
+        },
+        {
+          "product_id": {
+            "@ref": "product:cake-top"
+          },
+          "active": true,
+          "position": 8,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:board-cut"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:board-cut:material:walnut",
+          "kind": "material",
+          "code": "walnut",
+          "name": "Walnut",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:wal18"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:board-cut"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:board-cut:size:s380",
+          "kind": "size",
+          "code": "s380",
+          "name": "380 × 260 mm",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:board-cut"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:board-cut:size:s440",
+          "kind": "size",
+          "code": "s440",
+          "name": "440 × 300 mm",
+          "price": 12
+        },
+        {
+          "product_id": {
+            "@ref": "product:board-cut"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:board-cut:finish:oil",
+          "kind": "finish",
+          "code": "oil",
+          "name": "Food-safe oil",
+          "price": 0,
+          "swatch": "#6b4423"
+        },
+        {
+          "product_id": {
+            "@ref": "product:board-cut"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:board-cut:finish:wax",
+          "kind": "finish",
+          "code": "wax",
+          "name": "Oil and beeswax",
+          "price": 0,
+          "swatch": "#a3763f"
+        },
+        {
+          "product_id": {
+            "@ref": "product:board-cut"
+          },
+          "active": true,
+          "position": 6,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-wed"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:sign-wed:material:ply",
+          "kind": "material",
+          "code": "ply",
+          "name": "Birch ply",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:ply3"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-wed"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:sign-wed:material:walnut",
+          "kind": "material",
+          "code": "walnut",
+          "name": "Walnut",
+          "price": 16,
+          "material_id": {
+            "@ref": "material:wal6"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-wed"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:sign-wed:size:s420",
+          "kind": "size",
+          "code": "s420",
+          "name": "420 × 300 mm",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-wed"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:sign-wed:size:s500",
+          "kind": "size",
+          "code": "s500",
+          "name": "500 × 350 mm",
+          "price": 11
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-wed"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:sign-wed:finish:bare",
+          "kind": "finish",
+          "code": "bare",
+          "name": "Left bare",
+          "price": 0,
+          "swatch": "#e0c69e"
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-wed"
+          },
+          "active": true,
+          "position": 6,
+          "@label": "option:sign-wed:finish:white",
+          "kind": "finish",
+          "code": "white",
+          "name": "Painted white",
+          "price": 0,
+          "swatch": "#f2f2f0"
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-wed"
+          },
+          "active": true,
+          "position": 7,
+          "@label": "option:sign-wed:finish:wax",
+          "kind": "finish",
+          "code": "wax",
+          "name": "Beeswax",
+          "price": 0,
+          "swatch": "#c8a26a"
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-wed"
+          },
+          "active": true,
+          "position": 8,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:book-wal"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:book-wal:material:walnut",
+          "kind": "material",
+          "code": "walnut",
+          "name": "Walnut",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:wal6"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:book-wal"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:book-wal:material:ply",
+          "kind": "material",
+          "code": "ply",
+          "name": "Birch ply",
+          "price": -4,
+          "material_id": {
+            "@ref": "material:ply3"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:book-wal"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:book-wal:size:s150",
+          "kind": "size",
+          "code": "s150",
+          "name": "150 × 40 mm",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:book-wal"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:book-wal:finish:oil",
+          "kind": "finish",
+          "code": "oil",
+          "name": "Danish oil",
+          "price": 0,
+          "swatch": "#6b4423"
+        },
+        {
+          "product_id": {
+            "@ref": "product:book-wal"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:book-wal:finish:bare",
+          "kind": "finish",
+          "code": "bare",
+          "name": "Left bare",
+          "price": 0,
+          "swatch": "#c9a97a"
+        },
+        {
+          "product_id": {
+            "@ref": "product:book-wal"
+          },
+          "active": true,
+          "position": 6,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:book-wal"
+          },
+          "active": true,
+          "position": 7,
+          "kind": "break",
+          "code": "from-4",
+          "name": "4 or more",
+          "price": 0,
+          "min_qty": 4,
+          "percent_off": 8
+        },
+        {
+          "product_id": {
+            "@ref": "product:book-wal"
+          },
+          "active": true,
+          "position": 8,
+          "kind": "break",
+          "code": "from-8",
+          "name": "8 or more",
+          "price": 0,
+          "min_qty": 8,
+          "percent_off": 14
+        },
+        {
+          "product_id": {
+            "@ref": "product:block-photo"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:block-photo:material:ply",
+          "kind": "material",
+          "code": "ply",
+          "name": "Birch ply",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:ply3"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:block-photo"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:block-photo:material:walnut",
+          "kind": "material",
+          "code": "walnut",
+          "name": "Walnut",
+          "price": 8,
+          "material_id": {
+            "@ref": "material:wal6"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:block-photo"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:block-photo:size:s120",
+          "kind": "size",
+          "code": "s120",
+          "name": "120 mm square",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:block-photo"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:block-photo:size:s160",
+          "kind": "size",
+          "code": "s160",
+          "name": "160 mm square",
+          "price": 8
+        },
+        {
+          "product_id": {
+            "@ref": "product:block-photo"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:block-photo:finish:bare",
+          "kind": "finish",
+          "code": "bare",
+          "name": "Left bare",
+          "price": 0,
+          "swatch": "#e0c69e"
+        },
+        {
+          "product_id": {
+            "@ref": "product:block-photo"
+          },
+          "active": true,
+          "position": 6,
+          "@label": "option:block-photo:finish:wax",
+          "kind": "finish",
+          "code": "wax",
+          "name": "Beeswax",
+          "price": 0,
+          "swatch": "#c8a26a"
+        },
+        {
+          "product_id": {
+            "@ref": "product:block-photo"
+          },
+          "active": true,
+          "position": 7,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:nook"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:nook:material:ply",
+          "kind": "material",
+          "code": "ply",
+          "name": "Birch ply",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:ply3"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:nook"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:nook:size:kit",
+          "kind": "size",
+          "code": "kit",
+          "name": "One kit",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:nook"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:nook:finish:engraved",
+          "kind": "finish",
+          "code": "engraved",
+          "name": "Engraved",
+          "price": 0,
+          "swatch": "#6a4321"
+        },
+        {
+          "product_id": {
+            "@ref": "product:nook"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:nook:finish:paint-black",
+          "kind": "finish",
+          "code": "paint-black",
+          "name": "Painted black",
+          "price": 0,
+          "swatch": "#17140f"
+        },
+        {
+          "product_id": {
+            "@ref": "product:nook"
+          },
+          "active": true,
+          "position": 5,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:nook"
+          },
+          "active": true,
+          "position": 6,
+          "kind": "break",
+          "code": "from-4",
+          "name": "4 or more",
+          "price": 0,
+          "min_qty": 4,
+          "percent_off": 8
+        },
+        {
+          "product_id": {
+            "@ref": "product:nook"
+          },
+          "active": true,
+          "position": 7,
+          "@label": "option:nook:feature:logo",
+          "kind": "feature",
+          "code": "logo",
+          "name": "Your own logo",
+          "price": 1.5,
+          "feature_code": "logo",
+          "feature_id": {
+            "@ref": "feature:maker-logo"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-name"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:key-name:material:resin",
+          "kind": "material",
+          "code": "resin",
+          "name": "PLA",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:pla-chalk"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-name"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:key-name:size:s56",
+          "kind": "size",
+          "code": "s56",
+          "name": "56 × 24 mm",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-name"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:key-name:finish:amber",
+          "kind": "finish",
+          "code": "amber",
+          "name": "Amber",
+          "price": 0,
+          "swatch": "#c98a2e"
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-name"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:key-name:finish:chalk",
+          "kind": "finish",
+          "code": "chalk",
+          "name": "Chalk",
+          "price": 0,
+          "swatch": "#e6e1d7"
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-name"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:key-name:finish:grey",
+          "kind": "finish",
+          "code": "grey",
+          "name": "Warm grey",
+          "price": 0,
+          "swatch": "#8a8378"
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-name"
+          },
+          "active": true,
+          "position": 6,
+          "@label": "option:key-name:finish:ink",
+          "kind": "finish",
+          "code": "ink",
+          "name": "Ink",
+          "price": 0,
+          "swatch": "#2b3340"
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-name"
+          },
+          "active": true,
+          "position": 7,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-name"
+          },
+          "active": true,
+          "position": 8,
+          "kind": "break",
+          "code": "from-4",
+          "name": "4 or more",
+          "price": 0,
+          "min_qty": 4,
+          "percent_off": 8
+        },
+        {
+          "product_id": {
+            "@ref": "product:key-name"
+          },
+          "active": true,
+          "position": 9,
+          "kind": "break",
+          "code": "from-8",
+          "name": "8 or more",
+          "price": 0,
+          "min_qty": 8,
+          "percent_off": 14
+        }
+      ]
+    },
+    {
+      "ref": "order_lines",
+      "own": true,
+      "rows": [
+        {
+          "@label": "line:BR-2241:1",
+          "order_id": {
+            "@ref": "order:BR-2241"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "qty": 1,
+          "material_id": {
+            "@ref": "option:coast-wal:material:walnut"
+          },
+          "size_id": {
+            "@ref": "option:coast-wal:size:s95"
+          },
+          "finish_id": {
+            "@ref": "option:coast-wal:finish:oil"
+          },
+          "lettering": "Wren Cottage",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": -48,
+            "@week": true
+          },
+          "stage": "posted",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2247:1",
+          "order_id": {
+            "@ref": "order:BR-2247"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:book-wal"
+          },
+          "qty": 2,
+          "material_id": {
+            "@ref": "option:book-wal:material:walnut"
+          },
+          "size_id": {
+            "@ref": "option:book-wal:size:s150"
+          },
+          "finish_id": {
+            "@ref": "option:book-wal:finish:oil"
+          },
+          "lettering": "Iris",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": -34,
+            "@week": true
+          },
+          "stage": "posted",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2247:2",
+          "order_id": {
+            "@ref": "order:BR-2247"
+          },
+          "position": 2,
+          "product_id": {
+            "@ref": "product:key-acr"
+          },
+          "qty": 4,
+          "material_id": {
+            "@ref": "option:key-acr:material:acrylic"
+          },
+          "size_id": {
+            "@ref": "option:key-acr:size:s50"
+          },
+          "finish_id": {
+            "@ref": "option:key-acr:finish:frost"
+          },
+          "lettering": "Colne 2026",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": -34,
+            "@week": true
+          },
+          "stage": "posted",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2252:1",
+          "order_id": {
+            "@ref": "order:BR-2252"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:pot-3d"
+          },
+          "qty": 2,
+          "material_id": {
+            "@ref": "option:pot-3d:material:resin"
+          },
+          "size_id": {
+            "@ref": "option:pot-3d:size:s110"
+          },
+          "finish_id": {
+            "@ref": "option:pot-3d:finish:warm"
+          },
+          "lettering": null,
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": -22,
+            "@week": true
+          },
+          "stage": "posted",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2255:1",
+          "order_id": {
+            "@ref": "order:BR-2255"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:mark-slate"
+          },
+          "qty": 1,
+          "material_id": {
+            "@ref": "option:mark-slate:material:slate"
+          },
+          "size_id": {
+            "@ref": "option:mark-slate:size:s150"
+          },
+          "finish_id": {
+            "@ref": "option:mark-slate:finish:etch"
+          },
+          "lettering": "basil · thyme · mint",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": -16,
+            "@week": true
+          },
+          "stage": "posted",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2258:1",
+          "order_id": {
+            "@ref": "order:BR-2258"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:board-cut"
+          },
+          "qty": 1,
+          "material_id": {
+            "@ref": "option:board-cut:material:walnut"
+          },
+          "size_id": {
+            "@ref": "option:board-cut:size:s380"
+          },
+          "finish_id": {
+            "@ref": "option:board-cut:finish:oil"
+          },
+          "lettering": "The Sharmas · 2019",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": -13,
+            "@week": true
+          },
+          "stage": "posted",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2260:1",
+          "order_id": {
+            "@ref": "order:BR-2260"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:block-photo"
+          },
+          "qty": 1,
+          "material_id": {
+            "@ref": "option:block-photo:material:ply"
+          },
+          "size_id": {
+            "@ref": "option:block-photo:size:s120"
+          },
+          "finish_id": {
+            "@ref": "option:block-photo:finish:bare"
+          },
+          "lettering": "The allotment, 2015",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": -9,
+            "@week": true
+          },
+          "stage": "posted",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2262:1",
+          "order_id": {
+            "@ref": "order:BR-2262"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:sign-house"
+          },
+          "qty": 1,
+          "material_id": {
+            "@ref": "option:sign-house:material:slate"
+          },
+          "size_id": {
+            "@ref": "option:sign-house:size:s300"
+          },
+          "finish_id": {
+            "@ref": "option:sign-house:finish:white"
+          },
+          "lettering": "Wren Cottage · est. 1904",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": -1,
+            "@week": true
+          },
+          "stage": "making",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2268:1",
+          "order_id": {
+            "@ref": "order:BR-2268"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:mug-stone"
+          },
+          "qty": 2,
+          "material_id": {
+            "@ref": "option:mug-stone:material:stoneware"
+          },
+          "size_id": {
+            "@ref": "option:mug-stone:size:s350"
+          },
+          "finish_id": {
+            "@ref": "option:mug-stone:finish:sea"
+          },
+          "lettering": "Morning, then",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": 1,
+            "@week": true
+          },
+          "stage": "finishing",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2268:2",
+          "order_id": {
+            "@ref": "order:BR-2268"
+          },
+          "position": 2,
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "qty": 1,
+          "material_id": {
+            "@ref": "option:coast-wal:material:walnut"
+          },
+          "size_id": {
+            "@ref": "option:coast-wal:size:s95"
+          },
+          "finish_id": {
+            "@ref": "option:coast-wal:finish:oil"
+          },
+          "lettering": "The Pughs",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": -8,
+            "@week": true
+          },
+          "stage": "ready",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2271:1",
+          "order_id": {
+            "@ref": "order:BR-2271"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:tray-3d"
+          },
+          "qty": 1,
+          "material_id": {
+            "@ref": "option:tray-3d:material:resin"
+          },
+          "size_id": {
+            "@ref": "option:tray-3d:size:s220"
+          },
+          "finish_id": {
+            "@ref": "option:tray-3d:finish:chalk"
+          },
+          "lettering": null,
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": 2,
+            "@week": true
+          },
+          "stage": "making",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2271:2",
+          "order_id": {
+            "@ref": "order:BR-2271"
+          },
+          "position": 2,
+          "product_id": {
+            "@ref": "product:sign-wed"
+          },
+          "qty": 1,
+          "material_id": {
+            "@ref": "option:sign-wed:material:ply"
+          },
+          "size_id": {
+            "@ref": "option:sign-wed:size:s420"
+          },
+          "finish_id": {
+            "@ref": "option:sign-wed:finish:bare"
+          },
+          "lettering": "Sam & Robin — 22 August 2026",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": 1,
+            "@week": true
+          },
+          "stage": "finishing",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2271:3",
+          "order_id": {
+            "@ref": "order:BR-2271"
+          },
+          "position": 3,
+          "product_id": {
+            "@ref": "product:key-acr"
+          },
+          "qty": 2,
+          "material_id": {
+            "@ref": "option:key-acr:material:acrylic"
+          },
+          "size_id": {
+            "@ref": "option:key-acr:size:s50"
+          },
+          "finish_id": {
+            "@ref": "option:key-acr:finish:amber"
+          },
+          "lettering": "Robin",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": 1,
+            "@week": true
+          },
+          "stage": "ready",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2276:1",
+          "order_id": {
+            "@ref": "order:BR-2276"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:sign-wed"
+          },
+          "qty": 1,
+          "material_id": {
+            "@ref": "option:sign-wed:material:ply"
+          },
+          "size_id": {
+            "@ref": "option:sign-wed:size:s420"
+          },
+          "finish_id": {
+            "@ref": "option:sign-wed:finish:bare"
+          },
+          "lettering": "Iris & Tom · 5 September 2026",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": 1,
+            "@week": true
+          },
+          "stage": "make",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2278:1",
+          "order_id": {
+            "@ref": "order:BR-2278"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:mug-stone"
+          },
+          "qty": 2,
+          "material_id": {
+            "@ref": "option:mug-stone:material:stoneware"
+          },
+          "size_id": {
+            "@ref": "option:mug-stone:size:s450"
+          },
+          "finish_id": {
+            "@ref": "option:mug-stone:finish:oat"
+          },
+          "lettering": "For the long shifts",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": 14,
+            "@week": true
+          },
+          "stage": "make",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2280:1",
+          "order_id": {
+            "@ref": "order:BR-2280"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:tag-pet"
+          },
+          "qty": 2,
+          "material_id": {
+            "@ref": "option:tag-pet:material:acrylic"
+          },
+          "size_id": {
+            "@ref": "option:tag-pet:size:s32"
+          },
+          "finish_id": {
+            "@ref": "option:tag-pet:finish:amber"
+          },
+          "lettering": "Biscuit · 07700 900418",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": 2,
+            "@week": true
+          },
+          "stage": "make",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2281:1",
+          "order_id": {
+            "@ref": "order:BR-2281"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "qty": 1,
+          "material_id": {
+            "@ref": "option:coast-wal:material:walnut"
+          },
+          "size_id": {
+            "@ref": "option:coast-wal:size:s95"
+          },
+          "finish_id": {
+            "@ref": "option:coast-wal:finish:oil"
+          },
+          "lettering": "Fern & Robin — 12.09.2026",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": 5,
+            "@week": true
+          },
+          "stage": "make",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2282:1",
+          "order_id": {
+            "@ref": "order:BR-2282"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:book-wal"
+          },
+          "qty": 2,
+          "material_id": {
+            "@ref": "option:book-wal:material:walnut"
+          },
+          "size_id": {
+            "@ref": "option:book-wal:size:s150"
+          },
+          "finish_id": {
+            "@ref": "option:book-wal:finish:oil"
+          },
+          "lettering": "Read slowly",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": 5,
+            "@week": true
+          },
+          "stage": "make",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2283:1",
+          "order_id": {
+            "@ref": "order:BR-2283"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:block-photo"
+          },
+          "qty": 1,
+          "material_id": {
+            "@ref": "option:block-photo:material:ply"
+          },
+          "size_id": {
+            "@ref": "option:block-photo:size:s120"
+          },
+          "finish_id": {
+            "@ref": "option:block-photo:finish:bare"
+          },
+          "lettering": "Grandad's boat, 1978",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": 5,
+            "@week": true
+          },
+          "stage": "make",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2284:1",
+          "order_id": {
+            "@ref": "order:BR-2284"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:coast-ply"
+          },
+          "qty": 2,
+          "material_id": {
+            "@ref": "option:coast-ply:material:ply"
+          },
+          "size_id": {
+            "@ref": "option:coast-ply:size:s95"
+          },
+          "finish_id": {
+            "@ref": "option:coast-ply:finish:bare"
+          },
+          "lettering": "Flat 3",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": 5,
+            "@week": true
+          },
+          "stage": "make",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2285:1",
+          "order_id": {
+            "@ref": "order:BR-2285"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:key-acr"
+          },
+          "qty": 6,
+          "material_id": {
+            "@ref": "option:key-acr:material:acrylic"
+          },
+          "size_id": {
+            "@ref": "option:key-acr:size:s50"
+          },
+          "finish_id": {
+            "@ref": "option:key-acr:finish:frost"
+          },
+          "lettering": "Ferry crew 2026",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": 5,
+            "@week": true
+          },
+          "stage": "make",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2286:1",
+          "order_id": {
+            "@ref": "order:BR-2286"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:cake-top"
+          },
+          "qty": 1,
+          "material_id": {
+            "@ref": "option:cake-top:material:acrylic"
+          },
+          "size_id": {
+            "@ref": "option:cake-top:size:s160"
+          },
+          "finish_id": {
+            "@ref": "option:cake-top:finish:ink"
+          },
+          "lettering": "Sixty · and still gardening",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": 5,
+            "@week": true
+          },
+          "stage": "make",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2287:1",
+          "order_id": {
+            "@ref": "order:BR-2287"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:sign-house"
+          },
+          "qty": 1,
+          "material_id": {
+            "@ref": "option:sign-house:material:slate"
+          },
+          "size_id": {
+            "@ref": "option:sign-house:size:s300"
+          },
+          "finish_id": {
+            "@ref": "option:sign-house:finish:white"
+          },
+          "lettering": "Number 14 · The Old Dairy",
+          "design_code": null,
+          "design_id": null,
+          "post_by": {
+            "@day": 7,
+            "@week": true
+          },
+          "stage": "make",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2288:1",
+          "order_id": {
+            "@ref": "order:BR-2288"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:nook"
+          },
+          "qty": 1,
+          "material_id": {
+            "@ref": "option:nook:material:ply"
+          },
+          "size_id": {
+            "@ref": "option:nook:size:kit"
+          },
+          "finish_id": {
+            "@ref": "option:nook:finish:engraved"
+          },
+          "lettering": null,
+          "design_code": "BR2288K7Q4X3M9ZD",
+          "design_id": {
+            "@ref": "design:br-2288"
+          },
+          "post_by": {
+            "@day": 5,
+            "@week": true
+          },
+          "stage": "make",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2289:1",
+          "order_id": {
+            "@ref": "order:BR-2289"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:key-name"
+          },
+          "qty": 2,
+          "material_id": {
+            "@ref": "option:key-name:material:resin"
+          },
+          "size_id": {
+            "@ref": "option:key-name:size:s56"
+          },
+          "finish_id": {
+            "@ref": "option:key-name:finish:amber"
+          },
+          "lettering": null,
+          "design_code": "BR2289R4W8N2T6JC",
+          "design_id": {
+            "@ref": "design:br-2289"
+          },
+          "post_by": {
+            "@day": 6,
+            "@week": true
+          },
+          "stage": "make",
+          "spoiled": 0
+        },
+        {
+          "@label": "line:BR-2290:1",
+          "order_id": {
+            "@ref": "order:BR-2290"
+          },
+          "position": 1,
+          "product_id": {
+            "@ref": "product:coast-wal"
+          },
+          "qty": 2,
+          "material_id": {
+            "@ref": "option:coast-wal:material:walnut"
+          },
+          "size_id": {
+            "@ref": "option:coast-wal:size:s95"
+          },
+          "finish_id": {
+            "@ref": "option:coast-wal:finish:oil"
+          },
+          "lettering": null,
+          "design_code": "BR2290H5F3P9V8YA",
+          "design_id": {
+            "@ref": "design:br-2290"
+          },
+          "post_by": {
+            "@day": 5,
+            "@week": true
+          },
+          "stage": "make",
+          "spoiled": 0
+        }
+      ]
+    },
+    {
+      "ref": "order_line_features",
+      "own": true,
+      "rows": [
+        {
+          "line_id": {
+            "@ref": "line:BR-2290:1"
+          },
+          "option_id": {
+            "@ref": "option:coast-wal:feature:logo"
+          },
+          "feature_id": {
+            "@ref": "feature:maker-logo"
+          }
+        }
+      ]
+    },
+    {
+      "ref": "proofs",
+      "own": true,
+      "rows": [
+        {
+          "order_id": {
+            "@ref": "order:BR-2241"
+          },
+          "line_id": {
+            "@ref": "line:BR-2241:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": null,
+          "state": "approved",
+          "sent_at": {
+            "@day": -51,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": -51,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2247"
+          },
+          "line_id": {
+            "@ref": "line:BR-2247:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": null,
+          "state": "approved",
+          "sent_at": {
+            "@day": -37,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": -37,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2247"
+          },
+          "line_id": {
+            "@ref": "line:BR-2247:2"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": null,
+          "state": "approved",
+          "sent_at": {
+            "@day": -37,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": -37,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2255"
+          },
+          "line_id": {
+            "@ref": "line:BR-2255:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": null,
+          "state": "approved",
+          "sent_at": {
+            "@day": -23,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": -23,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2258"
+          },
+          "line_id": {
+            "@ref": "line:BR-2258:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": null,
+          "state": "approved",
+          "sent_at": {
+            "@day": -16,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": -16,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2260"
+          },
+          "line_id": {
+            "@ref": "line:BR-2260:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": null,
+          "state": "approved",
+          "sent_at": {
+            "@day": -14,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": -14,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2262"
+          },
+          "line_id": {
+            "@ref": "line:BR-2262:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": "Laid out on the 300 mm blank, lettering filled white.",
+          "state": "change_asked",
+          "sent_at": {
+            "@day": -8,
+            "@time": "11:00",
+            "@week": true
+          },
+          "change_note": "Could the est. line sit a bit lower, and slightly smaller than the name?",
+          "answered_at": {
+            "@day": -7,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2262"
+          },
+          "line_id": {
+            "@ref": "line:BR-2262:1"
+          },
+          "version": 2,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": "Second layout with the date line dropped 12 mm.",
+          "state": "approved",
+          "sent_at": {
+            "@day": -7,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": -6,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2268"
+          },
+          "line_id": {
+            "@ref": "line:BR-2268:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": "Hand lettering traced on the mug body.",
+          "state": "approved",
+          "sent_at": {
+            "@day": -13,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": -12,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2268"
+          },
+          "line_id": {
+            "@ref": "line:BR-2268:2"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": null,
+          "state": "approved",
+          "sent_at": {
+            "@day": -13,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": -13,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2271"
+          },
+          "line_id": {
+            "@ref": "line:BR-2271:2"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": "Wedding sign wording, both lines centred.",
+          "state": "approved",
+          "sent_at": {
+            "@day": -2,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": -2,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2271"
+          },
+          "line_id": {
+            "@ref": "line:BR-2271:3"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": null,
+          "state": "approved",
+          "sent_at": {
+            "@day": -2,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": -2,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2276"
+          },
+          "line_id": {
+            "@ref": "line:BR-2276:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": "Your layout on the 420 mm sign, both lines centred.",
+          "state": "sent",
+          "sent_at": {
+            "@day": -1,
+            "@time": "11:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2278"
+          },
+          "line_id": {
+            "@ref": "line:BR-2278:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": "Lettering laid out on the 450 ml body — waiting on Erin.",
+          "state": "sent",
+          "sent_at": {
+            "@day": -1,
+            "@time": "11:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2280"
+          },
+          "line_id": {
+            "@ref": "line:BR-2280:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": "Both sides shown at size — waiting on Devon.",
+          "state": "sent",
+          "sent_at": {
+            "@day": 0,
+            "@time": "11:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2281"
+          },
+          "line_id": {
+            "@ref": "line:BR-2281:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": "Set of four, same line on each.",
+          "state": "approved",
+          "sent_at": {
+            "@day": 0,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": 0,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2282"
+          },
+          "line_id": {
+            "@ref": "line:BR-2282:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": "Short line, no proof needed — Tom asked us to go ahead.",
+          "state": "approved",
+          "sent_at": {
+            "@day": 0,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": 0,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2283"
+          },
+          "line_id": {
+            "@ref": "line:BR-2283:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": "Greyscale test at 120 mm.",
+          "state": "approved",
+          "sent_at": {
+            "@day": 0,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": 0,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2284"
+          },
+          "line_id": {
+            "@ref": "line:BR-2284:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": "Two sets, same line.",
+          "state": "approved",
+          "sent_at": {
+            "@day": 0,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": 0,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2285"
+          },
+          "line_id": {
+            "@ref": "line:BR-2285:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": "Six the same.",
+          "state": "approved",
+          "sent_at": {
+            "@day": 0,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": 0,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2286"
+          },
+          "line_id": {
+            "@ref": "line:BR-2286:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": "Both lines, cut as one piece.",
+          "state": "approved",
+          "sent_at": {
+            "@day": 0,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": 0,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2287"
+          },
+          "line_id": {
+            "@ref": "line:BR-2287:1"
+          },
+          "version": 1,
+          "kind": "lettering",
+          "design_version_id": null,
+          "note": "Laid out on the 300 mm blank, both lines centred, lettering filled white.",
+          "state": "sent",
+          "sent_at": {
+            "@day": 0,
+            "@time": "11:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2288"
+          },
+          "line_id": {
+            "@ref": "line:BR-2288:1"
+          },
+          "version": 1,
+          "kind": "design",
+          "design_version_id": {
+            "@ref": "version:br-2288-1"
+          },
+          "note": "Proof 1 — the shop sign at 9 mm, engraved.",
+          "state": "change_asked",
+          "sent_at": {
+            "@day": -1,
+            "@time": "11:00",
+            "@week": true
+          },
+          "change_note": "Could the sign be a little bigger?",
+          "answered_at": {
+            "@day": -1,
+            "@time": "15:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2288"
+          },
+          "line_id": {
+            "@ref": "line:BR-2288:1"
+          },
+          "version": 2,
+          "kind": "design",
+          "design_version_id": {
+            "@ref": "version:br-2288-2"
+          },
+          "note": "Proof 2 — the sign set at 10 mm.",
+          "state": "sent",
+          "sent_at": {
+            "@day": 0,
+            "@time": "11:00",
+            "@week": true
+          }
+        },
+        {
+          "order_id": {
+            "@ref": "order:BR-2289"
+          },
+          "line_id": {
+            "@ref": "line:BR-2289:1"
+          },
+          "version": 1,
+          "kind": "design",
+          "design_version_id": {
+            "@ref": "version:br-2289-1"
+          },
+          "note": "Proof 1 — raised 1 mm, amber.",
+          "state": "approved",
+          "sent_at": {
+            "@day": 0,
+            "@time": "11:00",
+            "@week": true
+          },
+          "answered_at": {
+            "@day": 0,
+            "@time": "15:00",
+            "@week": true
+          }
+        }
+      ]
+    }
+  ]
+}
