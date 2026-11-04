@@ -13,9 +13,10 @@
  *
  * Every role reads the Customiser's rows its work needs: the design a line
  * names, its versions and files. The Customiser's panels on a record page
- * (`customiser-line`, `customiser-product`) open for a person who also holds
- * one of the Customiser's own roles: an app's role cannot grant an add-on's
- * panel yet.
+ * open for the roles below (`ROLE_PANELS`): an order line's design for the
+ * owner and the maker, a product's base for the owner. Adminium reads that
+ * grant from 0.3.44; on an older floor the panels open only for a person who
+ * also holds one of the Customiser's own roles.
  *
  * The screens show or hide a button by the role, but the grants and limits
  * below are what refuse the write: a hidden button is not a lock.
@@ -146,3 +147,15 @@ export const ROLES = [
     tables: [{ addOn: CUSTOMISER, table: "designs", actions: ["read"] }],
   },
 ];
+
+/** The Customiser's record panels each role opens: the design on an order line, the base on a product. */
+export const ROLE_PANELS: Record<string, string[]> = {
+  owner: ["customiser-line", "customiser-product"],
+  maker: ["customiser-line"],
+};
+
+/** The roles as a manifest at `floor` writes them: the panels' grants need the release that reads them. */
+export function rolesFor(panels: boolean): typeof ROLES {
+  if (!panels) return ROLES;
+  return ROLES.map((role) => ({ ...role, permissions: [...role.permissions, ...(ROLE_PANELS[role.key] ?? []).map(view)] }));
+}
