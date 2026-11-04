@@ -103,12 +103,54 @@ export class FakeDoor implements StudioDoor {
     return this.update(this.data.products, product.id, values);
   }
 
+  async book(input: { machineId: Id; label: string; startsAt: string; endsAt: string }): Promise<Row> {
+    this.record("book", { ...input });
+    this.nextId += 1;
+    const row: Row = { id: this.nextId, machine_id: input.machineId, kind: "run", label: input.label, starts_at: input.startsAt, ends_at: input.endsAt, batch_id: null };
+    this.data.bookings.push(row);
+    return row;
+  }
+  async unbook(booking: Row): Promise<void> {
+    this.record("unbook", { id: booking.id });
+    this.data.bookings = this.data.bookings.filter((b) => !same(b.id, booking.id));
+  }
+  async createBatch(input: { label: string; machineId: Id; materialId: Id; sheets: number }): Promise<Row> {
+    this.record("createBatch", { ...input });
+    this.nextId += 1;
+    const batch: Row = { id: this.nextId, label: input.label, machine_id: input.machineId, material_id: input.materialId, sheets: input.sheets, state: "planned" };
+    this.data.batches.push(batch);
+    this.nextId += 1;
+    this.data.movements.push({ id: this.nextId, material_id: input.materialId, kind: "used", qty: input.sheets, batch_id: batch.id });
+    return batch;
+  }
+  async moveBatch(batch: Row, to: string): Promise<Row> {
+    this.record("moveBatch", { id: batch.id, from: batch["state"], to });
+    return this.update(this.data.batches, batch.id, { state: to });
+  }
+  async tieBooking(booking: Row, batchId: Id): Promise<Row> {
+    this.record("tieBooking", { id: booking.id, batchId });
+    return this.update(this.data.bookings, booking.id, { batch_id: batchId });
+  }
+  async count(input: { materialId: Id; counted: number }): Promise<Row> {
+    this.record("count", { ...input });
+    this.nextId += 1;
+    const material = this.data.materials.find((m) => same(m.id, input.materialId));
+    const row: Row = { id: this.nextId, material_id: input.materialId, kind: "count", counted: input.counted, on_hand_before: material?.["on_hand"] ?? 0, made_at: new Date(THURSDAY).toISOString() };
+    this.data.movements.push(row);
+    if (material !== undefined) this.update(this.data.materials, material.id, { on_hand: input.counted });
+    return row;
+  }
+  async render(input: { kind: string; ref: string; pk: Id; values?: Record<string, unknown> }): Promise<{ contentUrl: string; printUrl: string | null }> {
+    this.record("render", { ...input });
+    return { contentUrl: "/api/v1/documents/doc_1/content", printUrl: "/api/v1/documents/doc_1/print" };
+  }
+
   /** The calls made, as `method id→to` lines, for a short assertion. */
   trail(): string[] {
     return this.calls.map((c) => {
       const a = c.args;
-      if (c.method === "moveLine" || c.method === "moveOrder") return `${c.method} ${String(a["id"])} ${String(a["from"])}→${String(a["to"])}`;
-      return `${c.method} ${String(a["id"] ?? a["line"])}`;
+      if (c.method === "moveLine" || c.method === "moveOrder" || c.method === "moveBatch") return `${c.method} ${String(a["id"])} ${String(a["from"])}→${String(a["to"])}`;
+      return `${c.method} ${String(a["id"] ?? a["line"] ?? a["machineId"] ?? a["materialId"] ?? a["kind"])}`;
     });
   }
 }

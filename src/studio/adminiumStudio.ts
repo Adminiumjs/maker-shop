@@ -35,10 +35,12 @@ export const MOMENTS: Readonly<Partial<Record<Table | AddOnTable, readonly strin
   orders: ["placed_at", "posted_at", "cancelled_at", "link_expires"],
   order_lines: ["placed_at", "made_at"],
   proofs: ["sent_at", "answered_at", "reminded_at"],
+  batches: ["started_at", "done_at"],
   machine_bookings: ["starts_at", "ends_at"],
   stock_movements: ["made_at"],
   designs: ["created_at", "updated_at"],
   design_versions: ["made_at"],
+  version_files: ["made_at"],
 };
 
 /** The yes/no columns each table holds: SQLite and MySQL hand back 0 or 1. */
@@ -174,7 +176,7 @@ export class AdminiumStudio implements StudioDoor {
     return this.run(async () => {
       // The session's write token comes with the first read.
       await this.t.port.config();
-      const [settings, products, options, materials, machines, services, closures, customers, orders, lines, features, proofs, bookings] = await Promise.all([
+      const [settings, products, options, materials, machines, services, closures, customers, orders, lines, features, proofs, bookings, batches, movements] = await Promise.all([
         this.list("settings"),
         this.list("products", "position.asc,id.asc"),
         this.list("options", "position.asc,id.asc"),
@@ -188,11 +190,14 @@ export class AdminiumStudio implements StudioDoor {
         this.list("order_line_features"),
         this.list("proofs", "line_id.asc,version.asc"),
         this.list("machine_bookings", "starts_at.asc"),
+        this.list("batches", "id.asc"),
+        this.list("stock_movements", "id.asc"),
       ]);
       // The designs the lines name, and their versions: the Customiser's rows, read as its readers may.
       const designIds = [...new Set(lines!.map((l) => l["design_id"]).filter((v) => v !== null && v !== undefined))];
       let designs: Row[] = [];
       let versions: Row[] = [];
+      let files: Row[] = [];
       if (designIds.length > 0) {
         try {
           [designs, versions] = await Promise.all([
@@ -204,7 +209,15 @@ export class AdminiumStudio implements StudioDoor {
           if (!(error instanceof SessionPortError && (error.status === 403 || error.status === 404))) throw error;
         }
       }
-      return { settings: settings![0] ?? null, products: products!, options: options!, materials: materials!, machines: machines!, services: services!, closures: closures!, customers: customers!, orders: orders!, lines: lines!, features: features!, proofs: proofs!, bookings: bookings!, designs, versions };
+      // The machines' files of those versions, for the cut list: read as the Customiser's readers may, or not at all.
+      if (versions.length > 0) {
+        try {
+          files = await this.listReal("version_files", this.realAddOn("version_files"), { where: { column: "version_id", op: "in", value: versions.map((v) => v.id) }, order: "position.asc" });
+        } catch (error) {
+          if (!(error instanceof SessionPortError && (error.status === 403 || error.status === 404))) throw error;
+        }
+      }
+      return { settings: settings![0] ?? null, products: products!, options: options!, materials: materials!, machines: machines!, services: services!, closures: closures!, customers: customers!, orders: orders!, lines: lines!, features: features!, proofs: proofs!, bookings: bookings!, batches: batches!, movements: movements!, designs, versions, files };
     });
   }
 
@@ -292,5 +305,48 @@ export class AdminiumStudio implements StudioDoor {
 
   saveProduct(product: Row, values: Record<string, unknown>): Promise<Row> {
     return this.run(() => this.change("products", product.id, values));
+  }
+
+  // ── making ────────────────────────────────────────────────────────────────
+
+  book(input: { machineId: Id; label: string; startsAt: string; endsAt: string }): Promise<Row> {
+    return this.run(() => this.create("machine_bookings", { machine_id: input.machineId, kind: "run", label: input.label, starts_at: input.startsAt, ends_at: input.endsAt }));
+  }
+
+  unbook(booking: Row): Promise<void> {
+    return this.run(async () => {
+      await this.t.mutate(await this.path(this.real("machine_bookings"), `/${encodeURIComponent(String(booking.id))}`), "DELETE");
+    });
+  }
+
+  createBatch(input: { label: string; machineId: Id; materialId: Id; sheets: number }): Promise<Row> {
+    return this.run(async () => {
+      // The batch and the sheets it takes off the shelf, in one write: the movement is a row below the batch.
+      const body = {
+        values: { label: input.label, machine_id: input.machineId, material_id: input.materialId, sheets: input.sheets },
+        children: { stock_movements: [{ values: { material_id: input.materialId, kind: "used", qty: input.sheets } }] },
+      };
+      return this.row("batches", (await this.t.mutate<{ data: Row }>(await this.path(this.real("batches")), "POST", body)).data);
+    });
+  }
+
+  moveBatch(batch: Row, to: string): Promise<Row> {
+    return this.run(() => this.change("batches", batch.id, { state: to }, String(batch["state"])));
+  }
+
+  tieBooking(booking: Row, batchId: Id): Promise<Row> {
+    return this.run(() => this.change("machine_bookings", booking.id, { batch_id: batchId }));
+  }
+
+  count(input: { materialId: Id; counted: number }): Promise<Row> {
+    return this.run(() => this.create("stock_movements", { material_id: input.materialId, kind: "count", counted: input.counted }));
+  }
+
+  render(input: { kind: string; ref: Table; pk: Id; values?: Record<string, unknown> }): Promise<{ contentUrl: string; printUrl: string | null }> {
+    return this.run(async () => {
+      const body = { kind: input.kind, ref: input.ref, pk: { id: input.pk }, ...(input.values === undefined ? {} : { values: input.values }) };
+      const made = await this.t.mutate<{ contentUrl: string; printUrl?: string }>(`/api/v1/apps/${APP_KEY}/documents/render`, "POST", body);
+      return { contentUrl: made.contentUrl, printUrl: made.printUrl ?? null };
+    });
   }
 }

@@ -10,7 +10,7 @@
  * yes. A design whose proof is not made yet is named, with the way to its
  * line's page, and is not sent.
  */
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TriangleAlert, X } from "lucide-react";
 
 import { sendProofs, spoil } from "../actions.ts";
@@ -22,31 +22,15 @@ import { useStudio } from "../store.ts";
 import { LineTile, Typed } from "../ui.tsx";
 import { num, same, text, type Row } from "../wire.ts";
 import { useT } from "../../i18n/index.tsx";
+import { BatchDialog } from "./Batches.tsx";
+import { close, Modal } from "./Modal.tsx";
 
 export function Overlays() {
   const overlay = useStudio((s) => s.overlay);
   if (overlay === null) return null;
   if (overlay.kind === "proof") return <ProofSheet orderId={overlay.orderId} />;
+  if (overlay.kind === "batch") return <BatchDialog sheetKey={overlay.key} />;
   return <SpoilDialog lineId={overlay.lineId} />;
-}
-
-const close = () => useStudio.setState({ overlay: null });
-
-/** A modal's frame: Escape and the scrim close it, focus starts inside it and goes back where it was. */
-function Modal({ side = false, labelledBy, children }: { side?: boolean; labelledBy: string; children: ReactNode }) {
-  const box = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const before = document.activeElement as HTMLElement | null;
-    box.current?.querySelector<HTMLElement>("input, button")?.focus();
-    return () => before?.focus?.();
-  }, []);
-  return (
-    <div className={`st-scrim${side ? " st-scrim--side" : ""}`} onClick={close} onKeyDown={(e) => e.key === "Escape" && close()}>
-      <div ref={box} role="dialog" aria-modal="true" aria-labelledby={labelledBy} className={side ? "st-sheet" : "st-dialog st-pop"} onClick={(e) => e.stopPropagation()}>
-        {children}
-      </div>
-    </div>
-  );
 }
 
 function ProofSheet({ orderId }: { orderId: Row["id"] }) {

@@ -8,7 +8,7 @@
  * owner and the maker. What their roles cannot do, Adminium refuses anyway.
  */
 import { useEffect, useMemo, type ReactNode } from "react";
-import { Eye, LayoutGrid, Menu, Moon, Package, ReceiptText, Search, Sun, Trees, Truck, Users, X } from "lucide-react";
+import { Eye, LayoutGrid, Layers, Menu, Moon, Package, ReceiptText, Search, Sun, Trees, Truck, Users, X, Zap } from "lucide-react";
 
 import { useData, useEnv } from "./env.tsx";
 import { productOf } from "./facts.ts";
@@ -21,6 +21,8 @@ import { OrderScreen } from "./screens/Order.tsx";
 import { OrdersScreen, PostScreen, ProofsScreen } from "./screens/Lists.tsx";
 import { CustomersScreen, NotFoundScreen, ProductScreen, ProductsScreen } from "./screens/People.tsx";
 import { Overlays } from "./screens/Overlays.tsx";
+import { MachinesScreen, MaterialsScreen, StockCountScreen } from "./screens/Making.tsx";
+import { BatchPageScreen, CutListScreen } from "./screens/Batches.tsx";
 import { useI18n, useT } from "../i18n/index.tsx";
 import { text } from "./wire.ts";
 import type { Person } from "./door.ts";
@@ -32,6 +34,8 @@ const ICON: Record<string, ReactNode> = {
   truck: <Truck size={17} aria-hidden="true" />,
   users: <Users size={17} aria-hidden="true" />,
   package: <Package size={17} aria-hidden="true" />,
+  layers: <Layers size={17} aria-hidden="true" />,
+  zap: <Zap size={17} aria-hidden="true" />,
 };
 
 /** Which of the studio's screens a person's roles reach. */
@@ -48,6 +52,10 @@ export function screensFor(who: Person): string[] {
         return mayReadCustomers(who);
       case "products":
         return who.can("products", "update");
+      case "materials":
+        return who.can("materials", "read");
+      case "machines":
+        return who.can("machine_bookings", "read");
       default:
         return who.can("orders", "read");
     }
@@ -188,6 +196,16 @@ function Screen({ view, reach }: { view: View; reach: string[] }) {
       return <ProductsScreen />;
     case "product":
       return <ProductScreen />;
+    case "materials":
+      return <MaterialsScreen />;
+    case "machines":
+      return <MachinesScreen />;
+    case "stockcount":
+      return <StockCountScreen />;
+    case "batch":
+      return <BatchPageScreen />;
+    case "cutlist":
+      return <CutListScreen />;
     default:
       return <NotFoundScreen />;
   }

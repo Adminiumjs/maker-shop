@@ -238,7 +238,7 @@ describe("the board", () => {
   it("counts the pieces due today, the orders waiting, the pieces late and the machine time booked", async () => {
     await mount(new FakeDoor());
     const kpis = [...document.querySelectorAll(".st-kpi")].map((k) => k.textContent);
-    expect(kpis).toEqual(["1pieces due today", "1order waiting on a customer", "2pieces late", "7h 40mmachine time booked"]);
+    expect(kpis).toEqual(["1pieces due today", "1order waiting on a customer", "2pieces late", "16h 40mmachine time booked"]);
   });
 });
 
@@ -371,10 +371,10 @@ describe("a product's lettering settings", () => {
 
 describe("what each role sees", () => {
   it("the owner: every screen", () => {
-    expect(screensFor(new FakeDoor({ roles: ["owner"] }).who())).toEqual(["today", "orders", "proofs", "post", "customers", "products"]);
+    expect(screensFor(new FakeDoor({ roles: ["owner"] }).who())).toEqual(["today", "orders", "proofs", "post", "customers", "products", "materials", "machines"]);
   });
-  it("the maker: the bench, the orders, the proofs and the products; never the customers or the post", () => {
-    expect(screensFor(new FakeDoor({ roles: ["maker"] }).who())).toEqual(["today", "orders", "proofs", "products"]);
+  it("the maker: the bench, the orders, the proofs, the products and the workshop; never the customers or the post", () => {
+    expect(screensFor(new FakeDoor({ roles: ["maker"] }).who())).toEqual(["today", "orders", "proofs", "products", "materials", "machines"]);
   });
   it("the packer: the orders and the post office run", () => {
     expect(screensFor(new FakeDoor({ roles: ["packer"] }).who())).toEqual(["orders", "post"]);

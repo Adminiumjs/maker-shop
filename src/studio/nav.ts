@@ -20,11 +20,26 @@ export const STUDIO_NAV = [
   { id: "post", path: "post", view: "post", side: "staff", icon: "truck", labelKey: "bench.nav.post" },
   { id: "customers", path: "customers", view: "customers", side: "staff", icon: "users", labelKey: "bench.nav.customers" },
   { id: "products", path: "products", view: "products", side: "staff", icon: "package", labelKey: "bench.pieces.title" },
+  { id: "materials", path: "materials", view: "materials", side: "staff", icon: "layers", labelKey: "studio.nav.materials" },
+  { id: "machines", path: "machines", view: "machines", side: "staff", icon: "zap", labelKey: "studio.nav.machines" },
+] as const satisfies readonly StudioNavEntry[];
+
+/**
+ * The studio's screens with an address but no sidebar item of their own:
+ * the batch sheet and the cut list under Today, the count under Materials.
+ * The address and the screen are kept in step by them as by the sidebar's.
+ */
+export const STUDIO_PLACES = [
+  { id: "batch", path: "batch", view: "batch", side: "staff", icon: "grid-3x3", labelKey: "bench.batch.screenTitle" },
+  { id: "cutlist", path: "cut-list", view: "cutlist", side: "staff", icon: "scissors", labelKey: "bench.cut.title" },
+  { id: "stockcount", path: "count", view: "stockcount", side: "staff", icon: "clipboard-list", labelKey: "bench.count.title" },
 ] as const satisfies readonly StudioNavEntry[];
 
 /** The sidebar item a screen lights: an order under Orders, a product under Products. */
 export function navOf(view: View): string {
   if (view === "order") return "orders";
   if (view === "product") return "products";
+  if (view === "stockcount") return "materials";
+  if (view === "cutlist" || view === "batch") return "today";
   return view;
 }

@@ -15,12 +15,13 @@ import { createRoot } from "react-dom/client";
 import "../styles/tokens.css";
 import "../styles/base.css";
 import "./studio.css";
+import "./making.css";
 
 import { I18nProvider, useI18n } from "../i18n/index.tsx";
 import { resolveLocale } from "../i18n/locales.ts";
 import { AdminiumStudio } from "./adminiumStudio.ts";
 import { reload, StudioProvider, type StudioEnv } from "./env.tsx";
-import { STUDIO_NAV, APP_KEY } from "./nav.ts";
+import { STUDIO_NAV, STUDIO_PLACES, APP_KEY } from "./nav.ts";
 import { drawLettering } from "./picture.ts";
 import { currentView, go, useStudio } from "./store.ts";
 import { StudioApp } from "./StudioApp.tsx";
@@ -82,7 +83,7 @@ export async function bootStudio(mount: HTMLElement): Promise<void> {
   // The address and the screen in step; inside the dashboard, its sidebar too.
   const { attachUrlSync } = await import("../urlSync.ts");
   let bridge: { navigated: (path: string) => void } | null = null;
-  const sync = attachUrlSync({ nav: STUDIO_NAV, side: "staff", go: (view) => go(view), current: currentView, onPath: (path) => bridge?.navigated(path) });
+  const sync = attachUrlSync({ nav: [...STUDIO_NAV, ...STUDIO_PLACES], side: "staff", go: (view) => go(view), current: currentView, onPath: (path) => bridge?.navigated(path) });
   const { connectToHost } = await import("../embed.ts");
   bridge = await connectToHost(APP_KEY, "staff", sync.path(), {
     onTheme: (theme) => useStudio.setState({ theme }),

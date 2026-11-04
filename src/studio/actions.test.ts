@@ -157,6 +157,6 @@ describe("what the screens read off the rows", () => {
 
   it("counts today's pieces due and late, orders waiting, and today's machine time", () => {
     const door = new FakeDoor();
-    expect(kpis(door.data, "2026-08-06", (iso) => dayIn(iso, "Europe/London"))).toEqual({ due: 1, waiting: 1, late: 2, bookedMinutes: 460 });
+    expect(kpis(door.data, "2026-08-06", (iso) => dayIn(iso, "Europe/London"))).toEqual({ due: 1, waiting: 1, late: 2, bookedMinutes: 1000 });
   });
 });

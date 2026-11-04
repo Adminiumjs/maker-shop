@@ -44,7 +44,7 @@ async function walkOrder(door: StudioDoor, order: Row, to: string): Promise<Row>
 }
 
 /** Bring an order in step with its lines after they moved. */
-async function follow(door: StudioDoor, data: StudioData, order: Row, moved: readonly Row[]): Promise<void> {
+export async function follow(door: StudioDoor, data: StudioData, order: Row, moved: readonly Row[]): Promise<void> {
   const lines = linesOf(data, order).map((l) => moved.find((m) => same(m.id, l.id)) ?? l);
   const want = orderStatusFor(order, lines);
   if (want !== order["status"]) await walkOrder(door, order, want);

@@ -6,8 +6,8 @@
  * and its order follows it. A line with words or a design wears a padlock
  * until its proof is approved, and is not moved past "make" until then.
  *
- * The comp's "Batch these" strip (queued pieces that share a sheet) is the
- * batches' own screen's, and is not drawn here.
+ * Under the counts, the comp's "Batch these" strip: queued pieces of
+ * different orders that share a sheet and a machine (`Batches.tsx`).
  */
 import { useState, type DragEvent } from "react";
 import { Clock, Ellipsis, Hammer, Lock, TriangleAlert, Zap } from "lucide-react";
@@ -22,6 +22,7 @@ import { LineTile, ShipChip, Typed } from "../ui.tsx";
 import { dayOf, num, text, type Row } from "../wire.ts";
 import { useT, type MessageKey } from "../../i18n/index.tsx";
 import { wordsOfDesign } from "../designs.ts";
+import { BatchStrip } from "./Batches.tsx";
 
 const COLUMN_LABEL: Record<BenchStage, MessageKey> = {
   make: "bench.col.to-make",
@@ -74,6 +75,8 @@ export function TodayScreen() {
           <span className="st-kpi-label">{t("bench.kpi.machine")}</span>
         </li>
       </ul>
+
+      <BatchStrip />
 
       <div className="st-board" role="group" aria-label={t("studio.board.label")}>
         {BENCH.map((stage) => (

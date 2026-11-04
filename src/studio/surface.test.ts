@@ -23,6 +23,8 @@ describe("the staff surface's sidebar", () => {
       ["post", "post", "truck"],
       ["customers", "customers", "users"],
       ["products", "products", "package"],
+      ["materials", "materials", "layers"],
+      ["machines", "machines", "zap"],
     ]);
   });
 

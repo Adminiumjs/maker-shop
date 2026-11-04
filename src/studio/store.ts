@@ -8,9 +8,10 @@ import { create } from "zustand";
 import type { StudioData } from "./door.ts";
 import type { Id } from "./wire.ts";
 
-export type View = "today" | "order" | "orders" | "proofs" | "post" | "customers" | "products" | "product" | "notfound";
+export type View = "today" | "order" | "orders" | "proofs" | "post" | "customers" | "products" | "product" | "materials" | "machines" | "stockcount" | "batch" | "cutlist" | "notfound";
 
-export type Overlay = { kind: "proof"; orderId: Id } | { kind: "spoil"; lineId: Id } | null;
+/** A sheet to batch, by its group's key (`batchGroups`). */
+export type Overlay = { kind: "proof"; orderId: Id } | { kind: "spoil"; lineId: Id } | { kind: "batch"; key: string } | null;
 
 export type OrderFilter = "all" | "proof" | "late" | "today" | "ready";
 
@@ -34,6 +35,13 @@ export interface StudioState {
   /** The last read failed: what it said. */
   failure: string | null;
   theme: "light" | "dark" | null;
+  /** The sheet the batch sheet page shows, and the one the cut list is of (a group's key, or `batch-<id>`). */
+  sheetKey: string | null;
+  cutKey: string | null;
+  /** The pieces taken off a sheet before it starts, by piece key. */
+  takenOff: Record<string, true>;
+  /** The shelf's count as it is being typed, by material. */
+  countDraft: Record<string, string>;
 }
 
 export const useStudio = create<StudioState>(() => ({
@@ -49,10 +57,14 @@ export const useStudio = create<StudioState>(() => ({
   data: null,
   failure: null,
   theme: null,
+  sheetKey: null,
+  cutKey: null,
+  takenOff: {},
+  countDraft: {},
 }));
 
 /** Open a screen, closing whatever lay over the last one. */
-export function go(view: View, more: Partial<Pick<StudioState, "orderId" | "productId" | "customerId">> = {}): void {
+export function go(view: View, more: Partial<Pick<StudioState, "orderId" | "productId" | "customerId" | "cutKey" | "sheetKey">> = {}): void {
   useStudio.setState({ view, ...more, overlay: null, navOpen: false, query: "" });
 }
 

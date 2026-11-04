@@ -233,13 +233,77 @@ describe("the studio's reads", () => {
   });
 });
 
+describe("the making screens' writes, as Adminium receives them", () => {
+  it("books a machine for a time, a run, by its own row", async () => {
+    const { t, sent } = transport();
+    await new AdminiumStudio(t, config()).book({ machineId: 1, label: "Walnut sheet · 6 pieces", startsAt: "2026-08-06T15:10:00.000Z", endsAt: "2026-08-06T17:25:00.000Z" });
+    expect(sent).toEqual([
+      {
+        path: "/api/v1/data/conn-1/maker_machine_bookings",
+        method: "POST",
+        body: { values: { machine_id: 1, kind: "run", label: "Walnut sheet · 6 pieces", starts_at: "2026-08-06T15:10:00.000Z", ends_at: "2026-08-06T17:25:00.000Z" } },
+      },
+    ]);
+  });
+
+  it("lets a booking go by deleting its row", async () => {
+    const { t, sent } = transport();
+    await new AdminiumStudio(t, config()).unbook({ id: 7 });
+    expect(sent).toEqual([{ path: "/api/v1/data/conn-1/maker_machine_bookings/7", method: "DELETE", body: undefined }]);
+  });
+
+  it("makes a batch in one write with the sheets it takes off the shelf, a stock movement below it", async () => {
+    const { t, sent } = transport();
+    await new AdminiumStudio(t, config()).createBatch({ label: "Walnut sheet · 6 pieces", machineId: 1, materialId: 1, sheets: 1 });
+    expect(sent).toEqual([
+      {
+        path: "/api/v1/data/conn-1/maker_batches",
+        method: "POST",
+        body: {
+          values: { label: "Walnut sheet · 6 pieces", machine_id: 1, material_id: 1, sheets: 1 },
+          children: { stock_movements: [{ values: { material_id: 1, kind: "used", qty: 1 } }] },
+        },
+      },
+    ]);
+  });
+
+  it("starts a batch from the state the screen saw, and ties the booking to it", async () => {
+    const { t, sent } = transport();
+    const door = new AdminiumStudio(t, config());
+    await door.moveBatch({ id: 3, state: "planned" }, "running");
+    await door.tieBooking({ id: 7 }, 3);
+    expect(sent).toEqual([
+      { path: "/api/v1/data/conn-1/maker_batches/3", method: "PATCH", body: { values: { state: "running" }, from: "planned" } },
+      { path: "/api/v1/data/conn-1/maker_machine_bookings/7", method: "PATCH", body: { values: { batch_id: 3 } } },
+    ]);
+  });
+
+  it("puts a line on a batch as it moves it to making", async () => {
+    const { t, sent } = transport();
+    await new AdminiumStudio(t, config()).moveLine({ id: 121, stage: "make" }, "making", { batch_id: 3 });
+    expect(sent).toEqual([{ path: "/api/v1/data/conn-1/maker_order_lines/121", method: "PATCH", body: { values: { stage: "making", batch_id: 3 }, from: "make" } }]);
+  });
+
+  it("saves a count as a count movement: what was counted, and nothing the book says", async () => {
+    const { t, sent } = transport();
+    await new AdminiumStudio(t, config()).count({ materialId: 2, counted: 4 });
+    expect(sent).toEqual([{ path: "/api/v1/data/conn-1/maker_stock_movements", method: "POST", body: { values: { material_id: 2, kind: "count", counted: 4 } } }]);
+  });
+
+  it("asks for a line's labels by the app's own names", async () => {
+    const { t, sent } = transport();
+    await new AdminiumStudio(t, config()).render({ kind: "label-sheet", ref: "order_lines", pk: 121 });
+    expect(sent).toEqual([{ path: "/api/v1/apps/maker/documents/render", method: "POST", body: { kind: "label-sheet", ref: "order_lines", pk: { id: 121 } } }]);
+  });
+});
+
 describe("the moments and yes/no columns the door reads back are the manifest's", () => {
   const manifest = JSON.parse(readFileSync(new URL("../../manifest.json", import.meta.url), "utf8")) as { requiredSchema: { tables: { ref: string; columns: { ref: string; type: string }[] }[] } };
   for (const table of manifest.requiredSchema.tables) {
     it(table.ref, () => {
       const moments = table.columns.filter((c) => c.type === "timestamptz").map((c) => c.ref);
       const yesNo = table.columns.filter((c) => c.type === "bool").map((c) => c.ref);
-      const read = ["settings", "machines", "materials", "products", "options", "postage_services", "closures", "customers", "orders", "order_lines", "order_line_features", "proofs", "machine_bookings", "stock_movements"];
+      const read = ["settings", "machines", "materials", "products", "options", "postage_services", "closures", "customers", "orders", "order_lines", "order_line_features", "proofs", "batches", "machine_bookings", "stock_movements"];
       if (!read.includes(table.ref)) return;
       expect([...(MOMENTS[table.ref as keyof typeof MOMENTS] ?? [])].sort()).toEqual(moments.sort());
       expect([...(YES_NO[table.ref as keyof typeof YES_NO] ?? [])].sort()).toEqual(yesNo.sort());

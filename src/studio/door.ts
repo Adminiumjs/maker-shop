@@ -24,11 +24,12 @@ export type Table =
   | "order_lines"
   | "order_line_features"
   | "proofs"
+  | "batches"
   | "machine_bookings"
   | "stock_movements";
 
 /** The Customiser's tables the studio reads: the design a line names and its versions. */
-export type AddOnTable = "designs" | "design_versions";
+export type AddOnTable = "designs" | "design_versions" | "version_files";
 
 export type Action = "read" | "create" | "update" | "delete";
 
@@ -56,9 +57,14 @@ export interface StudioData {
   features: Row[];
   proofs: Row[];
   bookings: Row[];
+  /** The batches started on the machines, and how the shelf moved (a delivery, a batch's sheets, a spoil, a count). */
+  batches: Row[];
+  movements: Row[];
   /** The Customiser's designs the lines name, and their versions (newest first per design). */
   designs: Row[];
   versions: Row[];
+  /** The files the Customiser made of those versions for the machines (a laser's SVG, a printer's 3MF). */
+  files: Row[];
 }
 
 /** The studio's facts that are not rows: its zone, money, working week, clock and add-ons. */
@@ -100,4 +106,23 @@ export interface StudioDoor {
   spoil(input: { line: Row; materialId: Id; units: number; note: string | null }): Promise<Row>;
   /** A product's lettering settings. */
   saveProduct(product: Row, values: Record<string, unknown>): Promise<Row>;
+
+  /** A machine booked for a time: Adminium refuses one that overlaps another booking of the machine (`BOOKING_TAKEN`). */
+  book(input: { machineId: Id; label: string; startsAt: string; endsAt: string }): Promise<Row>;
+  /** A booking let go (a batch that did not start after all). */
+  unbook(booking: Row): Promise<void>;
+  /**
+   * A batch, in one write with what it takes off the shelf: the batch row and
+   * its stock movement (`used`, so many sheets), every row or none. It starts
+   * as planned; `moveBatch` starts it.
+   */
+  createBatch(input: { label: string; machineId: Id; materialId: Id; sheets: number }): Promise<Row>;
+  /** A batch along its states, from the one the screen saw. */
+  moveBatch(batch: Row, to: string): Promise<Row>;
+  /** The booking made for a batch, tied to it once the batch is made. */
+  tieBooking(booking: Row, batchId: Id): Promise<Row>;
+  /** What the shelf holds, counted: Adminium keeps the book's figure beside it and moves the stock by the difference. */
+  count(input: { materialId: Id; counted: number }): Promise<Row>;
+  /** A document of a row the app ships a profile for (a sheet of labels), drawn by the add-on that draws it. */
+  render(input: { kind: string; ref: Table; pk: Id; values?: Record<string, unknown> }): Promise<{ contentUrl: string; printUrl: string | null }>;
 }
