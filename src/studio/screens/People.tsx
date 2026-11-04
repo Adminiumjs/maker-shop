@@ -152,20 +152,20 @@ export function ProductsScreen() {
       <h1 className="st-h1 st-head" id="st-products-title">
         {t("bench.pieces.title")}
       </h1>
-      <div className="st-panel st-table st-products" role="table" aria-labelledby="st-products-title">
-        <div className="st-table-head" role="row">
-          <span className="st-th" role="columnheader">{t("bench.pieces.col.piece")}</span>
-          <span className="st-th st-wide" role="columnheader">{t("bench.pieces.col.size")}</span>
-          <span className="st-th st-end st-wide" role="columnheader">{t("bench.pieces.col.price")}</span>
-          <span className="st-th st-end" role="columnheader">{t("studio.products.lead")}</span>
-          <span className="st-th st-end" role="columnheader">{t("bench.pieces.col.queue")}</span>
+      <div className="st-panel st-table st-products">
+        <div className="st-table-head" aria-hidden="true">
+          <span className="st-th">{t("bench.pieces.col.piece")}</span>
+          <span className="st-th st-wide">{t("bench.pieces.col.size")}</span>
+          <span className="st-th st-end st-wide">{t("bench.pieces.col.price")}</span>
+          <span className="st-th st-end">{t("studio.products.lead")}</span>
+          <span className="st-th st-end">{t("bench.pieces.col.queue")}</span>
         </div>
         {data.products.map((product) => {
           const n = queued(data, product.id);
           return (
-            <div key={String(product.id)} role="row">
+            <div key={String(product.id)}>
               <button type="button" className="st-table-row" onClick={() => go("product", { productId: product.id })}>
-                <span className="st-cell-piece" role="cell">
+                <span className="st-cell-piece">
                   <ProductTile data={data} product={product} size={32} iconSize={15} />
                   <span className="st-cell-stack">
                     <span className="st-cell-strong">{text(product["name"])}</span>
@@ -175,10 +175,10 @@ export function ProductsScreen() {
                     </span>
                   </span>
                 </span>
-                <span className="st-mono st-small st-wide" role="cell">{text(product["size_text"])}</span>
-                <span className="st-mono st-cell-strong st-end st-wide" role="cell">{fmt.money(product["price"])}</span>
-                <span className="st-mono st-small st-end" role="cell">{t("studio.products.days", { days: num(product["lead_days"]) ?? 0 })}</span>
-                <span className={`st-mono st-cell-strong st-end${n > 0 ? " st-personal" : ""}`} role="cell">{fmt.number(n)}</span>
+                <span className="st-mono st-small st-wide">{text(product["size_text"])}</span>
+                <span className="st-mono st-cell-strong st-end st-wide">{fmt.money(product["price"])}</span>
+                <span className="st-mono st-small st-end">{t("studio.products.days", { days: num(product["lead_days"]) ?? 0 })}</span>
+                <span className={`st-mono st-cell-strong st-end${n > 0 ? " st-personal" : ""}`}>{fmt.number(n)}</span>
               </button>
             </div>
           );

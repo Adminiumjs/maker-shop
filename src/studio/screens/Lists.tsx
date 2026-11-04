@@ -74,30 +74,30 @@ export function OrdersScreen() {
           </button>
         ))}
       </div>
-      <div className="st-panel st-table st-orders" role="table" aria-labelledby="st-orders-title">
-        <div className="st-table-head" role="row">
-          <span className="st-th" role="columnheader">{t("studio.orders.ref")}</span>
-          <span className="st-th" role="columnheader">{t("studio.orders.who")}</span>
-          <span className="st-th st-wide" role="columnheader">{t("studio.orders.what")}</span>
-          <span className="st-th st-end st-wide" role="columnheader">{t("studio.orders.charged")}</span>
-          <span className="st-th st-end" role="columnheader">{t("bench.orders.col.ship")}</span>
+      <div className="st-panel st-table st-orders">
+        <div className="st-table-head" aria-hidden="true">
+          <span className="st-th">{t("studio.orders.ref")}</span>
+          <span className="st-th">{t("studio.orders.who")}</span>
+          <span className="st-th st-wide">{t("studio.orders.what")}</span>
+          <span className="st-th st-end st-wide">{t("studio.orders.charged")}</span>
+          <span className="st-th st-end">{t("bench.orders.col.ship")}</span>
         </div>
         {rows.map(({ order, lines, postBy, posted, waiting }) => (
-          <div key={String(order.id)} role="row">
+          <div key={String(order.id)}>
             <button type="button" className="st-table-row" onClick={() => go("order", { orderId: order.id })}>
-              <span className="st-mono st-cell-strong" role="cell">{text(order["number"])}</span>
-              <span className="st-cell-stack" role="cell">
+              <span className="st-mono st-cell-strong">{text(order["number"])}</span>
+              <span className="st-cell-stack">
                 <span className="st-cell-strong">
                   <Typed>{text(order["name"])}</Typed>
                 </span>
                 <span className="st-cell-sub">{text(order["town"])}</span>
               </span>
-              <span className="st-cell-stack st-wide" role="cell">
+              <span className="st-cell-stack st-wide">
                 <span>{lines.map((l) => `${text(l["product_name"]) ?? ""} ×${String(num(l["qty"]) ?? 0)}`).join(", ")}</span>
                 <span className={`st-stage-line${waiting ? " st-stage-line--warn" : ""}`}>{waiting ? t("bench.order.waitingPicture") : [...new Set(lines.map((l) => t(STAGE_WORD[String(l["stage"])] ?? "bench.col.to-make")))].join(" · ").toLocaleLowerCase()}</span>
               </span>
-              <span className="st-mono st-cell-strong st-end st-wide" role="cell">{fmt.money(order["total"])}</span>
-              <span className="st-end" role="cell">
+              <span className="st-mono st-cell-strong st-end st-wide">{fmt.money(order["total"])}</span>
+              <span className="st-end">
                 <ShipChip postBy={postBy} today={today} studioDays={facts.studioDays} closures={closures} posted={posted} />
               </span>
             </button>

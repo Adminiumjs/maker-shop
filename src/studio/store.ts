@@ -60,8 +60,12 @@ export const currentView = (): View => useStudio.getState().view;
 
 let toastId = 0;
 
+/** A sentence whose last word ends in its own full stop ("… to Iris P.") keeps one, not two. */
+const tidy = (text: string): string => text.replace(/\.\.$/, ".");
+
 /** A toast that goes by itself after a few seconds. */
-export function toast(text: string, tone: Toast["tone"] = "pos"): void {
+export function toast(said: string, tone: Toast["tone"] = "pos"): void {
+  const text = tidy(said);
   toastId += 1;
   const id = toastId;
   useStudio.setState((s) => ({ toasts: [...s.toasts, { id, tone, text }] }));

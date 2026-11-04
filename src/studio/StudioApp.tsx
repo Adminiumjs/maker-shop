@@ -79,7 +79,8 @@ export function StudioApp() {
       <div className="st-app">
         <main className="st-main">
           {failure === null ? (
-            <div aria-busy="true" aria-label={t("studio.loading")}>
+            <div role="status" aria-busy="true">
+              <span className="st-visually-hidden">{t("studio.loading")}</span>
               <div className="st-skel" />
               <div className="st-skel" />
             </div>
@@ -233,7 +234,9 @@ function Calendar() {
     // 5 January 2026 is a Monday.
     const name = (i: number) => new Intl.DateTimeFormat(locale, { weekday: "long", timeZone: "UTC" }).format(new Date(Date.UTC(2026, 0, 5 + i)));
     const open = order.map((d, i) => ({ d, i })).filter(({ d }) => days.includes(d));
-    const shut = order.map((d, i) => ({ d, i })).filter(({ d }) => !days.includes(d));
+    // The days it is shut, in the order they come after its last working day: "Sunday and Monday".
+    const after = (open[open.length - 1]?.i ?? 6) + 1;
+    const shut = [...order.slice(after), ...order.slice(0, after)].map((d) => ({ d, i: order.indexOf(d) })).filter(({ d }) => !days.includes(d));
     if (shut.length === 0 || open.length === 0) return t("studio.calendar.open");
     const list = new Intl.ListFormat(locale, { type: "conjunction" });
     return t("studio.calendar.week", { from: name(open[0]!.i), to: name(open[open.length - 1]!.i), closed: list.format(shut.map(({ i }) => name(i))) });

@@ -200,7 +200,7 @@ function Line({ line, maker }: { line: Row; maker: boolean }) {
               )}
             </span>
           )}
-          {spoiled > 0 && <span className="st-spoiled">{t("studio.order.spoiled", { count: spoiled })}</span>}
+          {spoiled > 0 && <span className="st-spoiled">{t("studio.order.spoiled", { count: spoiled }, spoiled)}</span>}
         </div>
       </div>
       <div className="st-line-side">
