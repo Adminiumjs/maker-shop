@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Maker Shop — an open-source made-to-order shop and workshop example app for Adminium.",
+  "description": "Maker Shop \u2014 an open-source made-to-order shop and workshop example app for Adminium.",
   "license": "AGPL-3.0-only",
   "scripts": {
     "dev": "vite",
@@ -14,7 +14,11 @@
     "demo:status": "node db/demo.mjs status",
     "demo:import": "node db/demo.mjs import",
     "demo:wipe": "node db/demo.mjs wipe",
-    "demo:reset": "node db/demo.mjs reset"
+    "demo:reset": "node db/demo.mjs reset",
+    "typecheck": "tsc -b",
+    "manifest": "vite-node scripts/write-manifest.ts",
+    "manifest:check": "vite-node scripts/check-manifest.ts",
+    "sample": "vite-node scripts/write-sample.ts"
   },
   "dependencies": {
     "@adminiumjs/public-client": "^0.2.2",

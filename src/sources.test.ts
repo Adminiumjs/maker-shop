@@ -75,7 +75,12 @@ const ALL = walk(SRC).map((path) => {
 });
 
 /** Everything that actually ships — no suites, no fixtures. */
-const SHIPPED = ALL.filter((f) => !/\.test\.tsx?$/.test(f.rel) && !f.rel.startsWith("testing/"));
+/**
+ * `manifest/` and `sample/` write `manifest.json` and the sample bundle at
+ * build time: no screen imports them, so nothing in them reaches a browser.
+ */
+const BUILD_TIME = ["testing/", "manifest/", "sample/"];
+const SHIPPED = ALL.filter((f) => !/\.test\.tsx?$/.test(f.rel) && !BUILD_TIME.some((dir) => f.rel.startsWith(dir)));
 
 /**
  * ── EVERY SOURCE FILE IS TEXT, OR THE TOOLS STOP READING IT ─────────────────
