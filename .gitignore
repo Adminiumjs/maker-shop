@@ -16,3 +16,4 @@ dist
 # app built a second time with sourcemaps, so the ban grep can tell a
 # dependency chunk from one of ours. Evidence, not output; deleted after use.
 .provenance
+dist-surface
