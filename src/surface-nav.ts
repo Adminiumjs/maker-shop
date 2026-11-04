@@ -8,10 +8,11 @@
  */
 import type { MessageKey } from "./i18n/messages/index.ts";
 import { SHOP_NAV } from "./shop/nav.ts";
+import { STUDIO_NAV } from "./studio/nav.ts";
 
 export const APP_KEY = "maker";
 
 /** The app's name, as the sidebar heads its section. */
 export const APP_LABEL_KEY: MessageKey = "brand.name";
 
-export const SURFACE_NAV = [...SHOP_NAV] as const;
+export const SURFACE_NAV = [...SHOP_NAV, ...STUDIO_NAV] as const;

@@ -123,7 +123,7 @@ export const ROLES = [
         writableValues: { state: ["superseded"] },
       },
       products: { writable: LETTERING },
-      stock_movements: { creatable: ["material_id", "kind", "qty", "counted", "batch_id", "line_id", "note"] },
+      stock_movements: { creatable: ["material_id", "kind", "qty", "counted", "units", "batch_id", "line_id", "note"] },
     },
     tables: CUSTOMISER_READS,
   },

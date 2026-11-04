@@ -81,6 +81,20 @@ const SPECS: PageSpec[] = [
     ),
   },
   {
+    // A line on its own page: the record the Customiser's panel draws the design, the proof and the files on.
+    ref: "maker-lines",
+    title: "Order lines",
+    group: "orders",
+    icon: "list",
+    order: 5,
+    table: "order_lines",
+    config: form(
+      [title("product_name"), f("order_id", { control: "reference" }), f("qty", { control: "stepper" }), f("stage", { control: "segmented" })],
+      [f("lettering"), f("design_code"), f("proof_state", { control: "segmented" }), f("spoiled", { control: "number" })],
+      [f("each", { control: "currency" }), f("line_total", { control: "currency" }), f("post_by", { control: "date" }), f("made_at", { control: "datetime" })],
+    ),
+  },
+  {
     ref: "maker-requests",
     title: "Requests",
     group: "orders",
@@ -117,7 +131,7 @@ const SPECS: PageSpec[] = [
     table: "products",
     config: form(
       [title("name"), f("code"), f("category", { control: "select" }), f("unit"), f("pieces", { control: "stepper" }), f("price", { control: "currency" })],
-      [f("lead_days", { control: "stepper" }), f("machine_kind", { control: "segmented" }), f("material_id", { control: "reference" }), f("grams", { control: "number" }), f("size_text"), f("width_mm", { control: "number" }), f("height_mm", { control: "number" })],
+      [f("lead_days", { control: "stepper" }), f("machine_kind", { control: "segmented" }), f("material_id", { control: "reference" }), f("stock_per_unit", { control: "number" }), f("grams", { control: "number" }), f("size_text"), f("width_mm", { control: "number" }), f("height_mm", { control: "number" })],
       [f("photo", { control: "image" }), f("icon"), f("finish_label"), wide("made_from"), wide("finished_with"), wide("care")],
       [toggle("takes_lettering"), f("lettering_limit", { control: "stepper" }), f("lettering_prompt"), wide("lettering_hint")],
       [toggle("published"), f("position", { control: "stepper" })],
@@ -177,7 +191,7 @@ const SPECS: PageSpec[] = [
     order: 2,
     table: "stock_movements",
     config: form(
-      [f("material_id", { control: "reference" }), f("kind", { control: "select" }), f("qty", { control: "number" }), f("counted", { control: "number" })],
+      [f("material_id", { control: "reference" }), f("kind", { control: "select" }), f("qty", { control: "number" }), f("counted", { control: "number" }), f("units", { control: "number" })],
       [f("on_hand_before", { control: "number" }), f("on_hand_change", { control: "number" }), f("committed_change", { control: "number" })],
       [f("batch_id", { control: "reference" }), f("line_id", { control: "reference" }), wide("note", "text"), f("made_at", { control: "datetime" }), f("made_by")],
     ),
@@ -231,7 +245,7 @@ const SPECS: PageSpec[] = [
     icon: "contact",
     order: 1,
     table: "customers",
-    config: form([title("name"), f("email", { control: "email" }), f("language"), toggle("may_email"), f("created_at", { control: "datetime" }), f("forgotten_at", { control: "datetime" })]),
+    config: form([title("name"), f("email", { control: "email" }), f("language"), toggle("may_email"), f("created_at", { control: "datetime" }), f("forgotten_at", { control: "datetime" }), f("order_count", { control: "number" }), f("spent", { control: "currency" })]),
   },
 
   // ── the e-mails and the settings ────────────────────────────────────────────
@@ -291,4 +305,4 @@ export function pages(): unknown[] {
 export const PAGE_REFS = SPECS.map((spec) => spec.ref);
 
 /** The pages the studio's screens-only roles open records on. */
-export const STUDIO_PAGES = ["maker-orders", "maker-proofs"];
+export const STUDIO_PAGES = ["maker-orders", "maker-proofs", "maker-lines"];

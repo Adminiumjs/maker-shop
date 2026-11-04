@@ -332,6 +332,23 @@ const productById = new Map(PRODUCTS.map((p) => [p.id, p]));
 /** The price off from a quantity on, the same ladder for every product that breaks: each product says where its own breaks fall. */
 const PERCENT_OFF: Record<number, number> = { 1: 0, 4: 8, 8: 14, 12: 18 };
 
+/** The comp's sheet (`birch-row-data.js` SHEET), and the share of it a nest of pieces fills (`sheetsFor`). */
+const SHEET_MM2 = 400 * 300;
+const NESTED = 0.72;
+
+/**
+ * What one unit takes of its material, in the material's unit (the comp's
+ * `sheetsFor`, a unit at a time): a share of a sheet by its footprint, a
+ * blank a piece, its grams of filament, a little of a tub of glaze.
+ */
+function stockPerUnit(p: Product): number {
+  const group = MATERIALS.find((m) => m.code === p.stock)?.group;
+  if (group === "sheet") return Math.round(((p.foot.w * p.foot.h * p.foot.per) / (SHEET_MM2 * NESTED)) * 1000) / 1000;
+  if (group === "blank") return p.foot.per;
+  if (group === "filament") return p.grams ?? 100;
+  return 0.15;
+}
+
 /** A unit's weight: the printed piece's own, or its footprint (the comp's one weight rule, `lineWeight`), times its pieces. */
 const gramsOf = (p: Product): number => (p.grams ?? Math.round((p.foot.w * p.foot.h) / 900)) * p.foot.per;
 
@@ -650,6 +667,7 @@ export function customiserSection(): SampleBundle {
           machine_kind: p.machine,
           material_id: { "@ref": `material:${p.stock}` },
           grams: gramsOf(p),
+          stock_per_unit: stockPerUnit(p),
           size_text: p.size,
           width_mm: p.foot.w,
           height_mm: p.foot.h,

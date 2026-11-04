@@ -925,6 +925,21 @@
             }
           },
           {
+            "ref": "stock_per_unit",
+            "type": "decimal",
+            "scale": 3,
+            "label": {
+              "en-US": "Stock a unit takes"
+            },
+            "nullable": true,
+            "rules": {
+              "validation": {
+                "min": 0,
+                "max": 100000
+              }
+            }
+          },
+          {
             "ref": "size_text",
             "type": "text",
             "maxLength": 64,
@@ -1590,6 +1605,37 @@
               "stamp": {
                 "set": "now",
                 "on": "create"
+              }
+            }
+          },
+          {
+            "ref": "order_count",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Orders"
+            },
+            "rules": {
+              "rollup": {
+                "from": "orders",
+                "via": "customer_id",
+                "count": true
+              }
+            }
+          },
+          {
+            "ref": "spent",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "label": {
+              "en-US": "Charged in all"
+            },
+            "rules": {
+              "rollup": {
+                "from": "orders",
+                "via": "customer_id",
+                "sum": "total"
               }
             }
           }
@@ -2803,6 +2849,44 @@
                 ]
               }
             }
+          },
+          {
+            "ref": "stock_per_unit",
+            "type": "decimal",
+            "nullable": true,
+            "label": {
+              "en-US": "Stock a unit takes"
+            },
+            "rules": {
+              "copy": {
+                "via": "product_id",
+                "from": "stock_per_unit",
+                "mode": "always"
+              }
+            },
+            "scale": 3
+          },
+          {
+            "ref": "stock_use",
+            "type": "decimal",
+            "nullable": true,
+            "label": {
+              "en-US": "Stock it takes"
+            },
+            "rules": {
+              "formula": {
+                "mul": [
+                  "qty",
+                  {
+                    "coalesce": [
+                      "stock_per_unit",
+                      0
+                    ]
+                  }
+                ]
+              }
+            },
+            "scale": 3
           },
           {
             "ref": "placed_at",
@@ -4288,6 +4372,36 @@
             }
           },
           {
+            "ref": "units",
+            "type": "int",
+            "label": {
+              "en-US": "Units spoiled"
+            },
+            "nullable": true,
+            "rules": {
+              "validation": {
+                "min": 1,
+                "max": 1000
+              }
+            }
+          },
+          {
+            "ref": "per_unit",
+            "type": "decimal",
+            "nullable": true,
+            "label": {
+              "en-US": "Stock a unit takes"
+            },
+            "rules": {
+              "copy": {
+                "via": "line_id",
+                "from": "stock_per_unit",
+                "mode": "always"
+              }
+            },
+            "scale": 3
+          },
+          {
             "ref": "on_hand_before",
             "type": "decimal",
             "nullable": true,
@@ -4323,19 +4437,9 @@
                   {
                     "if": [
                       {
-                        "or": [
-                          {
-                            "eq": [
-                              "kind",
-                              "used"
-                            ]
-                          },
-                          {
-                            "eq": [
-                              "kind",
-                              "spoiled"
-                            ]
-                          }
+                        "eq": [
+                          "kind",
+                          "used"
                         ]
                       },
                       {
@@ -4349,21 +4453,57 @@
                           {
                             "eq": [
                               "kind",
-                              "count"
+                              "spoiled"
                             ]
                           },
                           {
                             "sub": [
-                              "counted",
+                              0,
                               {
                                 "coalesce": [
-                                  "on_hand_before",
-                                  0
+                                  "qty",
+                                  {
+                                    "mul": [
+                                      {
+                                        "coalesce": [
+                                          "units",
+                                          0
+                                        ]
+                                      },
+                                      {
+                                        "coalesce": [
+                                          "per_unit",
+                                          0
+                                        ]
+                                      }
+                                    ]
+                                  }
                                 ]
                               }
                             ]
                           },
-                          0
+                          {
+                            "if": [
+                              {
+                                "eq": [
+                                  "kind",
+                                  "count"
+                                ]
+                              },
+                              {
+                                "sub": [
+                                  "counted",
+                                  {
+                                    "coalesce": [
+                                      "on_hand_before",
+                                      0
+                                    ]
+                                  }
+                                ]
+                              },
+                              0
+                            ]
+                          }
                         ]
                       }
                     ]
@@ -4995,6 +5135,92 @@
       }
     },
     {
+      "ref": "maker-lines",
+      "template": "page-crud",
+      "title": {
+        "key": "mft.maker.lines",
+        "fallback": "Order lines"
+      },
+      "titles": {},
+      "nav": {
+        "group": "orders",
+        "icon": "list",
+        "order": 5
+      },
+      "bindings": {
+        "rows": "order_lines"
+      },
+      "config": {
+        "form": {
+          "v": 2,
+          "sections": [
+            {
+              "id": "s1",
+              "fields": [
+                {
+                  "column": "product_name",
+                  "control": "title",
+                  "span": 2
+                },
+                {
+                  "column": "order_id",
+                  "control": "reference"
+                },
+                {
+                  "column": "qty",
+                  "control": "stepper"
+                },
+                {
+                  "column": "stage",
+                  "control": "segmented"
+                }
+              ]
+            },
+            {
+              "id": "s2",
+              "fields": [
+                {
+                  "column": "lettering"
+                },
+                {
+                  "column": "design_code"
+                },
+                {
+                  "column": "proof_state",
+                  "control": "segmented"
+                },
+                {
+                  "column": "spoiled",
+                  "control": "number"
+                }
+              ]
+            },
+            {
+              "id": "s3",
+              "fields": [
+                {
+                  "column": "each",
+                  "control": "currency"
+                },
+                {
+                  "column": "line_total",
+                  "control": "currency"
+                },
+                {
+                  "column": "post_by",
+                  "control": "date"
+                },
+                {
+                  "column": "made_at",
+                  "control": "datetime"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
       "ref": "maker-requests",
       "template": "page-crud",
       "title": {
@@ -5222,6 +5448,10 @@
                 {
                   "column": "material_id",
                   "control": "reference"
+                },
+                {
+                  "column": "stock_per_unit",
+                  "control": "number"
                 },
                 {
                   "column": "grams",
@@ -5638,6 +5868,10 @@
                 {
                   "column": "counted",
                   "control": "number"
+                },
+                {
+                  "column": "units",
+                  "control": "number"
                 }
               ]
             },
@@ -5969,6 +6203,14 @@
                 {
                   "column": "forgotten_at",
                   "control": "datetime"
+                },
+                {
+                  "column": "order_count",
+                  "control": "number"
+                },
+                {
+                  "column": "spent",
+                  "control": "currency"
                 }
               ]
             }
@@ -6219,6 +6461,8 @@
         "page:@maker-orders:edit",
         "page:@maker-proofs:view",
         "page:@maker-proofs:edit",
+        "page:@maker-lines:view",
+        "page:@maker-lines:edit",
         "page:@maker-requests:view",
         "page:@maker-requests:edit",
         "page:@maker-problems:view",
@@ -6365,7 +6609,8 @@
         "table:@machine_bookings:delete",
         "table:@stock_movements:create",
         "page:@maker-orders:view",
-        "page:@maker-proofs:view"
+        "page:@maker-proofs:view",
+        "page:@maker-lines:view"
       ],
       "limits": {
         "orders": {
@@ -6427,6 +6672,7 @@
             "kind",
             "qty",
             "counted",
+            "units",
             "batch_id",
             "line_id",
             "note"
