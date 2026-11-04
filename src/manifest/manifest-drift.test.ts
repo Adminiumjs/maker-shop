@@ -17,6 +17,7 @@ import { describe, expect, it } from "vitest";
 import { buildManifest, CUSTOMER_ROUTES, manifestText } from "./build.ts";
 import { untranslated } from "./labels.ts";
 import { DESIGN_POSTING } from "./postings.ts";
+import { PUBLIC_REFS } from "./public.ts";
 import UNTRANSLATED from "./untranslated-labels.json" with { type: "json" };
 
 const FILE = join(__dirname, "..", "..", "manifest.json");
@@ -174,6 +175,22 @@ describe("a shopper reads nothing of anyone else's, and nothing the studio keeps
     const create = manifest.publicAccess.find((e) => e.table === "orders" && e.methods.includes("POST"))!;
     expect([create["dryRun"], create["expect"], create["clientKey"], create["humanCheck"]]).toEqual([true, "total", "client_key", true]);
     expect((create["consent"] as Json)["column"]).toBe("may_email");
+  });
+});
+
+describe("the shop's pages call each entry by the ref Adminium gives it", () => {
+  it("names every entry, in order, as Adminium names them", () => {
+    const taken = new Set<string>();
+    const refs = manifest.publicAccess.map((entry) => {
+      const real = `maker_${entry.table}`;
+      const reached = entry["claimedBy"] !== undefined || entry["visibleWith"] !== undefined;
+      const base = entry["claim"] !== undefined || (reached && entry["level"] !== "verified") ? `${real}_claimed` : reached ? `${real}_verified` : real;
+      let ref = base;
+      for (let n = 2; taken.has(ref); n += 1) ref = `${base}_${String(n)}`;
+      taken.add(ref);
+      return ref;
+    });
+    expect(Object.values(PUBLIC_REFS)).toEqual(refs);
   });
 });
 

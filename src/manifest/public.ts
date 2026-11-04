@@ -242,3 +242,33 @@ export const PUBLIC_ACCESS = [
   },
   ...underOrder(ORDER_KEY),
 ];
+
+/**
+ * The ref Adminium gives each entry above, in order, as the shop's pages call
+ * it: the table's installed name (`maker_` and its ref), with `_claimed` for
+ * an entry that opens a row by a claim, `_verified` for one that reads at the
+ * verified level through a claim or a parent, and `_2` for the second of the
+ * same. This is Adminium's naming (`publicEntryRefs`), written out once so
+ * the pages need not work it out; the drift test holds it to the entries.
+ */
+export const PUBLIC_REFS = {
+  signIn: "maker_customers_claimed",
+  myOrders: "maker_orders_verified",
+  myLines: "maker_order_lines_verified",
+  myFeatures: "maker_order_line_features_verified",
+  myProofs: "maker_proofs_verified",
+  products: "maker_products",
+  options: "maker_options",
+  postageServices: "maker_postage_services",
+  postageRates: "maker_postage_rates",
+  closures: "maker_closures",
+  materials: "maker_materials",
+  settings: "maker_settings",
+  placeOrder: "maker_orders_verified_2",
+  askUs: "maker_commission_requests",
+  somethingWrong: "maker_problem_reports",
+  orderByLink: "maker_orders_claimed",
+  linkLines: "maker_order_lines_verified_2",
+  linkFeatures: "maker_order_line_features_verified_2",
+  linkProofs: "maker_proofs_verified_2",
+} as const;
