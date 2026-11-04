@@ -243,9 +243,16 @@ const ON_HAND_CHANGE = {
     "qty",
     {
       if: [
-        { or: [{ eq: ["kind", "used"] }, { eq: ["kind", "spoiled"] }] },
+        { eq: ["kind", "used"] },
         { sub: [0, "qty"] },
-        { if: [{ eq: ["kind", "count"] }, { sub: ["counted", { coalesce: ["on_hand_before", 0] }] }, 0] },
+        {
+          if: [
+            // A spoil takes what the spoiled pieces took: an amount typed, or so many units of the line's product.
+            { eq: ["kind", "spoiled"] },
+            { sub: [0, { coalesce: ["qty", { mul: [{ coalesce: ["units", 0] }, { coalesce: ["per_unit", 0] }] }] }] },
+            { if: [{ eq: ["kind", "count"] }, { sub: ["counted", { coalesce: ["on_hand_before", 0] }] }, 0] },
+          ],
+        },
       ],
     },
   ],
@@ -341,6 +348,8 @@ export const TABLES: Table[] = [
       choice("machine_kind", "Made on", MACHINE_KINDS),
       fk("material_id", "materials", "Material", opt),
       int("grams", "Weight a unit (g)", { default: 100, rules: { validation: { min: 0, max: 30000 } } }),
+      // How much of its material one unit takes, in the material's own unit: a share of a sheet, one blank, grams of filament.
+      num("stock_per_unit", 3, "Stock a unit takes", { ...opt, rules: { validation: { min: 0, max: 100000 } } }),
       text("size_text", 64, "Size", opt),
       int("width_mm", "Width (mm)", opt),
       int("height_mm", "Height (mm)", opt),
@@ -447,6 +456,9 @@ export const TABLES: Table[] = [
       bool("may_email", "News from the workshop", false),
       at("forgotten_at", "Details deleted", opt),
       at("created_at", "First order", { ...opt, rules: stamp("now", onCreate) }),
+      // What the studio's Customers screen shows of them: how many orders, and what they were charged in all.
+      figure("order_count", "int", "Orders", { rollup: { from: "orders", via: "customer_id", count: true } }),
+      money("spent", "Charged in all", { rollup: { from: "orders", via: "customer_id", sum: "total" } }),
     ],
   },
   {
@@ -574,6 +586,9 @@ export const TABLES: Table[] = [
       money("line_total", "Line total", { formula: LINE_TOTAL }),
       figure("grams", "int", "Weight a unit (g)", { copy: { via: "product_id", from: "grams", mode: "always" } }),
       figure("weight_g", "int", "Weight (g)", { formula: { mul: ["qty", { coalesce: ["grams", 0] }] } }),
+      // What the line takes off the shelf, in its material's unit.
+      figure("stock_per_unit", "decimal", "Stock a unit takes", { copy: { via: "product_id", from: "stock_per_unit", mode: "always" } }, 3),
+      figure("stock_use", "decimal", "Stock it takes", { formula: { mul: ["qty", { coalesce: ["stock_per_unit", 0] }] } }, 3),
       // When the post-by is counted from, and how many studio days the product takes.
       at("placed_at", "Placed", { ...opt, rules: { copy: { via: "order_id", from: "placed_at", mode: "always" } } }),
       figure("lead_days", "int", "Lead (studio days)", { copy: { via: "product_id", from: "lead_days", mode: "always" } }),
@@ -769,6 +784,9 @@ export const TABLES: Table[] = [
       num("qty", 2, "Amount", { ...opt, rules: { validation: { min: 0 } } }),
       // A count: what was on the shelf, and what the shelf was said to hold just before.
       num("counted", 2, "Counted", { ...opt, rules: { validation: { min: 0 }, requiredWhen: { column: "kind", in: ["count"] } } }),
+      // A spoil: how many units of the line's product went wrong, and what one unit takes of the material.
+      int("units", "Units spoiled", { ...opt, rules: { validation: { min: 1, max: 1000 } } }),
+      figure("per_unit", "decimal", "Stock a unit takes", { copy: { via: "line_id", from: "stock_per_unit", mode: "always" } }, 3),
       figure("on_hand_before", "decimal", "On hand before", { copy: { via: "material_id", from: "on_hand", mode: "always" } }, 2),
       figure("on_hand_change", "decimal", "Change on hand", { formula: ON_HAND_CHANGE }, 2),
       figure("committed_change", "decimal", "Change committed", { formula: COMMITTED_CHANGE }, 2),

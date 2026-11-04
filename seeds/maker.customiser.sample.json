@@ -1980,6 +1980,7 @@
             "@ref": "material:wal6"
           },
           "grams": 40,
+          "stock_per_unit": 0.418,
           "size_text": "95 × 95 × 6 mm",
           "width_mm": 95,
           "height_mm": 95,
@@ -2012,6 +2013,7 @@
             "@ref": "material:ply3"
           },
           "grams": 40,
+          "stock_per_unit": 0.418,
           "size_text": "95 × 95 × 3 mm",
           "width_mm": 95,
           "height_mm": 95,
@@ -2042,6 +2044,7 @@
             "@ref": "material:slate5"
           },
           "grams": 67,
+          "stock_per_unit": 1,
           "size_text": "300 × 200 × 5 mm",
           "width_mm": 300,
           "height_mm": 200,
@@ -2074,6 +2077,7 @@
             "@ref": "material:slate5"
           },
           "grams": 42,
+          "stock_per_unit": 6,
           "size_text": "150 × 40 × 5 mm",
           "width_mm": 150,
           "height_mm": 40,
@@ -2104,6 +2108,7 @@
             "@ref": "material:acr3"
           },
           "grams": 2,
+          "stock_per_unit": 0.019,
           "size_text": "50 × 32 × 3 mm",
           "width_mm": 50,
           "height_mm": 32,
@@ -2134,6 +2139,7 @@
             "@ref": "material:acr3"
           },
           "grams": 1,
+          "stock_per_unit": 0.012,
           "size_text": "32 × 32 × 3 mm",
           "width_mm": 32,
           "height_mm": 32,
@@ -2164,6 +2170,7 @@
             "@ref": "material:pla-chalk"
           },
           "grams": 165,
+          "stock_per_unit": 165,
           "size_text": "220 × 120 × 30 mm",
           "width_mm": 220,
           "height_mm": 120,
@@ -2194,6 +2201,7 @@
             "@ref": "material:pla-grey"
           },
           "grams": 120,
+          "stock_per_unit": 120,
           "size_text": "110 × 110 × 105 mm",
           "width_mm": 110,
           "height_mm": 110,
@@ -2224,6 +2232,7 @@
             "@ref": "material:glaze-oat"
           },
           "grams": 16,
+          "stock_per_unit": 0.15,
           "size_text": "85 × 95 mm · 350 ml",
           "width_mm": 120,
           "height_mm": 120,
@@ -2254,6 +2263,7 @@
             "@ref": "material:acr3"
           },
           "grams": 21,
+          "stock_per_unit": 0.222,
           "size_text": "160 × 120 × 3 mm",
           "width_mm": 160,
           "height_mm": 120,
@@ -2284,6 +2294,7 @@
             "@ref": "material:wal18"
           },
           "grams": 110,
+          "stock_per_unit": 1,
           "size_text": "380 × 260 × 18 mm",
           "width_mm": 380,
           "height_mm": 260,
@@ -2316,6 +2327,7 @@
             "@ref": "material:ply3"
           },
           "grams": 140,
+          "stock_per_unit": 1.458,
           "size_text": "420 × 300 × 3 mm",
           "width_mm": 420,
           "height_mm": 300,
@@ -2346,6 +2358,7 @@
             "@ref": "material:wal6"
           },
           "grams": 7,
+          "stock_per_unit": 0.069,
           "size_text": "150 × 40 × 6 mm",
           "width_mm": 150,
           "height_mm": 40,
@@ -2376,6 +2389,7 @@
             "@ref": "material:ply3"
           },
           "grams": 16,
+          "stock_per_unit": 0.167,
           "size_text": "120 × 120 × 20 mm",
           "width_mm": 120,
           "height_mm": 120,
@@ -2406,6 +2420,7 @@
             "@ref": "material:ply3"
           },
           "grams": 120,
+          "stock_per_unit": 1.25,
           "size_text": "110 × 180 × 150 mm",
           "width_mm": 150,
           "height_mm": 180,
@@ -2438,6 +2453,7 @@
             "@ref": "material:pla-chalk"
           },
           "grams": 6,
+          "stock_per_unit": 6,
           "size_text": "56 × 24 × 4 mm",
           "width_mm": 56,
           "height_mm": 24,
