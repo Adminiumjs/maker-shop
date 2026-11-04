@@ -39,6 +39,10 @@ vi.mock("../../vendor/customiser/index.js", () => ({
   },
   designRefusal: () => null,
   heldDesign: () => null,
+  hasSavedDesigns: (held: readonly unknown[]) => held.length > 0,
+  openSavedLink: async () => "unknown",
+  readDesigns: async () => [],
+  YourDesigns: () => null,
 }));
 vi.mock("../../vendor/customiser/editor.css", () => ({}));
 
@@ -283,11 +287,12 @@ describe.each(["en-US", "ar-EG"] as const)("the shop's screens in %s", (locale) 
       expect(text()).toContain("We'll send you a picture to approve");
     }
     await sweep(`${locale} · confirmation`);
-    // "Look at the order": the order's own page, its link's code after the `#`.
+    // "Look at the order": the order's own page, opened by its link's code (handed over after the `#`, then taken off the address).
     await act(async () => (document.querySelector<HTMLButtonElement>(".sh-confirm-actions .sh-button--accent")!).click());
     await settle();
     expect(window.location.pathname).toBe("/order");
-    expect(window.location.hash).toBe("#LINKCODE0000000A");
+    expect(port.afterFake.calls.find((c) => c.call === "openShared")?.args).toEqual(["LINKCODE0000000A"]);
+    expect(window.location.hash).toBe("");
   });
 
   it("an empty checkout, a failed shop, and a page that isn't here", async () => {
