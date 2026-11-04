@@ -161,20 +161,33 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
       });
 
       it("walks a lettered piece from its proof to the post", async () => {
+        // A real order (a sample's rows send no e-mail, Adminium's rule): a slate house sign with words on it,
+        // taken by the owner as the shop's checkout would take it.
         let data = await maker.load();
-        const order = orderOf(data, "BR-2287");
-        const line = linesOf(data, order)[0]!;
-        expect([line["lettering"], line["stage"], line["proof_state"], num(line["proof_ok"])]).toEqual(["Number 14 · The Old Dairy", "make", "sent", 0]);
+        const sign = data.products.find((p) => p["code"] === "sign-house")!;
+        const option = (kind: string) => data.options.find((o) => String(o["product_id"]) === String(sign.id) && o["kind"] === kind)!.id;
+        const second = data.services.find((s) => s["code"] === "second")!.id;
+        const ordersTable = encodeURIComponent(tables["orders"] ?? "maker_orders");
+        const linesTable = encodeURIComponent(tables["order_lines"] ?? "maker_order_lines");
+        const made = ok(await owner.post<{ data: Row }>(`/api/v1/data/${connectionId}/${ordersTable}`, { values: { name: "Ada W.", email: "ada.w@example.com", address_line1: "3 Mill Lane", town: "Settle", postcode: "BD24 0AA", service_id: second } }), 201).data;
+        ok(await owner.post(`/api/v1/data/${connectionId}/${linesTable}`, { values: { order_id: made.id, product_id: sign.id, qty: 1, material_id: option("material"), size_id: option("size"), finish_id: option("finish"), lettering: "Mill House" } }), 201);
+        data = await maker.load();
+        const mine = () => data.orders.find((o) => String(o.id) === String(made.id))!;
+        expect(mine()["number"]).toBe("BR-2291");
+        const line = linesOf(data, mine())[0]!;
+        expect([line["lettering"], line["stage"], line["proof_state"] ?? null, num(line["proof_ok"])]).toEqual(["Mill House", "make", null, 0]);
 
-        // Adminium holds it at make while its proof waits, whatever a screen sends.
+        // Adminium holds it at make while no proof is approved, whatever a screen sends.
         const held = await maker.moveLine(line, "making").catch((e: unknown) => e);
         expect(held).toBeInstanceOf(ApiError);
         expect(held).toMatchObject({ status: 409, code: "STATE_MOVE_REFUSED", params: { from: "make", to: "making" } });
 
-        // The maker sends a proof: the one waiting is superseded, the new one stored with its picture and numbered 2.
-        const { sent, missing: notMade } = await sendProofs(maker, data, order, async () => new Blob([new Uint8Array(png())], { type: "image/png" }));
-        expect(notMade).toEqual([]);
-        expect(sent).toHaveLength(1);
+        // The maker sends a proof, then a second one: the first is superseded, the second numbered 2.
+        const draw = async () => new Blob([new Uint8Array(png())], { type: "image/png" });
+        expect((await sendProofs(maker, data, mine(), draw)).sent).toHaveLength(1);
+        data = await maker.load();
+        const { sent, missing: notMade } = await sendProofs(maker, data, mine(), draw);
+        expect([sent.length, notMade.length]).toEqual([1, 0]);
         const proofs = (await rows("proofs")).filter((p) => String(p["line_id"]) === String(line.id)).sort((a, b) => Number(a["version"]) - Number(b["version"]));
         expect(proofs.map((p) => [Number(p["version"]), p["state"], p["kind"]])).toEqual([
           [1, "superseded", "lettering"],
@@ -186,9 +199,11 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         const picture = await owner.fetchAs()(fileSrc(proofs[1]!["picture"])!);
         expect(picture.status).toBe(200);
         expect([...new Uint8Array(await picture.arrayBuffer()).slice(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]);
-        // Adminium e-mails it: an outbox row for the order.
-        const ready = await until(async () => (await rows("messages")).find((m) => m["kind"] === "proof-ready" && String(m["order_id"]) === String(order.id)), "the proof's e-mail");
-        expect(ready["to_address"]).toBe("bex.t@mail.example");
+        // Adminium e-mails each proof, and the reminder: outbox rows for the order, to the shopper.
+        await until(async () => ((await rows("messages")).filter((m) => m["kind"] === "proof-ready" && String(m["order_id"]) === String(made.id)).length >= 2 ? true : undefined), "the proofs' e-mails", 45_000);
+        await maker.remind(proofs[1]!);
+        const reminder = await until(async () => (await rows("messages")).find((m) => m["kind"] === "proof-reminder" && String(m["order_id"]) === String(made.id)), "the reminder's e-mail", 45_000);
+        expect(reminder["to_address"]).toBe("ada.w@example.com");
 
         // The shopper approves it (their claimed write; here the owner moves the proof as the shopper's page would).
         ok(await owner.patch(`/api/v1/data/${connectionId}/${encodeURIComponent(tables["proofs"] ?? "maker_proofs")}/${String(proofs[1]!.id)}`, { values: { state: "approved" }, from: "sent" }));
@@ -199,24 +214,23 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         // On the bench: to making (the order with it), made, ready.
         await moveLine(maker, data, approved, "making");
         data = await maker.load();
-        expect(orderOf(data, "BR-2287")["status"]).toBe("making");
-        expect(await moveOrderLines(maker, data, orderOf(data, "BR-2287"), "finishing", ["make", "making"])).toEqual({ moved: 1, held: 0 });
+        expect(mine()["status"]).toBe("making");
+        expect(await moveOrderLines(maker, data, mine(), "finishing", ["make", "making"])).toEqual({ moved: 1, held: 0 });
         data = await maker.load();
-        expect(await moveOrderLines(maker, data, orderOf(data, "BR-2287"), "ready", ["make", "making", "finishing"])).toEqual({ moved: 1, held: 0 });
+        expect(await moveOrderLines(maker, data, mine(), "ready", ["make", "making", "finishing"])).toEqual({ moved: 1, held: 0 });
         data = await maker.load();
-        expect(orderOf(data, "BR-2287")["status"]).toBe("ready");
-        const made = data.lines.find((l) => String(l.id) === String(line.id))!;
-        expect(made["stage"]).toBe("ready");
-        expect(made["made_by"]).toBe("Jo Marsh");
+        expect(mine()["status"]).toBe("ready");
+        const done = data.lines.find((l) => String(l.id) === String(line.id))!;
+        expect([done["stage"], done["made_by"]]).toEqual(["ready", "Jo Marsh"]);
 
         // The packer posts it; Adminium stamps it and e-mails the customer.
         const packed = await packer.load();
-        expect(await postOrders(packer, packed, [orderOf(packed, "BR-2287")])).toBe(1);
-        const posted = (await rows("orders")).find((o) => o["number"] === "BR-2287")!;
+        expect(await postOrders(packer, packed, [packed.orders.find((o) => String(o.id) === String(made.id))!])).toBe(1);
+        const posted = (await rows("orders")).find((o) => String(o.id) === String(made.id))!;
         expect([posted["status"], posted["posted_by"], posted["tracking"] ?? null]).toEqual(["posted", "Ade Pack", null]);
         expect(posted["posted_at"]).not.toBeNull();
         expect((await rows("order_lines")).find((l) => String(l.id) === String(line.id))!["stage"]).toBe("posted");
-        await until(async () => (await rows("messages")).find((m) => m["kind"] === "order-posted" && String(m["order_id"]) === String(posted.id)), "the posted e-mail");
+        await until(async () => (await rows("messages")).find((m) => m["kind"] === "order-posted" && String(m["order_id"]) === String(made.id)), "the posted e-mail", 45_000);
       }, 300_000);
 
       it("refuses a packer anything but the post", async () => {
@@ -227,24 +241,19 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect((refused as ApiError).status).toBeGreaterThanOrEqual(400);
       });
 
-      it("e-mails a reminder of a proof still waiting", async () => {
+      it("stamps a reminder of a sample's proof still waiting (a sample's rows send no e-mail)", async () => {
         const data = await maker.load();
         const line = linesOf(data, orderOf(data, "BR-2280"))[0]!;
         const waiting = proofsOf(data, line)[0]!;
         expect(waiting["state"]).toBe("sent");
         await maker.remind(waiting);
-        const order = orderOf(data, "BR-2280");
         expect((await rows("proofs")).find((p) => String(p.id) === String(waiting.id))!["reminded_at"]).not.toBeNull();
-        const messages = await rows("messages");
-        expect(
-          messages.find((m) => m["kind"] === "proof-reminder" && String(m["order_id"]) === String(order.id)),
-          JSON.stringify(messages.map((m) => [m["kind"], m["order_id"], m["status"]])),
-        ).toBeDefined();
       });
 
       it("sends a design's proof as the Customiser made it from the design's version", async () => {
         let data = await maker.load();
-        const order = orderOf(data, "BR-2290");
+        // Iris's book nook: its design ordered (versions snapshotted), its proof waiting.
+        const order = orderOf(data, "BR-2288");
         // No proof made yet: nothing goes, and the line is named.
         const first = await sendProofs(maker, data, order, async () => null);
         expect([first.sent.length, first.missing.length]).toEqual([0, 1]);
@@ -257,9 +266,9 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         const stored = ok(await owner.send<{ ref: string }>("POST", `/api/v1/files?${new URLSearchParams({ filename: "design-proof.png", connectionId, table: "customiser_design_versions", column: "proof_file" }).toString()}`, png(), { "content-type": "image/png" }), 201);
         ok(await owner.patch(`/api/v1/data/${connectionId}/customiser_design_versions/${String(version.id)}`, { values: { proof_file: stored.ref } }));
         data = await maker.load();
-        const { sent } = await sendProofs(maker, data, orderOf(data, "BR-2290"), async () => null);
+        const { sent } = await sendProofs(maker, data, orderOf(data, "BR-2288"), async () => null);
         expect(sent).toHaveLength(1);
-        const proof = (await rows("proofs")).find((p) => String(p["line_id"]) === String(line.id))!;
+        const proof = (await rows("proofs")).filter((p) => String(p["line_id"]) === String(line.id)).sort((x, y) => Number(y["version"]) - Number(x["version"]))[0]!;
         expect([proof["kind"], String(proof["design_version_id"]), proof["state"]]).toEqual(["design", String(version.id), "sent"]);
         // A copy, its own file: never the Customiser's file itself.
         expect(fileIdOf(proof["picture"])).toMatch(/^file_[0-9A-Z]{26}$/);
