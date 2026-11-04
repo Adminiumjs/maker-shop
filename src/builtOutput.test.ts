@@ -512,7 +512,7 @@ describe("nothing in the artefact can reach a host we do not control", () => {
    *
    * None can cause a request. One is a family of XML namespaces —
    * identifiers for a vocabulary, which no agent dereferences — one is a
-   * message React prints, and three are text in the Customiser's 3D preview.
+   * message React prints, and four are text in the Customiser's 3D preview.
    * Anything else, from any file, is a finding: this app declares no egress.
    */
   const OURS: readonly InertOrigin[] = [
@@ -521,7 +521,7 @@ describe("nothing in the artefact can reach a host we do not control", () => {
       why: "the SVG, MathML, xlink and XML namespaces React writes onto elements — names for a vocabulary, never fetched. The Customiser writes the same namespace into the pictures it draws",
     },
     /*
-     * Three from the vendored Customiser's 3D preview (three.js), which the
+     * Four from the vendored Customiser's 3D preview (three.js), which the
      * Customiser's built files carry and no file of this app's names. The
      * add-on keeps no declaration of its own for a host to read, so they are
      * written down here, each with what it is.
@@ -537,6 +537,10 @@ describe("nothing in the artefact can reach a host we do not control", () => {
     {
       origin: "//.test",
       why: "not an address at all: three.js's own regular expression `/^\\//.test(…)`, read by the address matcher as a protocol-relative URL",
+    },
+    {
+      origin: "http://schemas.microsoft.com",
+      why: "the 3MF model namespace the Customiser's 3D preview names when it reads a printed item's 3MF file: an XML vocabulary's name, never fetched",
     },
     {
       origin: "https://react.dev",
