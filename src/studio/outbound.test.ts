@@ -45,7 +45,13 @@ describe("the order, as the flow reads it", () => {
       destination: { name: "Sam & Robin", lines: ["4 Fellside"], city: "Kendal", postcode: "LA9 4AA", country: "GB" },
       promisedFor: "2026-08-10",
       value: { amount: 4195, currency: "GBP" },
+      parcelWeightGrams: 285,
     });
+  });
+
+  it("sends the parcel's packed weight as the order shows it, and none for an order that keeps none", () => {
+    expect(outboundOrder(fixture(), { ...order(14), weight_g: "312" }, "GBP").parcelWeightGrams).toBe(312);
+    expect("parcelWeightGrams" in outboundOrder(fixture(), { ...order(14), weight_g: null }, "GBP")).toBe(false);
   });
 
   it("leaves out an address the order has not got, rather than inventing one", () => {

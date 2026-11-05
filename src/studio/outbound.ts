@@ -2,7 +2,8 @@
  * An order as a delivery company's dispatch flow reads it
  * (`order.dispatch.actions`, `DispatchPayload`): the studio's own address it
  * goes from, the shopper's it goes to, each of its pieces as a line with what
- * one weighs (the line's stored `grams`), the day it is to be posted by, what
+ * one weighs (the line's stored `grams`), the parcel's packed weight (the
+ * order's stored `weight_g`), the day it is to be posted by, what
  * it is worth, the studio's clock, and the service the shopper chose at
  * checkout, as that add-on names it (the postage service's `dhl_product`), so
  * the flow opens with it picked. Every figure is a stored column; the mapping
@@ -43,6 +44,8 @@ export function outboundOrder(data: StudioData, order: Row, currency: string): O
   const line1 = text(order["address_line1"]);
   const total = num(order["total"]);
   const postBy = dayOf(order["post_by"]);
+  // The parcel as the studio weighs it (pieces and packing, Adminium's stored `weight_g`): the one weight the order shows and DHL is sent.
+  const weight = num(order["weight_g"]);
   return {
     ref: text(order["number"]) ?? String(order.id),
     recipient: { name: text(order["name"]) ?? "", key: String(order["customer_id"] ?? order.id) },
@@ -72,6 +75,7 @@ export function outboundOrder(data: StudioData, order: Row, currency: string): O
         }),
     ...(postBy === null ? {} : { promisedFor: postBy }),
     ...(total === null ? {} : { value: { amount: Math.round(total * 100), currency } }),
+    ...(weight === null ? {} : { parcelWeightGrams: weight }),
   };
 }
 
