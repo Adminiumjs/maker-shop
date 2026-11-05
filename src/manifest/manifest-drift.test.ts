@@ -44,7 +44,7 @@ describe("manifest.json is what src/manifest/ writes", () => {
   it("is prefixed, keyed maker, and needs the engine that reads its rules", () => {
     expect(manifest.requiredSchema.prefixed).toBe(true);
     expect(manifest["key"]).toBe("maker");
-    expect((manifest["compatibility"] as Json)["minAdminiumVersion"]).toBe("0.3.45");
+    expect((manifest["compatibility"] as Json)["minAdminiumVersion"]).toBe("0.3.47");
   });
 
   it("holds its English-only labels to the list recorded, so a new one cannot slip in untranslated", () => {
@@ -246,7 +246,7 @@ describe("the studio writes only what its work needs", () => {
 
   it("reads the design a line names, for every role that sees orders", () => {
     for (const key of ["owner", "maker", "packer"]) {
-      expect(role(key).tables, key).toEqual(expect.arrayContaining([{ addOn: "customiser", table: "designs", actions: ["read"] }]));
+      expect(role(key).tables?.find((t) => t["addOn"] === "customiser" && t["table"] === "designs")?.["actions"], key).toContain("read");
     }
   });
 

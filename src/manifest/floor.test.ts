@@ -38,17 +38,22 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
   it("gives the owner and the maker what the Customiser's line panel reads and writes, and the packer only the design", () => {
     type Grant = { addOn: string; table: string; actions: string[] };
     const tablesOf = (key: string) => Object.fromEntries(((roleOf(shipped, key) as unknown as { tables: Grant[] }).tables.filter((g) => g.addOn === "customiser")).map((g) => [g.table, g.actions]));
-    const reads = ["designs", "bases", "ready_designs", "ready_parts", "base_areas", "base_pieces", "palettes", "palette_colours", "fonts"];
+    const reads = ["bases", "ready_designs", "ready_parts", "base_areas", "base_pieces", "palettes", "palette_colours", "fonts", "features"];
     for (const key of ["owner", "maker"]) {
       const held = tablesOf(key);
-      for (const table of reads) expect(held[table], `${key} reads ${table}`).toContain("read");
-      expect(held["design_versions"], key).toEqual(["read", "create", "update"]);
-      expect(held["version_files"], key).toEqual(["read", "create", "update"]);
+      for (const table of reads) expect(held[table], `${key} reads ${table}`).toEqual(["read"]);
+      // The shopper's words, logo and photo are personal columns: read in clear.
+      expect(held["designs"], key).toEqual(["read", "read_pii"]);
+      expect(held["design_versions"], key).toEqual(["read", "read_pii", "create", "update"]);
+      // Making the files again takes the version's old files away.
+      expect(held["version_files"], key).toEqual(["read", "create", "update", "delete"]);
     }
-    // A role holds at most twelve of the add-ons' tables: the owner reads Holiday calendars' days, and leaves out the priced features.
-    expect(tablesOf("maker")["features"]).toEqual(["read"]);
-    expect(tablesOf("owner")["features"]).toBeUndefined();
     expect(tablesOf("packer")).toEqual({ designs: ["read"] });
+  });
+
+  it("lets the owner find and erase a customer, and no screens-only role", () => {
+    expect(roleOf(shipped, "owner").permissions).toContain("privacy:@:people");
+    for (const key of ["maker", "packer"]) expect(roleOf(shipped, key).permissions.filter((p) => p.startsWith("privacy:"))).toEqual([]);
   });
 
   it("gives the owner Holiday calendars' settings, and no other role", () => {
@@ -77,6 +82,6 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
   });
 
   it("is refused by the validator at an older floor, so its words cannot ship early", () => {
-    expect(validateManifest({ ...shipped, compatibility: { ...(shipped["compatibility"] as Json), minAdminiumVersion: "0.3.43" } }).ok).toBe(false);
+    expect(validateManifest({ ...shipped, compatibility: { ...(shipped["compatibility"] as Json), minAdminiumVersion: "0.3.46" } }).ok).toBe(false);
   });
 });

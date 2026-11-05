@@ -3,7 +3,8 @@
  *
  *   owner    everything: the dashboard section, the catalogue and its prices,
  *            the settings, the customers, the e-mails; the studio's own
- *            screens; and Holiday calendars' closed days (its settings).
+ *            screens; Holiday calendars' closed days (its settings); and
+ *            finding and erasing a customer (Studio → Privacy).
  *   maker    the studio's screens, never the dashboard: the board and the
  *            orders' lines, the proofs (send one, remind, send again),
  *            batches, machine bookings and the stock, and a product's
@@ -35,23 +36,26 @@ const pii = (table: string) => `table:@${table}:read_pii`;
 /**
  * What the Customiser's panel on an order line reads to draw the design as it
  * will be made (its ready-made design and parts, the base's areas and pieces,
- * the palettes, colours and fonts), and what it writes when the proof and the
- * machine's files are made: a version of the design where none was ordered
- * yet, the proof file on it, and the files of the version. The panel makes
- * them in the browser and saves them as the person signed in.
+ * the palettes, colours and fonts, the priced features), and what it writes
+ * when the proof and the machine's files are made: a version of the design
+ * where none was ordered yet, the proof file on it, and the files of the
+ * version, the old ones taken away when they are made again. The shopper's
+ * words, logo and photo are the design's personal columns, read in clear
+ * (`read_pii`). The panel makes them in the browser and saves them as the
+ * person signed in (the Customiser's README, "What an app's role needs").
  */
 const CUSTOMISER_PANEL = [
-  { addOn: CUSTOMISER, table: "designs", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "designs", actions: ["read", "read_pii"] },
   {
     addOn: CUSTOMISER,
     table: "design_versions",
-    actions: ["read", "create", "update"],
-    limit: { creatable: ["app", "design_id", "version", "values"], writable: ["proof_file", "note"] },
+    actions: ["read", "read_pii", "create", "update"],
+    limit: { creatable: ["app", "design_id", "version", "values"], writable: ["proof_file"] },
   },
   {
     addOn: CUSTOMISER,
     table: "version_files",
-    actions: ["read", "create", "update"],
+    actions: ["read", "create", "update", "delete"],
     limit: { creatable: ["app", "version_id", "kind", "name", "about", "layers", "left_out", "position"], writable: ["file"] },
   },
   { addOn: CUSTOMISER, table: "bases", actions: ["read"] },
@@ -66,26 +70,15 @@ const CUSTOMISER_PANEL = [
 ];
 
 /**
- * A role holds at most twelve of the add-ons' tables. The owner reads Holiday
- * calendars' days too, so of the panel's twelve it leaves out the priced
- * features: the panel draws a design without them (a part's feature code is
- * all they add there).
- */
-const OWNER_CUSTOMISER = CUSTOMISER_PANEL.filter((grant) => grant.table !== "features");
-
-/**
- * The Customiser's set-up page: a starter font nobody uploaded is read from
- * the file the add-on ships, handed out beside that page, so whoever makes
- * the machine's files holds it (the Customiser's README, "What an app's role
- * needs").
- *
- * Not grantable yet, and so declared nowhere: `read_pii` on `designs` and
- * `design_versions` (the shopper's words, logo and photo are personal
- * columns) and `delete` on `version_files` (making the files again). An
- * app's role takes read, create and update of an add-on's table only; the
- * contract names each as a known gap.
+ * The Customiser's set-up page (`/add-ons/customiser/customiser`): the owner
+ * sets up the shop's side there, and a starter font nobody uploaded is read
+ * from the file the add-on ships beside that page, so whoever makes the
+ * machine's files holds it, the maker on the studio's screens included.
  */
 const CUSTOMISER_SETUP_PAGE = view("customiser");
+
+/** Finding a customer and erasing what the studio keeps of them (Studio → Privacy): the owner's, never a screens-only role's. */
+const ERASE_PEOPLE = "privacy:@:people";
 
 /** Columns Adminium decides: nobody writes them, whatever their role. */
 const decided = (ref: string): Set<string> =>
@@ -142,6 +135,7 @@ export const ROLES = [
       ...["orders", "customers", "commission_requests", "problem_reports", "messages"].map(pii),
       ...ROLE_PANELS["owner"]!.map(view),
       CUSTOMISER_SETUP_PAGE,
+      ERASE_PEOPLE,
       // Holiday calendars' one setting, the days the studio is closed: the owner's to keep, not only an administrator's.
       `addOn:${HOLIDAYS}:settings`,
     ],
@@ -149,7 +143,7 @@ export const ROLES = [
       orders: { writable: typed("orders", ...SHOPPERS_OWN), creatable: typed("orders", ...SHOPPERS_OWN) },
     },
     // The public holidays Holiday calendars keeps, read to add one as a closure.
-    tables: [...OWNER_CUSTOMISER, { addOn: HOLIDAYS, table: "holidays", actions: ["read"] }],
+    tables: [...CUSTOMISER_PANEL, { addOn: HOLIDAYS, table: "holidays", actions: ["read"] }],
   },
   {
     key: "maker",

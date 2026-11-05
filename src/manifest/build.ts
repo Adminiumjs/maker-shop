@@ -29,9 +29,11 @@ export const VERSION = "0.2.0";
  * of a person and its panels on a record; a role's grant of those panels
  * (opened to a role that sees only the app's screens), a lettering held to
  * its product's limit, a person's copies in the versions of their designs,
- * and a proof's picture in its e-mail.
+ * a proof's picture in its e-mail; and a role's personal-column read and
+ * delete on the Customiser's tables, more than twelve of them, and the
+ * owner's right to find and erase a customer.
  */
-export const MIN_ADMINIUM = "0.3.45";
+export const MIN_ADMINIUM = "0.3.47";
 
 const ENV = {
   VITE_ADMINIUM_API_BASE_URL: { required: false, example: "https://admin.example.com" },

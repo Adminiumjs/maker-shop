@@ -18,7 +18,7 @@
     "commerce"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.45",
+    "minAdminiumVersion": "0.3.47",
     "engines": [
       "sqlite",
       "postgres",
@@ -10237,6 +10237,7 @@
         "page:@customiser-line:view",
         "page:@customiser-product:view",
         "page:@customiser:view",
+        "privacy:@:people",
         "addOn:holiday-calendars:settings"
       ],
       "limits": {
@@ -10282,7 +10283,8 @@
           "addOn": "customiser",
           "table": "designs",
           "actions": [
-            "read"
+            "read",
+            "read_pii"
           ]
         },
         {
@@ -10290,6 +10292,7 @@
           "table": "design_versions",
           "actions": [
             "read",
+            "read_pii",
             "create",
             "update"
           ],
@@ -10301,8 +10304,7 @@
               "values"
             ],
             "writable": [
-              "proof_file",
-              "note"
+              "proof_file"
             ]
           }
         },
@@ -10312,7 +10314,8 @@
           "actions": [
             "read",
             "create",
-            "update"
+            "update",
+            "delete"
           ],
           "limit": {
             "creatable": [
@@ -10382,6 +10385,13 @@
         {
           "addOn": "customiser",
           "table": "fonts",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "features",
           "actions": [
             "read"
           ]
@@ -10505,7 +10515,8 @@
           "addOn": "customiser",
           "table": "designs",
           "actions": [
-            "read"
+            "read",
+            "read_pii"
           ]
         },
         {
@@ -10513,6 +10524,7 @@
           "table": "design_versions",
           "actions": [
             "read",
+            "read_pii",
             "create",
             "update"
           ],
@@ -10524,8 +10536,7 @@
               "values"
             ],
             "writable": [
-              "proof_file",
-              "note"
+              "proof_file"
             ]
           }
         },
@@ -10535,7 +10546,8 @@
           "actions": [
             "read",
             "create",
-            "update"
+            "update",
+            "delete"
           ],
           "limit": {
             "creatable": [
