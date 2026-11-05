@@ -17,6 +17,7 @@ import { StudioProvider, type StudioEnv } from "./env.tsx";
 import { StudioApp, screensFor } from "./StudioApp.tsx";
 import { useStudio, type View } from "./store.ts";
 import { FakeDoor } from "./testing/fakeDoor.ts";
+import { fixture } from "./testing/fixture.ts";
 import { ApiError } from "./wire.ts";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -299,7 +300,16 @@ describe("the order", () => {
 });
 
 describe("the proofs", () => {
-  it("sends a reminder of a proof still waiting", async () => {
+  it("offers no reminder before the proof has waited as many studio days as the settings say", async () => {
+    // Sent on Tuesday, two studio days ago; the studio reminds after three.
+    const data = fixture();
+    const door = new FakeDoor({ data: { ...data, settings: { ...data.settings!, proof_reminder_days: 3 } } });
+    await mount(door, "proofs");
+    expect(text()).toContain("2 studio days ago");
+    expect([...document.querySelectorAll("button")].some((b) => b.textContent === "Send a reminder")).toBe(false);
+  });
+
+  it("sends a reminder of a proof that has waited as long as the settings say", async () => {
     const door = new FakeDoor();
     await mount(door, "proofs");
     await click(button("Send a reminder"));

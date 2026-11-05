@@ -67,6 +67,12 @@ export function lockOf(line: Row): "waiting" | "unsent" | null {
   return line["proof_state"] === "sent" ? "waiting" : "unsent";
 }
 
+/** The studio days a proof waits before a reminder is offered: the studio's own setting (3 when it says none). */
+export function reminderDays(data: StudioData): number {
+  const days = num(data.settings?.["proof_reminder_days"]);
+  return days === null || days < 1 ? 3 : days;
+}
+
 /** A line's proofs, newest first. */
 export function proofsOf(data: StudioData, line: Row): Row[] {
   return data.proofs.filter((p) => same(p["line_id"], line.id)).sort((a, b) => (num(b["version"]) ?? 0) - (num(a["version"]) ?? 0));

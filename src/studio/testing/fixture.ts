@@ -23,7 +23,7 @@ export const DESIGN_PROOF = "/api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1XA/conte
 
 export function fixture(): StudioData {
   return {
-    settings: r({ id: 1, studio_name: "Birch Row", address: "Unit 4, Station Yard, Settle BD24 9AA", email: "studio@birchrow.example", taking_orders: true }),
+    settings: r({ id: 1, studio_name: "Birch Row", address: "Unit 4, Station Yard, Settle BD24 9AA", email: "studio@birchrow.example", proof_reminder_days: 2, taking_orders: true }),
     materials: [
       r({ id: 1, code: "wal6", name: "Walnut, 6 mm", family: "Walnut", group: "sheet", size_note: "400 × 300 mm sheet", sheet_w_mm: 400, sheet_h_mm: 300, machine_id: 1, tint: "#6b4423", unit: "sheets", on_hand: 14, committed: 2, available: 12, reorder_at: 6, active: true }),
       r({ id: 2, code: "ply3", name: "Birch ply, 3 mm", family: "Birch ply", group: "sheet", size_note: "400 × 300 mm sheet", sheet_w_mm: 400, sheet_h_mm: 300, machine_id: 1, tint: "#c2a175", unit: "sheets", on_hand: 5, committed: 3, available: 2, reorder_at: 6, active: true }),

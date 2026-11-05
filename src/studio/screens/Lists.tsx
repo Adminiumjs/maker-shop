@@ -8,7 +8,7 @@ import { Check, MailCheck } from "lucide-react";
 
 import { postOrders } from "../actions.ts";
 import { useData, useEnv, useRun } from "../env.tsx";
-import { closuresOf, fileSrc, isLive, linesOf, postRun, productOf, proofQueue, serviceOf, type ProofItem } from "../facts.ts";
+import { closuresOf, fileSrc, isLive, linesOf, postRun, productOf, proofQueue, reminderDays, serviceOf, type ProofItem } from "../facts.ts";
 import { useFmt } from "../format.ts";
 import { go, toast, useStudio, type OrderFilter } from "../store.ts";
 import { studioDaysBetween } from "../time.ts";
@@ -221,7 +221,8 @@ function Waiting({ item }: { item: ProofItem }) {
           </span>
         )}
         <div className="st-actions">
-          {latest !== undefined && door.who().can("proofs", "update") && (
+          {/* Offered once the proof has waited as many studio days as the studio's settings say. */}
+          {latest !== undefined && waited >= reminderDays(data) && door.who().can("proofs", "update") && (
             <button type="button" className="st-btn st-btn--small" disabled={busy} onClick={() => void run(async (d) => {
               await d.remind(latest);
               return t("studio.proofs.remindedToast", { customer });
