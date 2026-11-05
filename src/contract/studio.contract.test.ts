@@ -48,7 +48,7 @@ import { fileIdOf, fileSrc, linesOf, proofsOf } from "../studio/facts.ts";
 import { createSessionTransport } from "../studio/transport/sessionSource.ts";
 import { loadStaffConfig } from "../studio/transport/staffConnection.ts";
 import { ApiError, num, type Row } from "../studio/wire.ts";
-import { delivered, mailCount, plain, subjectOf } from "./mail.ts";
+import { delivered, mailCount, plain, sinkMail, subjectOf } from "./mail.ts";
 import { MANIFEST_TEXT } from "./release.ts";
 import { addOnBundle, addSample, appBundle, boot, Caller, ENGINES, missing, newPassword, ok, png, PORTS_PER_ENGINE, type Engine, type Server } from "./studio-harness.ts";
 
@@ -279,6 +279,20 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect(plain(postedMail.html)).not.toMatch(/Track it|Tracking number/);
         expect(postedMail.html).not.toContain("dhl.com");
       }, 300_000);
+
+      /*
+       * The banner at the top of a customer's e-mail names the workspace
+       * (`branding.appName`, "Adminium" with its hexagon unless the operator
+       * set one), not the business whose e-mail it is: an app's template
+       * carries no brand of its own (the manifest's `emailTemplates` have no
+       * such field), and the outbox's `appName` (the studio's name, from its
+       * settings row) fills the words, never the banner.
+       */
+      it.fails("names the studio in the banner of the e-mails it sends a customer (gap: an app's mail takes the workspace's banner)", async () => {
+        const studio = String((await rows("settings"))[0]!["studio_name"]);
+        const mail = (await sinkMail(server.sink)).filter((m) => m.to.includes(SHOPPER)).at(-1)!;
+        expect(/letter-spacing:-\.01em;color:[^"]*">([^<]*)<\/td>/.exec(mail.html)?.[1]).toBe(studio);
+      });
 
       it("e-mails an order DHL carried with its tracking number and a link to track it", async () => {
         // A piece with no words on it needs no proof: it goes straight to the bench.
