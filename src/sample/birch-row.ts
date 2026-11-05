@@ -81,6 +81,17 @@ export const addDays = (iso: string, n: number): string => {
 const offset = (iso: string): number => Math.round((parse(iso).getTime() - parse(TODAY).getTime()) / 86_400_000);
 const day = (iso: string): Row => ({ "@day": offset(iso), "@week": true });
 const wall = (iso: string, time: string): Row => ({ "@day": offset(iso), "@time": time, "@week": true });
+/**
+ * A moment that has passed by the sample's 16:40: today's as so long ago
+ * (`@ago`), so a sample added in the morning never stamps a proof sent at 11:00
+ * that has not come yet; another day's as its wall time.
+ */
+const past = (iso: string, time: string): Row => {
+  if (offset(iso) !== 0) return wall(iso, time);
+  const minutes = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
+  const ago = Math.max(minutes(NOW_TIME) - minutes(time), 0);
+  return { "@ago": `PT${String(Math.floor(ago / 60))}H${String(ago % 60)}M` };
+};
 
 // ── the studio ──────────────────────────────────────────────────────────────
 
@@ -754,15 +765,15 @@ function proofRows(order: Order): Row[] {
         design_version_id: first.line.design === undefined ? null : { "@ref": `version:${first.line.design.replace("design:", "")}-${String(versions.length + 1)}` },
         note: entry.detail,
         state: "sent",
-        sent_at: wall(entry.when, "11:00"),
+        sent_at: past(entry.when, "11:00"),
       });
     } else if (entry.what === "Change asked") {
-      Object.assign(versions[versions.length - 1]!, { state: "change_asked", change_note: entry.detail, answered_at: wall(entry.when, "15:00") });
+      Object.assign(versions[versions.length - 1]!, { state: "change_asked", change_note: entry.detail, answered_at: past(entry.when, "15:00") });
     } else {
       if (versions.length === 0) {
-        versions.push({ order_id: { "@ref": orderLabel(order.ref) }, line_id: lineRef(first.i), version: 1, kind: "lettering", design_version_id: null, note: entry.detail, state: "sent", sent_at: wall(entry.when, "11:00") });
+        versions.push({ order_id: { "@ref": orderLabel(order.ref) }, line_id: lineRef(first.i), version: 1, kind: "lettering", design_version_id: null, note: entry.detail, state: "sent", sent_at: past(entry.when, "11:00") });
       }
-      Object.assign(versions[versions.length - 1]!, { state: "approved", answered_at: wall(entry.when, "15:00") });
+      Object.assign(versions[versions.length - 1]!, { state: "approved", answered_at: past(entry.when, "15:00") });
     }
   }
   rows.push(...versions);
@@ -770,7 +781,7 @@ function proofRows(order: Order): Row[] {
   const approved = versions.some((v) => v["state"] === "approved") || order.posted !== undefined;
   for (const { line, i } of lettered.slice(versions.length === 0 ? 0 : 1)) {
     if (!approved || line.proof !== "approved") continue;
-    rows.push({ order_id: { "@ref": orderLabel(order.ref) }, line_id: lineRef(i), version: 1, kind: "lettering", design_version_id: null, note: null, state: "approved", sent_at: wall(order.placed, "11:00"), answered_at: wall(order.placed, "15:00") });
+    rows.push({ order_id: { "@ref": orderLabel(order.ref) }, line_id: lineRef(i), version: 1, kind: "lettering", design_version_id: null, note: null, state: "approved", sent_at: past(order.placed, "11:00"), answered_at: past(order.placed, "15:00") });
   }
   return rows;
 }

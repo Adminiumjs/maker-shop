@@ -66,6 +66,16 @@ describe("Adminium would add them", () => {
 });
 
 describe("every row is one the studio could have made", () => {
+  it("stamps today's proofs as so long ago, so a sample added in the morning sends none in the future", () => {
+    const customiser = JSON.parse(read("../../seeds/maker.customiser.sample.json")) as { tables: { ref: string; rows: Record<string, unknown>[] }[] };
+    const stamps = customiser.tables.find((t) => t.ref === "proofs")!.rows.flatMap((row) => [row["sent_at"], row["answered_at"]]).filter((v): v is Record<string, unknown> => typeof v === "object" && v !== null);
+    expect(stamps.filter((v) => v["@day"] === 0)).toEqual([]);
+    const ago = stamps.filter((v) => typeof v["@ago"] === "string").map((v) => v["@ago"]);
+    expect(ago.length).toBeGreaterThan(0);
+    // 11:00 and 15:00 on the sample's Thursday, written at 16:40.
+    expect([...new Set(ago)].sort()).toEqual(["PT1H40M", "PT5H40M"]);
+  });
+
   it("mails nobody real: every address is on a reserved .example domain", () => {
     const addresses = [...JSON.stringify([main, section]).matchAll(/"email":\s*"([^"]+)"/g)].map((m) => m[1]!);
     expect(addresses.length).toBeGreaterThan(20);

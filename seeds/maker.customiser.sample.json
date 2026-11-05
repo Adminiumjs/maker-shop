@@ -5268,9 +5268,7 @@
           "note": "Both sides shown at size — waiting on Devon.",
           "state": "sent",
           "sent_at": {
-            "@day": 0,
-            "@time": "11:00",
-            "@week": true
+            "@ago": "PT5H40M"
           }
         },
         {
@@ -5286,14 +5284,10 @@
           "note": "Set of four, same line on each.",
           "state": "approved",
           "sent_at": {
-            "@day": 0,
-            "@time": "11:00",
-            "@week": true
+            "@ago": "PT5H40M"
           },
           "answered_at": {
-            "@day": 0,
-            "@time": "15:00",
-            "@week": true
+            "@ago": "PT1H40M"
           }
         },
         {
@@ -5309,14 +5303,10 @@
           "note": "Short line, no proof needed — Tom asked us to go ahead.",
           "state": "approved",
           "sent_at": {
-            "@day": 0,
-            "@time": "11:00",
-            "@week": true
+            "@ago": "PT5H40M"
           },
           "answered_at": {
-            "@day": 0,
-            "@time": "15:00",
-            "@week": true
+            "@ago": "PT1H40M"
           }
         },
         {
@@ -5332,14 +5322,10 @@
           "note": "Greyscale test at 120 mm.",
           "state": "approved",
           "sent_at": {
-            "@day": 0,
-            "@time": "11:00",
-            "@week": true
+            "@ago": "PT5H40M"
           },
           "answered_at": {
-            "@day": 0,
-            "@time": "15:00",
-            "@week": true
+            "@ago": "PT1H40M"
           }
         },
         {
@@ -5355,14 +5341,10 @@
           "note": "Two sets, same line.",
           "state": "approved",
           "sent_at": {
-            "@day": 0,
-            "@time": "11:00",
-            "@week": true
+            "@ago": "PT5H40M"
           },
           "answered_at": {
-            "@day": 0,
-            "@time": "15:00",
-            "@week": true
+            "@ago": "PT1H40M"
           }
         },
         {
@@ -5378,14 +5360,10 @@
           "note": "Six the same.",
           "state": "approved",
           "sent_at": {
-            "@day": 0,
-            "@time": "11:00",
-            "@week": true
+            "@ago": "PT5H40M"
           },
           "answered_at": {
-            "@day": 0,
-            "@time": "15:00",
-            "@week": true
+            "@ago": "PT1H40M"
           }
         },
         {
@@ -5401,14 +5379,10 @@
           "note": "Both lines, cut as one piece.",
           "state": "approved",
           "sent_at": {
-            "@day": 0,
-            "@time": "11:00",
-            "@week": true
+            "@ago": "PT5H40M"
           },
           "answered_at": {
-            "@day": 0,
-            "@time": "15:00",
-            "@week": true
+            "@ago": "PT1H40M"
           }
         },
         {
@@ -5424,9 +5398,7 @@
           "note": "Laid out on the 300 mm blank, both lines centred, lettering filled white.",
           "state": "sent",
           "sent_at": {
-            "@day": 0,
-            "@time": "11:00",
-            "@week": true
+            "@ago": "PT5H40M"
           }
         },
         {
@@ -5470,9 +5442,7 @@
           "note": "Proof 2 — the sign set at 10 mm.",
           "state": "sent",
           "sent_at": {
-            "@day": 0,
-            "@time": "11:00",
-            "@week": true
+            "@ago": "PT5H40M"
           }
         },
         {
@@ -5490,14 +5460,10 @@
           "note": "Proof 1 — raised 1 mm, amber.",
           "state": "approved",
           "sent_at": {
-            "@day": 0,
-            "@time": "11:00",
-            "@week": true
+            "@ago": "PT5H40M"
           },
           "answered_at": {
-            "@day": 0,
-            "@time": "15:00",
-            "@week": true
+            "@ago": "PT1H40M"
           }
         }
       ]
