@@ -323,12 +323,16 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect(mail.html).toContain(`tracking-id=${number}`);
       }, 180_000);
 
-      it("refuses a packer anything but the post", async () => {
+      it("refuses a packer anything but the post, by the role's limit, and leaves the line where it was", async () => {
         const data = await packer.load();
         const line = linesOf(data, orderOf(data, "BR-2281"))[0]!;
+        expect(line["stage"]).toBe("make");
         const refused = await packer.moveLine(line, "making").catch((e: unknown) => e);
         expect(refused).toBeInstanceOf(ApiError);
-        expect((refused as ApiError).status).toBeGreaterThanOrEqual(400);
+        expect(refused).toMatchObject({ status: 403, code: "COLUMN_FORBIDDEN" });
+        expect((refused as ApiError).params).toMatchObject({ column: "stage" });
+        expect(["update-from", "update-limit"]).toContain((refused as ApiError).params["reason"]);
+        expect((await rows("order_lines")).find((l) => String(l.id) === String(line.id))!["stage"]).toBe("make");
       });
 
       it("stamps a reminder of a sample's proof still waiting (a sample's rows send no e-mail)", async () => {
