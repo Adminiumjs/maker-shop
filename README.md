@@ -20,8 +20,8 @@ the five o'clock cut-off — and the studio works Tuesday to Saturday.
 
 ## What it needs
 
-- Adminium **0.3.44** or later, on SQLite, Postgres or MySQL.
-- The **Customiser** add-on (1.0.16 or later): it is where a shopper makes a piece
+- Adminium **0.3.45** or later, on SQLite, Postgres or MySQL.
+- The **Customiser** add-on (1.0.17 or later): it is where a shopper makes a piece
   their own, and the order line names the design they made. Adminium installs it
   with the app.
 - Nothing else. Five add-ons are offered at install, and the app is whole without
@@ -69,10 +69,11 @@ the catalogue (products, options, postage), the workshop (materials, stock,
 machines, bookings, batches, closures), customers, the e-mails sent, and the
 studio's settings.
 
-**E-mails.** Order received, proof ready, the one proof reminder, order posted,
-and the copies of a request or a problem go to the shopper, in the language the
-order was placed in (eight languages); a request, a problem and a change asked to
-a proof are copied to the studio's own address. All of them are service mail:
+**E-mails.** Order received, proof ready and the one proof reminder (each with
+the proof's picture, unless the proof is a PDF), order posted, and the copies of
+a request or a problem go to the shopper, in the language the order was placed
+in (eight languages); a request, a problem and a change asked to a proof are
+copied to the studio's own address. All of them are service mail:
 the do-not-email list never stops them, none has an unsubscribe line, and a reply
 reaches the studio's e-mail.
 
