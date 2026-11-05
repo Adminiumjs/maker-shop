@@ -131,9 +131,9 @@ export function addOnBundle(key: string): Bundle {
   return bundle(files, manifest.key, version);
 }
 
-/** This app's package: its manifest, its sample files, and a placeholder page for each side. */
-export function appBundle(): Bundle {
-  const text = read(join(REPO, "manifest.json"));
+/** This app's package: its manifest (or the text given: the same app written for another floor), its sample files, and a placeholder page for each side. */
+export function appBundle(options: { manifest?: string } = {}): Bundle {
+  const text = options.manifest ?? read(join(REPO, "manifest.json"));
   const manifest = JSON.parse(text) as { key: string; version: string; sampleData?: { file: string; addOns?: Record<string, { file: string }> } };
   const files: Record<string, Buffer> = {
     "package.json": Buffer.from(JSON.stringify({ name: `@adminiumjs/app-${manifest.key}`, version: manifest.version })),
@@ -308,6 +308,22 @@ export const until = async <T>(look: () => Promise<T | undefined>, label: string
     await new Promise((resolve) => setTimeout(resolve, 1_000));
   }
 };
+
+/**
+ * Add the app's sample and wait for its job to finish: the status route says
+ * "loaded" from the first rows on, before every table is in. A job that
+ * fails, or fails once and waits to try again, stops the contract with what
+ * it said.
+ */
+export async function addSample(caller: Caller, app = "maker"): Promise<void> {
+  const { jobId } = ok(await caller.post<{ jobId: string }>(`/api/v1/apps/${app}/sample-data`));
+  await until(async () => {
+    const job = ok(await caller.get<{ data: { status: string; attempts: number; lastError: string | null } }>(`/api/v1/jobs/${encodeURIComponent(jobId)}`)).data;
+    if (job.status === "succeeded") return true;
+    if (job.status === "failed" || job.status === "cancelled" || (job.lastError !== null && job.attempts > 0)) throw new Error(`the sample's job ${job.status} after ${String(job.attempts)} tries: ${String(job.lastError)}`);
+    return undefined;
+  }, "the sample's job to finish", 240_000);
+}
 
 /** A password a new person signs in with. */
 export const newPassword = (): string => `${randomBytes(18).toString("base64url")}Aa1!`;

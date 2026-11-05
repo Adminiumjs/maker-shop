@@ -2,7 +2,8 @@
  * AFTER THE ORDER, ON A BUILT ADMINIUM, THROUGH THE SHOP'S OWN DOOR.
  *
  * The app and the Customiser it requires are installed on a BUILT Adminium
- * (`ADMINIUM_REPO`, the core at 0.3.43) as an operator installs them, the
+ * (`ADMINIUM_REPO`) as an operator installs them (the manifest written for
+ * the release it is: `release.ts`), the
  * sample added at the moment the comps pin the studio to (16:40 on Thursday
  * 6 August 2026 in Settle), and the shop opened the way its customer build
  * opens it. A shopper places an order with words on it; the studio sends a
@@ -18,15 +19,21 @@
  *   is nobody's opens nothing; a CHANGE is asked for through it, the
  *   shopper's words stored, the line held back;
  * - "Ask us for something" written behind the human check; "Something's
- *   wrong" refusing an order not the address's own (finding the address's
- *   own waits on the core: see the `.fails` case);
+ *   wrong" refusing an order not the address's own, and taking one that is,
+ *   found by the number the shopper typed;
+ * - every e-mail of it sent and in the e2e server's sink, to the shopper and
+ *   to the studio, under its template's subject (`mail.ts`): the order's,
+ *   with its own link; the proof's; a request's and a problem's, and the
+ *   studio's copy of each;
  * - the footer's pages read what they show: the closures, the rates, the
  *   machines, the app's settings; the postage page's dry run dates a coaster
  *   and a mug.
  *
  * It runs with `CONTRACT=1` where a built Adminium and a built add-ons checkout
- * are, and says why it skipped otherwise. It runs on SQLite (the studio's
- * database is a file it makes).
+ * are, and says why it skipped otherwise. On SQLite the studio's database is
+ * a file it makes; on Postgres and MySQL it is the e2e server's Northwind,
+ * whose own bare `products`, `orders` and `customers` the install keeps clear
+ * of (Adminium 0.3.44 and later).
  */
 import { rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -38,7 +45,9 @@ import type { AfterPort } from "../shop/after-port.ts";
 import { AdminiumShop } from "../shop/door.ts";
 import { isShopError, type Row } from "../shop/port.ts";
 import { orderBody, useShop, type BasketLine } from "../shop/store.ts";
-import { addOnBundle, appBundle, boot, Caller, ENGINES, missing, missingAddOn, ok, PORTS_PER_ENGINE, until, type Engine, type Server } from "./harness.ts";
+import { addOnBundle, addSample, appBundle, boot, Caller, ENGINES, missing, missingAddOn, ok, PORTS_PER_ENGINE, until, type Engine, type Server } from "./harness.ts";
+import { delivered, sinkMail, type Mail } from "./mail.ts";
+import { engineAtLeast, ENGINE_VERSION, MANIFEST_TEXT } from "./release.ts";
 
 const why = missing() ?? missingAddOn("customiser");
 if (why !== null && process.env["ADMINIUM_REQUIRE_CONTRACT"] === "1") throw new Error(`the contract must run here, and cannot: ${why}`);
@@ -46,21 +55,25 @@ const PORT_BASE = Number(process.env["CONTRACT_PORT_BASE"] ?? 4930);
 const ADMIN = { email: process.env["E2E_ADMIN_EMAIL"] ?? "e2e@adminium.local", password: process.env["E2E_ADMIN_PASSWORD"] ?? "adminium-e2e-password" };
 /** 16:40 on Thursday 6 August 2026 in Settle (British Summer Time), before the five o'clock cut-off. */
 const THURSDAY = Date.parse("2026-08-06T15:40:00Z");
-const SHOPPER = { name: "Priya Shah", email: "priya.shah@example.com", address_line1: "12 Mill Lane", town: "Settle", postcode: "BD24 9AA", may_email: false, language: "en-US" };
+/*
+ * Made-up addresses on a domain that is not kept for examples: the outbox sends to them (it skips
+ * `example.com` and the like), so their e-mails reach the e2e server's sink.
+ */
+const SHOPPER = { name: "Priya Shah", email: "priya.shah@birch-row-shoppers.dev", address_line1: "12 Mill Lane", town: "Settle", postcode: "BD24 9AA", may_email: false, language: "en-US" };
+const ASKER = "bex.thorne@birch-row-shoppers.dev";
+/** The studio's own address, where its copy of a request or a problem goes (the sample's is one kept for examples). */
+const STUDIO = "studio@birch-row-studio.dev";
+/** Before 0.3.44 an order's number as typed stayed empty, so no problem could find its order by it. */
+const NUMBER_AS_TYPED = engineAtLeast("0.3.44");
+/** Before 0.3.44 an install beside bare tables of the same names took them for the app's own. */
+const BESIDE_BARE_TABLES = engineAtLeast("0.3.44");
 /** A one-pixel PNG: the proof's picture as the studio's browser stores it. */
 const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
 
-interface Mail {
-  receivedAt: number;
-  to: string[];
-  subject: string;
-  text: string;
-  html: string;
-}
-
 describe.skipIf(why !== null)(`after the order, on a built Adminium${why === null ? "" : ` — skipped: ${why}`}`, () => {
-  ENGINES.filter(([engine]) => engine === "sqlite").forEach(([engine, available], index) => {
-    describe.skipIf(!available)(`on ${engine}`, () => {
+  ENGINES.forEach(([engine, available], index) => {
+    const beside = engine !== "sqlite" && !BESIDE_BARE_TABLES;
+    describe.skipIf(!available || beside)(`on ${engine}${beside ? ` — skipped: an install beside Northwind's bare tables needs Adminium 0.3.44 (this run has ${ENGINE_VERSION})` : ""}`, () => {
       let server: Server;
       let staff: Caller;
       let connectionId = "";
@@ -79,7 +92,9 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
       const browser = () =>
         new AdminiumShop({ baseUrl: server.base, publishableKey: served.publishableKey, ...(served.tables === undefined ? {} : { tables: served.tables }), ...(served.publicKeys === undefined ? {} : { publicKeys: served.publicKeys }), ...(served.settings === undefined ? {} : { settings: served.settings }) }, { fetch: originFetch });
       const rows = async (ref: string): Promise<Row[]> => ok(await staff.get<{ data: Row[] }>(`/api/v1/data/${connectionId}/${table(ref)}?limit=200`)).data;
-      const mail = async (): Promise<Mail[]> => (await (await fetch(`${server.sink}/messages`)).json()) as Mail[];
+      const mail = (): Promise<Mail[]> => sinkMail(server.sink);
+      /** The outbox's row of one kind of e-mail about one row (`order_id`, `request_id`, `problem_id`). */
+      const messageOf = (kind: string, link: string, id: unknown) => async () => (await rows("messages")).find((m) => m["kind"] === kind && String(m[link]) === String(id));
       /**
        * The newest e-mail to an address that says what `match` looks for, among those after the first
        * `after` the sink held (the sink stamps mail by the server's own pinned clock, so it is counted, not timed).
@@ -98,15 +113,19 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         server = await boot(engine as Engine, PORT_BASE + index * PORTS_PER_ENGINE, THURSDAY - 60_000, { database: `maker_after_${engine}${process.env["CONTRACT_DB_SUFFIX"] ?? ""}` });
         staff = new Caller(server.base, { origin: server.base });
         await staff.signIn(ADMIN.email, ADMIN.password);
-        // The studio's own empty database (see the order contract for why not the e2e Northwind).
-        const file = join(tmpdir(), `maker-after-contract-${engine}-${String(PORT_BASE)}.db`);
-        rmSync(file, { force: true });
-        writeFileSync(file, "");
-        connectionId = ok(await staff.post<{ id: string }>("/api/v1/connections", { name: "birch-row", engine: "sqlite", dsn: `sqlite:${file}` }), 201).id;
+        if (engine === "sqlite") {
+          // The studio's own empty database.
+          const file = join(tmpdir(), `maker-after-contract-${engine}-${String(PORT_BASE)}.db`);
+          rmSync(file, { force: true });
+          writeFileSync(file, "");
+          connectionId = ok(await staff.post<{ id: string }>("/api/v1/connections", { name: "birch-row", engine: "sqlite", dsn: `sqlite:${file}` }), 201).id;
+        } else {
+          connectionId = ok(await staff.get<{ connections: { id: string; name: string }[] }>("/api/v1/connections")).connections.find((c) => c.name === "northwind")!.id;
+        }
         const addOn = addOnBundle("customiser");
         const stagedAddOn = await staff.post(`/api/v1/add-ons/upload?expectedSha512=${encodeURIComponent(addOn.integrity)}`, addOn.buffer);
         if (![200, 201].includes(stagedAddOn.status)) throw new Error(`add-on upload: ${JSON.stringify(stagedAddOn.body).slice(0, 600)}`);
-        const app = appBundle();
+        const app = appBundle({ manifest: MANIFEST_TEXT });
         const staged = await staff.post(`/api/v1/apps/upload?expectedSha512=${encodeURIComponent(app.integrity)}`, app.buffer);
         if (![200, 201].includes(staged.status)) throw new Error(`upload: ${JSON.stringify(staged.body).slice(0, 600)}`);
         const body = { key: app.key, version: app.version, connectionId };
@@ -120,13 +139,15 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         if (installed.rules.skipped.length > 0) throw new Error(`the install skipped rules: ${JSON.stringify(installed.rules.skipped).slice(0, 1500)}`);
         ok(await staff.patch(`/api/v1/connections/${connectionId}`, { timezone: "Europe/London", currency: "GBP" }));
         await server.setClock(THURSDAY, true);
-        ok(await staff.post("/api/v1/apps/maker/sample-data"));
-        await until(async () => (ok(await staff.get<{ loaded: boolean }>("/api/v1/apps/maker/sample-data")).loaded ? true : undefined), "the sample to be added");
+        await addSample(staff);
         await server.setClock(THURSDAY);
         ok(await staff.put("/api/v1/public-api", { enabled: true }));
         ok(await staff.put("/api/v1/settings/email", { publicOrigin: server.base }));
 
         served = ok(await new Caller(server.base).get<typeof served>("/apps/maker/customer/surface-config.json"));
+        // The studio's own address, for its copies of a request and a problem.
+        const settings = (await rows("settings"))[0]!;
+        ok(await staff.patch(`/api/v1/data/${connectionId}/${table("settings")}/${String(settings["id"])}`, { values: { email: STUDIO } }));
         shop = browser();
         catalogue = await shop.catalogue();
         useShop.setState({ catalogue });
@@ -238,8 +259,9 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         // The order's own link: the code the save handed the confirmation page, the one its e-mail carries.
         const token = made.link!.token;
         expect(token).toMatch(/^[0-9A-Za-z]{16}$/);
-        // Its e-mail is in the outbox, linked to the order (the outbox sends it on its own round).
-        await until(async () => ((await rows("messages")).some((m) => m["kind"] === "order-received" && String(m["order_id"]) === String(made.order["id"])) ? true : undefined), "the order's e-mail in the outbox", 45_000);
+        // Its e-mail is sent, the order's own link in it; and the proof's.
+        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "order-received", to: SHOPPER.email, known: { "order.number": "BR-2292" }, body: new RegExp(`/order#${token}\\b`), row: messageOf("order-received", "order_id", made.order["id"]) });
+        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-ready", to: SHOPPER.email, known: { "order.number": "BR-2292" }, row: messageOf("proof-ready", "order_id", made.order["id"]) });
 
         const door: AfterPort = browser().after();
         expect(door.sharedHeld()).toBe(false);
@@ -259,12 +281,16 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
 
       it("takes a request behind the human check, every field it was sent kept", async () => {
         const door = browser().after();
-        const asked = await door.ask({ name: "Bex Thorne", email: "bex@example.com", language: "en-US", idea: "A sign for the allotment gate", material: "Slate", wanted_when: "End of August", client_key: `maker-after-${engine}-ask-000001` }).catch((e: unknown) => {
+        const asked = await door.ask({ name: "Bex Thorne", email: ASKER, language: "en-US", idea: "A sign for the allotment gate", material: "Slate", wanted_when: "End of August", client_key: `maker-after-${engine}-ask-000001` }).catch((e: unknown) => {
           throw new Error(`the request was refused: ${said(e)}`);
         });
         expect(asked["ref"]).toMatch(/^ASK-\d{4}$/);
         const request = (await rows("commission_requests")).find((r) => r["ref"] === asked["ref"])!;
         expect([request["material"], request["wanted_when"], request["status"]]).toEqual(["Slate", "End of August", "new"]);
+        // Its e-mail to the asker, and the studio's copy.
+        const known = { "request.ref": String(asked["ref"]) };
+        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "request-received", to: ASKER, known, row: messageOf("request-received", "request_id", request["id"]) });
+        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "request-copy", to: STUDIO, known, row: messageOf("request-copy", "request_id", request["id"]) });
       }, 60_000);
 
       it("refuses a problem about an order that is not the address's own, and keeps nothing", async () => {
@@ -275,24 +301,19 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         expect((await rows("problem_reports")).length).toBe(before);
       }, 60_000);
 
-      /*
-       * WAITS ON THE CORE (named in the piece's report): an order's `number_code` is a `join` over
-       * `number`, and `number` is written by the gapless `format` after the row's formulas have run, so
-       * `number_code` stays empty and no typed number finds its order. When the core works the join out
-       * after the number, this flips red: take the `.fails` off.
-       */
-      it.fails("takes a problem about the address's own order, and links it to that order", async () => {
+      it.skipIf(!NUMBER_AS_TYPED)(`takes a problem about the address's own order by its number, links it to that order, and e-mails both${NUMBER_AS_TYPED ? "" : ` — skipped: an order's number as typed needs Adminium 0.3.44 (this run has ${ENGINE_VERSION})`}`, async () => {
+        const own = (await rows("orders")).find((o) => o["number"] === "BR-2291")!;
+        expect(own["number_code"]).toBe("BR2291");
         const door = browser().after();
-        const reported = await door.report({ order_ref: "BR-2291", name: "Priya Shah", email: SHOPPER.email, language: "en-US", what: "damaged", details: "One coaster came cracked.", client_key: `maker-after-${engine}-fix-000001` });
+        // Typed as a shopper types it: small letters, no dash.
+        const reported = await door.report({ order_ref: "br 2291", name: "Priya Shah", email: SHOPPER.email, language: "en-US", what: "damaged", details: "One coaster came cracked.", client_key: `maker-after-${engine}-fix-000001` });
         expect(reported["ref"]).toMatch(/^FIX-\d{4}$/);
         const problem = (await rows("problem_reports")).find((r) => r["ref"] === reported["ref"])!;
         expect(String(problem["order_id"])).toBe(String(first1.order["id"]));
-      }, 60_000);
-
-      it("keeps an order's number as typed empty: what the gap above stands on", async () => {
-        const own = (await rows("orders")).find((o) => o["number"] === "BR-2291")!;
-        expect([own["number"], own["number_code"] ?? null]).toEqual(["BR-2291", null]);
-      }, 60_000);
+        const known = { "problem.ref": String(reported["ref"]), "order.number": "BR-2291" };
+        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "problem-received", to: SHOPPER.email, known, row: messageOf("problem-received", "problem_id", problem["id"]) });
+        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "problem-copy", to: STUDIO, known, row: messageOf("problem-copy", "problem_id", problem["id"]) });
+      }, 180_000);
     });
   });
 });

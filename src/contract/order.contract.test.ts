@@ -2,7 +2,8 @@
  * A SHOPPER BUYS FROM BIRCH ROW ON A BUILT ADMINIUM, THROUGH THE SHOP'S OWN DOOR.
  *
  * The app and the Customiser it requires are installed on a BUILT Adminium
- * (`ADMINIUM_REPO`, the core at 0.3.43) as an operator installs them, the
+ * (`ADMINIUM_REPO`) as an operator installs them (the manifest written for
+ * the release it is: `release.ts`), the
  * sample added at the moment the comps pin the studio to (16:40 on Thursday
  * 6 August 2026 in Settle), and the shop is opened the way its customer build
  * opens it: the surface config Adminium serves, the shop's door
@@ -18,14 +19,17 @@
  * - the order goes in as one write, held to the total the shopper saw:
  *   BR-2291, £34.00 + Second class £3.95 = £37.95, post by Tue 11 Aug, the
  *   line naming the design; a retry answers the same order; the order's own
- *   link is open at once;
+ *   link is open at once, and its e-mail, which carries that link, is sent;
  * - a total that moved is refused with the figures it came to, and a field
- *   Adminium refuses is named.
+ *   Adminium refuses is named;
+ * - words longer than the piece takes are refused, by the dry run and by the
+ *   order alike; words that just fit go in (Adminium 0.3.44 and later).
  *
  * It runs with `CONTRACT=1` where a built Adminium and a built add-ons checkout
- * are, and says why it skipped otherwise. It runs on SQLite: the studio's
- * database is a file it makes (the engines' own install test, in the core,
- * covers Postgres and MySQL).
+ * are, and says why it skipped otherwise. On SQLite the studio's database is
+ * a file it makes; on Postgres and MySQL it is the e2e server's Northwind,
+ * whose own bare `products`, `orders` and `customers` the install keeps clear
+ * of (Adminium 0.3.44 and later).
  */
 import { rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -36,7 +40,9 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AdminiumShop } from "../shop/door.ts";
 import { isShopError, type Row } from "../shop/port.ts";
 import { orderBody, productQuantities, useShop, type BasketLine } from "../shop/store.ts";
-import { addOnBundle, appBundle, boot, Caller, ENGINES, missing, missingAddOn, ok, PORTS_PER_ENGINE, until, type Engine, type Server } from "./harness.ts";
+import { addOnBundle, addSample, appBundle, boot, Caller, ENGINES, missing, missingAddOn, ok, PORTS_PER_ENGINE, type Engine, type Server } from "./harness.ts";
+import { delivered } from "./mail.ts";
+import { engineAtLeast, ENGINE_VERSION, MANIFEST_TEXT, NEEDS_PANELS_AND_LIMITS, READS_PANELS_AND_LIMITS } from "./release.ts";
 
 const why = missing() ?? missingAddOn("customiser");
 if (why !== null && process.env["ADMINIUM_REQUIRE_CONTRACT"] === "1") throw new Error(`the contract must run here, and cannot: ${why}`);
@@ -44,14 +50,18 @@ const PORT_BASE = Number(process.env["CONTRACT_PORT_BASE"] ?? 4960);
 const ADMIN = { email: process.env["E2E_ADMIN_EMAIL"] ?? "e2e@adminium.local", password: process.env["E2E_ADMIN_PASSWORD"] ?? "adminium-e2e-password" };
 /** 16:40 on Thursday 6 August 2026 in Settle (British Summer Time), before the five o'clock cut-off. */
 const THURSDAY = Date.parse("2026-08-06T15:40:00Z");
-const SHOPPER = { name: "Priya Shah", email: "priya.shah@example.com", address_line1: "12 Mill Lane", town: "Settle", postcode: "BD24 9AA", may_email: true, language: "en-US" };
+/** A made-up address on a domain the outbox sends to (it skips those kept for examples): its e-mail reaches the e2e server's sink. */
+const SHOPPER = { name: "Priya Shah", email: "priya.shah@birch-row-shoppers.dev", address_line1: "12 Mill Lane", town: "Settle", postcode: "BD24 9AA", may_email: true, language: "en-US" };
 
 describe.skipIf(why !== null)(`a shopper buys on a built Adminium${why === null ? "" : ` — skipped: ${why}`}`, () => {
-  // The studio's own database is a SQLite file the contract makes (see `beforeAll`).
-  ENGINES.filter(([engine]) => engine === "sqlite").forEach(([engine, available], index) => {
-    describe.skipIf(!available)(`on ${engine}`, () => {
+  ENGINES.forEach(([engine, available], index) => {
+    const beside = engine !== "sqlite" && !engineAtLeast("0.3.44");
+    describe.skipIf(!available || beside)(`on ${engine}${beside ? ` — skipped: an install beside Northwind's bare tables needs Adminium 0.3.44 (this run has ${ENGINE_VERSION})` : ""}`, () => {
       let server: Server;
       let staff: Caller;
+      let connectionId = "";
+      let tables: Record<string, string> = {};
+      const rows = async (ref: string): Promise<Row[]> => ok(await staff.get<{ data: Row[] }>(`/api/v1/data/${connectionId}/${encodeURIComponent(tables[ref] ?? `maker_${ref}`)}?limit=200`)).data;
       let door: AdminiumShop;
       let catalogue: Awaited<ReturnType<AdminiumShop["catalogue"]>>;
 
@@ -59,24 +69,22 @@ describe.skipIf(why !== null)(`a shopper buys on a built Adminium${why === null 
         server = await boot(engine as Engine, PORT_BASE + index * PORTS_PER_ENGINE, THURSDAY - 60_000, { database: `maker_shop_${engine}${process.env["CONTRACT_DB_SUFFIX"] ?? ""}` });
         staff = new Caller(server.base, { origin: server.base });
         await staff.signIn(ADMIN.email, ADMIN.password);
-        /*
-         * The studio's own empty database, not the e2e Northwind beside it. On
-         * Northwind the install stops at its add-ons step: once the Customiser is
-         * made, the app's tables are planned again under their bare names and
-         * meet Northwind's own `products`, `orders` and `customers` (a core gap,
-         * written down in the piece's report). On an empty database the names
-         * are the app's own, as on a studio's.
-         */
-        const file = join(tmpdir(), `maker-shop-contract-${engine}-${String(PORT_BASE)}.db`);
-        rmSync(file, { force: true });
-        writeFileSync(file, "");
-        const connectionId = ok(await staff.post<{ id: string }>("/api/v1/connections", { name: "birch-row", engine: "sqlite", dsn: `sqlite:${file}` }), 201).id;
+        if (engine === "sqlite") {
+          // The studio's own empty database.
+          const file = join(tmpdir(), `maker-shop-contract-${engine}-${String(PORT_BASE)}.db`);
+          rmSync(file, { force: true });
+          writeFileSync(file, "");
+          connectionId = ok(await staff.post<{ id: string }>("/api/v1/connections", { name: "birch-row", engine: "sqlite", dsn: `sqlite:${file}` }), 201).id;
+        } else {
+          // Northwind, with its own bare `products`, `orders` and `customers`: the app's tables go in beside them, prefixed.
+          connectionId = ok(await staff.get<{ connections: { id: string; name: string }[] }>("/api/v1/connections")).connections.find((c) => c.name === "northwind")!.id;
+        }
 
         // The Customiser first, staged at the release the app asks for; then the app, with it ticked.
         const addOn = addOnBundle("customiser");
         const stagedAddOn = await staff.post(`/api/v1/add-ons/upload?expectedSha512=${encodeURIComponent(addOn.integrity)}`, addOn.buffer);
         if (![200, 201].includes(stagedAddOn.status)) throw new Error(`add-on upload: ${JSON.stringify(stagedAddOn.body).slice(0, 600)}`);
-        const app = appBundle();
+        const app = appBundle({ manifest: MANIFEST_TEXT });
         const staged = await staff.post(`/api/v1/apps/upload?expectedSha512=${encodeURIComponent(app.integrity)}`, app.buffer);
         if (![200, 201].includes(staged.status)) throw new Error(`upload: ${JSON.stringify(staged.body).slice(0, 600)}`);
         const body = { key: app.key, version: app.version, connectionId };
@@ -89,8 +97,7 @@ describe.skipIf(why !== null)(`a shopper buys on a built Adminium${why === null 
 
         // The sample is written for 16:40 on the dot: the clock stands there while it goes in, then runs on.
         await server.setClock(THURSDAY, true);
-        ok(await staff.post("/api/v1/apps/maker/sample-data"));
-        await until(async () => (ok(await staff.get<{ loaded: boolean }>("/api/v1/apps/maker/sample-data")).loaded ? true : undefined), "the sample to be added");
+        await addSample(staff);
         await server.setClock(THURSDAY);
         ok(await staff.put("/api/v1/public-api", { enabled: true }));
         ok(await staff.put("/api/v1/settings/email", { publicOrigin: server.base }));
@@ -102,6 +109,7 @@ describe.skipIf(why !== null)(`a shopper buys on a built Adminium${why === null 
           headers.set("origin", server.base);
           return fetch(input, { ...init, headers });
         };
+        tables = served.tables ?? {};
         door = new AdminiumShop({ baseUrl: server.base, publishableKey: served.publishableKey, ...(served.tables === undefined ? {} : { tables: served.tables }), ...(served.publicKeys === undefined ? {} : { publicKeys: served.publicKeys }) }, { fetch: originFetch });
         catalogue = await door.catalogue();
         // The shop's state holds the catalogue it read, as the page does.
@@ -176,7 +184,17 @@ describe.skipIf(why !== null)(`a shopper buys on a built Adminium${why === null 
         expect(door.orderClient?.session()).not.toBeNull();
         const own = await door.orderClient!.list<Row>("maker_orders_claimed");
         expect(own.data.map((o) => [o["number"], Number(o["total"])])).toEqual([["BR-2291", 37.95]]);
-      });
+        // Its e-mail is sent, and carries the same link.
+        await delivered({
+          sink: server.sink,
+          manifest: MANIFEST_TEXT,
+          kind: "order-received",
+          to: SHOPPER.email,
+          known: { "order.number": "BR-2291" },
+          body: new RegExp(`/order#${placed.link!.token}\\b`),
+          row: async () => (await rows("messages")).find((m) => m["kind"] === "order-received" && String(m["order_id"]) === String(order["id"])),
+        });
+      }, 120_000);
 
       it("answers a retry with the order already made", async () => {
         const again = await door.place(orderBody({ ...SHOPPER, service_id: second() }, basket()), clientKey, "37.95");
@@ -197,6 +215,26 @@ describe.skipIf(why !== null)(`a shopper buys on a built Adminium${why === null 
         expect(isShopError(error)).toBe(true);
         if (!isShopError(error)) return;
         expect([error.refused.code, error.refused.column]).toEqual(["PUBLIC_WRITE_REFUSED", "name"]);
+      });
+
+      it.skipIf(!READS_PANELS_AND_LIMITS)(`refuses words longer than the piece takes, by the dry run and by the order, and takes words that just fit${READS_PANELS_AND_LIMITS ? "" : ` — skipped: ${NEEDS_PANELS_AND_LIMITS}`}`, async () => {
+        const ply = productOf("coast-ply");
+        const limit = ply.letteringLimit!;
+        expect(limit).toBeGreaterThan(0);
+        const words = (n: number) => "Mill Lane Kitchen, Settle and the dale".repeat(4).slice(0, n);
+        const over = orderBody({ ...SHOPPER, service_id: second() }, [lineOf("coast-ply", 1, { lettering: words(limit + 1) })]);
+        const refusal = (error: unknown) => (isShopError(error) ? { column: error.refused.column, reason: error.refused.reason } : String(error));
+        const quoted = await door.quote(over).catch((e: unknown) => e);
+        expect(refusal(quoted)).toEqual({ column: "lettering", reason: "too-long" });
+        const before = (await rows("orders")).length;
+        const placedOver = await door.place(over, `maker-contract-${engine}-long-0001`, "27.95").catch((e: unknown) => e);
+        expect(refusal(placedOver)).toEqual({ column: "lettering", reason: "too-long" });
+        expect((await rows("orders")).length).toBe(before);
+        // At the limit, the order goes in with the words as they were typed.
+        const fits = orderBody({ ...SHOPPER, service_id: second() }, [lineOf("coast-ply", 1, { lettering: words(limit) })]);
+        const priced = await door.quote(fits);
+        const made = await door.place(fits, `maker-contract-${engine}-fits-0001`, String(priced.order["total"]));
+        expect(made.lines.map((l) => l["lettering"])).toEqual([words(limit)]);
       });
     });
   });

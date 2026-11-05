@@ -8,12 +8,18 @@
  * their screens boot it, and the maker:
  *
  *   - batches the walnut sheet (Fern's coasters and Tom's bookmarks, both
- *     approved): the laser booked from when it is next free, the batch made
- *     with the sheet it takes off the shelf in one write and started, the
- *     lines to making on it, their orders with them;
+ *     approved): the batch, the laser's booking from when it is next free and
+ *     the sheet it takes off the shelf, in one write; then started, the lines
+ *     to making on it, their orders with them;
+ *   - is refused a whole batch, by Adminium, when the machine's time was
+ *     taken after the screen read it: no batch, no booking, no stock moved,
+ *     no line moved;
  *   - is refused a second booking over the first, by Adminium;
  *   - counts the shelf: Adminium keeps the book's figure beside the count and
  *     moves the stock by the difference.
+ *
+ * A batch's booking below it in one write needs Adminium 0.3.44; on an older
+ * one those checks are skipped by name.
  *
  * It runs with `CONTRACT=1` where an Adminium checkout with its built server
  * and dashboard is (`ADMINIUM_REPO`) and a built add-ons checkout
@@ -27,12 +33,13 @@ import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { AdminiumStudio } from "../studio/adminiumStudio.ts";
-import { batchGroups, packSheet } from "../studio/making.ts";
-import { saveCount, startBatch } from "../studio/making-actions.ts";
+import { batchGroups, bookingsOf, nextFreeAt, packSheet } from "../studio/making.ts";
+import { isTaken, saveCount, startBatch } from "../studio/making-actions.ts";
 import { createSessionTransport } from "../studio/transport/sessionSource.ts";
 import { loadStaffConfig } from "../studio/transport/staffConnection.ts";
 import { ApiError, num, type Row } from "../studio/wire.ts";
-import { addOnBundle, appBundle, boot, Caller, ENGINES, missing, newPassword, ok, PORTS_PER_ENGINE, until, type Engine, type Server } from "./studio-harness.ts";
+import { engineAtLeast, ENGINE_VERSION, MANIFEST_TEXT } from "./release.ts";
+import { addOnBundle, addSample, appBundle, boot, Caller, ENGINES, missing, newPassword, ok, PORTS_PER_ENGINE, type Engine, type Server } from "./studio-harness.ts";
 
 const why = missing();
 if (why !== null && process.env["ADMINIUM_REQUIRE_CONTRACT"] === "1") throw new Error(`the contract must run here, and cannot: ${why}`);
@@ -40,6 +47,9 @@ const PORT_BASE = Number(process.env["CONTRACT_PORT_BASE"] ?? 4940);
 const ADMIN = { email: process.env["E2E_ADMIN_EMAIL"] ?? "e2e@adminium.local", password: process.env["E2E_ADMIN_PASSWORD"] ?? "adminium-e2e-password" };
 /** 16:40 on Thursday 6 August 2026 in Settle (British Summer Time). */
 const THURSDAY = Date.parse("2026-08-06T15:40:00Z");
+/** A booking below a staff create, judged inside the one write. */
+const ONE_WRITE = engineAtLeast("0.3.44");
+const NEEDS_ONE_WRITE = ONE_WRITE ? "" : ` — skipped: a booking below a batch's create needs Adminium 0.3.44 (this run has ${ENGINE_VERSION})`;
 
 describe.skipIf(why !== null)(`the workshop against a built Adminium${why === null ? "" : ` — skipped: ${why}`}`, () => {
   ENGINES.forEach(([engine, available], index) => {
@@ -73,7 +83,7 @@ describe.skipIf(why !== null)(`the workshop against a built Adminium${why === nu
       };
 
       beforeAll(async () => {
-        server = await boot(engine as Engine, PORT_BASE + index * PORTS_PER_ENGINE, THURSDAY - 60_000, `maker_making_contract_${engine}`);
+        server = await boot(engine as Engine, PORT_BASE + index * PORTS_PER_ENGINE, THURSDAY - 60_000, `maker_making_contract_${engine}${process.env["CONTRACT_DB_SUFFIX"] ?? ""}`);
         owner = new Caller(server.base);
         await owner.signIn(ADMIN.email, ADMIN.password);
         // The studio's own empty database (see the studio contract: a bare `orders` table beside it is a core gap).
@@ -88,7 +98,7 @@ describe.skipIf(why !== null)(`the workshop against a built Adminium${why === nu
         const customiser = addOnBundle("customiser");
         const stagedAddOn = await owner.post(`/api/v1/add-ons/upload?expectedSha512=${encodeURIComponent(customiser.integrity)}`, customiser.buffer);
         expect([200, 201], JSON.stringify(stagedAddOn.body).slice(0, 800)).toContain(stagedAddOn.status);
-        const app = appBundle();
+        const app = appBundle({ manifest: MANIFEST_TEXT });
         const staged = await owner.post(`/api/v1/apps/upload?expectedSha512=${encodeURIComponent(app.integrity)}`, app.buffer);
         expect([200, 201], JSON.stringify(staged.body).slice(0, 800)).toContain(staged.status);
         const body = { key: app.key, version: app.version, connectionId };
@@ -100,8 +110,7 @@ describe.skipIf(why !== null)(`the workshop against a built Adminium${why === nu
         ok(await owner.patch(`/api/v1/connections/${connectionId}`, { timezone: "Europe/London", currency: "GBP" }));
 
         await server.setClock(THURSDAY, true);
-        ok(await owner.post("/api/v1/apps/maker/sample-data"));
-        await until(async () => (ok(await owner.get<{ loaded: boolean }>("/api/v1/apps/maker/sample-data")).loaded ? true : undefined), "the sample to be added");
+        await addSample(owner);
         await server.setClock(THURSDAY);
 
         // A maker, signed in to the studio's own screens.
@@ -130,7 +139,7 @@ describe.skipIf(why !== null)(`the workshop against a built Adminium${why === nu
         ]);
       });
 
-      it("batches the walnut sheet: the laser booked, the batch and its sheet in one write, the lines to making", async () => {
+      it.skipIf(!ONE_WRITE)(`batches the walnut sheet: the batch, the laser's booking and its sheet in one write, the lines to making${NEEDS_ONE_WRITE}`, async () => {
         let data = await maker.load();
         const group = batchGroups(data).find((g) => g["material"]["code"] === "wal6")!;
         const before = data.materials.find((m) => m["code"] === "wal6")!;
@@ -143,7 +152,7 @@ describe.skipIf(why !== null)(`the workshop against a built Adminium${why === nu
         expect([batch["state"], batch["started_by"], num(batch["sheets"]), num(batch["piece_count"])]).toEqual(["running", "Jo Marsh", 1, 2]);
         // The laser, booked once its 15:00 run is done (17:40 in Settle), for its 135 minutes.
         const booking = (await rows("machine_bookings")).find((b) => String(b["batch_id"]) === String(batch.id))!;
-        expect([booking["label"], booking["booked_by"]]).toEqual(["Walnut sheet · 6 pieces", "Jo Marsh"]);
+        expect([booking["label"], booking["kind"], booking["booked_by"]]).toEqual(["Walnut sheet · 6 pieces", "run", "Jo Marsh"]);
         data = await maker.load();
         const mine = data.bookings.find((b) => String(b.id) === String(booking.id))!;
         expect([mine["starts_at"], mine["ends_at"]]).toEqual(["2026-08-06T16:40:00.000Z", "2026-08-06T18:55:00.000Z"]);
@@ -161,7 +170,30 @@ describe.skipIf(why !== null)(`the workshop against a built Adminium${why === nu
         expect(batchGroups(data).some((g) => g.material["code"] === "wal6")).toBe(false);
       }, 120_000);
 
-      it("is refused, by Adminium, a booking over another on the same machine", async () => {
+      it.skipIf(!ONE_WRITE)(`is refused the whole batch, by Adminium, when the machine's time was taken after the screen read it${NEEDS_ONE_WRITE}`, async () => {
+        // The screen reads the studio; then someone else books the laser for the time the screen would pick.
+        const seen = await maker.load();
+        const group = batchGroups(seen).find((g) => g.material["code"] === "ply3")!;
+        const machine = group.machine!;
+        const minutes = (num(machine["run_minutes"]) ?? 60) * 1;
+        const from = nextFreeAt(bookingsOf(seen, machine), maker.now(), minutes);
+        const other = await maker.book({ machineId: machine.id, label: "Someone else's run", startsAt: new Date(from).toISOString(), endsAt: new Date(from + 15 * 60_000).toISOString() });
+        const before = { batches: (await rows("batches")).length, bookings: (await rows("machine_bookings")).length, movements: (await rows("stock_movements")).length, lines: (await rows("order_lines")).map((l) => [l.id, l["stage"], l["batch_id"] ?? null]) };
+
+        const refused = await startBatch(maker, seen, group, packSheet(group.pieces, group.sheet), "Ply sheet", maker.now()).catch((e: unknown) => e);
+        expect(refused).toBeInstanceOf(ApiError);
+        expect(refused).toMatchObject({ status: 409, code: "BOOKING_TAKEN" });
+        expect(isTaken(refused)).toBe(true);
+        // Adminium names the row below the batch that took the time.
+        expect(String((refused as ApiError).params["relation"] ?? "")).not.toBe("");
+        // Nothing of it was written.
+        const after = { batches: (await rows("batches")).length, bookings: (await rows("machine_bookings")).length, movements: (await rows("stock_movements")).length, lines: (await rows("order_lines")).map((l) => [l.id, l["stage"], l["batch_id"] ?? null]) };
+        expect(after).toEqual(before);
+        await maker.unbook(other);
+      });
+
+      // Over the walnut sheet's booking, and from the shelf that sheet left: both stand on the batch above.
+      it.skipIf(!ONE_WRITE)(`is refused, by Adminium, a booking over another on the same machine${NEEDS_ONE_WRITE}`, async () => {
         const data = await maker.load();
         const laser = data.machines.find((m) => m["code"] === "laser")!;
         const refused = await maker.book({ machineId: laser.id, label: "Over the walnut sheet", startsAt: "2026-08-06T17:00:00.000Z", endsAt: "2026-08-06T17:30:00.000Z" }).catch((e: unknown) => e);
@@ -175,7 +207,7 @@ describe.skipIf(why !== null)(`the workshop against a built Adminium${why === nu
         expect((await rows("machine_bookings")).some((b) => String(b.id) === String(booked.id))).toBe(false);
       });
 
-      it("counts the shelf: the book's figure kept beside the count, the stock moved by the difference", async () => {
+      it.skipIf(!ONE_WRITE)(`counts the shelf: the book's figure kept beside the count, the stock moved by the difference${NEEDS_ONE_WRITE}`, async () => {
         let data = await maker.load();
         const walnut = data.materials.find((m) => m["code"] === "wal6")!;
         const ply = data.materials.find((m) => m["code"] === "ply3")!;

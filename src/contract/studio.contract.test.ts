@@ -17,10 +17,19 @@
  *   - the piece goes to making (its order with it), is made, is ready;
  *   - the packer posts it, and Adminium stamps it and e-mails the customer.
  *
+ * Every e-mail of the walk (the proof, the reminder, the post) is sent and in
+ * the e2e server's sink, to the shopper, under its template's subject
+ * (`mail.ts`).
+ *
  * Beside it: a reminder e-mailed; a design's proof sent as the Customiser's
- * own picture of its version; a spoil taking its share of a walnut sheet off
- * the shelf as Adminium works it out; and the customers' totals from their
- * orders.
+ * own picture of its version, copied by the maker's own session (a role that
+ * opens only the app's screens); a spoil taking its share of a walnut sheet
+ * off the shelf as Adminium works it out; the customers' totals from their
+ * orders; and the Customiser's panel on an order line's record, open to the
+ * owner and closed to the packer (Adminium 0.3.44 and later, with the
+ * manifest written for it: `release.ts`). The maker's role grants it too,
+ * but the maker opens only the app's screens, which the core does not yet
+ * serve a panel to: see the `.fails` case.
  *
  * It runs with `CONTRACT=1` where an Adminium checkout with its built server
  * and dashboard is (`ADMINIUM_REPO`) and a built add-ons checkout
@@ -41,7 +50,9 @@ import { fileIdOf, fileSrc, linesOf, proofsOf } from "../studio/facts.ts";
 import { createSessionTransport } from "../studio/transport/sessionSource.ts";
 import { loadStaffConfig } from "../studio/transport/staffConnection.ts";
 import { ApiError, num, type Row } from "../studio/wire.ts";
-import { addOnBundle, appBundle, boot, Caller, ENGINES, missing, newPassword, ok, png, PORTS_PER_ENGINE, until, type Engine, type Server } from "./studio-harness.ts";
+import { delivered } from "./mail.ts";
+import { engineAtLeast, ENGINE_VERSION, MANIFEST_TEXT, NEEDS_PANELS_AND_LIMITS, READS_PANELS_AND_LIMITS } from "./release.ts";
+import { addOnBundle, addSample, appBundle, boot, Caller, ENGINES, missing, newPassword, ok, png, PORTS_PER_ENGINE, type Engine, type Server } from "./studio-harness.ts";
 
 const why = missing();
 if (why !== null && process.env["ADMINIUM_REQUIRE_CONTRACT"] === "1") throw new Error(`the contract must run here, and cannot: ${why}`);
@@ -49,6 +60,10 @@ const PORT_BASE = Number(process.env["CONTRACT_PORT_BASE"] ?? 4970);
 const ADMIN = { email: process.env["E2E_ADMIN_EMAIL"] ?? "e2e@adminium.local", password: process.env["E2E_ADMIN_PASSWORD"] ?? "adminium-e2e-password" };
 /** 16:40 on Thursday 6 August 2026 in Settle (British Summer Time). */
 const THURSDAY = Date.parse("2026-08-06T15:40:00Z");
+/** A made-up address on a domain the outbox sends to (it skips those kept for examples): its e-mail reaches the e2e server's sink. */
+const SHOPPER = "ada.w@birch-row-shoppers.dev";
+/** Before 0.3.44 a role that opens only the app's screens was refused the files' copy route. */
+const SCREENS_COPY = engineAtLeast("0.3.44");
 
 describe.skipIf(why !== null)(`the studio against a built Adminium${why === null ? "" : ` — skipped: ${why}`}`, () => {
   ENGINES.forEach(([engine, available], index) => {
@@ -58,6 +73,8 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
       let connectionId = "";
       let maker: AdminiumStudio;
       let packer: AdminiumStudio;
+      let makerCaller: Caller;
+      let packerCaller: Caller;
       let tables: Record<string, string> = {};
 
       /** Every row of one of the app's tables, as the owner reads it. */
@@ -90,7 +107,7 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         const roles = ok(await owner.get<{ roles: { id: string; name: string; slug?: string }[] }>("/api/v1/roles")).roles;
         const role = roles.find((r) => r.slug === `maker-${slug}`) ?? roles.find((r) => r.name.toLowerCase() === slug)!;
         const email = `${slug}.${engine}@birchrow.example`;
-        const invited = ok(await owner.post<{ invite: { token: string } }>("/api/v1/users", { email, name: slug === "maker" ? "Jo Marsh" : "Ade Pack", roleIds: [role.id] }), 201);
+        const invited = ok(await owner.post<{ invite: { token: string } }>("/api/v1/users", { email, name: slug === "maker" ? "Jo Marsh" : slug === "owner" ? "Nell Birch" : "Ade Pack", roleIds: [role.id] }), 201);
         const password = newPassword();
         ok(await new Caller(server.base).post("/api/v1/auth/password/reset", { token: invited.invite.token, newPassword: password }));
         const caller = new Caller(server.base);
@@ -99,7 +116,7 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
       };
 
       beforeAll(async () => {
-        server = await boot(engine as Engine, PORT_BASE + index * PORTS_PER_ENGINE, THURSDAY - 60_000, `maker_studio_contract_${engine}`);
+        server = await boot(engine as Engine, PORT_BASE + index * PORTS_PER_ENGINE, THURSDAY - 60_000, `maker_studio_contract_${engine}${process.env["CONTRACT_DB_SUFFIX"] ?? ""}`);
         owner = new Caller(server.base);
         await owner.signIn(ADMIN.email, ADMIN.password);
         /*
@@ -122,7 +139,7 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         const customiser = addOnBundle("customiser");
         const stagedAddOn = await owner.post(`/api/v1/add-ons/upload?expectedSha512=${encodeURIComponent(customiser.integrity)}`, customiser.buffer);
         expect([200, 201], JSON.stringify(stagedAddOn.body).slice(0, 800)).toContain(stagedAddOn.status);
-        const app = appBundle();
+        const app = appBundle({ manifest: MANIFEST_TEXT });
         const staged = await owner.post(`/api/v1/apps/upload?expectedSha512=${encodeURIComponent(app.integrity)}`, app.buffer);
         expect([200, 201], JSON.stringify(staged.body).slice(0, 800)).toContain(staged.status);
         const body = { key: app.key, version: app.version, connectionId };
@@ -141,15 +158,16 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
 
         // The sample is written for 16:40 on the dot: the clock stands there while it goes in, then runs on.
         await server.setClock(THURSDAY, true);
-        ok(await owner.post("/api/v1/apps/maker/sample-data"));
-        await until(async () => (ok(await owner.get<{ loaded: boolean }>("/api/v1/apps/maker/sample-data")).loaded ? true : undefined), "the sample to be added");
+        await addSample(owner);
         await server.setClock(THURSDAY);
         // The shop's side is open, and an e-mail's links name this server: the shopper answers a proof there.
         ok(await owner.put("/api/v1/public-api", { enabled: true }));
         ok(await owner.put("/api/v1/settings/email", { publicOrigin: server.base }));
 
-        maker = await doorFor(await person("maker"));
-        packer = await doorFor(await person("packer"));
+        makerCaller = await person("maker");
+        packerCaller = await person("packer");
+        maker = await doorFor(makerCaller);
+        packer = await doorFor(packerCaller);
       }, 420_000);
 
       afterAll(async () => {
@@ -179,7 +197,7 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         };
         const shop = new AdminiumShop({ ...served, baseUrl: server.base }, { fetch: originFetch });
         const body = {
-          values: { name: "Ada W.", email: "ada.w@example.com", address_line1: "3 Mill Lane", town: "Settle", postcode: "BD24 0AA", service_id: second, language: "en-US" },
+          values: { name: "Ada W.", email: SHOPPER, address_line1: "3 Mill Lane", town: "Settle", postcode: "BD24 0AA", service_id: second, language: "en-US" },
           children: { order_lines: [{ values: { product_id: sign.id, qty: 1, material_id: option("material"), size_id: option("size"), finish_id: option("finish"), lettering: "Mill House" } }] },
         };
         const placed = await shop.place(body, `maker-studio-${engine}-0000000001`, String((await shop.quote(body)).order["total"]));
@@ -214,13 +232,12 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect([...new Uint8Array(await picture.arrayBuffer()).slice(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]);
         // Adminium e-mails the proof, and the reminder: outbox rows for the order, to the shopper (one proof
         // e-mail an order: a later proof takes the earlier one's place).
-        const ready = await until(async () => ((await rows("messages")).filter((m) => m["kind"] === "proof-ready" && String(m["order_id"]) === String(made.id)).length >= 1 ? true : undefined), "the proof's e-mail", 45_000).catch(async (error: unknown) => {
-          throw new Error(`${String(error)}: ${JSON.stringify((await rows("messages")).map((m) => [m["kind"], m["order_id"], m["status"], m["skip_reason"], m["error"]]))}`);
-        });
-        expect(ready).toBe(true);
+        // The newest of a kind: a later proof's e-mail takes the place of one not yet sent.
+        const messageOf = (kind: string) => async () => (await rows("messages")).filter((m) => m["kind"] === kind && String(m["order_id"]) === String(made.id)).at(-1);
+        const known = { "order.number": "BR-2291" };
+        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-ready", to: SHOPPER, known, row: messageOf("proof-ready") });
         await maker.remind(proofs[1]!);
-        const reminder = await until(async () => (await rows("messages")).find((m) => m["kind"] === "proof-reminder" && String(m["order_id"]) === String(made.id)), "the reminder's e-mail", 45_000);
-        expect(reminder["to_address"]).toBe("ada.w@example.com");
+        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-reminder", to: SHOPPER, known, row: messageOf("proof-reminder") });
 
         // The shopper approves it, their own write: the order's own link (the one its confirmation holds and its
         // e-mail carries), opened by the shop's door in another browser.
@@ -252,7 +269,7 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect([posted["status"], posted["posted_by"], posted["tracking"] ?? null]).toEqual(["posted", "Ade Pack", null]);
         expect(posted["posted_at"]).not.toBeNull();
         expect((await rows("order_lines")).find((l) => String(l.id) === String(line.id))!["stage"]).toBe("posted");
-        await until(async () => (await rows("messages")).find((m) => m["kind"] === "order-posted" && String(m["order_id"]) === String(made.id)), "the posted e-mail", 45_000);
+        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "order-posted", to: SHOPPER, known, row: messageOf("order-posted") });
       }, 300_000);
 
       it("refuses a packer anything but the post", async () => {
@@ -272,7 +289,7 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect((await rows("proofs")).find((p) => String(p.id) === String(waiting.id))!["reminded_at"]).not.toBeNull();
       });
 
-      it("sends a design's proof as the Customiser made it from the design's version", async () => {
+      it.skipIf(!SCREENS_COPY)(`sends a design's proof as the Customiser made it from the design's version, copied by the maker's own session${SCREENS_COPY ? "" : ` — skipped: the copy route for a screens-only role needs Adminium 0.3.44 (this run has ${ENGINE_VERSION})`}`, async () => {
         let data = await maker.load();
         // Iris's book nook: its design ordered (versions snapshotted), its proof waiting.
         const order = orderOf(data, "BR-2288");
@@ -295,6 +312,42 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         // A copy, its own file: never the Customiser's file itself.
         expect(fileIdOf(proof["picture"])).toMatch(/^file_[0-9A-Z]{26}$/);
         expect(fileIdOf(proof["picture"])).not.toBe(fileIdOf(stored.ref));
+        // The copy route itself answers the maker, whose role opens only the app's screens; the packer, who may not write a proof, is refused.
+        const copy = (caller: Caller) => caller.post<{ ref: string }>(`/api/v1/files/${encodeURIComponent(fileIdOf(stored.ref)!)}/copy`, { connectionId, table: tables["proofs"] ?? "maker_proofs", column: "picture" });
+        const byMaker = await copy(makerCaller);
+        expect([200, 201], JSON.stringify(byMaker.body)).toContain(byMaker.status);
+        expect(fileIdOf(byMaker.body.ref)).not.toBe(fileIdOf(stored.ref));
+        expect((await copy(packerCaller)).status).toBe(403);
+      });
+
+      /** The Customiser's panel of an order line's record, asked for as a person: what the record page loads. */
+      const linePanel = async (caller: Caller) => {
+        const data = await maker.load();
+        const line = linesOf(data, orderOf(data, "BR-2288"))[0]!;
+        expect(line["design_id"]).not.toBeNull();
+        // The record page names its table by the id the connection's schema gives it (`main.maker_order_lines`).
+        const real = tables["order_lines"] ?? "maker_order_lines";
+        const id = ok(await owner.get<{ model: { tables: { id: string; name: string }[] } }>(`/api/v1/connections/${connectionId}/schema`)).model.tables.find((t) => t.name === real)!.id;
+        return caller.get<string>(`/api/v1/add-ons/customiser/panels/customiser-line/bundle?${new URLSearchParams({ connection: connectionId, table: id, row: String(line.id) }).toString()}`);
+      };
+
+      it.skipIf(!READS_PANELS_AND_LIMITS)(`opens the Customiser's panel on an order line's record to the owner, and not to the packer${READS_PANELS_AND_LIMITS ? "" : ` — skipped: ${NEEDS_PANELS_AND_LIMITS}`}`, async () => {
+        const opened = await linePanel(await person("owner"));
+        expect(opened.status, JSON.stringify(opened.body).slice(0, 600)).toBe(200);
+        expect(String(opened.body).length).toBeGreaterThan(0);
+        const closed = await linePanel(packerCaller);
+        expect(closed.status, JSON.stringify(closed.body).slice(0, 600)).toBe(403);
+      });
+
+      /*
+       * WAITS ON THE CORE: the maker's role grants the panel, but the maker opens only the app's own
+       * screens, and Adminium answers a screens-only account's ask for a panel's code `APP_SCREENS_ONLY`
+       * (the panel's route is not among the routes such an account may use). When the core lets a
+       * screens-only account load a panel its role grants, this flips red: take the `.fails` off.
+       */
+      it.skipIf(!READS_PANELS_AND_LIMITS).fails(`opens the Customiser's panel on an order line's record to the maker, whose role grants it${READS_PANELS_AND_LIMITS ? "" : ` — skipped: ${NEEDS_PANELS_AND_LIMITS}`}`, async () => {
+        const opened = await linePanel(makerCaller);
+        expect(opened.status, JSON.stringify(opened.body).slice(0, 600)).toBe(200);
       });
 
       it("takes a spoil's share of its material off the shelf, as Adminium works it out", async () => {

@@ -186,8 +186,8 @@ export function appBundle(options: { built?: boolean; manifest?: string; sample?
   }
   // Another app's manifest brings its own sample (`sample`); this repo's is read from its file.
   if (manifest.sampleData !== undefined) files[manifest.sampleData.file] = options.sample !== undefined ? Buffer.from(options.sample) : readFileSync(join(REPO, manifest.sampleData.file));
-  // …and the rows it adds to an add-on's tables, one file for each add-on.
-  if (options.manifest === undefined) for (const section of Object.values(manifest.sampleData?.addOns ?? {})) files[section.file] = readFileSync(join(REPO, section.file));
+  // …and the rows it adds to an add-on's tables, one file for each add-on (this repo's, whichever floor its manifest is written for).
+  if (options.sample === undefined) for (const section of Object.values(manifest.sampleData?.addOns ?? {})) files[section.file] = readFileSync(join(REPO, section.file));
   return { ...bundle(files), key: manifest.key, version: manifest.version };
 }
 
@@ -402,3 +402,19 @@ export const until = async <T>(read: () => Promise<T | undefined>, label: string
     await new Promise((resolve) => setTimeout(resolve, 1_000));
   }
 };
+
+/**
+ * Add the app's sample and wait for its job to finish: the status route says
+ * "loaded" from the first rows on, before every table is in. A job that
+ * fails, or fails once and waits to try again, stops the contract with what
+ * it said.
+ */
+export async function addSample(caller: Caller, app = "maker"): Promise<void> {
+  const { jobId } = ok(await caller.post<{ jobId: string }>(`/api/v1/apps/${app}/sample-data`));
+  await until(async () => {
+    const job = ok(await caller.get<{ data: { status: string; attempts: number; lastError: string | null } }>(`/api/v1/jobs/${encodeURIComponent(jobId)}`)).data;
+    if (job.status === "succeeded") return true;
+    if (job.status === "failed" || job.status === "cancelled" || (job.lastError !== null && job.attempts > 0)) throw new Error(`the sample's job ${job.status} after ${String(job.attempts)} tries: ${String(job.lastError)}`);
+    return undefined;
+  }, "the sample's job to finish", 240_000);
+}
