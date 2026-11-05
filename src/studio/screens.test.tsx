@@ -278,6 +278,15 @@ describe("the order", () => {
     await sweep("the proof sheet with a file chosen");
   });
 
+  it("lists a design whose words are not read here without empty quotes", async () => {
+    const door = new FakeDoor({ roles: ["maker"] });
+    // The shopper's words as a role without the Customiser's personal columns reads them: masked.
+    door.data.designs = door.data.designs.map((d) => ({ ...d, values: null }));
+    await mount(door, "proofs");
+    expect(text()).toContain("BR-2290");
+    expect(text()).not.toContain("“”");
+  });
+
   it("sends a design's proof as the Customiser made it", async () => {
     const door = new FakeDoor();
     await mount(door, "order", { orderId: 16 });
