@@ -2695,6 +2695,27 @@
             "role": "pk"
           },
           {
+            "ref": "holiday_id",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Public holiday",
+              "de-DE": "Feiertag",
+              "fr-FR": "Jour férié",
+              "da-DK": "Helligdag",
+              "cs-CZ": "Státní svátek",
+              "ar-EG": "عطلة رسمية",
+              "zh-CN": "法定节假日",
+              "zh-TW": "國定假日"
+            },
+            "rules": {
+              "addOnLink": {
+                "addOn": "holiday-calendars",
+                "table": "holidays"
+              }
+            }
+          },
+          {
             "ref": "from_date",
             "type": "date",
             "label": {
@@ -4209,6 +4230,104 @@
             "nullable": true
           },
           {
+            "ref": "material_name",
+            "type": "text",
+            "maxLength": 80,
+            "label": {
+              "en-US": "Material name",
+              "de-DE": "Name des Materials",
+              "fr-FR": "Nom de la matière",
+              "da-DK": "Materialets navn",
+              "cs-CZ": "Název materiálu",
+              "ar-EG": "اسم الخامة",
+              "zh-CN": "材料名称",
+              "zh-TW": "材料名稱"
+            },
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "material_id",
+                "from": "name",
+                "mode": "always"
+              }
+            }
+          },
+          {
+            "ref": "size_name",
+            "type": "text",
+            "maxLength": 80,
+            "label": {
+              "en-US": "Size name",
+              "de-DE": "Name der Größe",
+              "fr-FR": "Nom de la taille",
+              "da-DK": "Størrelsens navn",
+              "cs-CZ": "Název velikosti",
+              "ar-EG": "اسم المقاس",
+              "zh-CN": "尺寸名称",
+              "zh-TW": "尺寸名稱"
+            },
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "size_id",
+                "from": "name",
+                "mode": "always"
+              }
+            }
+          },
+          {
+            "ref": "finish_name",
+            "type": "text",
+            "maxLength": 80,
+            "label": {
+              "en-US": "Finish name",
+              "de-DE": "Name der Oberfläche",
+              "fr-FR": "Nom de la finition",
+              "da-DK": "Overfladens navn",
+              "cs-CZ": "Název povrchu",
+              "ar-EG": "اسم التشطيب",
+              "zh-CN": "表面处理名称",
+              "zh-TW": "表面處理名稱"
+            },
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "finish_id",
+                "from": "name",
+                "mode": "always"
+              }
+            }
+          },
+          {
+            "ref": "summary",
+            "type": "text",
+            "maxLength": 330,
+            "label": {
+              "en-US": "In a few words",
+              "de-DE": "In wenigen Worten",
+              "fr-FR": "En quelques mots",
+              "da-DK": "Med få ord",
+              "cs-CZ": "Ve zkratce",
+              "ar-EG": "باختصار",
+              "zh-CN": "简述",
+              "zh-TW": "簡述"
+            },
+            "nullable": true,
+            "rules": {
+              "formula": {
+                "join": [
+                  "material_name",
+                  " · ",
+                  "size_name",
+                  " · ",
+                  "finish_name",
+                  " · ",
+                  "lettering"
+                ]
+              }
+            }
+          },
+          {
             "ref": "design_code",
             "type": "text",
             "maxLength": 40,
@@ -5556,6 +5675,29 @@
                   "webp"
                 ],
                 "maxBytes": 5242880
+              }
+            }
+          },
+          {
+            "ref": "language",
+            "type": "text",
+            "maxLength": 16,
+            "nullable": true,
+            "label": {
+              "en-US": "Language",
+              "de-DE": "Sprache",
+              "fr-FR": "Langue",
+              "da-DK": "Sprog",
+              "cs-CZ": "Jazyk",
+              "ar-EG": "اللغة",
+              "zh-CN": "语言",
+              "zh-TW": "語言"
+            },
+            "rules": {
+              "copy": {
+                "via": "order_id",
+                "from": "language",
+                "mode": "always"
               }
             }
           },
@@ -7670,7 +7812,8 @@
               "request-received",
               "problem-received",
               "request-copy",
-              "problem-copy"
+              "problem-copy",
+              "change-asked"
             ],
             "label": {
               "en-US": "Kind",
@@ -7764,6 +7907,16 @@
                     "ar-EG": "المشكلة: نسخة الورشة",
                     "zh-CN": "问题：工作室副本",
                     "zh-TW": "問題：工作室副本"
+                  },
+                  "change-asked": {
+                    "en-US": "Change asked to a proof",
+                    "de-DE": "Änderung an einem Probeabzug erbeten",
+                    "fr-FR": "Changement demandé sur une épreuve",
+                    "da-DK": "Ændring ønsket til en prøve",
+                    "cs-CZ": "Vyžádána změna náhledu",
+                    "ar-EG": "طُلب تعديل على نموذج",
+                    "zh-CN": "校样被要求修改",
+                    "zh-TW": "校樣被要求修改"
                   }
                 }
               }
@@ -9974,6 +10127,13 @@
           "actions": [
             "read"
           ]
+        },
+        {
+          "addOn": "holiday-calendars",
+          "table": "holidays",
+          "actions": [
+            "read"
+          ]
         }
       ]
     },
@@ -11011,7 +11171,8 @@
     "settings": {
       "table": "settings",
       "name": "studio_name",
-      "phone": "phone"
+      "phone": "phone",
+      "replyTo": "email"
     },
     "pages": {
       "manage": "/order",
@@ -11025,7 +11186,8 @@
       "request-received": "maker-request-received",
       "problem-received": "maker-problem-received",
       "request-copy": "maker-request-copy",
-      "problem-copy": "maker-problem-copy"
+      "problem-copy": "maker-problem-copy",
+      "change-asked": "maker-change-asked"
     },
     "classes": {
       "order-received": "service",
@@ -11045,18 +11207,16 @@
       },
       {
         "kind": "proof-ready",
-        "link": "order_id",
+        "link": "proof_id",
         "onCreate": {
-          "table": "proofs",
-          "via": "order_id"
+          "table": "proofs"
         }
       },
       {
         "kind": "proof-reminder",
-        "link": "order_id",
+        "link": "proof_id",
         "onChange": {
           "table": "proofs",
-          "via": "order_id",
           "columns": [
             "reminded_at"
           ],
@@ -11114,6 +11274,21 @@
         "link": "problem_id",
         "onCreate": {
           "table": "problem_reports"
+        },
+        "recipient": {
+          "setting": {
+            "table": "settings",
+            "column": "email"
+          }
+        }
+      },
+      {
+        "kind": "change-asked",
+        "link": "proof_id",
+        "onChange": {
+          "table": "proofs",
+          "column": "state",
+          "to": "change_asked"
         },
         "recipient": {
           "setting": {
@@ -11214,27 +11389,37 @@
     {
       "key": "maker-order-received",
       "name": {
-        "en-US": "Order received"
+        "en-US": "Order received",
+        "de-DE": "Bestellung eingegangen",
+        "fr-FR": "Commande reçue",
+        "da-DK": "Bestilling modtaget",
+        "cs-CZ": "Objednávka přijata",
+        "ar-EG": "استُلم الطلب",
+        "zh-CN": "已收到订单",
+        "zh-TW": "已收到訂單"
       },
       "vars": [
+        "appName",
         "manage_url",
         "order.link_token",
         "order.number",
         "order.post_by",
+        "order.postage",
+        "order.service.name",
         "order.total",
-        "practice.name",
+        "practice.address",
         "recipient.first_name"
       ],
       "locales": {
         "en-US": {
-          "subject": "Your order {{order.number}} is in",
-          "preheader": "We'll post it by {{order.post_by}}.",
+          "subject": "We've got your order {{order.number}}",
+          "preheader": "{{order.total}} · post by {{order.post_by}}",
           "blocks": [
             {
               "block": "email.heading",
               "id": "heading",
               "data": {
-                "text": "Thank you, {{recipient.first_name}}."
+                "text": "Thanks, {{recipient.first_name}} — we've got your order {{order.number}}."
               }
             },
             {
@@ -11242,8 +11427,55 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "We have your order {{order.number}}. It comes to {{order.total}}, and we'll post it by {{order.post_by}}.",
-                  "Anything with words on it gets a proof first: we'll e-mail you a picture to approve before we make it."
+                  "Here's what you ordered. Anything with words on it gets a proof first: we'll e-mail you a picture to say yes to before we make it."
+                ]
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "lines",
+              "data": {
+                "from": {
+                  "link": "order",
+                  "table": "order_lines",
+                  "via": "order_id",
+                  "orderBy": "position",
+                  "limit": 20
+                },
+                "joins": {
+                  "features": {
+                    "table": "order_line_features",
+                    "via": "line_id",
+                    "column": "name",
+                    "orderBy": "id",
+                    "separator": " · "
+                  }
+                },
+                "row": {
+                  "title": "{{row.product_name}} × {{row.qty}}",
+                  "meta": "{{row.summary}}",
+                  "amount": "{{row.line_total}}",
+                  "note": "{{row.features}}"
+                }
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "totals",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Postage · {{order.service.name}}",
+                    "amount": "{{order.postage}}"
+                  },
+                  {
+                    "label": "Total",
+                    "amount": "{{order.total}}"
+                  },
+                  {
+                    "label": "Post by",
+                    "amount": "{{order.post_by}}"
+                  }
                 ]
               }
             },
@@ -11251,36 +11483,672 @@
               "block": "email.button",
               "id": "follow",
               "data": {
-                "label": "See your order",
+                "label": "Follow your order",
                 "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "This link is just for you — don't forward it."
+                ]
               }
             }
           ],
-          "footer": "{{practice.name}}"
+          "footer": "{{appName}} · {{practice.address|}}. Reply to this e-mail and it reaches the studio."
+        },
+        "de-DE": {
+          "subject": "Wir haben Ihre Bestellung {{order.number}}",
+          "preheader": "{{order.total}} · Versand bis {{order.post_by}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Danke, {{recipient.first_name}} – wir haben Ihre Bestellung {{order.number}}."
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Hier sehen Sie, was Sie bestellt haben. Alles mit Beschriftung bekommt zuerst einen Probeabzug: Wir schicken Ihnen ein Bild per E-Mail, dem Sie zustimmen, bevor wir es fertigen."
+                ]
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "lines",
+              "data": {
+                "from": {
+                  "link": "order",
+                  "table": "order_lines",
+                  "via": "order_id",
+                  "orderBy": "position",
+                  "limit": 20
+                },
+                "joins": {
+                  "features": {
+                    "table": "order_line_features",
+                    "via": "line_id",
+                    "column": "name",
+                    "orderBy": "id",
+                    "separator": " · "
+                  }
+                },
+                "row": {
+                  "title": "{{row.product_name}} × {{row.qty}}",
+                  "meta": "{{row.summary}}",
+                  "amount": "{{row.line_total}}",
+                  "note": "{{row.features}}"
+                }
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "totals",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Porto · {{order.service.name}}",
+                    "amount": "{{order.postage}}"
+                  },
+                  {
+                    "label": "Gesamt",
+                    "amount": "{{order.total}}"
+                  },
+                  {
+                    "label": "Versand bis",
+                    "amount": "{{order.post_by}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "follow",
+              "data": {
+                "label": "Bestellung verfolgen",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "Dieser Link ist nur für Sie – bitte nicht weiterleiten."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Antworten Sie auf diese E-Mail, dann erreicht sie die Werkstatt."
+        },
+        "fr-FR": {
+          "subject": "Nous avons bien reçu votre commande {{order.number}}",
+          "preheader": "{{order.total}} · expédiée d’ici le {{order.post_by}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Merci, {{recipient.first_name}} — nous avons bien reçu votre commande {{order.number}}."
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Voici ce que vous avez commandé. Tout ce qui porte des mots passe d’abord par une épreuve : nous vous envoyons par e-mail une image à valider avant de fabriquer la pièce."
+                ]
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "lines",
+              "data": {
+                "from": {
+                  "link": "order",
+                  "table": "order_lines",
+                  "via": "order_id",
+                  "orderBy": "position",
+                  "limit": 20
+                },
+                "joins": {
+                  "features": {
+                    "table": "order_line_features",
+                    "via": "line_id",
+                    "column": "name",
+                    "orderBy": "id",
+                    "separator": " · "
+                  }
+                },
+                "row": {
+                  "title": "{{row.product_name}} × {{row.qty}}",
+                  "meta": "{{row.summary}}",
+                  "amount": "{{row.line_total}}",
+                  "note": "{{row.features}}"
+                }
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "totals",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Envoi · {{order.service.name}}",
+                    "amount": "{{order.postage}}"
+                  },
+                  {
+                    "label": "Total",
+                    "amount": "{{order.total}}"
+                  },
+                  {
+                    "label": "Expédié d’ici le",
+                    "amount": "{{order.post_by}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "follow",
+              "data": {
+                "label": "Suivre votre commande",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "Ce lien est rien que pour vous — ne le transférez pas."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Répondez à cet e-mail : votre réponse arrive à l’atelier."
+        },
+        "da-DK": {
+          "subject": "Vi har fået din bestilling {{order.number}}",
+          "preheader": "{{order.total}} · sendes senest {{order.post_by}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Tak, {{recipient.first_name}} — vi har fået din bestilling {{order.number}}."
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Her er det, du har bestilt. Alt med tekst på får først en prøve: Vi mailer dig et billede, som du skal sige ja til, før vi laver det."
+                ]
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "lines",
+              "data": {
+                "from": {
+                  "link": "order",
+                  "table": "order_lines",
+                  "via": "order_id",
+                  "orderBy": "position",
+                  "limit": 20
+                },
+                "joins": {
+                  "features": {
+                    "table": "order_line_features",
+                    "via": "line_id",
+                    "column": "name",
+                    "orderBy": "id",
+                    "separator": " · "
+                  }
+                },
+                "row": {
+                  "title": "{{row.product_name}} × {{row.qty}}",
+                  "meta": "{{row.summary}}",
+                  "amount": "{{row.line_total}}",
+                  "note": "{{row.features}}"
+                }
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "totals",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Porto · {{order.service.name}}",
+                    "amount": "{{order.postage}}"
+                  },
+                  {
+                    "label": "I alt",
+                    "amount": "{{order.total}}"
+                  },
+                  {
+                    "label": "Sendes senest",
+                    "amount": "{{order.post_by}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "follow",
+              "data": {
+                "label": "Følg din bestilling",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "Linket er kun til dig — send det ikke videre."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Svar på denne e-mail, så når den værkstedet."
+        },
+        "cs-CZ": {
+          "subject": "Vaši objednávku {{order.number}} máme",
+          "preheader": "{{order.total}} · odesíláme do {{order.post_by}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Děkujeme, {{recipient.first_name}} — vaši objednávku {{order.number}} máme."
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Tady je, co jste si objednali. Vše s nápisem dostane nejdřív náhled: e-mailem vám pošleme obrázek ke schválení, než to vyrobíme."
+                ]
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "lines",
+              "data": {
+                "from": {
+                  "link": "order",
+                  "table": "order_lines",
+                  "via": "order_id",
+                  "orderBy": "position",
+                  "limit": 20
+                },
+                "joins": {
+                  "features": {
+                    "table": "order_line_features",
+                    "via": "line_id",
+                    "column": "name",
+                    "orderBy": "id",
+                    "separator": " · "
+                  }
+                },
+                "row": {
+                  "title": "{{row.product_name}} × {{row.qty}}",
+                  "meta": "{{row.summary}}",
+                  "amount": "{{row.line_total}}",
+                  "note": "{{row.features}}"
+                }
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "totals",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Poštovné · {{order.service.name}}",
+                    "amount": "{{order.postage}}"
+                  },
+                  {
+                    "label": "Celkem",
+                    "amount": "{{order.total}}"
+                  },
+                  {
+                    "label": "Odesíláme do",
+                    "amount": "{{order.post_by}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "follow",
+              "data": {
+                "label": "Sledovat objednávku",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "Tento odkaz je jen váš — nepřeposílejte ho."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Odpovězte na tento e-mail a odpověď dorazí přímo do dílny."
+        },
+        "ar-EG": {
+          "subject": "وصلنا طلبك {{order.number}}",
+          "preheader": "{{order.total}} · يُرسل بحلول {{order.post_by}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "شكرًا يا {{recipient.first_name}}، وصلنا طلبك {{order.number}}."
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "إليك ما طلبته. كل ما عليه كتابة يمرّ أولًا بنموذج: سنرسل إليك صورة بالبريد الإلكتروني لتوافق عليها قبل أن نصنعه."
+                ]
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "lines",
+              "data": {
+                "from": {
+                  "link": "order",
+                  "table": "order_lines",
+                  "via": "order_id",
+                  "orderBy": "position",
+                  "limit": 20
+                },
+                "joins": {
+                  "features": {
+                    "table": "order_line_features",
+                    "via": "line_id",
+                    "column": "name",
+                    "orderBy": "id",
+                    "separator": " · "
+                  }
+                },
+                "row": {
+                  "title": "{{row.product_name}} × {{row.qty}}",
+                  "meta": "{{row.summary}}",
+                  "amount": "{{row.line_total}}",
+                  "note": "{{row.features}}"
+                }
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "totals",
+              "data": {
+                "lines": [
+                  {
+                    "label": "أجرة البريد · {{order.service.name}}",
+                    "amount": "{{order.postage}}"
+                  },
+                  {
+                    "label": "الإجمالي",
+                    "amount": "{{order.total}}"
+                  },
+                  {
+                    "label": "يُرسل بحلول",
+                    "amount": "{{order.post_by}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "follow",
+              "data": {
+                "label": "تابع طلبك",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "هذا الرابط لك وحدك، فلا تُعِد توجيهه."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. ردّ على هذه الرسالة وسيصل ردّك إلى الورشة."
+        },
+        "zh-CN": {
+          "subject": "我们已收到您的订单 {{order.number}}",
+          "preheader": "{{order.total}} · {{order.post_by}} 前寄出",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "谢谢您，{{recipient.first_name}}——我们已收到您的订单 {{order.number}}。"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "以下是您订购的内容。凡是刻字的作品都会先出校样：我们会用电子邮件发给您一张图片，您同意后我们再制作。"
+                ]
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "lines",
+              "data": {
+                "from": {
+                  "link": "order",
+                  "table": "order_lines",
+                  "via": "order_id",
+                  "orderBy": "position",
+                  "limit": 20
+                },
+                "joins": {
+                  "features": {
+                    "table": "order_line_features",
+                    "via": "line_id",
+                    "column": "name",
+                    "orderBy": "id",
+                    "separator": " · "
+                  }
+                },
+                "row": {
+                  "title": "{{row.product_name}} × {{row.qty}}",
+                  "meta": "{{row.summary}}",
+                  "amount": "{{row.line_total}}",
+                  "note": "{{row.features}}"
+                }
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "totals",
+              "data": {
+                "lines": [
+                  {
+                    "label": "邮费 · {{order.service.name}}",
+                    "amount": "{{order.postage}}"
+                  },
+                  {
+                    "label": "合计",
+                    "amount": "{{order.total}}"
+                  },
+                  {
+                    "label": "寄出日期",
+                    "amount": "{{order.post_by}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "follow",
+              "data": {
+                "label": "查看订单进度",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "此链接仅供您本人使用，请勿转发。"
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}。回复此邮件即可直接联系工作室。"
+        },
+        "zh-TW": {
+          "subject": "我們已收到您的訂單 {{order.number}}",
+          "preheader": "{{order.total}} · {{order.post_by}} 前寄出",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "謝謝您，{{recipient.first_name}}——我們已收到您的訂單 {{order.number}}。"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "以下是您訂購的內容。凡是有刻字的作品都會先出校樣：我們會用電子郵件寄給您一張圖片，經您同意後再製作。"
+                ]
+              }
+            },
+            {
+              "block": "email.rows",
+              "id": "lines",
+              "data": {
+                "from": {
+                  "link": "order",
+                  "table": "order_lines",
+                  "via": "order_id",
+                  "orderBy": "position",
+                  "limit": 20
+                },
+                "joins": {
+                  "features": {
+                    "table": "order_line_features",
+                    "via": "line_id",
+                    "column": "name",
+                    "orderBy": "id",
+                    "separator": " · "
+                  }
+                },
+                "row": {
+                  "title": "{{row.product_name}} × {{row.qty}}",
+                  "meta": "{{row.summary}}",
+                  "amount": "{{row.line_total}}",
+                  "note": "{{row.features}}"
+                }
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "totals",
+              "data": {
+                "lines": [
+                  {
+                    "label": "郵資 · {{order.service.name}}",
+                    "amount": "{{order.postage}}"
+                  },
+                  {
+                    "label": "合計",
+                    "amount": "{{order.total}}"
+                  },
+                  {
+                    "label": "寄出日期",
+                    "amount": "{{order.post_by}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "follow",
+              "data": {
+                "label": "查看訂單進度",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "此連結僅供您本人使用，請勿轉寄。"
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}。回覆這封郵件即可直接聯絡工作室。"
         }
       }
     },
     {
       "key": "maker-proof-ready",
       "name": {
-        "en-US": "Proof ready"
+        "en-US": "Proof ready",
+        "de-DE": "Probeabzug fertig",
+        "fr-FR": "Épreuve prête",
+        "da-DK": "Prøve klar",
+        "cs-CZ": "Náhled připraven",
+        "ar-EG": "النموذج جاهز",
+        "zh-CN": "校样已就绪",
+        "zh-TW": "校樣已就緒"
       },
       "vars": [
+        "appName",
         "manage_url",
         "order.link_token",
         "order.number",
-        "practice.name"
+        "practice.address",
+        "proof.note",
+        "proof.version",
+        "recipient.first_name"
       ],
       "locales": {
         "en-US": {
-          "subject": "Your proof for {{order.number}} is ready",
-          "preheader": "Have a look, then approve it or ask for a change.",
+          "subject": "Proof {{proof.version}} for {{order.number}} is ready",
+          "preheader": "Say yes, or tell us what to change.",
           "blocks": [
             {
               "block": "email.heading",
               "id": "heading",
               "data": {
-                "text": "Your proof is ready."
+                "text": "{{recipient.first_name}}, your proof is ready"
               }
             },
             {
@@ -11288,44 +12156,545 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "We've drawn what we're about to make for your order {{order.number}}. Have a look, then approve it or tell us what to change."
+                  "Proof {{proof.version}} of your order {{order.number}} shows what we're about to make. Have a look on your order's page, then say yes or tell us what to change."
                 ]
               }
             },
             {
-              "block": "email.button",
-              "id": "follow",
+              "block": "email.quote",
+              "id": "note",
               "data": {
-                "label": "See your proof",
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "Yes, make it",
                 "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "Ask for a change",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "We won't cut anything until you say yes."
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "This link is just for you — don't forward it."
+                ]
               }
             }
           ],
-          "footer": "{{practice.name}}"
+          "footer": "{{appName}} · {{practice.address|}}. Reply to this e-mail and it reaches the studio."
+        },
+        "de-DE": {
+          "subject": "Probeabzug {{proof.version}} für {{order.number}} ist fertig",
+          "preheader": "Stimmen Sie zu, oder sagen Sie uns, was wir ändern sollen.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{recipient.first_name}}, Ihr Probeabzug ist fertig"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Probeabzug {{proof.version}} Ihrer Bestellung {{order.number}} zeigt, was wir gleich fertigen. Sehen Sie ihn sich auf der Seite Ihrer Bestellung an, und stimmen Sie dann zu oder sagen Sie uns, was wir ändern sollen."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "note",
+              "data": {
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "Ja, bitte fertigen",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "Um eine Änderung bitten",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Wir schneiden nichts zu, bevor Sie zustimmen."
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "Dieser Link ist nur für Sie – bitte nicht weiterleiten."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Antworten Sie auf diese E-Mail, dann erreicht sie die Werkstatt."
+        },
+        "fr-FR": {
+          "subject": "L’épreuve {{proof.version}} de {{order.number}} est prête",
+          "preheader": "Validez-la, ou dites-nous ce qu’il faut changer.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{recipient.first_name}}, votre épreuve est prête"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "L’épreuve {{proof.version}} de votre commande {{order.number}} montre ce que nous allons fabriquer. Regardez-la sur la page de votre commande, puis validez-la ou dites-nous ce qu’il faut changer."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "note",
+              "data": {
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "Oui, fabriquez-la",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "Demander un changement",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Nous ne découperons rien avant votre accord."
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "Ce lien est rien que pour vous — ne le transférez pas."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Répondez à cet e-mail : votre réponse arrive à l’atelier."
+        },
+        "da-DK": {
+          "subject": "Prøve {{proof.version}} til {{order.number}} er klar",
+          "preheader": "Sig ja, eller fortæl os, hvad der skal ændres.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{recipient.first_name}}, din prøve er klar"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Prøve {{proof.version}} af din bestilling {{order.number}} viser, hvad vi er ved at lave. Se den på din bestillings side, og sig så ja, eller fortæl os, hvad der skal ændres."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "note",
+              "data": {
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "Ja, lav det",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "Bed om en ændring",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Vi skærer ikke noget, før du siger ja."
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "Linket er kun til dig — send det ikke videre."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Svar på denne e-mail, så når den værkstedet."
+        },
+        "cs-CZ": {
+          "subject": "Náhled č. {{proof.version}} k objednávce {{order.number}} je připraven",
+          "preheader": "Schvalte ho, nebo nám napište, co změnit.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{recipient.first_name}}, váš náhled je připraven"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Náhled č. {{proof.version}} vaší objednávky {{order.number}} ukazuje, co se chystáme vyrobit. Podívejte se na něj na stránce objednávky a pak ho schvalte, nebo nám napište, co změnit."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "note",
+              "data": {
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "Ano, vyrobte to",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "Požádat o změnu",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Nic nebudeme řezat, dokud ho neschválíte."
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "Tento odkaz je jen váš — nepřeposílejte ho."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Odpovězte na tento e-mail a odpověď dorazí přímo do dílny."
+        },
+        "ar-EG": {
+          "subject": "النموذج {{proof.version}} للطلب {{order.number}} جاهز",
+          "preheader": "وافق عليه، أو أخبرنا بما نعدّله.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{recipient.first_name}}، نموذجك جاهز"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "يُظهر النموذج {{proof.version}} لطلبك {{order.number}} ما نحن على وشك صنعه. ألقِ نظرة عليه في صفحة طلبك، ثم وافق عليه أو أخبرنا بما نعدّله."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "note",
+              "data": {
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "نعم، اصنعوها",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "اطلب تعديلًا",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "لن نقصّ شيئًا قبل موافقتك."
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "هذا الرابط لك وحدك، فلا تُعِد توجيهه."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. ردّ على هذه الرسالة وسيصل ردّك إلى الورشة."
+        },
+        "zh-CN": {
+          "subject": "{{order.number}} 的第 {{proof.version}} 版校样已就绪",
+          "preheader": "请确认，或告诉我们要修改哪里。",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{recipient.first_name}}，您的校样已就绪"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "您的订单 {{order.number}} 的第 {{proof.version}} 版校样展示了我们即将制作的样子。请在订单页面查看，然后确认，或告诉我们要修改哪里。"
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "note",
+              "data": {
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "好的，开始做吧",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "要求修改",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "您确认之前，我们不会切割任何东西。"
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "此链接仅供您本人使用，请勿转发。"
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}。回复此邮件即可直接联系工作室。"
+        },
+        "zh-TW": {
+          "subject": "{{order.number}} 的第 {{proof.version}} 版校樣已就緒",
+          "preheader": "請確認，或告訴我們要修改哪裡。",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{recipient.first_name}}，您的校樣已就緒"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "您的訂單 {{order.number}} 的第 {{proof.version}} 版校樣呈現了我們即將製作的樣子。請在訂單頁面查看，然後確認，或告訴我們要修改哪裡。"
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "note",
+              "data": {
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "好，開始製作",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "要求修改",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "在您確認之前，我們不會切割任何東西。"
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "此連結僅供您本人使用，請勿轉寄。"
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}。回覆這封郵件即可直接聯絡工作室。"
         }
       }
     },
     {
       "key": "maker-proof-reminder",
       "name": {
-        "en-US": "Proof reminder"
+        "en-US": "Proof reminder",
+        "de-DE": "Erinnerung an den Probeabzug",
+        "fr-FR": "Rappel d’épreuve",
+        "da-DK": "Påmindelse om prøve",
+        "cs-CZ": "Připomínka náhledu",
+        "ar-EG": "تذكير بالنموذج",
+        "zh-CN": "校样提醒",
+        "zh-TW": "校樣提醒"
       },
       "vars": [
+        "appName",
         "manage_url",
         "order.link_token",
         "order.number",
-        "practice.name"
+        "practice.address",
+        "proof.note",
+        "proof.sent_at.date",
+        "proof.version",
+        "recipient.first_name"
       ],
       "locales": {
         "en-US": {
           "subject": "Your proof for {{order.number}} is still waiting",
-          "preheader": "We'll start as soon as you approve it.",
+          "preheader": "We'll start as soon as you say yes.",
           "blocks": [
             {
               "block": "email.heading",
               "id": "heading",
               "data": {
-                "text": "Your proof is still waiting."
+                "text": "Your proof is still waiting, {{recipient.first_name}}"
               }
             },
             {
@@ -11333,44 +12702,543 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "We can't start on your order {{order.number}} until you've approved the proof, or told us what to change."
+                  "We sent proof {{proof.version}} for your order {{order.number}} on {{proof.sent_at.date}}."
                 ]
               }
             },
             {
-              "block": "email.button",
-              "id": "follow",
+              "block": "email.quote",
+              "id": "note",
               "data": {
-                "label": "See your proof",
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "Yes, make it",
                 "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "Ask for a change",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "We won't start until you say yes. This is the only reminder we'll send."
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "This link is just for you — don't forward it."
+                ]
               }
             }
           ],
-          "footer": "{{practice.name}}"
+          "footer": "{{appName}} · {{practice.address|}}. Reply to this e-mail and it reaches the studio."
+        },
+        "de-DE": {
+          "subject": "Ihr Probeabzug für {{order.number}} wartet noch",
+          "preheader": "Wir legen los, sobald Sie zustimmen.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Ihr Probeabzug wartet noch, {{recipient.first_name}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Wir haben Ihnen Probeabzug {{proof.version}} für Ihre Bestellung {{order.number}} am {{proof.sent_at.date}} geschickt."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "note",
+              "data": {
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "Ja, bitte fertigen",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "Um eine Änderung bitten",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Wir fangen erst an, wenn Sie zustimmen. Dies ist die einzige Erinnerung, die wir schicken."
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "Dieser Link ist nur für Sie – bitte nicht weiterleiten."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Antworten Sie auf diese E-Mail, dann erreicht sie die Werkstatt."
+        },
+        "fr-FR": {
+          "subject": "Votre épreuve pour {{order.number}} attend toujours",
+          "preheader": "Nous commencerons dès votre accord.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Votre épreuve attend toujours, {{recipient.first_name}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Nous vous avons envoyé l’épreuve {{proof.version}} de votre commande {{order.number}} le {{proof.sent_at.date}}."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "note",
+              "data": {
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "Oui, fabriquez-la",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "Demander un changement",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Nous ne commencerons pas avant votre accord. C’est le seul rappel que nous enverrons."
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "Ce lien est rien que pour vous — ne le transférez pas."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Répondez à cet e-mail : votre réponse arrive à l’atelier."
+        },
+        "da-DK": {
+          "subject": "Din prøve til {{order.number}} venter stadig",
+          "preheader": "Vi går i gang, så snart du siger ja.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Din prøve venter stadig, {{recipient.first_name}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Vi sendte prøve {{proof.version}} til din bestilling {{order.number}} den {{proof.sent_at.date}}."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "note",
+              "data": {
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "Ja, lav det",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "Bed om en ændring",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Vi begynder ikke, før du siger ja. Det er den eneste påmindelse, vi sender."
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "Linket er kun til dig — send det ikke videre."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Svar på denne e-mail, så når den værkstedet."
+        },
+        "cs-CZ": {
+          "subject": "Váš náhled k objednávce {{order.number}} stále čeká",
+          "preheader": "Začneme, jakmile ho schválíte.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Váš náhled stále čeká, {{recipient.first_name}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Náhled č. {{proof.version}} k vaší objednávce {{order.number}} jsme poslali {{proof.sent_at.date}}."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "note",
+              "data": {
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "Ano, vyrobte to",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "Požádat o změnu",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Dokud ho neschválíte, nezačneme. Tohle je jediná připomínka, kterou pošleme."
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "Tento odkaz je jen váš — nepřeposílejte ho."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Odpovězte na tento e-mail a odpověď dorazí přímo do dílny."
+        },
+        "ar-EG": {
+          "subject": "نموذجك للطلب {{order.number}} ما زال في الانتظار",
+          "preheader": "سنبدأ فور موافقتك.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "نموذجك ما زال في الانتظار يا {{recipient.first_name}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "أرسلنا النموذج {{proof.version}} لطلبك {{order.number}} في {{proof.sent_at.date}}."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "note",
+              "data": {
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "نعم، اصنعوها",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "اطلب تعديلًا",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "لن نبدأ قبل موافقتك. هذا هو التذكير الوحيد الذي سنرسله."
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "هذا الرابط لك وحدك، فلا تُعِد توجيهه."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. ردّ على هذه الرسالة وسيصل ردّك إلى الورشة."
+        },
+        "zh-CN": {
+          "subject": "您 {{order.number}} 的校样还在等您确认",
+          "preheader": "您一确认，我们就开始。",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{recipient.first_name}}，您的校样还在等您确认"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "我们已于 {{proof.sent_at.date}} 发送了您的订单 {{order.number}} 的第 {{proof.version}} 版校样。"
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "note",
+              "data": {
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "好的，开始做吧",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "要求修改",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "您确认之前我们不会开工。这是我们唯一的一次提醒。"
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "此链接仅供您本人使用，请勿转发。"
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}。回复此邮件即可直接联系工作室。"
+        },
+        "zh-TW": {
+          "subject": "您 {{order.number}} 的校樣還在等您確認",
+          "preheader": "您一確認，我們就開始。",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{recipient.first_name}}，您的校樣還在等您確認"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "我們已於 {{proof.sent_at.date}} 寄出您的訂單 {{order.number}} 的第 {{proof.version}} 版校樣。"
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "note",
+              "data": {
+                "text": "{{proof.note}}",
+                "onlyWith": "proof.note"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "yes",
+              "data": {
+                "label": "好，開始製作",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "change",
+              "data": {
+                "label": "要求修改",
+                "url": "{{manage_url}}#{{order.link_token}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "在您確認之前我們不會開工。這是我們唯一的一次提醒。"
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "just-for-you",
+              "data": {
+                "paras": [
+                  "此連結僅供您本人使用，請勿轉寄。"
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}。回覆這封郵件即可直接聯絡工作室。"
         }
       }
     },
     {
       "key": "maker-order-posted",
       "name": {
-        "en-US": "Order posted"
+        "en-US": "Order posted",
+        "de-DE": "Bestellung verschickt",
+        "fr-FR": "Commande expédiée",
+        "da-DK": "Bestilling sendt",
+        "cs-CZ": "Objednávka odeslána",
+        "ar-EG": "أُرسل الطلب",
+        "zh-CN": "订单已寄出",
+        "zh-TW": "訂單已寄出"
       },
       "vars": [
-        "manage_url",
-        "order.link_token",
+        "appName",
         "order.number",
-        "practice.name"
+        "order.posted_at.date",
+        "order.service.detail",
+        "order.service.name",
+        "order.tracking",
+        "practice.address"
       ],
       "locales": {
         "en-US": {
-          "subject": "Your order {{order.number}} is in the post",
-          "preheader": "It went today.",
+          "subject": "Your order {{order.number}} is on its way",
+          "preheader": "Posted {{order.posted_at.date}} · {{order.service.name}}",
           "blocks": [
             {
               "block": "email.heading",
               "id": "heading",
               "data": {
-                "text": "It's on its way."
+                "text": "Your order {{order.number}} is on its way"
               }
             },
             {
@@ -11378,43 +13246,535 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "Your order {{order.number}} went in the post today."
+                  "We posted it on {{order.posted_at.date}}.",
+                  "If anything's wrong when it arrives, reply to this e-mail and tell us."
                 ]
               }
             },
             {
-              "block": "email.button",
-              "id": "follow",
+              "block": "email.tax-breakdown",
+              "id": "service",
               "data": {
-                "label": "See your order",
-                "url": "{{manage_url}}#{{order.link_token}}"
+                "lines": [
+                  {
+                    "label": "Sent by",
+                    "amount": "{{order.service.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "detail",
+              "data": {
+                "paras": [
+                  "{{order.service.detail}}"
+                ],
+                "onlyWith": "order.service.detail"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "Tracking number",
+                "value": "{{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "track",
+              "data": {
+                "label": "Track it",
+                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
+                "onlyWith": "order.tracking"
               }
             }
           ],
-          "footer": "{{practice.name}}"
+          "footer": "{{appName}} · {{practice.address|}}. Reply to this e-mail and it reaches the studio."
+        },
+        "de-DE": {
+          "subject": "Ihre Bestellung {{order.number}} ist unterwegs",
+          "preheader": "Verschickt am {{order.posted_at.date}} · {{order.service.name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Ihre Bestellung {{order.number}} ist unterwegs"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Wir haben sie am {{order.posted_at.date}} verschickt.",
+                  "Falls bei der Ankunft etwas nicht stimmt, antworten Sie auf diese E-Mail und sagen Sie es uns."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "service",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Verschickt mit",
+                    "amount": "{{order.service.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "detail",
+              "data": {
+                "paras": [
+                  "{{order.service.detail}}"
+                ],
+                "onlyWith": "order.service.detail"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "Sendungsnummer",
+                "value": "{{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "track",
+              "data": {
+                "label": "Sendung verfolgen",
+                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Antworten Sie auf diese E-Mail, dann erreicht sie die Werkstatt."
+        },
+        "fr-FR": {
+          "subject": "Votre commande {{order.number}} est en route",
+          "preheader": "Expédiée le {{order.posted_at.date}} · {{order.service.name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Votre commande {{order.number}} est en route"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Nous l’avons expédiée le {{order.posted_at.date}}.",
+                  "Si quelque chose ne va pas à l’arrivée, répondez à cet e-mail pour nous le dire."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "service",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Envoyé avec",
+                    "amount": "{{order.service.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "detail",
+              "data": {
+                "paras": [
+                  "{{order.service.detail}}"
+                ],
+                "onlyWith": "order.service.detail"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "Numéro de suivi",
+                "value": "{{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "track",
+              "data": {
+                "label": "Suivre le colis",
+                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Répondez à cet e-mail : votre réponse arrive à l’atelier."
+        },
+        "da-DK": {
+          "subject": "Din bestilling {{order.number}} er på vej",
+          "preheader": "Sendt {{order.posted_at.date}} · {{order.service.name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Din bestilling {{order.number}} er på vej"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Vi sendte den den {{order.posted_at.date}}.",
+                  "Hvis noget er galt, når den kommer, så svar på denne e-mail og fortæl os det."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "service",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Sendt med",
+                    "amount": "{{order.service.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "detail",
+              "data": {
+                "paras": [
+                  "{{order.service.detail}}"
+                ],
+                "onlyWith": "order.service.detail"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "Sporingsnummer",
+                "value": "{{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "track",
+              "data": {
+                "label": "Spor pakken",
+                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Svar på denne e-mail, så når den værkstedet."
+        },
+        "cs-CZ": {
+          "subject": "Vaše objednávka {{order.number}} je na cestě",
+          "preheader": "Odesláno {{order.posted_at.date}} · {{order.service.name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Vaše objednávka {{order.number}} je na cestě"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Odeslali jsme ji {{order.posted_at.date}}.",
+                  "Pokud bude po doručení něco v nepořádku, odpovězte na tento e-mail a napište nám."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "service",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Odesláno přes",
+                    "amount": "{{order.service.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "detail",
+              "data": {
+                "paras": [
+                  "{{order.service.detail}}"
+                ],
+                "onlyWith": "order.service.detail"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "Sledovací číslo",
+                "value": "{{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "track",
+              "data": {
+                "label": "Sledovat zásilku",
+                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Odpovězte na tento e-mail a odpověď dorazí přímo do dílny."
+        },
+        "ar-EG": {
+          "subject": "طلبك {{order.number}} في الطريق",
+          "preheader": "أُرسل في {{order.posted_at.date}} · {{order.service.name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "طلبك {{order.number}} في الطريق"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "أرسلناه في {{order.posted_at.date}}.",
+                  "إن وجدت فيه خطأً عند وصوله، فردّ على هذه الرسالة وأخبرنا."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "service",
+              "data": {
+                "lines": [
+                  {
+                    "label": "أُرسل عبر",
+                    "amount": "{{order.service.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "detail",
+              "data": {
+                "paras": [
+                  "{{order.service.detail}}"
+                ],
+                "onlyWith": "order.service.detail"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "رقم التتبع",
+                "value": "{{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "track",
+              "data": {
+                "label": "تتبّع الشحنة",
+                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. ردّ على هذه الرسالة وسيصل ردّك إلى الورشة."
+        },
+        "zh-CN": {
+          "subject": "您的订单 {{order.number}} 已在路上",
+          "preheader": "{{order.posted_at.date}} 寄出 · {{order.service.name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "您的订单 {{order.number}} 已在路上"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "我们已于 {{order.posted_at.date}} 寄出。",
+                  "收到时如有任何问题，请回复此邮件告诉我们。"
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "service",
+              "data": {
+                "lines": [
+                  {
+                    "label": "寄送方式",
+                    "amount": "{{order.service.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "detail",
+              "data": {
+                "paras": [
+                  "{{order.service.detail}}"
+                ],
+                "onlyWith": "order.service.detail"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "追踪号",
+                "value": "{{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "track",
+              "data": {
+                "label": "查看物流",
+                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}。回复此邮件即可直接联系工作室。"
+        },
+        "zh-TW": {
+          "subject": "您的訂單 {{order.number}} 已在路上",
+          "preheader": "{{order.posted_at.date}} 寄出 · {{order.service.name}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "您的訂單 {{order.number}} 已在路上"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "我們已於 {{order.posted_at.date}} 寄出。",
+                  "收到時如有任何問題，請回覆這封郵件告訴我們。"
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "service",
+              "data": {
+                "lines": [
+                  {
+                    "label": "寄送方式",
+                    "amount": "{{order.service.name}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "detail",
+              "data": {
+                "paras": [
+                  "{{order.service.detail}}"
+                ],
+                "onlyWith": "order.service.detail"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "追蹤號碼",
+                "value": "{{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            },
+            {
+              "block": "email.button",
+              "id": "track",
+              "data": {
+                "label": "查詢貨態",
+                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}。回覆這封郵件即可直接聯絡工作室。"
         }
       }
     },
     {
       "key": "maker-request-received",
       "name": {
-        "en-US": "Request received"
+        "en-US": "Request received",
+        "de-DE": "Anfrage eingegangen",
+        "fr-FR": "Demande reçue",
+        "da-DK": "Forespørgsel modtaget",
+        "cs-CZ": "Poptávka přijata",
+        "ar-EG": "استُلم الطلب الخاص",
+        "zh-CN": "已收到定制请求",
+        "zh-TW": "已收到訂製需求"
       },
       "vars": [
-        "practice.name",
+        "appName",
+        "practice.address",
         "recipient.first_name",
-        "request.ref"
+        "request.idea",
+        "request.material",
+        "request.ref",
+        "request.wanted_when"
       ],
       "locales": {
         "en-US": {
-          "subject": "We have your request {{request.ref}}",
+          "subject": "We got your request, {{request.ref}}",
           "preheader": "We'll reply within two studio days.",
           "blocks": [
             {
               "block": "email.heading",
               "id": "heading",
               "data": {
-                "text": "Thank you, {{recipient.first_name}}."
+                "text": "We got your request, {{recipient.first_name}}"
               }
             },
             {
@@ -11422,36 +13782,582 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "Your request {{request.ref}} reached the studio. We'll reply within two studio days."
+                  "Here's a copy of what you sent. We'll reply within two studio days."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "What",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Material",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "When",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "We talk it through with you before we make anything. To add something, reply to this e-mail."
                 ]
               }
             }
           ],
-          "footer": "{{practice.name}}"
+          "footer": "{{appName}} · {{practice.address|}}. Reply to this e-mail and it reaches the studio."
+        },
+        "de-DE": {
+          "subject": "Ihre Anfrage {{request.ref}} ist angekommen",
+          "preheader": "Wir antworten innerhalb von zwei Werkstatttagen.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Ihre Anfrage ist angekommen, {{recipient.first_name}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Hier ist eine Kopie dessen, was Sie geschickt haben. Wir antworten innerhalb von zwei Werkstatttagen."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Was",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Material",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Wann",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Wir sprechen alles mit Ihnen durch, bevor wir etwas fertigen. Wenn Sie etwas ergänzen möchten, antworten Sie auf diese E-Mail."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Antworten Sie auf diese E-Mail, dann erreicht sie die Werkstatt."
+        },
+        "fr-FR": {
+          "subject": "Nous avons bien reçu votre demande {{request.ref}}",
+          "preheader": "Nous répondrons sous deux jours d’atelier.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Nous avons bien reçu votre demande, {{recipient.first_name}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Voici une copie de ce que vous avez envoyé. Nous répondrons sous deux jours d’atelier."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Quoi",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Matière",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Quand",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Nous en parlons avec vous avant de fabriquer quoi que ce soit. Pour ajouter quelque chose, répondez à cet e-mail."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Répondez à cet e-mail : votre réponse arrive à l’atelier."
+        },
+        "da-DK": {
+          "subject": "Vi har fået din forespørgsel {{request.ref}}",
+          "preheader": "Vi svarer inden for to værkstedsdage.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Vi har fået din forespørgsel, {{recipient.first_name}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Her er en kopi af det, du sendte. Vi svarer inden for to værkstedsdage."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Hvad",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Materiale",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Hvornår",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Vi taler det igennem med dig, før vi laver noget. Vil du tilføje noget, så svar på denne e-mail."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Svar på denne e-mail, så når den værkstedet."
+        },
+        "cs-CZ": {
+          "subject": "Vaši poptávku {{request.ref}} máme",
+          "preheader": "Odpovíme do dvou dnů v dílně.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Vaši poptávku máme, {{recipient.first_name}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Tady je kopie toho, co jste poslali. Odpovíme do dvou dnů v dílně."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Co",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Materiál",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Kdy",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Než cokoli vyrobíme, všechno s vámi probereme. Chcete-li něco doplnit, odpovězte na tento e-mail."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Odpovězte na tento e-mail a odpověď dorazí přímo do dílny."
+        },
+        "ar-EG": {
+          "subject": "وصلنا طلبك الخاص {{request.ref}}",
+          "preheader": "سنرد خلال يومين من أيام الورشة.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "وصلنا طلبك الخاص يا {{recipient.first_name}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "إليك نسخة مما أرسلته. سنرد خلال يومين من أيام الورشة."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "ماذا",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "الخامة",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "متى",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "نتحدث معك في التفاصيل قبل أن نصنع أي شيء. لإضافة شيء، ردّ على هذه الرسالة."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. ردّ على هذه الرسالة وسيصل ردّك إلى الورشة."
+        },
+        "zh-CN": {
+          "subject": "我们已收到您的定制请求 {{request.ref}}",
+          "preheader": "我们会在两个工作室工作日内回复。",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{recipient.first_name}}，我们已收到您的定制请求"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "以下是您发送内容的副本。我们会在两个工作室工作日内回复。"
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "内容",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "材料",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "时间",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "动手制作之前，我们会先和您沟通清楚。如需补充，请直接回复此邮件。"
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}。回复此邮件即可直接联系工作室。"
+        },
+        "zh-TW": {
+          "subject": "我們已收到您的訂製需求 {{request.ref}}",
+          "preheader": "我們會在兩個工作室工作日內回覆。",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{recipient.first_name}}，我們已收到您的訂製需求"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "以下是您寄出內容的副本。我們會在兩個工作室工作日內回覆。"
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "內容",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "材料",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "時間",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "動手製作之前，我們會先和您溝通清楚。如需補充，請直接回覆這封郵件。"
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}。回覆這封郵件即可直接聯絡工作室。"
         }
       }
     },
     {
       "key": "maker-problem-received",
       "name": {
-        "en-US": "Problem received"
+        "en-US": "Problem received",
+        "de-DE": "Problem eingegangen",
+        "fr-FR": "Problème reçu",
+        "da-DK": "Problem modtaget",
+        "cs-CZ": "Problém přijat",
+        "ar-EG": "استُلمت المشكلة",
+        "zh-CN": "已收到问题",
+        "zh-TW": "已收到問題"
       },
       "vars": [
-        "practice.name",
+        "appName",
+        "practice.address",
+        "problem.details",
         "problem.order_ref",
-        "problem.ref",
+        "problem.what.label",
         "recipient.first_name"
       ],
       "locales": {
         "en-US": {
-          "subject": "We're looking at {{problem.ref}}",
+          "subject": "We got your message about {{problem.order_ref}}",
           "preheader": "We'll reply within one studio day.",
           "blocks": [
             {
               "block": "email.heading",
               "id": "heading",
               "data": {
-                "text": "Sorry about that, {{recipient.first_name}}."
+                "text": "We got your message about {{problem.order_ref}}"
               }
             },
             {
@@ -11459,37 +14365,437 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "We have your message {{problem.ref}} about order {{problem.order_ref}}. We'll reply within one studio day."
+                  "Thanks, {{recipient.first_name}}. We made it ourselves, so it comes straight to us. Here's a copy of what you sent. We'll reply within one studio day."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Order number",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "What went wrong",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "What happened",
+                    "amount": "{{problem.details}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "A photo helps if you have one. Reply to this e-mail with it."
                 ]
               }
             }
           ],
-          "footer": "{{practice.name}}"
+          "footer": "{{appName}} · {{practice.address|}}. Reply to this e-mail and it reaches the studio."
+        },
+        "de-DE": {
+          "subject": "Ihre Nachricht zu {{problem.order_ref}} ist angekommen",
+          "preheader": "Wir antworten innerhalb eines Werkstatttags.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Ihre Nachricht zu {{problem.order_ref}} ist angekommen"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Danke, {{recipient.first_name}}. Wir haben es selbst gefertigt, deshalb landet Ihre Nachricht direkt bei uns. Hier ist eine Kopie dessen, was Sie geschickt haben. Wir antworten innerhalb eines Werkstatttags."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Bestellnummer",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "Was schiefging",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "Was passiert ist",
+                    "amount": "{{problem.details}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Ein Foto hilft, falls Sie eines haben. Antworten Sie damit auf diese E-Mail."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Antworten Sie auf diese E-Mail, dann erreicht sie die Werkstatt."
+        },
+        "fr-FR": {
+          "subject": "Nous avons bien reçu votre message au sujet de {{problem.order_ref}}",
+          "preheader": "Nous répondrons sous un jour d’atelier.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Nous avons bien reçu votre message au sujet de {{problem.order_ref}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Merci, {{recipient.first_name}}. Nous l’avons fabriquée nous-mêmes, alors votre message nous arrive directement. Voici une copie de ce que vous avez envoyé. Nous répondrons sous un jour d’atelier."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Numéro de commande",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "Ce qui ne va pas",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "Ce qui s’est passé",
+                    "amount": "{{problem.details}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Une photo aide si vous en avez une. Répondez à cet e-mail en la joignant."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Répondez à cet e-mail : votre réponse arrive à l’atelier."
+        },
+        "da-DK": {
+          "subject": "Vi har fået din besked om {{problem.order_ref}}",
+          "preheader": "Vi svarer inden for én værkstedsdag.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Vi har fået din besked om {{problem.order_ref}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Tak, {{recipient.first_name}}. Vi har selv lavet det, så din besked kommer direkte til os. Her er en kopi af det, du sendte. Vi svarer inden for én værkstedsdag."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Bestillingsnummer",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "Hvad der gik galt",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "Hvad der skete",
+                    "amount": "{{problem.details}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Et foto hjælper, hvis du har et. Svar på denne e-mail med det."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Svar på denne e-mail, så når den værkstedet."
+        },
+        "cs-CZ": {
+          "subject": "Vaši zprávu k objednávce {{problem.order_ref}} máme",
+          "preheader": "Odpovíme do jednoho dne v dílně.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Vaši zprávu k objednávce {{problem.order_ref}} máme"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Děkujeme, {{recipient.first_name}}. Vyrobili jsme to sami, takže zpráva přichází rovnou k nám. Tady je kopie toho, co jste poslali. Odpovíme do jednoho dne v dílně."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Číslo objednávky",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "Co se pokazilo",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "Co se stalo",
+                    "amount": "{{problem.details}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "Pomůže fotka, pokud nějakou máte. Pošlete ji v odpovědi na tento e-mail."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Odpovězte na tento e-mail a odpověď dorazí přímo do dílny."
+        },
+        "ar-EG": {
+          "subject": "وصلتنا رسالتك بشأن {{problem.order_ref}}",
+          "preheader": "سنرد خلال يوم واحد من أيام الورشة.",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "وصلتنا رسالتك بشأن {{problem.order_ref}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "شكرًا يا {{recipient.first_name}}. صنعناها بأنفسنا، لذا تصلنا رسالتك مباشرة. إليك نسخة مما أرسلته. سنرد خلال يوم واحد من أيام الورشة."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "رقم الطلب",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "ما الخطأ",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "ما الذي حدث",
+                    "amount": "{{problem.details}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "الصورة تساعد إن كانت لديك. أرسلها ردًا على هذه الرسالة."
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. ردّ على هذه الرسالة وسيصل ردّك إلى الورشة."
+        },
+        "zh-CN": {
+          "subject": "我们已收到您关于 {{problem.order_ref}} 的留言",
+          "preheader": "我们会在一个工作室工作日内回复。",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "我们已收到您关于 {{problem.order_ref}} 的留言"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "谢谢您，{{recipient.first_name}}。作品是我们亲手做的，所以留言会直接到我们这里。以下是您发送内容的副本。我们会在一个工作室工作日内回复。"
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "订单号",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "出了什么问题",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "发生了什么",
+                    "amount": "{{problem.details}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "如果有照片会很有帮助，请回复此邮件并附上。"
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}。回复此邮件即可直接联系工作室。"
+        },
+        "zh-TW": {
+          "subject": "我們已收到您關於 {{problem.order_ref}} 的留言",
+          "preheader": "我們會在一個工作室工作日內回覆。",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "我們已收到您關於 {{problem.order_ref}} 的留言"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "謝謝您，{{recipient.first_name}}。作品是我們親手做的，所以留言會直接送到我們這裡。以下是您寄出內容的副本。我們會在一個工作室工作日內回覆。"
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "訂單編號",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "出了什麼問題",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "發生了什麼",
+                    "amount": "{{problem.details}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "after",
+              "data": {
+                "paras": [
+                  "如果有照片會很有幫助，請回覆這封郵件並附上。"
+                ]
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}。回覆這封郵件即可直接聯絡工作室。"
         }
       }
     },
     {
       "key": "maker-request-copy",
       "name": {
-        "en-US": "Request: studio copy"
+        "en-US": "Request: studio copy",
+        "de-DE": "Anfrage: Kopie für die Werkstatt",
+        "fr-FR": "Demande : copie pour l’atelier",
+        "da-DK": "Forespørgsel: kopi til værkstedet",
+        "cs-CZ": "Poptávka: kopie dílně",
+        "ar-EG": "طلب خاص: نسخة الورشة",
+        "zh-CN": "定制请求：工作室副本",
+        "zh-TW": "訂製需求：工作室副本"
       },
       "vars": [
-        "practice.name",
-        "request.email",
         "request.idea",
+        "request.material",
         "request.name",
-        "request.ref"
+        "request.ref",
+        "request.wanted_when"
       ],
       "locales": {
         "en-US": {
-          "subject": "New request {{request.ref}}",
-          "preheader": "From {{request.name}}.",
+          "subject": "New request {{request.ref}} from {{request.name}}",
+          "preheader": "{{request.idea}}",
           "blocks": [
             {
               "block": "email.heading",
               "id": "heading",
               "data": {
-                "text": "A new request."
+                "text": "{{request.name}} has asked for something"
               }
             },
             {
@@ -11497,38 +14803,605 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "{{request.name}} ({{request.email}}) asked for something: {{request.idea}}"
+                  "Request {{request.ref}}. Reply from the request in the studio."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "What",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Material",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "When",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "from",
+              "data": {
+                "lines": [
+                  {
+                    "label": "From",
+                    "amount": "{{request.name}}"
+                  }
                 ]
               }
             }
           ],
-          "footer": "{{practice.name}}"
+          "footer": "Sent by the shop to the studio."
+        },
+        "de-DE": {
+          "subject": "Neue Anfrage {{request.ref}} von {{request.name}}",
+          "preheader": "{{request.idea}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{request.name}} hat etwas angefragt"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Anfrage {{request.ref}}. Beantwortet wird sie in der Werkstatt, direkt aus der Anfrage."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Was",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Material",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Wann",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "from",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Von",
+                    "amount": "{{request.name}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Vom Shop an die Werkstatt gesendet."
+        },
+        "fr-FR": {
+          "subject": "Nouvelle demande {{request.ref}} de {{request.name}}",
+          "preheader": "{{request.idea}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{request.name}} demande quelque chose"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Demande {{request.ref}}. Répondre depuis la demande, dans l’atelier."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Quoi",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Matière",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Quand",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "from",
+              "data": {
+                "lines": [
+                  {
+                    "label": "De",
+                    "amount": "{{request.name}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Envoyé par la boutique à l’atelier."
+        },
+        "da-DK": {
+          "subject": "Ny forespørgsel {{request.ref}} fra {{request.name}}",
+          "preheader": "{{request.idea}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{request.name}} har spurgt om noget"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Forespørgsel {{request.ref}}. Svar fra forespørgslen i værkstedet."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Hvad",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Materiale",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Hvornår",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "from",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Fra",
+                    "amount": "{{request.name}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Sendt af butikken til værkstedet."
+        },
+        "cs-CZ": {
+          "subject": "Nová poptávka {{request.ref}} od {{request.name}}",
+          "preheader": "{{request.idea}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{request.name}} o něco žádá"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Poptávka {{request.ref}}. Odpovězte z poptávky v dílně."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Co",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Materiál",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Kdy",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "from",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Od",
+                    "amount": "{{request.name}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Posláno z obchodu do dílny."
+        },
+        "ar-EG": {
+          "subject": "طلب خاص جديد {{request.ref}} من {{request.name}}",
+          "preheader": "{{request.idea}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{request.name}} يطلب شيئًا"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "الطلب الخاص {{request.ref}}. ردّ عليه من الطلب في الورشة."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "ماذا",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "الخامة",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "متى",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "from",
+              "data": {
+                "lines": [
+                  {
+                    "label": "من",
+                    "amount": "{{request.name}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "أرسله المتجر إلى الورشة."
+        },
+        "zh-CN": {
+          "subject": "{{request.name}} 的新定制请求 {{request.ref}}",
+          "preheader": "{{request.idea}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{request.name}} 提了一个定制请求"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "定制请求 {{request.ref}}。请在工作室里从该请求回复。"
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "内容",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "材料",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "时间",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "from",
+              "data": {
+                "lines": [
+                  {
+                    "label": "来自",
+                    "amount": "{{request.name}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "由网店发送给工作室。"
+        },
+        "zh-TW": {
+          "subject": "{{request.name}} 的新訂製需求 {{request.ref}}",
+          "preheader": "{{request.idea}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{request.name}} 提出了訂製需求"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "訂製需求 {{request.ref}}。請在工作室裡從該需求回覆。"
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "what",
+              "data": {
+                "lines": [
+                  {
+                    "label": "內容",
+                    "amount": "{{request.idea}}"
+                  }
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "material",
+              "data": {
+                "lines": [
+                  {
+                    "label": "材料",
+                    "amount": "{{request.material}}"
+                  }
+                ],
+                "onlyWith": "request.material"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "when",
+              "data": {
+                "lines": [
+                  {
+                    "label": "時間",
+                    "amount": "{{request.wanted_when}}"
+                  }
+                ],
+                "onlyWith": "request.wanted_when"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "from",
+              "data": {
+                "lines": [
+                  {
+                    "label": "來自",
+                    "amount": "{{request.name}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "由網路商店寄給工作室。"
         }
       }
     },
     {
       "key": "maker-problem-copy",
       "name": {
-        "en-US": "Problem: studio copy"
+        "en-US": "Problem: studio copy",
+        "de-DE": "Problem: Kopie für die Werkstatt",
+        "fr-FR": "Problème : copie pour l’atelier",
+        "da-DK": "Problem: kopi til værkstedet",
+        "cs-CZ": "Problém: kopie dílně",
+        "ar-EG": "المشكلة: نسخة الورشة",
+        "zh-CN": "问题：工作室副本",
+        "zh-TW": "問題：工作室副本"
       },
       "vars": [
-        "practice.name",
         "problem.details",
-        "problem.email",
         "problem.name",
         "problem.order_ref",
-        "problem.ref"
+        "problem.ref",
+        "problem.what.label"
       ],
       "locales": {
         "en-US": {
-          "subject": "Problem with {{problem.order_ref}}: {{problem.ref}}",
-          "preheader": "From {{problem.name}}.",
+          "subject": "{{problem.name}}: {{problem.order_ref}}, {{problem.what.label}}",
+          "preheader": "{{problem.ref}} · {{problem.details}}",
           "blocks": [
             {
               "block": "email.heading",
               "id": "heading",
               "data": {
-                "text": "Something's wrong with an order."
+                "text": "{{problem.name}} says something is wrong with {{problem.order_ref}}"
               }
             },
             {
@@ -11536,12 +15409,730 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "{{problem.name}} ({{problem.email}}) wrote about order {{problem.order_ref}}: {{problem.details}}"
+                  "Message {{problem.ref}}. Open it in the studio to reply."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Order number",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "What went wrong",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "What happened",
+                    "amount": "{{problem.details}}"
+                  }
                 ]
               }
             }
           ],
-          "footer": "{{practice.name}}"
+          "footer": "Sent by the shop to the studio."
+        },
+        "de-DE": {
+          "subject": "{{problem.name}}: {{problem.order_ref}}, {{problem.what.label}}",
+          "preheader": "{{problem.ref}} · {{problem.details}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{problem.name}} meldet, dass mit {{problem.order_ref}} etwas nicht stimmt"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Nachricht {{problem.ref}}. Zum Antworten in der Werkstatt öffnen."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Bestellnummer",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "Was schiefging",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "Was passiert ist",
+                    "amount": "{{problem.details}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Vom Shop an die Werkstatt gesendet."
+        },
+        "fr-FR": {
+          "subject": "{{problem.name}}: {{problem.order_ref}}, {{problem.what.label}}",
+          "preheader": "{{problem.ref}} · {{problem.details}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{problem.name}} signale un problème avec {{problem.order_ref}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Message {{problem.ref}}. L’ouvrir dans l’atelier pour répondre."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Numéro de commande",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "Ce qui ne va pas",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "Ce qui s’est passé",
+                    "amount": "{{problem.details}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Envoyé par la boutique à l’atelier."
+        },
+        "da-DK": {
+          "subject": "{{problem.name}}: {{problem.order_ref}}, {{problem.what.label}}",
+          "preheader": "{{problem.ref}} · {{problem.details}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{problem.name}} siger, at der er noget galt med {{problem.order_ref}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Besked {{problem.ref}}. Åbn den i værkstedet for at svare."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Bestillingsnummer",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "Hvad der gik galt",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "Hvad der skete",
+                    "amount": "{{problem.details}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Sendt af butikken til værkstedet."
+        },
+        "cs-CZ": {
+          "subject": "{{problem.name}}: {{problem.order_ref}}, {{problem.what.label}}",
+          "preheader": "{{problem.ref}} · {{problem.details}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{problem.name}} hlásí, že s {{problem.order_ref}} je něco špatně"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Zpráva {{problem.ref}}. Otevřete ji v dílně a odpovězte."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Číslo objednávky",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "Co se pokazilo",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "Co se stalo",
+                    "amount": "{{problem.details}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Posláno z obchodu do dílny."
+        },
+        "ar-EG": {
+          "subject": "{{problem.name}}: {{problem.order_ref}}، {{problem.what.label}}",
+          "preheader": "{{problem.ref}} · {{problem.details}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{problem.name}} يقول إن في {{problem.order_ref}} خطأً"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "الرسالة {{problem.ref}}. افتحها في الورشة للرد."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "رقم الطلب",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "ما الخطأ",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "ما الذي حدث",
+                    "amount": "{{problem.details}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "أرسله المتجر إلى الورشة."
+        },
+        "zh-CN": {
+          "subject": "{{problem.name}}：{{problem.order_ref}}，{{problem.what.label}}",
+          "preheader": "{{problem.ref}} · {{problem.details}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{problem.name}} 反映 {{problem.order_ref}} 有问题"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "留言 {{problem.ref}}。请在工作室里打开并回复。"
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "订单号",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "出了什么问题",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "发生了什么",
+                    "amount": "{{problem.details}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "由网店发送给工作室。"
+        },
+        "zh-TW": {
+          "subject": "{{problem.name}}：{{problem.order_ref}}，{{problem.what.label}}",
+          "preheader": "{{problem.ref}} · {{problem.details}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{problem.name}} 反映 {{problem.order_ref}} 有問題"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "留言 {{problem.ref}}。請在工作室裡開啟並回覆。"
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "problem",
+              "data": {
+                "lines": [
+                  {
+                    "label": "訂單編號",
+                    "amount": "{{problem.order_ref}}"
+                  },
+                  {
+                    "label": "出了什麼問題",
+                    "amount": "{{problem.what.label}}"
+                  },
+                  {
+                    "label": "發生了什麼",
+                    "amount": "{{problem.details}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "由網路商店寄給工作室。"
+        }
+      }
+    },
+    {
+      "key": "maker-change-asked",
+      "name": {
+        "en-US": "Change asked to a proof",
+        "de-DE": "Änderung an einem Probeabzug erbeten",
+        "fr-FR": "Changement demandé sur une épreuve",
+        "da-DK": "Ændring ønsket til en prøve",
+        "cs-CZ": "Vyžádána změna náhledu",
+        "ar-EG": "طُلب تعديل على نموذج",
+        "zh-CN": "校样被要求修改",
+        "zh-TW": "校樣被要求修改"
+      },
+      "vars": [
+        "order.number",
+        "proof.change_note",
+        "proof.sent_at",
+        "proof.version"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "A change asked to proof {{proof.version}} of {{order.number}}",
+          "preheader": "{{proof.change_note}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "A change asked to proof {{proof.version}} of {{order.number}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "The proof goes back to the bench: send a new one from the order in the studio."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "asked",
+              "data": {
+                "text": "{{proof.change_note}}",
+                "onlyWith": "proof.change_note"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "proof",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Proof",
+                    "amount": "{{proof.version}}"
+                  },
+                  {
+                    "label": "Sent",
+                    "amount": "{{proof.sent_at}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Sent by the shop to the studio."
+        },
+        "de-DE": {
+          "subject": "Änderung an Probeabzug {{proof.version}} von {{order.number}} erbeten",
+          "preheader": "{{proof.change_note}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Änderung an Probeabzug {{proof.version}} von {{order.number}} erbeten"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Der Probeabzug geht zurück an die Werkbank: Einen neuen aus der Bestellung in der Werkstatt schicken."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "asked",
+              "data": {
+                "text": "{{proof.change_note}}",
+                "onlyWith": "proof.change_note"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "proof",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Probeabzug",
+                    "amount": "{{proof.version}}"
+                  },
+                  {
+                    "label": "Gesendet",
+                    "amount": "{{proof.sent_at}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Vom Shop an die Werkstatt gesendet."
+        },
+        "fr-FR": {
+          "subject": "Changement demandé sur l’épreuve {{proof.version}} de {{order.number}}",
+          "preheader": "{{proof.change_note}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Changement demandé sur l’épreuve {{proof.version}} de {{order.number}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "L’épreuve retourne à l’établi : en envoyer une nouvelle depuis la commande, dans l’atelier."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "asked",
+              "data": {
+                "text": "{{proof.change_note}}",
+                "onlyWith": "proof.change_note"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "proof",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Épreuve",
+                    "amount": "{{proof.version}}"
+                  },
+                  {
+                    "label": "Envoyée",
+                    "amount": "{{proof.sent_at}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Envoyé par la boutique à l’atelier."
+        },
+        "da-DK": {
+          "subject": "Ændring ønsket til prøve {{proof.version}} af {{order.number}}",
+          "preheader": "{{proof.change_note}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Ændring ønsket til prøve {{proof.version}} af {{order.number}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Prøven går tilbage til bænken: Send en ny fra bestillingen i værkstedet."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "asked",
+              "data": {
+                "text": "{{proof.change_note}}",
+                "onlyWith": "proof.change_note"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "proof",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Prøve",
+                    "amount": "{{proof.version}}"
+                  },
+                  {
+                    "label": "Sendt",
+                    "amount": "{{proof.sent_at}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Sendt af butikken til værkstedet."
+        },
+        "cs-CZ": {
+          "subject": "Vyžádána změna náhledu č. {{proof.version}} k objednávce {{order.number}}",
+          "preheader": "{{proof.change_note}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Vyžádána změna náhledu č. {{proof.version}} k objednávce {{order.number}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Náhled se vrací na ponk: pošlete nový z objednávky v dílně."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "asked",
+              "data": {
+                "text": "{{proof.change_note}}",
+                "onlyWith": "proof.change_note"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "proof",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Náhled",
+                    "amount": "{{proof.version}}"
+                  },
+                  {
+                    "label": "Odesláno",
+                    "amount": "{{proof.sent_at}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "Posláno z obchodu do dílny."
+        },
+        "ar-EG": {
+          "subject": "طُلب تعديل على النموذج {{proof.version}} للطلب {{order.number}}",
+          "preheader": "{{proof.change_note}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "طُلب تعديل على النموذج {{proof.version}} للطلب {{order.number}}"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "يعود النموذج إلى طاولة العمل: أرسل نموذجًا جديدًا من الطلب في الورشة."
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "asked",
+              "data": {
+                "text": "{{proof.change_note}}",
+                "onlyWith": "proof.change_note"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "proof",
+              "data": {
+                "lines": [
+                  {
+                    "label": "النموذج",
+                    "amount": "{{proof.version}}"
+                  },
+                  {
+                    "label": "أُرسل",
+                    "amount": "{{proof.sent_at}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "أرسله المتجر إلى الورشة."
+        },
+        "zh-CN": {
+          "subject": "{{order.number}} 的第 {{proof.version}} 版校样被要求修改",
+          "preheader": "{{proof.change_note}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{order.number}} 的第 {{proof.version}} 版校样被要求修改"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "校样退回工作台：请在工作室里从该订单发送新的校样。"
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "asked",
+              "data": {
+                "text": "{{proof.change_note}}",
+                "onlyWith": "proof.change_note"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "proof",
+              "data": {
+                "lines": [
+                  {
+                    "label": "校样",
+                    "amount": "{{proof.version}}"
+                  },
+                  {
+                    "label": "发送时间",
+                    "amount": "{{proof.sent_at}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "由网店发送给工作室。"
+        },
+        "zh-TW": {
+          "subject": "{{order.number}} 的第 {{proof.version}} 版校樣被要求修改",
+          "preheader": "{{proof.change_note}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "{{order.number}} 的第 {{proof.version}} 版校樣被要求修改"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "校樣退回工作台：請在工作室裡從該訂單寄出新的校樣。"
+                ]
+              }
+            },
+            {
+              "block": "email.quote",
+              "id": "asked",
+              "data": {
+                "text": "{{proof.change_note}}",
+                "onlyWith": "proof.change_note"
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "proof",
+              "data": {
+                "lines": [
+                  {
+                    "label": "校樣",
+                    "amount": "{{proof.version}}"
+                  },
+                  {
+                    "label": "寄出時間",
+                    "amount": "{{proof.sent_at}}"
+                  }
+                ]
+              }
+            }
+          ],
+          "footer": "由網路商店寄給工作室。"
         }
       }
     }

@@ -127,6 +127,9 @@ function choice(
     },
   };
 }
+/** The add-on that keeps the public holidays a closure may come from. */
+export const HOLIDAYS = "holiday-calendars";
+
 /** A row of the Customiser's, by its key. No database link: the add-on keeps its own tables. */
 function link(ref: string, table: string, label: string, rules: Record<string, unknown> = {}): Column {
   return { ref, type: "int", nullable: true, label: l(label), rules: { addOnLink: { addOn: CUSTOMISER, table }, ...rules } };
@@ -476,6 +479,9 @@ export const TABLES: Table[] = [
     keyField: "reason",
     columns: [
       id,
+      // The public holiday from Holiday calendars this closure was added for ("Add as a closure" in the studio
+      // writes its day and name in; they stay the studio's to change).
+      { ref: "holiday_id", type: "int", nullable: true, label: l("Public holiday"), rules: { addOnLink: { addOn: HOLIDAYS, table: "holidays" } } },
       date("from_date", "From"),
       date("to_date", "To"),
       text("reason", 120, "Reason", opt),
@@ -604,6 +610,11 @@ export const TABLES: Table[] = [
       fk("finish_id", "options", "Finish", { ...opt, rules: { linkable: { where: [{ column: "kind", eq: "finish" }, { column: "active", eq: true }], same: [{ column: "product_id", as: "product_id" }] } } }),
       // Words on a plain piece, as the shopper wrote them.
       text("lettering", 80, "Lettering", opt),
+      // The options' names as they were when the line was made, and the line in a few words: what its e-mail lists.
+      text("material_name", 80, "Material name", { ...opt, rules: { copy: { via: "material_id", from: "name", mode: "always" } } }),
+      text("size_name", 80, "Size name", { ...opt, rules: { copy: { via: "size_id", from: "name", mode: "always" } } }),
+      text("finish_name", 80, "Finish name", { ...opt, rules: { copy: { via: "finish_id", from: "name", mode: "always" } } }),
+      text("summary", 330, "In a few words", { ...opt, rules: { formula: { join: ["material_name", " · ", "size_name", " · ", "finish_name", " · ", "lettering"] } } }),
       // A design in the Customiser, found by its code: the shopper types the code, Adminium fills the link.
       text("design_code", 40, "Design code", opt),
       link("design_id", "designs", "Design", { lookup: { from: "design_code", table: { addOn: CUSTOMISER, table: "designs" }, column: "code" } }),
@@ -713,6 +724,8 @@ export const TABLES: Table[] = [
       int("version", "Proof", { ...opt, rules: { sequence: { gapless: true, scope: "line_id", sample: true } } }),
       choice("kind", "Drawn from", { lettering: "The lettering", design: "The Customiser design" }, { default: "lettering" }),
       picture("picture", "Picture"),
+      // The language its order was placed in: its e-mails are written in it.
+      { ...language("language"), rules: { copy: { via: "order_id", from: "language", mode: "always" } } },
       // The Customiser's version of the design this proof shows, when the line has one.
       link("design_version_id", "design_versions", "Design version"),
       text("note", 280, "Note to the customer", opt),

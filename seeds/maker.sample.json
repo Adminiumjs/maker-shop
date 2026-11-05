@@ -304,6 +304,7 @@
           "name": "Second class",
           "detail": "2–3 days once it's posted",
           "tracked": false,
+          "dhl_product": "ECO-2WD",
           "active": true,
           "position": 1
         },
@@ -313,6 +314,7 @@
           "name": "Tracked",
           "detail": "Next day once it's posted, with a tracking number",
           "tracked": true,
+          "dhl_product": "EXP-NWD",
           "active": true,
           "position": 2
         }

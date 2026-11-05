@@ -23,7 +23,7 @@
  */
 import { PAGE_REFS, STUDIO_PAGES } from "./pages.ts";
 import { CUSTOMISER } from "./postings.ts";
-import { TABLE_REFS, TABLES } from "./tables.ts";
+import { HOLIDAYS, TABLE_REFS, TABLES } from "./tables.ts";
 
 const grant = (table: string, ...actions: string[]) => actions.map((action) => `table:@${table}:${action}`);
 const view = (page: string) => `page:@${page}:view`;
@@ -94,7 +94,8 @@ export const ROLES = [
     limits: {
       orders: { writable: typed("orders", ...SHOPPERS_OWN), creatable: typed("orders", ...SHOPPERS_OWN) },
     },
-    tables: CUSTOMISER_READS,
+    // The public holidays Holiday calendars keeps, read to add one as a closure.
+    tables: [...CUSTOMISER_READS, { addOn: HOLIDAYS, table: "holidays", actions: ["read"] }],
   },
   {
     key: "maker",

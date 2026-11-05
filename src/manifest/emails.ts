@@ -1,106 +1,260 @@
 /**
- * The studio's e-mails, one template per outbox kind.
+ * The studio's e-mails, one template per outbox kind, in the eight languages
+ * the app ships.
  *
- * PLACEHOLDERS: each template is a heading and a few plain sentences in
- * English, enough for the outbox to send something true. The drawn e-mails
- * (`Birch Row Emails`), with their blocks and their eight languages, replace
- * them; nothing else reads these words.
+ * Each e-mail's words are a small record of sentences (`Words`), and the
+ * layout that holds them is written once below, so a translation is only the
+ * words: nobody builds a block list per language, and no language can lose a
+ * block the others have. The other seven languages are in `emails-i18n.ts`.
  *
  * `{{…}}` are the outbox's variables, filled by Adminium when it sends:
- * `order.*`, `request.*` and `problem.*` through the message's links;
- * `practice.*` the studio's settings row; `recipient.first_name` the shopper;
- * `manage_url` the shop's order page.
+ * `order.*`, `proof.*`, `request.*` and `problem.*` through the message's
+ * links (and one link further: `order.service.name` is the order's postage
+ * service); `row.*` each line of an order; `practice.*` the studio's settings
+ * row; `appName` the studio's name; `recipient.first_name` the shopper;
+ * `manage_url` the shop's order page, which the order's own code opens.
+ * Adminium writes each date, amount and choice in the e-mail's language.
+ *
+ * What the e-mails never read: a shopper's personal columns on a linked row
+ * (Adminium keeps those out of every e-mail; the shopper is greeted by the
+ * recipient's own name), and anything the studio did not store. Catalogue
+ * values (a piece's name, its material, the lettering) print as the studio and
+ * the shopper wrote them, in every language. Every e-mail is service mail: no
+ * unsubscribe line, no tracking of any kind, and a reply reaches the studio.
  */
-import { KIND_NAMES, type Kind } from "./outbox.ts";
+import type { Tag } from "./labels.ts";
+import { TO_STUDIO, type Kind } from "./outbox.ts";
+import { EMAIL_TRANSLATIONS } from "./emails-i18n.ts";
 
-interface Words {
+/** One e-mail's sentences. */
+export interface Words {
+  /** What the e-mail is called on the E-mails page. */
+  name: string;
   subject: string;
   preheader: string;
   heading: string;
   paras: string[];
-  /** A button to the order's own page, with the order's link code. */
-  button?: string;
+  /** Said after the buttons, when there are any. */
+  after?: string[];
 }
 
-const WORDS: Record<Kind, Words> = {
+export type EmailWords = Record<Kind, Words> & {
+  /** The rows under an order's lines. */
+  postage: string;
+  total: string;
+  postBy: string;
+  follow: string;
+  /** Under every button that carries the order's own link. */
+  justForYou: string;
+  /** A proof's two answers: both open the order's page, where the shopper gives one. */
+  yes: string;
+  change: string;
+  /** The posted e-mail's rows and button. */
+  service: string;
+  tracking: string;
+  trackIt: string;
+  /** The rows of a copy of what was sent. */
+  what: string;
+  material: string;
+  when: string;
+  from: string;
+  orderNumber: string;
+  wentWrong: string;
+  happened: string;
+  proof: string;
+  sent: string;
+  /** The footer of a shopper's e-mail, and of the studio's own. */
+  foot: string;
+  staffFoot: string;
+};
+
+export const EMAIL_EN: EmailWords = {
+  postage: "Postage · {{order.service.name}}",
+  total: "Total",
+  postBy: "Post by",
+  follow: "Follow your order",
+  justForYou: "This link is just for you — don't forward it.",
+  yes: "Yes, make it",
+  change: "Ask for a change",
+  service: "Sent by",
+  tracking: "Tracking number",
+  trackIt: "Track it",
+  what: "What",
+  material: "Material",
+  when: "When",
+  from: "From",
+  orderNumber: "Order number",
+  wentWrong: "What went wrong",
+  happened: "What happened",
+  proof: "Proof",
+  sent: "Sent",
+  foot: "{{appName}} · {{practice.address|}}. Reply to this e-mail and it reaches the studio.",
+  staffFoot: "Sent by the shop to the studio.",
   "order-received": {
-    subject: "Your order {{order.number}} is in",
-    preheader: "We'll post it by {{order.post_by}}.",
-    heading: "Thank you, {{recipient.first_name}}.",
-    paras: ["We have your order {{order.number}}. It comes to {{order.total}}, and we'll post it by {{order.post_by}}.", "Anything with words on it gets a proof first: we'll e-mail you a picture to approve before we make it."],
-    button: "See your order",
+    name: "Order received",
+    subject: "We've got your order {{order.number}}",
+    preheader: "{{order.total}} · post by {{order.post_by}}",
+    heading: "Thanks, {{recipient.first_name}} — we've got your order {{order.number}}.",
+    paras: ["Here's what you ordered. Anything with words on it gets a proof first: we'll e-mail you a picture to say yes to before we make it."],
   },
   "proof-ready": {
-    subject: "Your proof for {{order.number}} is ready",
-    preheader: "Have a look, then approve it or ask for a change.",
-    heading: "Your proof is ready.",
-    paras: ["We've drawn what we're about to make for your order {{order.number}}. Have a look, then approve it or tell us what to change."],
-    button: "See your proof",
+    name: "Proof ready",
+    subject: "Proof {{proof.version}} for {{order.number}} is ready",
+    preheader: "Say yes, or tell us what to change.",
+    heading: "{{recipient.first_name}}, your proof is ready",
+    paras: ["Proof {{proof.version}} of your order {{order.number}} shows what we're about to make. Have a look on your order's page, then say yes or tell us what to change."],
+    after: ["We won't cut anything until you say yes."],
   },
   "proof-reminder": {
+    name: "Proof reminder",
     subject: "Your proof for {{order.number}} is still waiting",
-    preheader: "We'll start as soon as you approve it.",
-    heading: "Your proof is still waiting.",
-    paras: ["We can't start on your order {{order.number}} until you've approved the proof, or told us what to change."],
-    button: "See your proof",
+    preheader: "We'll start as soon as you say yes.",
+    heading: "Your proof is still waiting, {{recipient.first_name}}",
+    paras: ["We sent proof {{proof.version}} for your order {{order.number}} on {{proof.sent_at.date}}."],
+    after: ["We won't start until you say yes. This is the only reminder we'll send."],
   },
   "order-posted": {
-    subject: "Your order {{order.number}} is in the post",
-    preheader: "It went today.",
-    heading: "It's on its way.",
-    paras: ["Your order {{order.number}} went in the post today."],
-    button: "See your order",
+    name: "Order posted",
+    subject: "Your order {{order.number}} is on its way",
+    preheader: "Posted {{order.posted_at.date}} · {{order.service.name}}",
+    heading: "Your order {{order.number}} is on its way",
+    paras: ["We posted it on {{order.posted_at.date}}.", "If anything's wrong when it arrives, reply to this e-mail and tell us."],
   },
   "request-received": {
-    subject: "We have your request {{request.ref}}",
+    name: "Request received",
+    subject: "We got your request, {{request.ref}}",
     preheader: "We'll reply within two studio days.",
-    heading: "Thank you, {{recipient.first_name}}.",
-    paras: ["Your request {{request.ref}} reached the studio. We'll reply within two studio days."],
+    heading: "We got your request, {{recipient.first_name}}",
+    paras: ["Here's a copy of what you sent. We'll reply within two studio days."],
+    after: ["We talk it through with you before we make anything. To add something, reply to this e-mail."],
   },
   "problem-received": {
-    subject: "We're looking at {{problem.ref}}",
+    name: "Problem received",
+    subject: "We got your message about {{problem.order_ref}}",
     preheader: "We'll reply within one studio day.",
-    heading: "Sorry about that, {{recipient.first_name}}.",
-    paras: ["We have your message {{problem.ref}} about order {{problem.order_ref}}. We'll reply within one studio day."],
+    heading: "We got your message about {{problem.order_ref}}",
+    paras: ["Thanks, {{recipient.first_name}}. We made it ourselves, so it comes straight to us. Here's a copy of what you sent. We'll reply within one studio day."],
+    after: ["A photo helps if you have one. Reply to this e-mail with it."],
   },
   "request-copy": {
-    subject: "New request {{request.ref}}",
-    preheader: "From {{request.name}}.",
-    heading: "A new request.",
-    paras: ["{{request.name}} ({{request.email}}) asked for something: {{request.idea}}"],
+    name: "Request: studio copy",
+    subject: "New request {{request.ref}} from {{request.name}}",
+    preheader: "{{request.idea}}",
+    heading: "{{request.name}} has asked for something",
+    paras: ["Request {{request.ref}}. Reply from the request in the studio."],
   },
   "problem-copy": {
-    subject: "Problem with {{problem.order_ref}}: {{problem.ref}}",
-    preheader: "From {{problem.name}}.",
-    heading: "Something's wrong with an order.",
-    paras: ["{{problem.name}} ({{problem.email}}) wrote about order {{problem.order_ref}}: {{problem.details}}"],
+    name: "Problem: studio copy",
+    subject: "{{problem.name}}: {{problem.order_ref}}, {{problem.what.label}}",
+    preheader: "{{problem.ref}} · {{problem.details}}",
+    heading: "{{problem.name}} says something is wrong with {{problem.order_ref}}",
+    paras: ["Message {{problem.ref}}. Open it in the studio to reply."],
+  },
+  "change-asked": {
+    name: "Change asked to a proof",
+    subject: "A change asked to proof {{proof.version}} of {{order.number}}",
+    preheader: "{{proof.change_note}}",
+    heading: "A change asked to proof {{proof.version}} of {{order.number}}",
+    paras: ["The proof goes back to the bench: send a new one from the order in the studio."],
   },
 };
 
-function layout(kind: Kind) {
-  const w = WORDS[kind];
-  const blocks: Record<string, unknown>[] = [
-    { block: "email.heading", id: "heading", data: { text: w.heading } },
-    { block: "email.text", id: "body", data: { paras: w.paras } },
-  ];
-  if (w.button !== undefined) blocks.push({ block: "email.button", id: "follow", data: { label: w.button, url: "{{manage_url}}#{{order.link_token}}" } });
-  return { subject: w.subject, preheader: w.preheader, blocks, footer: "{{practice.name}}" };
+type Block = { block: string; id: string; data: Record<string, unknown> };
+const text = (id: string, ...paras: string[]): Block => ({ block: "email.text", id, data: { paras } });
+/** Facts as label and value rows; `onlyWith` leaves the block out when its value is empty. */
+const facts = (id: string, lines: { label: string; amount: string }[], onlyWith?: string): Block => ({
+  block: "email.tax-breakdown",
+  id,
+  data: { lines, ...(onlyWith === undefined ? {} : { onlyWith }) },
+});
+/** The order's own page, opened by the order's code in the fragment. */
+const ORDER_LINK = "{{manage_url}}#{{order.link_token}}";
+const button = (id: string, label: string, url = ORDER_LINK, onlyWith?: string): Block => ({ block: "email.button", id, data: { label, url, ...(onlyWith === undefined ? {} : { onlyWith }) } });
+/** DHL's own page for a parcel, by its tracking number: public, so the link goes out as it is. */
+const DHL_TRACKING = "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}";
+
+/** An order's lines: the piece and how many, its options and lettering, its customising features, what the line comes to. */
+const LINES: Block = {
+  block: "email.rows",
+  id: "lines",
+  data: {
+    from: { link: "order", table: "order_lines", via: "order_id", orderBy: "position", limit: 20 },
+    joins: { features: { table: "order_line_features", via: "line_id", column: "name", orderBy: "id", separator: " · " } },
+    row: { title: "{{row.product_name}} × {{row.qty}}", meta: "{{row.summary}}", amount: "{{row.line_total}}", note: "{{row.features}}" },
+  },
+};
+
+function layout(kind: Kind, all: EmailWords) {
+  const w = all[kind];
+  const blocks: Block[] = [{ block: "email.heading", id: "heading", data: { text: w.heading } }, text("body", ...w.paras)];
+  switch (kind) {
+    case "order-received":
+      blocks.push(LINES);
+      blocks.push(facts("totals", [
+        { label: all.postage, amount: "{{order.postage}}" },
+        { label: all.total, amount: "{{order.total}}" },
+        { label: all.postBy, amount: "{{order.post_by}}" },
+      ]));
+      blocks.push(button("follow", all.follow));
+      break;
+    case "proof-ready":
+    case "proof-reminder":
+      blocks.push({ block: "email.quote", id: "note", data: { text: "{{proof.note}}", onlyWith: "proof.note" } });
+      blocks.push(button("yes", all.yes), button("change", all.change));
+      break;
+    case "order-posted":
+      blocks.push(facts("service", [{ label: all.service, amount: "{{order.service.name}}" }]));
+      blocks.push({ block: "email.text", id: "detail", data: { paras: ["{{order.service.detail}}"], onlyWith: "order.service.detail" } });
+      // A tracking number comes only through DHL: without one the e-mail says the service and nothing more.
+      blocks.push({ block: "email.box", id: "tracking", data: { label: all.tracking, value: "{{order.tracking}}", onlyWith: "order.tracking" } });
+      blocks.push(button("track", all.trackIt, DHL_TRACKING, "order.tracking"));
+      break;
+    case "request-received":
+    case "request-copy":
+      blocks.push(facts("what", [{ label: all.what, amount: "{{request.idea}}" }]));
+      blocks.push(facts("material", [{ label: all.material, amount: "{{request.material}}" }], "request.material"));
+      blocks.push(facts("when", [{ label: all.when, amount: "{{request.wanted_when}}" }], "request.wanted_when"));
+      if (kind === "request-copy") blocks.push(facts("from", [{ label: all.from, amount: "{{request.name}}" }]));
+      break;
+    case "problem-received":
+    case "problem-copy":
+      blocks.push(facts("problem", [
+        { label: all.orderNumber, amount: "{{problem.order_ref}}" },
+        { label: all.wentWrong, amount: "{{problem.what.label}}" },
+        { label: all.happened, amount: "{{problem.details}}" },
+      ]));
+      break;
+    case "change-asked":
+      blocks.push({ block: "email.quote", id: "asked", data: { text: "{{proof.change_note}}", onlyWith: "proof.change_note" } });
+      blocks.push(facts("proof", [{ label: all.proof, amount: "{{proof.version}}" }, { label: all.sent, amount: "{{proof.sent_at}}" }]));
+      break;
+  }
+  if (w.after !== undefined) blocks.push(text("after", ...w.after));
+  // Every e-mail that carries the order's own code says whose it is.
+  if (JSON.stringify(blocks).includes("{{order.link_token}}")) blocks.push(text("just-for-you", all.justForYou));
+  return { subject: w.subject, preheader: w.preheader, blocks, footer: TO_STUDIO.has(kind) ? all.staffFoot : all.foot };
+}
+
+/** Every language's words: English here, the others in `emails-i18n.ts`. */
+export function emailWords(): Record<Tag, EmailWords> {
+  return { "en-US": EMAIL_EN, ...EMAIL_TRANSLATIONS };
 }
 
 /** The variables each template reads, for the template editor's list. */
 function varsOf(kind: Kind): string[] {
-  const text = JSON.stringify(layout(kind));
+  const text = JSON.stringify(layout(kind, EMAIL_EN));
   const found = new Set<string>();
-  for (const [, name] of text.matchAll(/\{\{([A-Za-z_.]+)\}\}/g)) found.add(name!);
-  return [...found].sort();
+  for (const [, name] of text.matchAll(/\{\{([A-Za-z_.]+)[|}]/g)) found.add(name!);
+  return [...found].filter((name) => !name.startsWith("row.")).sort();
 }
 
-/** The manifest's `emailTemplates`: one per kind. */
+/** The manifest's `emailTemplates`: one per kind, in every language the words are in. */
 export function emailTemplates(kinds: readonly Kind[]): unknown[] {
+  const words = emailWords();
   return kinds.map((kind) => ({
     key: `maker-${kind}`,
-    name: { "en-US": KIND_NAMES[kind] },
+    name: Object.fromEntries(Object.entries(words).map(([tag, w]) => [tag, w[kind].name])),
     vars: varsOf(kind),
-    locales: { "en-US": layout(kind) },
+    locales: Object.fromEntries(Object.entries(words).map(([tag, w]) => [tag, layout(kind, w)])),
   }));
 }

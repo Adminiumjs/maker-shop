@@ -218,8 +218,9 @@ const FAMILY: Record<string, { name: string; stock: string }> = {
 };
 
 export const POSTAGE = [
-  { code: "second", name: "Second class", detail: "2–3 days once it's posted", tracked: false, price: 3.95 },
-  { code: "tracked", name: "Tracked", detail: "Next day once it's posted, with a tracking number", tracked: true, price: 7.5 },
+  // `dhl` is the DHL product each service books when DHL shipping is on, so its dispatch opens with it picked.
+  { code: "second", name: "Second class", detail: "2–3 days once it's posted", tracked: false, price: 3.95, dhl: "ECO-2WD" },
+  { code: "tracked", name: "Tracked", detail: "Next day once it's posted, with a tracking number", tracked: true, price: 7.5, dhl: "EXP-NWD" },
 ];
 
 // ── the products ────────────────────────────────────────────────────────────
@@ -563,7 +564,7 @@ export function sampleBundle(): SampleBundle {
           position: i + 1,
         })),
       },
-      { ref: "postage_services", rows: POSTAGE.map((s, i) => ({ "@label": `service:${s.code}`, code: s.code, name: s.name, detail: s.detail, tracked: s.tracked, active: true, position: i + 1 })) },
+      { ref: "postage_services", rows: POSTAGE.map((s, i) => ({ "@label": `service:${s.code}`, code: s.code, name: s.name, detail: s.detail, tracked: s.tracked, dhl_product: s.dhl, active: true, position: i + 1 })) },
       // One rate a service, from nothing up: a flat charge for the whole order, whatever it weighs.
       { ref: "postage_rates", rows: POSTAGE.map((s) => ({ service_id: { "@ref": `service:${s.code}` }, min_grams: 0, max_grams: null, price: s.price })) },
       { ref: "closures", rows: CLOSURES.map((c) => ({ from_date: day(c.from), to_date: day(c.to), reason: c.reason, active: true })) },
