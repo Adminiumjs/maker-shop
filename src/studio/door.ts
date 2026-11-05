@@ -28,8 +28,8 @@ export type Table =
   | "machine_bookings"
   | "stock_movements";
 
-/** The Customiser's tables the studio reads: the design a line names and its versions. */
-export type AddOnTable = "designs" | "design_versions" | "version_files";
+/** The add-ons' tables the studio reads: the Customiser's design a line names and its versions, and Holiday calendars' days. */
+export type AddOnTable = "designs" | "design_versions" | "version_files" | "holidays";
 
 export type Action = "read" | "create" | "update" | "delete";
 
@@ -65,6 +65,12 @@ export interface StudioData {
   versions: Row[];
   /** The files the Customiser made of those versions for the machines (a laser's SVG, a printer's 3MF). */
   files: Row[];
+  /**
+   * The public holidays Holiday calendars keeps for the studio's country
+   * (`holidays`: `id, country, region, day, name`), by day; null when that
+   * add-on is not attached or its table is not one this person may read.
+   */
+  holidays: Row[] | null;
 }
 
 /** The studio's facts that are not rows: its zone, money, working week, clock and add-ons. */
@@ -76,6 +82,8 @@ export interface StudioFacts {
   studioDays: string[];
   /** The add-ons attached and switched on, by key. */
   addOns: string[];
+  /** Each attached add-on's settings that Adminium hands a browser (never a secret), by key. */
+  addOnSettings: Record<string, Record<string, unknown>>;
   /** The connection the app's tables are in: a record page's address names it. */
   connectionId: string | null;
 }
@@ -106,6 +114,12 @@ export interface StudioDoor {
   spoil(input: { line: Row; materialId: Id; units: number; note: string | null }): Promise<Row>;
   /** A product's lettering settings. */
   saveProduct(product: Row, values: Record<string, unknown>): Promise<Row>;
+  /**
+   * A public holiday added as a closure ("Add as a closure"): a closure of
+   * that one day, under the holiday's name, linked to its row. The studio's
+   * write, never the add-on's.
+   */
+  addHolidayClosure(holiday: Row): Promise<Row>;
 
   /** A machine booked for a time: Adminium refuses one that overlaps another booking of the machine (`BOOKING_TAKEN`). */
   book(input: { machineId: Id; label: string; startsAt: string; endsAt: string }): Promise<Row>;

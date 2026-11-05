@@ -330,6 +330,8 @@ textarea.st-input { font-size: 13.5px; line-height: 1.5; resize: vertical; }
 .st-badge { font-size: 11.5px; font-weight: 700; background: var(--surface-3); border-radius: 6px; padding: 3px 9px; }
 .st-pieces { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .st-piece { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 9px; padding-block: 5px; padding-inline: 6px 10px; background: var(--surface-2); font-size: 12.5px; font-weight: 600; }
+/* DHL's own dispatch flow for a parcel: its fill draws its own panels. */
+.st-fill { display: flex; flex-direction: column; gap: 10px; min-inline-size: 0; }
 .st-runbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-2); padding: 15px 17px; }
 .st-runbar-sum { font-family: var(--font-mono); font-size: 13px; font-weight: 700; margin-inline-end: auto; }
 

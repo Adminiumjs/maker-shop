@@ -9,7 +9,7 @@
  * is saved as one `count` movement a material; Adminium keeps what the book
  * said beside it and moves the stock by the difference.
  */
-import { Box, ClipboardCheck, ClipboardList, Cog, Flame, Zap, type LucideIcon } from "lucide-react";
+import { Box, CalendarPlus, Check, ClipboardCheck, ClipboardList, Cog, Flame, Zap, type LucideIcon } from "lucide-react";
 
 import { useData, useEnv, useRun } from "../env.tsx";
 import { kpis } from "../facts.ts";
@@ -18,7 +18,8 @@ import { bookedMinutes, bookingsOf, DAY_FROM, DAY_TO, isLow, lastCount, machineN
 import { saveCount } from "../making-actions.ts";
 import { go, toast, useStudio } from "../store.ts";
 import { num, text, type Row } from "../wire.ts";
-import { useT, type MessageKey } from "../../i18n/index.tsx";
+import { closureFor, comingHolidays, HOLIDAY_ADD_ON, holidayPlace } from "../holidays.ts";
+import { useI18n, useT, type MessageKey } from "../../i18n/index.tsx";
 
 const MACHINE_ICONS: Readonly<Record<string, LucideIcon>> = { zap: Zap, box: Box, flame: Flame };
 
@@ -114,6 +115,76 @@ export function MachinesScreen() {
           );
         })}
       </div>
+      <PublicHolidays />
+    </section>
+  );
+}
+
+/**
+ * The coming public holidays from Holiday calendars, each one a tap from
+ * being a closure (the studio's calendar is these screens' days: a closure
+ * moves every post-by past it). Only for someone who may add a closure, with
+ * the add-on attached and its days readable; nothing at all otherwise.
+ */
+function PublicHolidays() {
+  const t = useT();
+  const fmt = useFmt();
+  const { locale } = useI18n();
+  const data = useData();
+  const { door } = useEnv();
+  const { busy, run } = useRun();
+  const facts = door.facts();
+  if (!facts.addOns.includes(HOLIDAY_ADD_ON) || !door.who().can("closures", "create") || data.holidays === null) return null;
+  const coming = comingHolidays(data, fmt.today(door.now()));
+  const country = holidayPlace(facts.addOnSettings[HOLIDAY_ADD_ON], facts.currency).country;
+  const countryName = new Intl.DisplayNames([locale], { type: "region" }).of(country) ?? country;
+  return (
+    <section className="st-panel mk-holidays" aria-labelledby="mk-holidays-title">
+      <h2 className="st-section-title" id="mk-holidays-title">
+        {t("studio.holidays.title")}
+      </h2>
+      <p className="mk-holidays-sub">{t("studio.holidays.sub")}</p>
+      {coming.length === 0 ? (
+        <p className="mk-holidays-none">{t("studio.holidays.none", { country: countryName })}</p>
+      ) : (
+        <ul className="mk-holiday-list">
+          {coming.map((holiday) => {
+            const name = text(holiday["name"]) ?? "";
+            const day = fmt.day(text(holiday["day"]));
+            const added = closureFor(data, holiday) !== undefined;
+            return (
+              <li key={String(holiday.id)} className="mk-holiday">
+                <span className="st-mono mk-holiday-day">{day}</span>
+                <span className="mk-holiday-name">
+                  <bdi>{name}</bdi>
+                </span>
+                {added ? (
+                  <span className="mk-holiday-added">
+                    <Check size={13} aria-hidden="true" />
+                    {t("studio.holidays.added")}
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    className="st-btn st-btn--small"
+                    disabled={busy}
+                    aria-label={t("studio.holidays.addNamed", { name, day })}
+                    onClick={() =>
+                      void run(async (d) => {
+                        await d.addHolidayClosure(holiday);
+                        return t("studio.holidays.addedToast", { name, day });
+                      })
+                    }
+                  >
+                    <CalendarPlus size={14} aria-hidden="true" />
+                    {t("studio.holidays.add")}
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </section>
   );
 }

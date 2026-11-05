@@ -17,6 +17,7 @@ import { dayOf, num, text } from "../wire.ts";
 import { wordsOfDesign } from "../designs.ts";
 import { useT, type MessageKey } from "../../i18n/index.tsx";
 import { mayPost } from "../roles.ts";
+import { DispatchFill, useDhl } from "../dispatch.tsx";
 
 const STAGE_WORD: Record<string, MessageKey> = {
   make: "bench.col.to-make",
@@ -248,7 +249,7 @@ export function PostScreen() {
   const [packed, setPacked] = useState<Set<string>>(new Set());
   const [tracking, setTracking] = useState<Record<string, string>>({});
   const orders = postRun(data);
-  const dhl = door.facts().addOns.includes("shipping-dhl");
+  const dhl = useDhl();
   const allowed = mayPost(door.who());
   const done = orders.filter((o) => packed.has(String(o.id)));
   const grams = orders.reduce((sum, o) => sum + (num(o["weight_g"]) ?? 0), 0);
@@ -340,10 +341,14 @@ export function PostScreen() {
                   </button>
                 </div>
                 {dhl && allowed && (
-                  <label className="st-field">
-                    <span className="st-label">{t("studio.post.tracking", { ref })}</span>
-                    <input className="st-input st-input--mono" value={tracking[key] ?? ""} onChange={(e) => setTracking((s) => ({ ...s, [key]: e.target.value }))} />
-                  </label>
+                  <>
+                    {/* DHL's own flow for this parcel: closed, it is one "Book a collection" button. */}
+                    <DispatchFill order={order} />
+                    <label className="st-field">
+                      <span className="st-label">{t("studio.post.tracking", { ref })}</span>
+                      <input className="st-input st-input--mono" value={tracking[key] ?? ""} onChange={(e) => setTracking((s) => ({ ...s, [key]: e.target.value }))} />
+                    </label>
+                  </>
                 )}
               </div>
             </li>

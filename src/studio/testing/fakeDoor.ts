@@ -8,6 +8,7 @@
  */
 import type { Person, ProofPicture, StudioData, StudioDoor, StudioFacts } from "../door.ts";
 import { ApiError, same, type Id, type Row } from "../wire.ts";
+import { holidayClosure } from "../holidays.ts";
 import { FACTS, fixture, person, THURSDAY } from "./fixture.ts";
 
 export interface Call {
@@ -101,6 +102,15 @@ export class FakeDoor implements StudioDoor {
   async saveProduct(product: Row, values: Record<string, unknown>): Promise<Row> {
     this.record("saveProduct", { id: product.id, values });
     return this.update(this.data.products, product.id, values);
+  }
+
+  async addHolidayClosure(holiday: Row): Promise<Row> {
+    const values = holidayClosure(holiday);
+    this.record("addHolidayClosure", { id: holiday.id, values });
+    this.nextId += 1;
+    const row: Row = { id: this.nextId, ...values };
+    this.data.closures.push(row);
+    return row;
   }
 
   async book(input: { machineId: Id; label: string; startsAt: string; endsAt: string }): Promise<Row> {

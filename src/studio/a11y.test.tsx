@@ -25,6 +25,8 @@ import { STUDIO_NAV, STUDIO_PLACES } from "./nav.ts";
 import { StudioApp } from "./StudioApp.tsx";
 import { useStudio, type Overlay, type StudioState, type View } from "./store.ts";
 import { FakeDoor } from "./testing/fakeDoor.ts";
+import { UK_HOLIDAYS } from "./testing/fixture.ts";
+import { strings as DHL_WORDS } from "../add-ons/vendor/shipping-dhl/i18n/strings.ts";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -91,6 +93,42 @@ async function type(selector: string, value: string): Promise<void> {
   });
   await settle();
 }
+
+/** Wait, a while at most, for what a lazily loaded add-on draws. */
+async function until(selector: string): Promise<void> {
+  for (let i = 0; i < 100 && $(selector) === null; i += 1) await act(async () => new Promise((resolve) => setTimeout(resolve, 10)));
+  if ($(selector) === null) throw new Error(`never drawn: ${selector}`);
+}
+
+/** A button inside DHL's flow, pressed by its own words in the language the page is in. */
+async function pressInSlot(key: "addon.shipping-dhl.action.book" | "addon.shipping-dhl.rates.get"): Promise<void> {
+  const lang = (document.documentElement.getAttribute("lang") ?? "en-US") as keyof typeof DHL_WORDS;
+  const words = (DHL_WORDS[lang] ?? DHL_WORDS["en-US"])[key];
+  const found = $$("[data-add-on-slot] button").find((b) => (b.textContent ?? "").trim() === words);
+  if (found === undefined) throw new Error(`no "${words}" in the slot`);
+  await act(async () => found.click());
+  await settle();
+}
+
+/** The studio with DHL attached and the ready parcel going to an address it can quote for. */
+const withDhl = () =>
+  doorWith(
+    (d) => {
+      Object.assign(d.orders.find((o) => o.id === 14)!, { service_id: 2, address_line1: "4 Fellside", postcode: "LA9 4AA" });
+      d.lines.find((l) => l.id === 141)!["grams"] = 285;
+    },
+    { facts: { addOns: ["customiser", "shipping-dhl"], addOnSettings: { "shipping-dhl": { demo_transport: true } } } },
+  );
+
+/** The studio with Holiday calendars attached and its British days readable. */
+const withHolidays = (change: (data: FakeDoor["data"]) => void = () => {}) =>
+  doorWith(
+    (d) => {
+      d.holidays = [...UK_HOLIDAYS];
+      change(d);
+    },
+    { facts: { addOns: ["customiser", "holiday-calendars"] } },
+  );
 
 const set = async (patch: Partial<StudioState>): Promise<void> => {
   await act(async () => useStudio.setState(patch));
@@ -183,6 +221,20 @@ const STATES: Row[] = [
   { view: "post", state: "parcels to pack", shows: ".st-tick[role='checkbox']" },
   { view: "post", state: "all packed", go: () => click(".st-tick"), shows: ".st-done[role='status']" },
   { view: "post", state: "with tracking numbers", door: () => new FakeDoor({ facts: { addOns: ["customiser", "shipping-dhl"] } }), shows: "input[class*='st-input']" },
+  { view: "post", state: "DHL's dispatch flow, closed", door: withDhl, go: () => until("[data-add-on-slot='order.dispatch.actions'] button"), shows: "[data-add-on-slot='order.dispatch.actions'] button", says: "Book a collection" },
+  {
+    view: "post",
+    state: "DHL's dispatch flow, rates quoted",
+    door: withDhl,
+    go: async () => {
+      await until("[data-add-on-slot='order.dispatch.actions'] button");
+      await pressInSlot("addon.shipping-dhl.action.book");
+      await pressInSlot("addon.shipping-dhl.rates.get");
+      await until("[data-add-on-slot] button[aria-pressed='true']");
+    },
+    shows: "[data-add-on-slot] button[aria-pressed='true']",
+    says: "Express, next working day",
+  },
   { view: "post", state: "nothing ready", door: () => doorWith((d) => void (d.orders = d.orders.filter((o) => o.id !== 14))), shows: ".st-empty", says: "Nothing to post today" },
   // The customers
   { view: "customers", state: "the list", shows: ".st-screen", says: "charged in all" },
@@ -208,6 +260,9 @@ const STATES: Row[] = [
     shows: ".mk-stock[role='table']",
   },
   { view: "machines", state: "today's bookings", shows: ".mk-block", says: "Nothing booked all day." },
+  { view: "machines", state: "public holidays to add", door: () => withHolidays(), shows: ".mk-holiday button", says: "Summer bank holiday" },
+  { view: "machines", state: "a public holiday added", door: () => withHolidays((d) => void d.closures.push({ id: 7, holiday_id: 901, from_date: "2026-08-31", to_date: "2026-08-31", reason: "Summer bank holiday", active: true })), shows: ".mk-holiday-added", says: "Added" },
+  { view: "machines", state: "no public holidays coming", door: () => withHolidays((d) => void (d.holidays = [])), shows: ".mk-holidays-none" },
   { view: "stockcount", state: "the count", shows: ".mk-count-summary[role='status']", says: "Count the shelf" },
   { view: "stockcount", state: "typed, one line off the book", more: { countDraft: { "1": "12", "2": "5" } }, shows: ".mk-count-diff--down, .mk-count-diff--up", says: "1 line does not match the book." },
   // The batch sheet and the cut list

@@ -23,6 +23,7 @@ import type { StaffConfig } from "./transport/staffConnection.ts";
 import { SessionPortError, type SessionTransport } from "./transport/sessionSource.ts";
 import { momentOf } from "./time.ts";
 import type { Action, AddOnTable, Person, ProofPicture, StudioData, StudioDoor, StudioFacts, Table } from "./door.ts";
+import { HOLIDAY_ADD_ON, holidayClosure, holidayPlace, inPlace } from "./holidays.ts";
 import { ApiError, type Id, type Row } from "./wire.ts";
 
 const APP_KEY = "maker";
@@ -99,8 +100,9 @@ export class AdminiumStudio implements StudioDoor {
   private real(table: Table): string {
     return this.cfg.tables[table] ?? `${APP_KEY}_${table}`;
   }
-  private realAddOn(table: AddOnTable): string {
-    return this.cfg.tables[`${CUSTOMISER}:${table}`] ?? `${CUSTOMISER}_${table}`;
+  /** An add-on's table's real name: the server's, or the add-on's own prefix when it does not say. */
+  private realAddOn(table: AddOnTable, addOn = CUSTOMISER): string {
+    return this.cfg.tables[`${addOn}:${table}`] ?? `${addOn.replace(/-/g, "_")}_${table}`;
   }
   private async conn(): Promise<string> {
     return this.cfg.connectionId ?? (await this.t.connection());
@@ -164,6 +166,7 @@ export class AdminiumStudio implements StudioDoor {
       currency: this.cfg.currency ?? "GBP",
       studioDays: (typeof days === "string" && days.trim() !== "" ? days : "tue,wed,thu,fri,sat").split(",").map((d) => d.trim().toLowerCase().slice(0, 3)),
       addOns: Object.keys(this.cfg.addOns),
+      addOnSettings: Object.fromEntries(Object.entries(this.cfg.addOns).map(([key, addOn]) => [key, { ...addOn.settings }])),
       connectionId: this.cfg.connectionId,
     };
   }
@@ -217,8 +220,25 @@ export class AdminiumStudio implements StudioDoor {
           if (!(error instanceof SessionPortError && (error.status === 403 || error.status === 404))) throw error;
         }
       }
-      return { settings: settings![0] ?? null, products: products!, options: options!, materials: materials!, machines: machines!, services: services!, closures: closures!, customers: customers!, orders: orders!, lines: lines!, features: features!, proofs: proofs!, bookings: bookings!, batches: batches!, movements: movements!, designs, versions, files };
+      const holidays = await this.holidays();
+      return { settings: settings![0] ?? null, products: products!, options: options!, materials: materials!, machines: machines!, services: services!, closures: closures!, customers: customers!, orders: orders!, lines: lines!, features: features!, proofs: proofs!, bookings: bookings!, batches: batches!, movements: movements!, designs, versions, files, holidays };
     });
+  }
+
+  /** Holiday calendars' days for the studio's country, read as the add-on's readers may; null without the add-on or the read. */
+  private async holidays(): Promise<Row[] | null> {
+    const facts = this.facts();
+    // Read only for someone who could add one as a closure: nobody else is shown them.
+    if (!facts.addOns.includes(HOLIDAY_ADD_ON) || !this.who().can("closures", "create")) return null;
+    const place = holidayPlace(facts.addOnSettings[HOLIDAY_ADD_ON], facts.currency);
+    try {
+      const rows = await this.listReal("holidays", this.realAddOn("holidays", HOLIDAY_ADD_ON), { where: { column: "country", op: "eq", value: place.country }, order: "day.asc" });
+      return rows.filter((row) => inPlace(row, place));
+    } catch (error) {
+      // Someone the add-on's table is closed to sees no holidays at all.
+      if (error instanceof SessionPortError && (error.status === 403 || error.status === 404)) return null;
+      throw error;
+    }
   }
 
   // ── the writes ────────────────────────────────────────────────────────────
@@ -296,6 +316,10 @@ export class AdminiumStudio implements StudioDoor {
 
   saveProduct(product: Row, values: Record<string, unknown>): Promise<Row> {
     return this.run(() => this.change("products", product.id, values));
+  }
+
+  addHolidayClosure(holiday: Row): Promise<Row> {
+    return this.run(() => this.create("closures", holidayClosure(holiday)));
   }
 
   // ── making ────────────────────────────────────────────────────────────────

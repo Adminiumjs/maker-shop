@@ -13,7 +13,7 @@ import type { Row } from "../wire.ts";
 /** 16:40 on Thursday 6 August 2026 in Settle (British Summer Time). */
 export const THURSDAY = Date.parse("2026-08-06T15:40:00Z");
 
-export const FACTS: StudioFacts = { zone: "Europe/London", currency: "GBP", studioDays: ["tue", "wed", "thu", "fri", "sat"], addOns: ["customiser"], connectionId: "conn-1" };
+export const FACTS: StudioFacts = { zone: "Europe/London", currency: "GBP", studioDays: ["tue", "wed", "thu", "fri", "sat"], addOns: ["customiser"], addOnSettings: {}, connectionId: "conn-1" };
 
 const r = (row: Record<string, unknown> & { id: number }): Row => row;
 
@@ -54,8 +54,8 @@ export function fixture(): StudioData {
       r({ id: 51, product_id: 5, kind: "material", code: "walnut", name: "Walnut", material_id: 1, active: true }),
     ],
     services: [
-      r({ id: 1, code: "second", name: "Second class", detail: "2–3 days once it's posted", tracked: false, active: true }),
-      r({ id: 2, code: "tracked", name: "Tracked", detail: "Next day once it's posted, with a tracking number", tracked: true, active: true }),
+      r({ id: 1, code: "second", name: "Second class", detail: "2–3 days once it's posted", tracked: false, dhl_product: null, active: true }),
+      r({ id: 2, code: "tracked", name: "Tracked", detail: "Next day once it's posted, with a tracking number", tracked: true, dhl_product: "EXP-NWD", active: true }),
     ],
     closures: [r({ id: 1, from_date: "2026-08-15", to_date: "2026-08-15", reason: "Closed — we're at the Whitby craft fair", active: true })],
     customers: [
@@ -108,8 +108,19 @@ export function fixture(): StudioData {
     designs: [r({ id: 3, code: "BR2290H5F3P9V8YA", values: JSON.stringify({ parts: { words: { text: "The Pinfold · 2019" }, logo: { file: "logo_file" } } }), state: "ordered" })],
     versions: [r({ id: 30, design_id: 3, version: 1, proof_file: DESIGN_PROOF })],
     files: [r({ id: 300, version_id: 30, kind: "laser", name: "BR-2290 coasters.svg", file: "/api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1XC/content", position: 1 })],
+    holidays: null,
   };
 }
+
+/**
+ * Holiday calendars' British days after the pinned Thursday, as a studio that
+ * imported them would read them (the add-on itself carries no British set).
+ */
+export const UK_HOLIDAYS: Row[] = [
+  r({ id: 901, country: "GB", region: null, day: "2026-08-31", name: "Summer bank holiday" }),
+  r({ id: 902, country: "GB", region: null, day: "2026-12-25", name: "Christmas Day" }),
+  r({ id: 903, country: "GB", region: null, day: "2026-12-28", name: "Boxing Day (substitute day)" }),
+];
 
 /** Someone whose roles are named, and who may do what those roles may (owner: everything). */
 export function person(roles: string[] = ["owner"], name = "Jo Marsh"): Person {

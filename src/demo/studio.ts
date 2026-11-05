@@ -11,6 +11,7 @@
  */
 import type { Person, ProofPicture, StudioData, StudioDoor, StudioFacts } from "../studio/door.ts";
 import { LINE_MOVES, ORDER_MOVES } from "../studio/facts.ts";
+import { HOLIDAY_ADD_ON, holidayClosure } from "../studio/holidays.ts";
 import { ApiError, type Id, type Row } from "../studio/wire.ts";
 import { STUDIO_DAYS } from "./rules.ts";
 import type { DemoWorld } from "./world.ts";
@@ -18,6 +19,19 @@ import type { DemoWorld } from "./world.ts";
 const same = (a: unknown, b: unknown) => a !== null && a !== undefined && b !== null && b !== undefined && String(a) === String(b);
 const copy = <T>(value: T): T => structuredClone(value);
 const byNumber = (column: string) => (a: Row, b: Row) => Number(a[column] ?? 0) - Number(b[column] ?? 0) || Number(a.id) - Number(b.id);
+
+/**
+ * Holiday calendars' table as the demo has it: the British days after the
+ * pinned Thursday that "Add as a closure" offers. A STAND-IN: the add-on as
+ * released carries sets for the United States, Germany, France, Czechia and
+ * Denmark and none for Britain, so a real Birch Row reads none of these.
+ * The names are the ones GOV.UK gives the English bank holidays.
+ */
+export const DEMO_HOLIDAYS: readonly Row[] = [
+  { id: 1, country: "GB", region: null, day: "2026-08-31", name: "Summer bank holiday" },
+  { id: 2, country: "GB", region: null, day: "2026-12-25", name: "Christmas Day" },
+  { id: 3, country: "GB", region: null, day: "2026-12-28", name: "Boxing Day (substitute day)" },
+];
 
 /** The person the studio is signed in as. */
 export const DEMO_PERSON: Person = { name: "Ada", roles: ["owner"], can: () => true };
@@ -34,7 +48,7 @@ export class DemoStudio implements StudioDoor {
   }
 
   facts(): StudioFacts {
-    return { zone: this.world.zone, currency: this.world.currency, studioDays: [...STUDIO_DAYS], addOns: [...this.world.addOns], connectionId: null };
+    return { zone: this.world.zone, currency: this.world.currency, studioDays: [...STUDIO_DAYS], addOns: [...this.world.addOns], addOnSettings: this.world.addOns.has("shipping-dhl") ? { "shipping-dhl": { demo_transport: true } } : {}, connectionId: null };
   }
 
   now(): number {
@@ -66,6 +80,7 @@ export class DemoStudio implements StudioDoor {
       designs: w.all("designs").filter((d) => named.has(String(d.id))),
       versions,
       files: w.all("version_files").filter((f) => versionIds.has(String(f["version_id"]))),
+      holidays: w.addOns.has(HOLIDAY_ADD_ON) ? [...DEMO_HOLIDAYS] : null,
     });
   }
 
@@ -136,6 +151,12 @@ export class DemoStudio implements StudioDoor {
 
   async saveProduct(product: Row, values: Record<string, unknown>): Promise<Row> {
     const row = this.world.update("products", product.id, values);
+    this.world.changed();
+    return copy(row);
+  }
+
+  async addHolidayClosure(holiday: Row): Promise<Row> {
+    const row = this.world.insert("closures", holidayClosure(holiday));
     this.world.changed();
     return copy(row);
   }

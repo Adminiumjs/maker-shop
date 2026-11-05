@@ -101,6 +101,36 @@ describe("the demo, with no server", () => {
     expect({ stage: line?.["stage"], post_by: line?.["post_by"], lettering: line?.["lettering"] }).toEqual({ stage: "make", post_by: "2026-08-11", lettering: "Ruth & Sam · June 2026" });
   });
 
+  it("with DHL switched on, puts DHL's own dispatch flow on the post office run, on its demo carrier", async () => {
+    // The demo opens with nothing ready to post: one order is finished first, as the bench would finish it.
+    const world = demoAdminium().world;
+    const order = world.all("orders").find((o) => o["number"] === "BR-2291")!;
+    for (const line of world.all("order_lines").filter((l) => l["order_id"] === order.id)) world.update("order_lines", line.id, { stage: "ready", proof_ok: 1 });
+    world.update("orders", order.id, { status: "ready" });
+    await act(async () => {
+      world.changed();
+      await applyDemoMessage({ type: "adminium:demo:set", dv: 1, addOn: { key: "shipping-dhl", on: true } });
+      await applyDemoMessage({ type: "adminium:demo:go", dv: 1, screen: "post" });
+    });
+    await settle();
+    expect(useStudio.getState().view).toBe("post");
+    expect(host.querySelectorAll("[data-add-on-slot='order.dispatch.actions']").length, host.querySelector("main")?.textContent ?? "").toBeGreaterThan(0);
+    expect(host.querySelector("[data-add-on-slot='order.dispatch.actions']")?.textContent).toContain("Book a collection");
+  });
+
+  it("with Holiday calendars switched on, offers the coming bank holidays on Machine time", async () => {
+    await act(async () => {
+      await applyDemoMessage({ type: "adminium:demo:set", dv: 1, addOn: { key: "holiday-calendars", on: true } });
+      await applyDemoMessage({ type: "adminium:demo:go", dv: 1, screen: "machines" });
+    });
+    await settle();
+    expect(host.querySelector(".mk-holidays")?.textContent).toContain("Summer bank holiday");
+    await act(async () => host.querySelector<HTMLButtonElement>(".mk-holiday button")!.click());
+    await settle();
+    expect(demoAdminium().world.all("closures").find((c) => c["holiday_id"] === 1)).toMatchObject({ from_date: "2026-08-31", to_date: "2026-08-31", reason: "Summer bank holiday", active: true });
+    expect(host.querySelector(".mk-holiday-added")).not.toBeNull();
+  });
+
   it("goes back to the shop, still holding the order", async () => {
     await act(async () => {
       await applyDemoMessage({ type: "adminium:demo:set", dv: 1, persona: "shopper" });
