@@ -140,25 +140,31 @@ export function ProofsScreen() {
         <>
           <h2 className="st-section-title">{t("bench.proofs.unsent")}</h2>
           <ul className="st-proof-list">
-            {unsent.map(({ order, line }) => (
-              <li key={String(line.id)} className="st-unsent">
-                <LineTile data={data} line={line} product={productOf(data, line)} size={38} iconSize={15} />
-                <span className="st-unsent-text">
-                  <span className="st-proof-ids">
-                    <span className="st-mono st-small">{text(order["number"])}</span>
-                    <strong>{text(line["product_name"])}</strong>
+            {unsent.map(({ order, line }) => {
+              // The words as the shopper wrote them; a design whose words are not read here shows none, never empty quotes.
+              const words = text(line["lettering"]) ?? wordsOfDesign(data, line).join(" / ");
+              return (
+                <li key={String(line.id)} className="st-unsent">
+                  <LineTile data={data} line={line} product={productOf(data, line)} size={38} iconSize={15} />
+                  <span className="st-unsent-text">
+                    <span className="st-proof-ids">
+                      <span className="st-mono st-small">{text(order["number"])}</span>
+                      <strong>{text(line["product_name"])}</strong>
+                    </span>
+                    {words !== "" && (
+                      <span className="st-mono st-small">
+                        <Typed>{`“${words}”`}</Typed>
+                      </span>
+                    )}
                   </span>
-                  <span className="st-mono st-small">
-                    <Typed>{`“${(text(line["lettering"]) ?? wordsOfDesign(data, line).join(" / "))}”`}</Typed>
-                  </span>
-                </span>
-                {mayProof && (
-                  <button type="button" className="st-btn st-btn--accent" onClick={() => useStudio.setState({ overlay: { kind: "proof", orderId: order.id } })}>
-                    {t("bench.order.sendProof")}
-                  </button>
-                )}
-              </li>
-            ))}
+                  {mayProof && (
+                    <button type="button" className="st-btn st-btn--accent" onClick={() => useStudio.setState({ overlay: { kind: "proof", orderId: order.id } })}>
+                      {t("bench.order.sendProof")}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </>
       )}
