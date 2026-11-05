@@ -600,6 +600,8 @@ export const TABLES: Table[] = [
     columns: [
       id,
       fk("order_id", "orders", "Order", { index: true }),
+      // The order's customer, so the words on the line are found with them (people.ts).
+      fk("customer_id", "customers", "Customer", { ...opt, rules: { copy: { via: "order_id", from: "customer_id", mode: "always" } } }),
       int("position", "Position", opt),
       fk("product_id", "products", "Product", { rules: { linkable: { where: [{ column: "published", eq: true }] } } }),
       text("product_name", 80, "Product name", { ...opt, rules: { copy: { via: "product_id", from: "name", mode: "always" } } }),
@@ -722,6 +724,8 @@ export const TABLES: Table[] = [
       // The order is the line's own: a proof can name no other.
       fk("order_id", "orders", "Order", { ...opt, rules: { copy: { via: "line_id", from: "order_id", mode: "always" } } }),
       fk("line_id", "order_lines", "Order line", { index: true }),
+      // The line's customer, so the picture of their words and what they asked to change go with them (people.ts).
+      fk("customer_id", "customers", "Customer", { ...opt, rules: { copy: { via: "line_id", from: "customer_id", mode: "always" } } }),
       int("version", "Proof", { ...opt, rules: { sequence: { gapless: true, scope: "line_id", sample: true } } }),
       choice("kind", "Drawn from", { lettering: "The lettering", design: "The Customiser design" }, { default: "lettering" }),
       picture("picture", "Picture"),

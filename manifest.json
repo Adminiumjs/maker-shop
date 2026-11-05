@@ -4022,6 +4022,29 @@
             "index": true
           },
           {
+            "ref": "customer_id",
+            "type": "fk",
+            "references": "customers",
+            "label": {
+              "en-US": "Customer",
+              "de-DE": "Kunde",
+              "fr-FR": "Client",
+              "da-DK": "Kunde",
+              "cs-CZ": "Zákazník",
+              "ar-EG": "الزبون",
+              "zh-CN": "顾客",
+              "zh-TW": "顧客"
+            },
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "order_id",
+                "from": "customer_id",
+                "mode": "always"
+              }
+            }
+          },
+          {
             "ref": "position",
             "type": "int",
             "label": {
@@ -5591,6 +5614,29 @@
               "zh-TW": "訂單明細"
             },
             "index": true
+          },
+          {
+            "ref": "customer_id",
+            "type": "fk",
+            "references": "customers",
+            "label": {
+              "en-US": "Customer",
+              "de-DE": "Kunde",
+              "fr-FR": "Client",
+              "da-DK": "Kunde",
+              "cs-CZ": "Zákazník",
+              "ar-EG": "الزبون",
+              "zh-CN": "顾客",
+              "zh-TW": "顧客"
+            },
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "line_id",
+                "from": "customer_id",
+                "mode": "always"
+              }
+            }
           },
           {
             "ref": "version",
@@ -11352,6 +11398,24 @@
         {
           "table": "orders",
           "column": "postcode",
+          "holds": "details",
+          "via": "customer_id"
+        },
+        {
+          "table": "order_lines",
+          "column": "lettering",
+          "holds": "details",
+          "via": "customer_id"
+        },
+        {
+          "table": "order_lines",
+          "column": "summary",
+          "holds": "details",
+          "via": "customer_id"
+        },
+        {
+          "table": "proofs",
+          "column": "change_note",
           "holds": "details",
           "via": "customer_id"
         },

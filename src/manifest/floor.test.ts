@@ -14,6 +14,7 @@ const roleOf = (m: Json, key: string) => (m["roles"] as { key: string; permissio
 const orderEntry = (m: Json) => (m["publicAccess"] as Json[]).find((e) => (e["children"] as Json | undefined)?.["order_lines"] !== undefined)!;
 const linesOf = (m: Json) => (orderEntry(m)["children"] as Record<string, Json>)["order_lines"]!;
 const copiesOf = (m: Json) => ((m["people"] as Json[])[0]!["copies"] as Json[]).filter((c) => c["addOn"] === "customiser").map((c) => `${String(c["table"])}.${String(c["column"])}`);
+const ownCopiesOf = (m: Json, table: string) => ((m["people"] as Json[])[0]!["copies"] as Json[]).filter((c) => c["addOn"] === undefined && c["table"] === table).map((c) => String(c["column"]));
 
 describe("the manifest at the floor it ships with", () => {
   const shipped = buildManifest();
@@ -23,6 +24,8 @@ describe("the manifest at the floor it ships with", () => {
     expect(roleOf(shipped, "maker").permissions.filter((p) => p.startsWith("page:@customiser-"))).toEqual([]);
     expect(linesOf(shipped)["agrees"]).toBeUndefined();
     expect(copiesOf(shipped)).toEqual(["designs.email", "designs.values"]);
+    // A proof's picture is a file: emptied with the person only from the next release.
+    expect(ownCopiesOf(shipped, "proofs")).toEqual(["change_note"]);
   });
 });
 
@@ -55,6 +58,10 @@ describe(`the manifest at ${PANELS_AND_LIMITS}`, () => {
       "design_versions.proof_file",
       "version_files.file",
     ]);
+  });
+
+  it("deletes the picture of a proof with the person it was sent to", () => {
+    expect(ownCopiesOf(next, "proofs")).toEqual(["change_note", "picture"]);
   });
 
   it("is refused by the validator at the older floor, so the words cannot ship early", () => {

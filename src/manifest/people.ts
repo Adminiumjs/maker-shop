@@ -8,12 +8,15 @@
  * newsletter's consent, kept in step with Adminium's consent log.
  *
  * A customer is also copied onto every order of theirs (the name and address
- * the parcel goes to, the address the e-mails went to), onto a request or a
- * problem they sent, and onto the designs they made in the Customiser (the
- * address the design's link went to, and the words and choices in it). Each
- * copy is declared, so finding, exporting and erasing a person reaches it.
- * An order and its lines are the studio's record of a sale, which the law
- * keeps, so an erasure leaves those as they are.
+ * the parcel goes to, the address the e-mails went to), onto its lines (the
+ * words they asked for on a piece), onto the proofs the studio sent them (what
+ * they asked to change, and, from 0.3.44, the proof's picture), onto a request
+ * or a problem they sent, and onto the designs they made in the Customiser
+ * (the address the design's link went to, and the words and choices in it).
+ * Each copy is declared, so finding, exporting and erasing a person reaches
+ * it. An order and its lines are the studio's record of a sale, which the law
+ * keeps, so an erasure finds and exports the words on a line and leaves them
+ * there; a proof is not that record, so its words and its picture go.
  */
 import { CUSTOMISER } from "./postings.ts";
 
@@ -53,6 +56,11 @@ export const PEOPLE = [
       { table: "orders", column: "address_line2", holds: "details", via: "customer_id" },
       { table: "orders", column: "town", holds: "details", via: "customer_id" },
       { table: "orders", column: "postcode", holds: "details", via: "customer_id" },
+      // The words on a piece, and the line in a few words that repeats them.
+      { table: "order_lines", column: "lettering", holds: "details", via: "customer_id" },
+      { table: "order_lines", column: "summary", holds: "details", via: "customer_id" },
+      // What they asked the studio to change on a proof, in their words.
+      { table: "proofs", column: "change_note", holds: "details", via: "customer_id" },
       // A request or a problem is nobody's account: found by the address it holds.
       { table: "commission_requests", column: "name", holds: "name" },
       { table: "commission_requests", column: "email", holds: "email" },
@@ -66,14 +74,16 @@ export const PEOPLE = [
 ];
 
 /**
- * The logo and photo a shopper put on their design, the versions of it the
- * Customiser keeps as it was ordered, and their files: the person's because
- * their design is, so erasing them deletes the logo and photo, blanks the
- * words in each version and deletes its proof picture and production files.
- * Adminium empties a copy that holds files, and follows one that far into an
- * add-on, from 0.3.44.
+ * The picture of a proof the studio sent them; the logo and photo a shopper
+ * put on their design, the versions of it the Customiser keeps as it was
+ * ordered, and their files: the person's because their proof or their design
+ * is, so erasing them deletes the proof's picture, the logo and photo, blanks
+ * the words in each version and deletes its proof picture and production
+ * files. Adminium empties a copy that holds files, and follows one that far
+ * into an add-on, from 0.3.44.
  */
 export const VERSION_COPIES = [
+  { table: "proofs", column: "picture", holds: "details", via: "customer_id" },
   { addOn: CUSTOMISER, table: "designs", column: "logo_file", holds: "details", via: "order_lines.design_id" },
   { addOn: CUSTOMISER, table: "designs", column: "photo_file", holds: "details", via: "order_lines.design_id" },
   { addOn: CUSTOMISER, table: "design_versions", column: "values", holds: "details", via: "order_lines.design_id", from: ["design_id"] },

@@ -124,6 +124,17 @@ describe("the Customiser is bound as its README asks", () => {
     expect(rules("options", "feature_id")["addOnLink"]).toEqual({ addOn: "customiser", table: "features" });
   });
 
+  it("copies a person onto the words on their lines and what they asked to change on a proof", () => {
+    const own = manifest.people[0]!.copies.filter((c) => c["table"] === "order_lines" || c["table"] === "proofs");
+    expect(own).toEqual([
+      { table: "order_lines", column: "lettering", holds: "details", via: "customer_id" },
+      { table: "order_lines", column: "summary", holds: "details", via: "customer_id" },
+      { table: "proofs", column: "change_note", holds: "details", via: "customer_id" },
+    ]);
+    expect(rules("order_lines", "customer_id")["copy"]).toEqual({ via: "order_id", from: "customer_id", mode: "always" });
+    expect(rules("proofs", "customer_id")["copy"]).toEqual({ via: "line_id", from: "customer_id", mode: "always" });
+  });
+
   it("copies a person onto the designs their lines name", () => {
     const copies = manifest.people[0]!.copies.filter((c) => c["addOn"] === "customiser");
     expect(copies).toEqual([

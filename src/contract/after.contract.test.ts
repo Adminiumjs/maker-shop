@@ -321,6 +321,30 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "problem-received", to: SHOPPER.email, known, row: messageOf("problem-received", "problem_id", problem["id"]) });
         await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "problem-copy", to: STUDIO, known, row: messageOf("problem-copy", "problem_id", problem["id"]) });
       }, 180_000);
+
+      it("finds the words on a shopper's lines and proofs with them, erases a proof's, and keeps a line's for the law", async () => {
+        type Source = { table: string | null; keptByLaw: unknown; count: number; keys: string[] };
+        const found = ok(await staff.post<{ data: { sources: Source[] } }>("/api/v1/privacy/find", { address: SHOPPER.email })).data.sources;
+        const of = (ref: string) => found.filter((s) => s.table === (tables()[ref] ?? `maker_${ref}`));
+        const placed = (await rows("orders")).filter((o) => ["BR-2291", "BR-2292"].includes(String(o["number"])));
+        const ids = new Set(placed.map((o) => String(o["id"])));
+        const lines = (await rows("order_lines")).filter((l) => ids.has(String(l["order_id"])));
+        const proofs = (await rows("proofs")).filter((p) => ids.has(String(p["order_id"])));
+        // Each line and proof carries the order's customer, and is found with them.
+        expect(new Set([...lines, ...proofs].map((r) => String(r["customer_id"])))).toEqual(new Set(placed.map((o) => String(o["customer_id"]))));
+        expect(of("order_lines").flatMap((s) => s.keys).sort()).toEqual(lines.map((l) => String(l["id"])).sort());
+        expect(of("order_lines").every((s) => s.keptByLaw !== null)).toBe(true);
+        expect(of("proofs").flatMap((s) => s.keys).sort()).toEqual(proofs.map((p) => String(p["id"])).sort());
+
+        ok(await staff.post("/api/v1/privacy/erase", { address: SHOPPER.email, confirm: SHOPPER.email }));
+        // A line is the record of a sale: its words stay. A proof is not: what they asked to change goes, and from
+        // 0.3.44 its picture too, the file deleted.
+        const kept = (await rows("order_lines")).filter((l) => ids.has(String(l["order_id"])));
+        expect(kept.map((l) => l["lettering"]).sort()).toEqual(["Mill House", "Mill Lane"]);
+        const erased = (await rows("proofs")).filter((p) => ids.has(String(p["order_id"])));
+        expect(erased.map((p) => p["change_note"] ?? null)).toEqual(erased.map(() => null));
+        if (engineAtLeast("0.3.44")) expect(erased.map((p) => p["picture"] ?? null)).toEqual(erased.map(() => null));
+      }, 120_000);
     });
   });
 });
