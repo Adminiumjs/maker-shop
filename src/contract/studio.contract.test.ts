@@ -50,7 +50,7 @@ import { fileIdOf, fileSrc, linesOf, proofsOf } from "../studio/facts.ts";
 import { createSessionTransport } from "../studio/transport/sessionSource.ts";
 import { loadStaffConfig } from "../studio/transport/staffConnection.ts";
 import { ApiError, num, type Row } from "../studio/wire.ts";
-import { delivered } from "./mail.ts";
+import { delivered, mailCount, plain, subjectOf } from "./mail.ts";
 import { engineAtLeast, ENGINE_VERSION, MANIFEST_TEXT, NEEDS_PANELS_AND_LIMITS, READS_PANELS_AND_LIMITS } from "./release.ts";
 import { addOnBundle, addSample, appBundle, boot, Caller, ENGINES, missing, newPassword, ok, png, PORTS_PER_ENGINE, type Engine, type Server } from "./studio-harness.ts";
 
@@ -62,6 +62,8 @@ const ADMIN = { email: process.env["E2E_ADMIN_EMAIL"] ?? "e2e@adminium.local", p
 const THURSDAY = Date.parse("2026-08-06T15:40:00Z");
 /** A made-up address on a domain the outbox sends to (it skips those kept for examples): its e-mail reaches the e2e server's sink. */
 const SHOPPER = "ada.w@birch-row-shoppers.dev";
+/** A second shopper, whose parcel DHL carries. */
+const CARRIED = "tom.h@birch-row-shoppers.dev";
 /** Before 0.3.44 a role that opens only the app's screens was refused the files' copy route. */
 const SCREENS_COPY = engineAtLeast("0.3.44");
 
@@ -230,14 +232,20 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         const picture = await owner.fetchAs()(fileSrc(proofs[1]!["picture"])!);
         expect(picture.status).toBe(200);
         expect([...new Uint8Array(await picture.arrayBuffer()).slice(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]);
-        // Adminium e-mails the proof, and the reminder: outbox rows for the order, to the shopper (one proof
-        // e-mail an order: a later proof takes the earlier one's place).
-        // The newest of a kind: a later proof's e-mail takes the place of one not yet sent.
+        // Adminium e-mails each proof, the first and the second alike, to the shopper: each its own e-mail.
         const messageOf = (kind: string) => async () => (await rows("messages")).filter((m) => m["kind"] === kind && String(m["order_id"]) === String(made.id)).at(-1);
+        const ofProof = (kind: string, proof: Row) => async () => (await rows("messages")).find((m) => m["kind"] === kind && String(m["proof_id"]) === String(proof.id));
         const known = { "order.number": "BR-2291" };
-        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-ready", to: SHOPPER, known, row: messageOf("proof-ready") });
+        for (const proof of proofs) {
+          await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-ready", to: SHOPPER, known: { ...known, "proof.version": String(proof["version"]) }, row: ofProof("proof-ready", proof) });
+        }
+        // A reminder of the second, e-mailed once.
         await maker.remind(proofs[1]!);
-        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-reminder", to: SHOPPER, known, row: messageOf("proof-reminder") });
+        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-reminder", to: SHOPPER, known, row: ofProof("proof-reminder", proofs[1]!) });
+        // A moment for a second e-mail, were one coming: there is still one row, and one in the sink.
+        await new Promise((resolve) => setTimeout(resolve, 3_000));
+        expect((await rows("messages")).filter((m) => m["kind"] === "proof-reminder" && String(m["proof_id"]) === String(proofs[1]!.id))).toHaveLength(1);
+        expect(await mailCount(server.sink, SHOPPER, subjectOf(MANIFEST_TEXT, "proof-reminder", known))).toBe(1);
 
         // The shopper approves it, their own write: the order's own link (the one its confirmation holds and its
         // e-mail carries), opened by the shop's door in another browser.
@@ -269,8 +277,51 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect([posted["status"], posted["posted_by"], posted["tracking"] ?? null]).toEqual(["posted", "Ade Pack", null]);
         expect(posted["posted_at"]).not.toBeNull();
         expect((await rows("order_lines")).find((l) => String(l.id) === String(line.id))!["stage"]).toBe("posted");
-        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "order-posted", to: SHOPPER, known, row: messageOf("order-posted") });
+        // Posted with no tracking number: the e-mail names the service, and has no number and nothing to track.
+        const { mail: postedMail } = await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "order-posted", to: SHOPPER, known, row: messageOf("order-posted") });
+        expect(plain(postedMail.html)).toContain("Second class");
+        expect(plain(postedMail.html)).not.toMatch(/Track it|Tracking number/);
+        expect(postedMail.html).not.toContain("dhl.com");
       }, 300_000);
+
+      it("e-mails an order DHL carried with its tracking number and a link to track it", async () => {
+        // A piece with no words on it needs no proof: it goes straight to the bench.
+        let data = await maker.load();
+        const ply = data.products.find((p) => p["code"] === "coast-ply")!;
+        const option = (kind: string) => data.options.find((o) => String(o["product_id"]) === String(ply.id) && o["kind"] === kind)!.id;
+        const served = ok(await new Caller(server.base).get<{ publishableKey: string; publicKeys?: Record<string, string>; tables?: Record<string, string> }>("/apps/maker/customer/surface-config.json"));
+        const originFetch: typeof fetch = (input, init) => {
+          const headers = new Headers(init?.headers);
+          headers.set("origin", server.base);
+          return fetch(input, { ...init, headers });
+        };
+        const shop = new AdminiumShop({ ...served, baseUrl: server.base }, { fetch: originFetch });
+        const body = {
+          values: { name: "Tom H.", email: CARRIED, address_line1: "8 Kirkgate", town: "Settle", postcode: "BD24 9DZ", service_id: data.services.find((s) => s["code"] === "tracked")!.id, language: "en-US" },
+          children: { order_lines: [{ values: { product_id: ply.id, qty: 1, material_id: option("material"), size_id: option("size"), finish_id: option("finish") } }] },
+        };
+        const made = (await shop.place(body, `maker-studio-${engine}-0000000002`, String((await shop.quote(body)).order["total"]))).order;
+        data = await maker.load();
+        const order = () => data.orders.find((o) => String(o.id) === String(made.id))!;
+        await moveLine(maker, data, linesOf(data, order())[0]!, "making");
+        data = await maker.load();
+        expect(await moveOrderLines(maker, data, order(), "ready", ["make", "making", "finishing"])).toEqual({ moved: 1, held: 0 });
+        const packed = await packer.load();
+        const number = "JD014600006281234567";
+        expect(await postOrders(packer, packed, [packed.orders.find((o) => String(o.id) === String(made.id))!], { [String(made.id)]: number })).toBe(1);
+        expect((await rows("orders")).find((o) => String(o.id) === String(made.id))!["tracking"]).toBe(number);
+        const { mail } = await delivered({
+          sink: server.sink,
+          manifest: MANIFEST_TEXT,
+          kind: "order-posted",
+          to: CARRIED,
+          known: { "order.number": String(made["number"]) },
+          row: async () => (await rows("messages")).find((m) => m["kind"] === "order-posted" && String(m["order_id"]) === String(made.id)),
+        });
+        expect(plain(mail.html)).toMatch(/Tracking number[\s\S]*JD014600006281234567/);
+        expect(plain(mail.html)).toContain("Track it");
+        expect(mail.html).toContain(`tracking-id=${number}`);
+      }, 180_000);
 
       it("refuses a packer anything but the post", async () => {
         const data = await packer.load();

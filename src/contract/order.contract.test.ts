@@ -19,7 +19,9 @@
  * - the order goes in as one write, held to the total the shopper saw:
  *   BR-2291, £34.00 + Second class £3.95 = £37.95, post by Tue 11 Aug, the
  *   line naming the design; a retry answers the same order; the order's own
- *   link is open at once, and its e-mail, which carries that link, is sent;
+ *   link is open at once, and its e-mail, which carries that link, is sent,
+ *   listing the line (the piece × its quantity, what it is made of, its
+ *   total) and the postage, the total and the post-by date;
  * - a total that moved is refused with the figures it came to, and a field
  *   Adminium refuses is named;
  * - words longer than the piece takes are refused, by the dry run and by the
@@ -41,7 +43,7 @@ import { AdminiumShop } from "../shop/door.ts";
 import { isShopError, type Row } from "../shop/port.ts";
 import { orderBody, productQuantities, useShop, type BasketLine } from "../shop/store.ts";
 import { addOnBundle, addSample, appBundle, boot, Caller, ENGINES, missing, missingAddOn, ok, PORTS_PER_ENGINE, type Engine, type Server } from "./harness.ts";
-import { delivered } from "./mail.ts";
+import { delivered, plain } from "./mail.ts";
 import { engineAtLeast, ENGINE_VERSION, MANIFEST_TEXT, NEEDS_PANELS_AND_LIMITS, READS_PANELS_AND_LIMITS } from "./release.ts";
 
 const why = missing() ?? missingAddOn("customiser");
@@ -185,7 +187,7 @@ describe.skipIf(why !== null)(`a shopper buys on a built Adminium${why === null 
         const own = await door.orderClient!.list<Row>("maker_orders_claimed");
         expect(own.data.map((o) => [o["number"], Number(o["total"])])).toEqual([["BR-2291", 37.95]]);
         // Its e-mail is sent, and carries the same link.
-        await delivered({
+        const { mail } = await delivered({
           sink: server.sink,
           manifest: MANIFEST_TEXT,
           kind: "order-received",
@@ -194,6 +196,19 @@ describe.skipIf(why !== null)(`a shopper buys on a built Adminium${why === null 
           body: new RegExp(`/order#${placed.link!.token}\\b`),
           row: async () => (await rows("messages")).find((m) => m["kind"] === "order-received" && String(m["order_id"]) === String(order["id"])),
         });
+        // It lists what was ordered: each line's piece and quantity, what it is made of, and its total; then the postage, the total and the post-by date.
+        const words = plain(mail.html);
+        const stored = (await rows("order_lines")).filter((l) => String(l["order_id"]) === String(order["id"]));
+        expect(stored).toHaveLength(1);
+        for (const l of stored) {
+          expect(words).toContain(`${String(l["product_name"])} × ${String(l["qty"])}`);
+          expect(String(l["summary"] ?? "")).not.toBe("");
+          expect(words).toContain(String(l["summary"]));
+          expect(words).toContain("£34.00");
+        }
+        expect(words).toMatch(/Postage · Second class £3\.95/);
+        expect(words).toMatch(/Total £37\.95/);
+        expect(words).toMatch(/Post by \S.*11/);
       }, 120_000);
 
       it("answers a retry with the order already made", async () => {

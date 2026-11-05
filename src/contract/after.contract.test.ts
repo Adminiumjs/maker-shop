@@ -23,8 +23,8 @@
  *   found by the number the shopper typed;
  * - every e-mail of it sent and in the e2e server's sink, to the shopper and
  *   to the studio, under its template's subject (`mail.ts`): the order's,
- *   with its own link; the proof's; a request's and a problem's, and the
- *   studio's copy of each;
+ *   with its own link; the proof's; the studio's word that a change was
+ *   asked; a request's and a problem's, and the studio's copy of each;
  * - the footer's pages read what they show: the closures, the rates, the
  *   machines, the app's settings; the postage page's dry run dates a coaster
  *   and a mug.
@@ -261,7 +261,7 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         expect(token).toMatch(/^[0-9A-Za-z]{16}$/);
         // Its e-mail is sent, the order's own link in it; and the proof's.
         await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "order-received", to: SHOPPER.email, known: { "order.number": "BR-2292" }, body: new RegExp(`/order#${token}\\b`), row: messageOf("order-received", "order_id", made.order["id"]) });
-        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-ready", to: SHOPPER.email, known: { "order.number": "BR-2292" }, row: messageOf("proof-ready", "order_id", made.order["id"]) });
+        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-ready", to: SHOPPER.email, known: { "order.number": "BR-2292", "proof.version": "1" }, row: messageOf("proof-ready", "proof_id", proof["id"]) });
 
         const door: AfterPort = browser().after();
         expect(door.sharedHeld()).toBe(false);
@@ -277,6 +277,8 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         expect([stored["state"], stored["change_note"]]).toEqual(["change_asked", "Could the letters be a little larger?"]);
         const held = (await rows("order_lines")).find((l) => String(l["id"]) === String(line["id"]))!;
         expect([held["proof_state"], Number(held["proof_ok"])]).toEqual(["change_asked", 0]);
+        // The studio hears of it, at its own address.
+        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "change-asked", to: STUDIO, known: { "order.number": "BR-2292", "proof.version": "1" }, row: messageOf("change-asked", "proof_id", proof["id"]) });
       }, 180_000);
 
       it("takes a request behind the human check, every field it was sent kept", async () => {

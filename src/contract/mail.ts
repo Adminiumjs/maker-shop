@@ -31,6 +31,23 @@ type Row = Record<string, unknown>;
 /** Everything the sink holds, oldest first. */
 export const sinkMail = async (sink: string): Promise<Mail[]> => (await (await fetch(`${sink}/messages`)).json()) as Mail[];
 
+/** How many e-mails the sink holds to an address under a subject. */
+export const mailCount = async (sink: string, to: string, subject: RegExp): Promise<number> => (await sinkMail(sink)).filter((m) => m.to.includes(to) && subject.test(m.subject)).length;
+
+const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", times: "×", middot: "·", pound: "£", mdash: "—", ndash: "–", rsquo: "’", lsquo: "‘" };
+
+/** An e-mail's HTML as the words a reader sees: tags gone, entities read, runs of space made one. */
+export function plain(html: string): string {
+  return html
+    .replace(/<(style|script)[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec: string) => String.fromCodePoint(Number(dec)))
+    .replace(/&([a-z]+);/gi, (all, name: string) => ENTITIES[name.toLowerCase()] ?? all)
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /**
