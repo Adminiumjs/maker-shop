@@ -10287,15 +10287,46 @@
           "addOn": "customiser",
           "table": "design_versions",
           "actions": [
-            "read"
-          ]
+            "read",
+            "create",
+            "update"
+          ],
+          "limit": {
+            "creatable": [
+              "app",
+              "design_id",
+              "version",
+              "values"
+            ],
+            "writable": [
+              "proof_file",
+              "note"
+            ]
+          }
         },
         {
           "addOn": "customiser",
           "table": "version_files",
           "actions": [
-            "read"
-          ]
+            "read",
+            "create",
+            "update"
+          ],
+          "limit": {
+            "creatable": [
+              "app",
+              "version_id",
+              "kind",
+              "name",
+              "about",
+              "layers",
+              "left_out",
+              "position"
+            ],
+            "writable": [
+              "file"
+            ]
+          }
         },
         {
           "addOn": "customiser",
@@ -10306,7 +10337,49 @@
         },
         {
           "addOn": "customiser",
-          "table": "features",
+          "table": "ready_designs",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "ready_parts",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "base_areas",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "base_pieces",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "palettes",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "palette_colours",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "fonts",
           "actions": [
             "read"
           ]
@@ -10436,19 +10509,99 @@
           "addOn": "customiser",
           "table": "design_versions",
           "actions": [
-            "read"
-          ]
+            "read",
+            "create",
+            "update"
+          ],
+          "limit": {
+            "creatable": [
+              "app",
+              "design_id",
+              "version",
+              "values"
+            ],
+            "writable": [
+              "proof_file",
+              "note"
+            ]
+          }
         },
         {
           "addOn": "customiser",
           "table": "version_files",
+          "actions": [
+            "read",
+            "create",
+            "update"
+          ],
+          "limit": {
+            "creatable": [
+              "app",
+              "version_id",
+              "kind",
+              "name",
+              "about",
+              "layers",
+              "left_out",
+              "position"
+            ],
+            "writable": [
+              "file"
+            ]
+          }
+        },
+        {
+          "addOn": "customiser",
+          "table": "bases",
           "actions": [
             "read"
           ]
         },
         {
           "addOn": "customiser",
-          "table": "bases",
+          "table": "ready_designs",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "ready_parts",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "base_areas",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "base_pieces",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "palettes",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "palette_colours",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "fonts",
           "actions": [
             "read"
           ]

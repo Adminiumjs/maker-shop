@@ -11,16 +11,19 @@
  *   packer   the studio's screens: the orders ready to post, marking them
  *            posted with a tracking number. Nothing else changes.
  *
- * Every role reads the Customiser's rows its work needs: the design a line
- * names, its versions and files. The Customiser's panels on a record page
- * open for the roles below (`ROLE_PANELS`): an order line's design for the
- * owner and the maker, a product's base for the owner. The maker opens
- * only the app's screens, and is still served the panel its role grants.
+ * Every role reads the Customiser's rows its work needs. The Customiser's
+ * panels open for the roles below (`ROLE_PANELS`): an order line's design for
+ * the owner and the maker, a product's base for the owner, drawn on the
+ * studio's own screens (and on the dashboard's record pages for the owner).
+ * Those roles read what the panel draws a design from and write what it
+ * makes: a design's version, its proof, the machine's files. The packer reads
+ * only whether a line names a design.
  *
  * The screens show or hide a button by the role, but the grants and limits
  * below are what refuse the write: a hidden button is not a lock.
  */
 import { PAGE_REFS, STUDIO_PAGES } from "./pages.ts";
+import { ROLE_PANELS } from "./panels.ts";
 import { CUSTOMISER } from "./postings.ts";
 import { HOLIDAYS, TABLE_REFS, TABLES } from "./tables.ts";
 
@@ -29,14 +32,46 @@ const view = (page: string) => `page:@${page}:view`;
 /** Seeing a table's personal columns. */
 const pii = (table: string) => `table:@${table}:read_pii`;
 
-/** What the studio reads of the Customiser: the design a line names, its versions and files, a product's base. */
-const CUSTOMISER_READS = [
+/**
+ * What the Customiser's panel on an order line reads to draw the design as it
+ * will be made (its ready-made design and parts, the base's areas and pieces,
+ * the palettes, colours and fonts), and what it writes when the proof and the
+ * machine's files are made: a version of the design where none was ordered
+ * yet, the proof file on it, and the files of the version. The panel makes
+ * them in the browser and saves them as the person signed in.
+ */
+const CUSTOMISER_PANEL = [
   { addOn: CUSTOMISER, table: "designs", actions: ["read"] },
-  { addOn: CUSTOMISER, table: "design_versions", actions: ["read"] },
-  { addOn: CUSTOMISER, table: "version_files", actions: ["read"] },
+  {
+    addOn: CUSTOMISER,
+    table: "design_versions",
+    actions: ["read", "create", "update"],
+    limit: { creatable: ["app", "design_id", "version", "values"], writable: ["proof_file", "note"] },
+  },
+  {
+    addOn: CUSTOMISER,
+    table: "version_files",
+    actions: ["read", "create", "update"],
+    limit: { creatable: ["app", "version_id", "kind", "name", "about", "layers", "left_out", "position"], writable: ["file"] },
+  },
   { addOn: CUSTOMISER, table: "bases", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "ready_designs", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "ready_parts", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "base_areas", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "base_pieces", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "palettes", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "palette_colours", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "fonts", actions: ["read"] },
   { addOn: CUSTOMISER, table: "features", actions: ["read"] },
 ];
+
+/**
+ * A role holds at most twelve of the add-ons' tables. The owner reads Holiday
+ * calendars' days too, so of the panel's twelve it leaves out the priced
+ * features: the panel draws a design without them (a part's feature code is
+ * all they add there).
+ */
+const OWNER_CUSTOMISER = CUSTOMISER_PANEL.filter((grant) => grant.table !== "features");
 
 /** Columns Adminium decides: nobody writes them, whatever their role. */
 const decided = (ref: string): Set<string> =>
@@ -77,11 +112,7 @@ const STUDIO_READS = [
   "stock_movements",
 ];
 
-/** The Customiser's record panels each role opens: the design on an order line, the base on a product. */
-export const ROLE_PANELS = {
-  owner: ["customiser-line", "customiser-product"],
-  maker: ["customiser-line"],
-};
+export { ROLE_PANELS };
 
 export const ROLES = [
   {
@@ -95,13 +126,13 @@ export const ROLES = [
       ),
       ...PAGE_REFS.flatMap((page) => [view(page), `page:@${page}:edit`]),
       ...["orders", "customers", "commission_requests", "problem_reports", "messages"].map(pii),
-      ...ROLE_PANELS.owner.map(view),
+      ...ROLE_PANELS["owner"]!.map(view),
     ],
     limits: {
       orders: { writable: typed("orders", ...SHOPPERS_OWN), creatable: typed("orders", ...SHOPPERS_OWN) },
     },
     // The public holidays Holiday calendars keeps, read to add one as a closure.
-    tables: [...CUSTOMISER_READS, { addOn: HOLIDAYS, table: "holidays", actions: ["read"] }],
+    tables: [...OWNER_CUSTOMISER, { addOn: HOLIDAYS, table: "holidays", actions: ["read"] }],
   },
   {
     key: "maker",
@@ -119,7 +150,7 @@ export const ROLES = [
       ...grant("machine_bookings", "create", "update", "delete"),
       ...grant("stock_movements", "create"),
       ...STUDIO_PAGES.map(view),
-      ...ROLE_PANELS.maker.map(view),
+      ...ROLE_PANELS["maker"]!.map(view),
     ],
     limits: {
       // The order moves along the bench; nothing of the shopper's or its money.
@@ -134,7 +165,7 @@ export const ROLES = [
       products: { writable: LETTERING },
       stock_movements: { creatable: ["material_id", "kind", "qty", "counted", "units", "batch_id", "line_id", "note"] },
     },
-    tables: CUSTOMISER_READS,
+    tables: CUSTOMISER_PANEL,
   },
   {
     key: "packer",

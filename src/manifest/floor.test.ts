@@ -33,6 +33,22 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
     expect(roleOf(shipped, "packer").permissions.filter((p) => p.startsWith("page:@customiser-"))).toEqual([]);
   });
 
+  it("gives the owner and the maker what the Customiser's line panel reads and writes, and the packer only the design", () => {
+    type Grant = { addOn: string; table: string; actions: string[] };
+    const tablesOf = (key: string) => Object.fromEntries(((roleOf(shipped, key) as unknown as { tables: Grant[] }).tables.filter((g) => g.addOn === "customiser")).map((g) => [g.table, g.actions]));
+    const reads = ["designs", "bases", "ready_designs", "ready_parts", "base_areas", "base_pieces", "palettes", "palette_colours", "fonts"];
+    for (const key of ["owner", "maker"]) {
+      const held = tablesOf(key);
+      for (const table of reads) expect(held[table], `${key} reads ${table}`).toContain("read");
+      expect(held["design_versions"], key).toEqual(["read", "create", "update"]);
+      expect(held["version_files"], key).toEqual(["read", "create", "update"]);
+    }
+    // A role holds at most twelve of the add-ons' tables: the owner reads Holiday calendars' days, and leaves out the priced features.
+    expect(tablesOf("maker")["features"]).toEqual(["read"]);
+    expect(tablesOf("owner")["features"]).toBeUndefined();
+    expect(tablesOf("packer")).toEqual({ designs: ["read"] });
+  });
+
   it("holds a placed line's lettering to its product's limit", () => {
     expect(linesOf(shipped)["agrees"]).toEqual([LETTERING_FITS]);
   });
