@@ -140,11 +140,15 @@ export class DemoStudio implements StudioDoor {
     return copy(row);
   }
 
+  /** Whether a machine is booked by another row for any of a time. */
+  private taken(machineId: Id, from: number, to: number): boolean {
+    return this.world.all("machine_bookings").some((b) => same(b["machine_id"], machineId) && Date.parse(String(b["starts_at"])) < to && from < Date.parse(String(b["ends_at"])));
+  }
+
   async book(input: { machineId: Id; label: string; startsAt: string; endsAt: string }): Promise<Row> {
     const from = Date.parse(input.startsAt);
     const to = Date.parse(input.endsAt);
-    const taken = this.world.all("machine_bookings").some((b) => same(b["machine_id"], input.machineId) && Date.parse(String(b["starts_at"])) < to && from < Date.parse(String(b["ends_at"])));
-    if (taken) throw new ApiError(409, "BOOKING_TAKEN", "The machine is booked then.");
+    if (this.taken(input.machineId, from, to)) throw new ApiError(409, "BOOKING_TAKEN", "The machine is booked then.");
     const row = this.world.insert("machine_bookings", { machine_id: input.machineId, kind: "run", label: input.label, starts_at: new Date(from).toISOString(), ends_at: new Date(to).toISOString(), batch_id: null });
     this.world.changed();
     return copy(row);
@@ -155,10 +159,15 @@ export class DemoStudio implements StudioDoor {
     this.world.changed();
   }
 
-  async createBatch(input: { label: string; machineId: Id; materialId: Id; sheets: number }): Promise<Row> {
+  async createBatch(input: { label: string; machineId: Id; materialId: Id; sheets: number; booking: { startsAt: string; endsAt: string } }): Promise<Row> {
     const w = this.world;
+    // One write, as Adminium takes it: a time that is taken refuses the batch, its booking and its sheets alike.
+    const from = Date.parse(input.booking.startsAt);
+    const to = Date.parse(input.booking.endsAt);
+    if (this.taken(input.machineId, from, to)) throw new ApiError(409, "BOOKING_TAKEN", "The machine is booked then.");
     // Its state is the table's first, which Adminium fills in and no screen reads; `moveBatch` writes the next.
     const batch = w.insert("batches", { label: input.label, machine_id: input.machineId, material_id: input.materialId, sheets: input.sheets, state: null });
+    w.insert("machine_bookings", { machine_id: input.machineId, kind: "run", label: input.label, starts_at: new Date(from).toISOString(), ends_at: new Date(to).toISOString(), batch_id: batch.id });
     w.insert("stock_movements", { material_id: input.materialId, kind: "used", qty: input.sheets.toFixed(2), batch_id: batch.id, note: input.label, made_at: w.nowIso() });
     w.changed();
     return copy(batch);
@@ -166,12 +175,6 @@ export class DemoStudio implements StudioDoor {
 
   async moveBatch(batch: Row, to: string): Promise<Row> {
     const row = this.world.update("batches", batch.id, { state: to });
-    this.world.changed();
-    return copy(row);
-  }
-
-  async tieBooking(booking: Row, batchId: Id): Promise<Row> {
-    const row = this.world.update("machine_bookings", booking.id, { batch_id: batchId });
     this.world.changed();
     return copy(row);
   }

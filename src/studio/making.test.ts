@@ -111,44 +111,41 @@ describe("the shelf's last count", () => {
 });
 
 describe("starting a batch", () => {
-  it("books the machine first, then makes the batch with its sheets, starts it, and moves the lines on the sheet", async () => {
+  it("makes the batch with its booking and its sheets in one write, starts it, and moves the lines on the sheet", async () => {
     const door = new FakeDoor();
     const group = batchGroups(door.data)[0]!;
     const packed = packSheet(group.pieces, group.sheet);
     const started = await startBatch(door, door.data, group, packed, "Walnut sheet · 6 pieces", THURSDAY);
     expect(door.trail()).toEqual([
-      "book 1",
       "createBatch 1",
       `moveBatch ${String(started.batch.id)} planned→running`,
-      "tieBooking 5001",
       "moveLine 121 make→making",
       "moveLine 171 make→making",
       "moveOrder 12 placed→making",
       "moveOrder 17 placed→making",
     ]);
     // The laser is next free once the lens is cleaned (17:10 in Settle); one sheet keeps it 135 minutes.
-    expect(door.calls[0]!.args).toEqual({ machineId: 1, label: "Walnut sheet · 6 pieces", startsAt: "2026-08-06T16:10:00.000Z", endsAt: "2026-08-06T18:25:00.000Z" });
-    expect(door.calls[1]!.args).toEqual({ label: "Walnut sheet · 6 pieces", machineId: 1, materialId: 1, sheets: 1 });
-    expect(door.calls[4]!.args).toMatchObject({ values: { batch_id: started.batch.id } });
+    expect(door.calls[0]!.args).toEqual({ label: "Walnut sheet · 6 pieces", machineId: 1, materialId: 1, sheets: 1, booking: { startsAt: "2026-08-06T16:10:00.000Z", endsAt: "2026-08-06T18:25:00.000Z" } });
+    expect(door.calls[2]!.args).toMatchObject({ values: { batch_id: started.batch.id } });
     expect(started).toMatchObject({ pieces: 6, orders: 2, sheets: 1, stale: 0 });
+    expect(door.data.bookings.at(-1)).toMatchObject({ machine_id: 1, batch_id: started.batch.id, starts_at: "2026-08-06T16:10:00.000Z" });
     expect(door.data.movements.at(-1)).toMatchObject({ kind: "used", qty: 1, batch_id: started.batch.id });
   });
 
-  it("writes nothing else when Adminium refuses the booking", async () => {
+  it("writes nothing else when Adminium refuses the batch's booking", async () => {
     const door = new FakeDoor();
-    door.refuse("book", new ApiError(409, "BOOKING_TAKEN", "Taken."));
+    door.refuse("createBatch", new ApiError(409, "BOOKING_TAKEN", "Taken."));
     const group = batchGroups(door.data)[0]!;
     await expect(startBatch(door, door.data, group, packSheet(group.pieces, group.sheet), "Walnut sheet", THURSDAY)).rejects.toMatchObject({ code: "BOOKING_TAKEN" });
-    expect(door.trail()).toEqual(["book 1"]);
+    expect(door.trail()).toEqual(["createBatch 1"]);
   });
 
-  it("lets the booking go when the batch is refused", async () => {
+  it("writes nothing else when the batch is refused for another reason", async () => {
     const door = new FakeDoor();
     door.refuse("createBatch", new ApiError(403, "FORBIDDEN", "No."));
     const group = batchGroups(door.data)[0]!;
     await expect(startBatch(door, door.data, group, packSheet(group.pieces, group.sheet), "Walnut sheet", THURSDAY)).rejects.toMatchObject({ status: 403 });
-    expect(door.trail()).toEqual(["book 1", "createBatch 1", "unbook 5001"]);
-    expect(door.data.bookings.some((b) => b.id === 5001)).toBe(false);
+    expect(door.trail()).toEqual(["createBatch 1"]);
   });
 
   it("moves only the lines with a piece on the sheet, and counts back one that moved on", async () => {

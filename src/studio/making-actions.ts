@@ -1,26 +1,22 @@
 /**
  * The making screens' writes: a sheet's batch started, and the shelf counted.
  *
- * STARTING A BATCH is four writes, in an order chosen so that the one
- * Adminium may refuse for the studio's own reason comes first:
+ * STARTING A BATCH is one write, then the moves that follow it:
  *
- *   1. the machine is booked from when it is next free, for as long as the
- *      sheets take it (`run_minutes` a sheet). Adminium refuses a booking
- *      that overlaps another of the machine (`BOOKING_TAKEN`), and then
- *      nothing else is written;
- *   2. the batch, in one write with the sheets it takes off the shelf (a
- *      `used` movement below it): every row or none. If it is refused, the
- *      booking is let go again;
- *   3. the batch is started (planned → running, Adminium stamping who and
- *      when) and the booking tied to it;
- *   4. each line with a piece on the sheet goes to making on the batch, from
+ *   1. the batch, with the machine's booking and the sheets it takes off the
+ *      shelf below it (a `used` movement), as one create: every row or none.
+ *      The machine is booked from when it is next free, for as long as the
+ *      sheets take it (`run_minutes` a sheet). Adminium judges the booking
+ *      inside that write: a time that overlaps another booking of the machine
+ *      refuses the whole write (`BOOKING_TAKEN`), and nothing is written;
+ *   2. the batch is started (planned → running, Adminium stamping who and
+ *      when);
+ *   3. each line with a piece on the sheet goes to making on the batch, from
  *      the stage the screen saw; its order follows it. A line that moved on
  *      since is left where it is now, and counted back.
  *
- * Adminium writes a booking alone (a table that takes a machine for a time
- * takes no rows of another table in the same write), so the four cannot be
- * one; the order above is what keeps a refused booking from leaving anything
- * behind.
+ * The booking goes in the batch's own write so that a refused time can leave
+ * nothing behind, with no booking to let go again afterwards.
  */
 import type { StudioData, StudioDoor } from "./door.ts";
 import { follow } from "./actions.ts";
@@ -65,23 +61,13 @@ export async function startBatch(door: StudioDoor, data: StudioData, group: Grou
   const minutes = (num(machine["run_minutes"]) ?? 60) * sheets;
   const from = nextFreeAt(bookingsOf(data, machine), at, minutes);
 
-  // 1. The machine, first: a booking Adminium refuses leaves nothing else written.
-  const booking = await door.book({ machineId: machine.id, label, startsAt: iso(from), endsAt: iso(from + minutes * 60_000) });
+  // 1. The batch, its booking and its sheets, in one write: a time that is taken refuses all three.
+  let batch = await door.createBatch({ label, machineId: machine.id, materialId: group.material.id, sheets, booking: { startsAt: iso(from), endsAt: iso(from + minutes * 60_000) } });
 
-  // 2. The batch and its sheets, in one write; the booking let go if it is refused.
-  let batch: Row;
-  try {
-    batch = await door.createBatch({ label, machineId: machine.id, materialId: group.material.id, sheets });
-  } catch (error) {
-    await door.unbook(booking).catch(() => undefined);
-    throw error;
-  }
-
-  // 3. Started, and the booking tied to it.
+  // 2. Started.
   batch = await door.moveBatch(batch, "running");
-  await door.tieBooking(booking, batch.id);
 
-  // 4. The lines on the sheet to making, on the batch; their orders follow.
+  // 3. The lines on the sheet to making, on the batch; their orders follow.
   const moved: Row[] = [];
   let stale = 0;
   for (const line of lines) {

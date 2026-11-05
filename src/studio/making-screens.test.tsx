@@ -239,11 +239,11 @@ describe("batches", () => {
     expect(document.querySelectorAll(".mk-piece--drop")).toHaveLength(6);
   });
 
-  it("starts the batch: the machine booked, the batch and its sheets, the lines to making", async () => {
+  it("starts the batch: the batch with its booking and its sheets, the lines to making", async () => {
     const door = new FakeDoor();
     await mount(door, "today", { overlay: { kind: "batch", key: "1" } });
     await click(button("Start the batch"));
-    expect(door.trail()).toEqual(["book 1", "createBatch 1", "moveBatch 5002 planned→running", "tieBooking 5001", "moveLine 121 make→making", "moveLine 171 make→making", "moveOrder 12 placed→making", "moveOrder 17 placed→making"]);
+    expect(door.trail()).toEqual(["createBatch 1", "moveBatch 5001 planned→running", "moveLine 121 make→making", "moveLine 171 make→making", "moveOrder 12 placed→making", "moveOrder 17 placed→making"]);
     expect(door.calls[0]!.args["label"]).toBe("Walnut sheet · 6 pieces");
     expect(toasts()).toContain("6 pieces from 2 orders are on the laser. 1 sheet of walnut, 6 mm off the shelf.");
     expect(useStudio.getState().overlay).toBeNull();
@@ -253,10 +253,11 @@ describe("batches", () => {
 
   it("says the machine is booked then when Adminium refuses the time, and writes nothing else", async () => {
     const door = new FakeDoor();
-    door.refuse("book", new ApiError(409, "BOOKING_TAKEN", "Taken."));
+    // As Adminium refuses the batch's whole write: the booking below it named.
+    door.refuse("createBatch", new ApiError(409, "BOOKING_TAKEN", "Taken.", { relation: "machine_bookings", row: 0 }));
     await mount(door, "today", { overlay: { kind: "batch", key: "1" } });
     await click(button("Start the batch"));
-    expect(door.trail()).toEqual(["book 1"]);
+    expect(door.trail()).toEqual(["createBatch 1"]);
     expect(toasts()).toContain("The laser is booked then. Look at its time, and start the batch after that booking.");
   });
 

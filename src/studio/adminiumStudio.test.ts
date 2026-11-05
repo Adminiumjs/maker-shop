@@ -130,22 +130,18 @@ describe("the studio's writes, as Adminium receives them", () => {
     ]);
   });
 
-  it("carries a design's proof across in the browser when the copy route is the dashboard's alone", async () => {
+  it("refuses a design's proof whose file the copy route would not copy, writing no proof", async () => {
     const { t, sent } = transport();
     const mutate = t.mutate;
     t.mutate = async <T,>(path: string, method: "POST" | "PUT" | "PATCH" | "DELETE", body?: unknown): Promise<T> => {
-      if (path.endsWith("/copy")) throw new SessionPortError("This account opens its app's own screens, not the dashboard.", 403, "SCREENS_ONLY");
+      if (path.endsWith("/copy")) throw new SessionPortError("You may not write that column.", 403, "FORBIDDEN");
       return mutate<T>(path, method, body);
     };
-    const asked: string[] = [];
-    const fetchImpl = (async (url: string) => {
-      asked.push(url);
-      if (url.endsWith("/content")) return new Response(new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47])], { type: "image/png" }), { status: 200 });
-      return new Response(JSON.stringify({ ref: "file_01J8Z6Q3M4N5P6R7S8T9V0W1XD" }), { status: 201 });
+    const fetchImpl = (async () => {
+      throw new Error("the bytes are never carried by the browser");
     }) as unknown as typeof fetch;
-    await new AdminiumStudio(t, config(), { fetchImpl }).sendProof({ order: { id: 16 }, line: { id: 161 }, kind: "design", picture: { copyOf: "file_01J8Z6Q3M4N5P6R7S8T9V0W1XA" }, designVersionId: 30, note: null });
-    expect(asked).toEqual(["/api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1XA/content", "/api/v1/files?filename=file_01J8Z6Q3M4N5P6R7S8T9V0W1XA.png&connectionId=conn-1&table=maker_proofs&column=picture"]);
-    expect(sent.at(-1)).toEqual({ path: "/api/v1/data/conn-1/maker_proofs", method: "POST", body: { values: { order_id: 16, line_id: 161, kind: "design", picture: "file_01J8Z6Q3M4N5P6R7S8T9V0W1XD", design_version_id: 30 } } });
+    await expect(new AdminiumStudio(t, config(), { fetchImpl }).sendProof({ order: { id: 16 }, line: { id: 161 }, kind: "design", picture: { copyOf: "file_01J8Z6Q3M4N5P6R7S8T9V0W1XA" }, designVersionId: 30, note: null })).rejects.toMatchObject({ status: 403, code: "FORBIDDEN" });
+    expect(sent.some((c) => c.path.endsWith("/maker_proofs"))).toBe(false);
   });
 
   it("refuses a proof whose picture the files route would not store, writing no proof", async () => {
@@ -252,30 +248,28 @@ describe("the making screens' writes, as Adminium receives them", () => {
     expect(sent).toEqual([{ path: "/api/v1/data/conn-1/maker_machine_bookings/7", method: "DELETE", body: undefined }]);
   });
 
-  it("makes a batch in one write with the sheets it takes off the shelf, a stock movement below it", async () => {
+  it("makes a batch in one write with the machine's booking and the sheets it takes off the shelf, rows below it", async () => {
     const { t, sent } = transport();
-    await new AdminiumStudio(t, config()).createBatch({ label: "Walnut sheet · 6 pieces", machineId: 1, materialId: 1, sheets: 1 });
+    await new AdminiumStudio(t, config()).createBatch({ label: "Walnut sheet · 6 pieces", machineId: 1, materialId: 1, sheets: 1, booking: { startsAt: "2026-08-06T15:10:00.000Z", endsAt: "2026-08-06T17:25:00.000Z" } });
     expect(sent).toEqual([
       {
         path: "/api/v1/data/conn-1/maker_batches",
         method: "POST",
         body: {
           values: { label: "Walnut sheet · 6 pieces", machine_id: 1, material_id: 1, sheets: 1 },
-          children: { stock_movements: [{ values: { material_id: 1, kind: "used", qty: 1 } }] },
+          children: {
+            machine_bookings: [{ values: { machine_id: 1, kind: "run", label: "Walnut sheet · 6 pieces", starts_at: "2026-08-06T15:10:00.000Z", ends_at: "2026-08-06T17:25:00.000Z" } }],
+            stock_movements: [{ values: { material_id: 1, kind: "used", qty: 1 } }],
+          },
         },
       },
     ]);
   });
 
-  it("starts a batch from the state the screen saw, and ties the booking to it", async () => {
+  it("starts a batch from the state the screen saw", async () => {
     const { t, sent } = transport();
-    const door = new AdminiumStudio(t, config());
-    await door.moveBatch({ id: 3, state: "planned" }, "running");
-    await door.tieBooking({ id: 7 }, 3);
-    expect(sent).toEqual([
-      { path: "/api/v1/data/conn-1/maker_batches/3", method: "PATCH", body: { values: { state: "running" }, from: "planned" } },
-      { path: "/api/v1/data/conn-1/maker_machine_bookings/7", method: "PATCH", body: { values: { batch_id: 3 } } },
-    ]);
+    await new AdminiumStudio(t, config()).moveBatch({ id: 3, state: "planned" }, "running");
+    expect(sent).toEqual([{ path: "/api/v1/data/conn-1/maker_batches/3", method: "PATCH", body: { values: { state: "running" }, from: "planned" } }]);
   });
 
   it("puts a line on a batch as it moves it to making", async () => {

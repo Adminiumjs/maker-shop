@@ -114,11 +114,13 @@ export class FakeDoor implements StudioDoor {
     this.record("unbook", { id: booking.id });
     this.data.bookings = this.data.bookings.filter((b) => !same(b.id, booking.id));
   }
-  async createBatch(input: { label: string; machineId: Id; materialId: Id; sheets: number }): Promise<Row> {
+  async createBatch(input: { label: string; machineId: Id; materialId: Id; sheets: number; booking: { startsAt: string; endsAt: string } }): Promise<Row> {
     this.record("createBatch", { ...input });
     this.nextId += 1;
     const batch: Row = { id: this.nextId, label: input.label, machine_id: input.machineId, material_id: input.materialId, sheets: input.sheets, state: "planned" };
     this.data.batches.push(batch);
+    this.nextId += 1;
+    this.data.bookings.push({ id: this.nextId, machine_id: input.machineId, kind: "run", label: input.label, starts_at: input.booking.startsAt, ends_at: input.booking.endsAt, batch_id: batch.id });
     this.nextId += 1;
     this.data.movements.push({ id: this.nextId, material_id: input.materialId, kind: "used", qty: input.sheets, batch_id: batch.id });
     return batch;
@@ -126,10 +128,6 @@ export class FakeDoor implements StudioDoor {
   async moveBatch(batch: Row, to: string): Promise<Row> {
     this.record("moveBatch", { id: batch.id, from: batch["state"], to });
     return this.update(this.data.batches, batch.id, { state: to });
-  }
-  async tieBooking(booking: Row, batchId: Id): Promise<Row> {
-    this.record("tieBooking", { id: booking.id, batchId });
-    return this.update(this.data.bookings, booking.id, { batch_id: batchId });
   }
   async count(input: { materialId: Id; counted: number }): Promise<Row> {
     this.record("count", { ...input });

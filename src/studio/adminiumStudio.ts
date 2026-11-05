@@ -244,18 +244,9 @@ export class AdminiumStudio implements StudioDoor {
     const conn = await this.conn();
     const table = this.real("proofs");
     if ("copyOf" in picture) {
-      try {
-        const made = await this.t.mutate<{ ref: string }>(`/api/v1/files/${encodeURIComponent(picture.copyOf)}/copy`, "POST", { connectionId: conn, table, column: "picture" });
-        return made.ref;
-      } catch (error) {
-        // The copy route is the dashboard's: someone whose role opens only the app's screens is refused it.
-        // Their own browser carries the bytes across instead, read and stored again as the proof's picture.
-        if (!(error instanceof SessionPortError && error.status === 403)) throw error;
-        const res = await this.fetchImpl(`/api/v1/files/${encodeURIComponent(picture.copyOf)}/content`, { credentials: "same-origin" });
-        if (!res.ok) throw asApiError(error);
-        const blob = await res.blob();
-        return this.storePicture({ blob, filename: `${picture.copyOf}.${blob.type === "image/jpeg" ? "jpg" : blob.type === "application/pdf" ? "pdf" : "png"}` });
-      }
+      // A copy of a file the person may read (the Customiser's proof of a design's version), stored as the proof's own.
+      const made = await this.t.mutate<{ ref: string }>(`/api/v1/files/${encodeURIComponent(picture.copyOf)}/copy`, "POST", { connectionId: conn, table, column: "picture" });
+      return made.ref;
     }
     // The bytes are the body: the files route reads no multipart form. The session's token goes with them.
     await this.t.port.config();
@@ -319,12 +310,16 @@ export class AdminiumStudio implements StudioDoor {
     });
   }
 
-  createBatch(input: { label: string; machineId: Id; materialId: Id; sheets: number }): Promise<Row> {
+  createBatch(input: { label: string; machineId: Id; materialId: Id; sheets: number; booking: { startsAt: string; endsAt: string } }): Promise<Row> {
     return this.run(async () => {
-      // The batch and the sheets it takes off the shelf, in one write: the movement is a row below the batch.
+      // The batch, the machine's time and the sheets it takes off the shelf, in one write: rows below the batch.
+      // The booking carries its machine and its time as sent, which is how Adminium judges it inside the write.
       const body = {
         values: { label: input.label, machine_id: input.machineId, material_id: input.materialId, sheets: input.sheets },
-        children: { stock_movements: [{ values: { material_id: input.materialId, kind: "used", qty: input.sheets } }] },
+        children: {
+          machine_bookings: [{ values: { machine_id: input.machineId, kind: "run", label: input.label, starts_at: input.booking.startsAt, ends_at: input.booking.endsAt } }],
+          stock_movements: [{ values: { material_id: input.materialId, kind: "used", qty: input.sheets } }],
+        },
       };
       return this.row("batches", (await this.t.mutate<{ data: Row }>(await this.path(this.real("batches")), "POST", body)).data);
     });
@@ -332,10 +327,6 @@ export class AdminiumStudio implements StudioDoor {
 
   moveBatch(batch: Row, to: string): Promise<Row> {
     return this.run(() => this.change("batches", batch.id, { state: to }, String(batch["state"])));
-  }
-
-  tieBooking(booking: Row, batchId: Id): Promise<Row> {
-    return this.run(() => this.change("machine_bookings", booking.id, { batch_id: batchId }));
   }
 
   count(input: { materialId: Id; counted: number }): Promise<Row> {

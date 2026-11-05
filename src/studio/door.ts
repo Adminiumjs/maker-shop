@@ -109,18 +109,18 @@ export interface StudioDoor {
 
   /** A machine booked for a time: Adminium refuses one that overlaps another booking of the machine (`BOOKING_TAKEN`). */
   book(input: { machineId: Id; label: string; startsAt: string; endsAt: string }): Promise<Row>;
-  /** A booking let go (a batch that did not start after all). */
+  /** A booking let go. */
   unbook(booking: Row): Promise<void>;
   /**
-   * A batch, in one write with what it takes off the shelf: the batch row and
-   * its stock movement (`used`, so many sheets), every row or none. It starts
-   * as planned; `moveBatch` starts it.
+   * A batch, in one write with the machine's booking for its run and what it
+   * takes off the shelf: the batch row, its booking (the machine for that
+   * time) and its stock movement (`used`, so many sheets), every row or none.
+   * Adminium refuses the whole write when the time is taken (`BOOKING_TAKEN`).
+   * It starts as planned; `moveBatch` starts it.
    */
-  createBatch(input: { label: string; machineId: Id; materialId: Id; sheets: number }): Promise<Row>;
+  createBatch(input: { label: string; machineId: Id; materialId: Id; sheets: number; booking: { startsAt: string; endsAt: string } }): Promise<Row>;
   /** A batch along its states, from the one the screen saw. */
   moveBatch(batch: Row, to: string): Promise<Row>;
-  /** The booking made for a batch, tied to it once the batch is made. */
-  tieBooking(booking: Row, batchId: Id): Promise<Row>;
   /** What the shelf holds, counted: Adminium keeps the book's figure beside it and moves the stock by the difference. */
   count(input: { materialId: Id; counted: number }): Promise<Row>;
   /** A document of a row the app ships a profile for (a sheet of labels), drawn by the add-on that draws it. */
