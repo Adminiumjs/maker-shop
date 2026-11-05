@@ -264,9 +264,10 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         // The order's own link: the code the save handed the confirmation page, the one its e-mail carries.
         const token = made.link!.token;
         expect(token).toMatch(/^[0-9A-Za-z]{16}$/);
-        // Its e-mail is sent, the order's own link in it; and the proof's, the proof's picture inside it.
+        // Its e-mail is sent, the order's own link in it; and the proof's, the proof's picture inside it (the sink's
+        // parser turns the message's own `cid:` picture into a `data:` one).
         await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "order-received", to: SHOPPER.email, known: { "order.number": "BR-2292" }, body: new RegExp(`/order#${token}\\b`), row: messageOf("order-received", "order_id", made.order["id"]) });
-        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-ready", to: SHOPPER.email, known: { "order.number": "BR-2292", "proof.version": "1" }, body: /<img src="cid:[^"]+" alt="Your proof"/, row: messageOf("proof-ready", "proof_id", proof["id"]) });
+        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-ready", to: SHOPPER.email, known: { "order.number": "BR-2292", "proof.version": "1" }, body: /<img src="(?:cid:|data:image\/png;base64,)[^"]+" alt="Your proof"/, row: messageOf("proof-ready", "proof_id", proof["id"]) });
 
         const door: AfterPort = browser().after();
         expect(door.sharedHeld()).toBe(false);
