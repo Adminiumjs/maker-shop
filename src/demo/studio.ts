@@ -9,7 +9,7 @@
  *
  * DEMO BUILD ONLY — nothing in a real build imports it.
  */
-import type { Person, ProofPicture, StudioData, StudioDoor, StudioFacts } from "../studio/door.ts";
+import type { Person, SendProof, StudioData, StudioDoor, StudioFacts } from "../studio/door.ts";
 import { LINE_MOVES, ORDER_MOVES } from "../studio/facts.ts";
 import { HOLIDAY_ADD_ON, holidayClosure } from "../studio/holidays.ts";
 import { ApiError, type Id, type Row } from "../studio/wire.ts";
@@ -124,7 +124,7 @@ export class DemoStudio implements StudioDoor {
     return copy(row);
   }
 
-  async sendProof(input: { order: Row; line: Row; kind: "lettering" | "design"; picture: ProofPicture | null; designVersionId: Id | null; note: string | null }): Promise<Row> {
+  async sendProof(input: SendProof): Promise<Row> {
     const w = this.world;
     const version = w.all("proofs").filter((p) => same(p["line_id"], input.line.id)).reduce((top, p) => Math.max(top, Number(p["version"] ?? 0)), 0) + 1;
     const row = w.insert("proofs", { order_id: input.order.id, line_id: input.line.id, version, kind: input.kind, design_version_id: input.designVersionId, note: input.note, picture: null, state: "sent", sent_at: w.nowIso(), answered_at: null, reminded_at: null, change_note: null });
@@ -132,6 +132,7 @@ export class DemoStudio implements StudioDoor {
       w.pictures.set(String(row.id), input.picture.blob);
       row["picture"] = typeof URL.createObjectURL === "function" ? URL.createObjectURL(input.picture.blob) : null;
     }
+    if (input.replaces !== undefined && input.replaces !== null) w.update("proofs", input.replaces.id, { state: "superseded" });
     w.changed();
     return copy(row);
   }

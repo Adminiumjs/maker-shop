@@ -22,7 +22,7 @@
 import type { StaffConfig } from "./transport/staffConnection.ts";
 import { SessionPortError, type SessionTransport } from "./transport/sessionSource.ts";
 import { momentOf } from "./time.ts";
-import type { Action, AddOnTable, Person, ProofPicture, StudioData, StudioDoor, StudioFacts, Table } from "./door.ts";
+import type { Action, AddOnTable, Person, ProofPicture, SendProof, StudioData, StudioDoor, StudioFacts, Table } from "./door.ts";
 import { HOLIDAY_ADD_ON, holidayClosure, holidayPlace, inPlace } from "./holidays.ts";
 import { ApiError, type Id, type Row } from "./wire.ts";
 
@@ -284,17 +284,22 @@ export class AdminiumStudio implements StudioDoor {
     return body.ref;
   }
 
-  sendProof(input: { order: Row; line: Row; kind: "lettering" | "design"; picture: ProofPicture | null; designVersionId: Id | null; note: string | null }): Promise<Row> {
+  sendProof(input: SendProof): Promise<Row> {
     return this.run(async () => {
+      // The picture first: one the files route refuses leaves the proof still out waiting, as it was.
       const picture = input.picture === null ? null : await this.storePicture(input.picture);
       // The order is not sent: Adminium copies it from the line.
-      return this.create("proofs", {
+      const made = await this.create("proofs", {
         line_id: input.line.id,
         kind: input.kind,
         ...(picture === null ? {} : { picture }),
         ...(input.designVersionId === null ? {} : { design_version_id: input.designVersionId }),
         ...(input.note === null ? {} : { note: input.note }),
       });
+      // Only now is the one before answered by it.
+      const before = input.replaces ?? null;
+      if (before !== null) await this.change("proofs", before.id, { state: "superseded" }, String(before["state"]));
+      return made;
     });
   }
 

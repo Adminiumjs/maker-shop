@@ -91,6 +91,17 @@ export interface StudioFacts {
 /** A proof's picture: drawn in this browser, or a copy of a stored file (the Customiser's proof of a version). */
 export type ProofPicture = { blob: Blob; filename: string } | { copyOf: string };
 
+/** What sending a proof takes: the line, what it shows, and the proof of the line still out that it answers. */
+export interface SendProof {
+  order: Row;
+  line: Row;
+  kind: "lettering" | "design";
+  picture: ProofPicture | null;
+  designVersionId: Id | null;
+  note: string | null;
+  replaces?: Row | null;
+}
+
 export interface StudioDoor {
   who(): Person;
   facts(): StudioFacts;
@@ -106,8 +117,11 @@ export interface StudioDoor {
   moveOrder(order: Row, to: string, values?: Record<string, unknown>): Promise<Row>;
   /** A proof the studio sent before, answered by the one it sends now. */
   supersede(proof: Row): Promise<Row>;
-  /** A proof of a line: its picture stored first, then the row that sends it (Adminium numbers it and e-mails it). */
-  sendProof(input: { order: Row; line: Row; kind: "lettering" | "design"; picture: ProofPicture | null; designVersionId: Id | null; note: string | null }): Promise<Row>;
+  /**
+   * A proof of a line: its picture stored first, then the row that sends it (Adminium numbers it and e-mails it),
+   * and only then the proof it `replaces` superseded, so a picture or a proof refused leaves that one waiting.
+   */
+  sendProof(input: SendProof): Promise<Row>;
   /** A reminder of a proof still waiting: Adminium e-mails it when the moment is stamped. */
   remind(proof: Row): Promise<Row>;
   /** Pieces that went wrong: what they took off the shelf, as a spoil of so many units of the line. */

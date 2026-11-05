@@ -106,9 +106,9 @@ export async function proofFor(data: StudioData, line: Row, draw: (line: Row) =>
 }
 
 /**
- * Send a proof of every line of an order that waits for one: the proof each
- * line had before is answered by this one (superseded), and the new one goes
- * to the customer (Adminium numbers it per line and e-mails it). Lines whose
+ * Send a proof of every line of an order that waits for one: the new one goes
+ * to the customer (Adminium numbers it per line and e-mails it), and the proof
+ * each line had before is then answered by it (superseded). Lines whose
  * design has no proof made yet are left, and named.
  */
 export async function sendProofs(door: StudioDoor, data: StudioData, order: Row, draw: (line: Row) => Promise<Blob | null>, note: string | null = null): Promise<{ sent: Row[]; missing: Row[] }> {
@@ -121,8 +121,9 @@ export async function sendProofs(door: StudioDoor, data: StudioData, order: Row,
       continue;
     }
     const before = proofsOf(data, line)[0];
-    if (before !== undefined && (before["state"] === "sent" || before["state"] === "change_asked")) await door.supersede(before);
-    sent.push(await door.sendProof({ order, line, kind: drawn.kind, picture: drawn.picture, designVersionId: drawn.designVersionId, note }));
+    // The proof still out is answered by this one once it is sent, never before: a refusal leaves it waiting.
+    const replaces = before !== undefined && (before["state"] === "sent" || before["state"] === "change_asked") ? before : null;
+    sent.push(await door.sendProof({ order, line, kind: drawn.kind, picture: drawn.picture, designVersionId: drawn.designVersionId, note, replaces }));
   }
   return { sent, missing };
 }

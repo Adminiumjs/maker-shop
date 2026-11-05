@@ -6,7 +6,7 @@
  *
  * Tests only; nothing that ships imports it.
  */
-import type { Person, ProofPicture, StudioData, StudioDoor, StudioFacts } from "../door.ts";
+import type { Person, SendProof, StudioData, StudioDoor, StudioFacts } from "../door.ts";
 import { ApiError, same, type Id, type Row } from "../wire.ts";
 import { holidayClosure } from "../holidays.ts";
 import { FACTS, fixture, person, THURSDAY } from "./fixture.ts";
@@ -80,7 +80,7 @@ export class FakeDoor implements StudioDoor {
     this.record("supersede", { id: proof.id, from: proof["state"] });
     return this.update(this.data.proofs, proof.id, { state: "superseded" });
   }
-  async sendProof(input: { order: Row; line: Row; kind: "lettering" | "design"; picture: ProofPicture | null; designVersionId: Id | null; note: string | null }): Promise<Row> {
+  async sendProof(input: SendProof): Promise<Row> {
     const picture = input.picture === null ? null : "copyOf" in input.picture ? { copyOf: input.picture.copyOf } : { filename: input.picture.filename, type: input.picture.blob.type };
     this.record("sendProof", { order: input.order.id, line: input.line.id, kind: input.kind, picture, designVersionId: input.designVersionId, note: input.note });
     this.nextId += 1;
@@ -88,6 +88,7 @@ export class FakeDoor implements StudioDoor {
     const row: Row = { id: this.nextId, order_id: input.order.id, line_id: input.line.id, version, kind: input.kind, picture: "/api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1XZ/content", state: "sent", sent_at: new Date(THURSDAY).toISOString() };
     this.data.proofs.push(row);
     this.update(this.data.lines, input.line.id, { proof_state: "sent", proof_ok: 0 });
+    if (input.replaces !== undefined && input.replaces !== null) await this.supersede(input.replaces);
     return row;
   }
   async remind(proof: Row): Promise<Row> {

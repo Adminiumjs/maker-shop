@@ -10,7 +10,7 @@ import { lockOf, pathOf, postRun, proofQueue, kpis, fileIdOf } from "./facts.ts"
 import { FakeDoor } from "./testing/fakeDoor.ts";
 import { DESIGN_PROOF } from "./testing/fixture.ts";
 import { dayIn } from "./time.ts";
-import type { Row } from "./wire.ts";
+import { ApiError, type Row } from "./wire.ts";
 
 const png = async () => new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47])], { type: "image/png" });
 const line = (door: FakeDoor, id: number): Row => door.data.lines.find((l) => l.id === id)!;
@@ -78,11 +78,19 @@ describe("a proof sent", () => {
     expect(door.calls).toEqual([{ method: "sendProof", args: { order: 11, line: 111, kind: "lettering", picture: { filename: "proof-line-111.png", type: "image/png" }, designVersionId: null, note: null } }]);
   });
 
-  it("supersedes the proof still waiting before it sends the next", async () => {
+  it("supersedes the proof still waiting once the next is sent, never before", async () => {
     const door = new FakeDoor();
     await sendProofs(door, door.data, order(door, 10), png);
-    expect(door.trail()).toEqual(["supersede 1001", "sendProof 101"]);
-    expect(door.calls[0]!.args).toEqual({ id: 1001, from: "sent" });
+    expect(door.trail()).toEqual(["sendProof 101", "supersede 1001"]);
+    expect(door.calls[1]!.args).toEqual({ id: 1001, from: "sent" });
+  });
+
+  it("leaves the proof still waiting as it was when the next is refused", async () => {
+    const door = new FakeDoor();
+    door.refuse("sendProof", new ApiError(415, "UNSUPPORTED_MEDIA_TYPE", "Not a picture."));
+    await expect(sendProofs(door, door.data, order(door, 10), png)).rejects.toMatchObject({ code: "UNSUPPORTED_MEDIA_TYPE" });
+    expect(door.trail()).toEqual(["sendProof 101"]);
+    expect(door.data.proofs.find((p) => p.id === 1001)!["state"]).toBe("sent");
   });
 
   it("sends a design's proof as the Customiser made it, a copy of its version's file", async () => {
