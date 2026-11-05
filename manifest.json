@@ -12398,6 +12398,7 @@
         "order.number",
         "practice.address",
         "proof.note",
+        "proof.picture",
         "proof.version",
         "recipient.first_name"
       ],
@@ -12420,6 +12421,14 @@
                 "paras": [
                   "Proof {{proof.version}} of your order {{order.number}} shows what we're about to make. Have a look on your order's page, then say yes or tell us what to change."
                 ]
+              }
+            },
+            {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "Your proof"
               }
             },
             {
@@ -12488,6 +12497,14 @@
               }
             },
             {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "Ihr Probeabzug"
+              }
+            },
+            {
               "block": "email.quote",
               "id": "note",
               "data": {
@@ -12550,6 +12567,14 @@
                 "paras": [
                   "L’épreuve {{proof.version}} de votre commande {{order.number}} montre ce que nous allons fabriquer. Regardez-la sur la page de votre commande, puis validez-la ou dites-nous ce qu’il faut changer."
                 ]
+              }
+            },
+            {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "Votre épreuve"
               }
             },
             {
@@ -12618,6 +12643,14 @@
               }
             },
             {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "Din prøve"
+              }
+            },
+            {
               "block": "email.quote",
               "id": "note",
               "data": {
@@ -12680,6 +12713,14 @@
                 "paras": [
                   "Náhled č. {{proof.version}} vaší objednávky {{order.number}} ukazuje, co se chystáme vyrobit. Podívejte se na něj na stránce objednávky a pak ho schvalte, nebo nám napište, co změnit."
                 ]
+              }
+            },
+            {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "Váš náhled"
               }
             },
             {
@@ -12748,6 +12789,14 @@
               }
             },
             {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "نموذجك"
+              }
+            },
+            {
               "block": "email.quote",
               "id": "note",
               "data": {
@@ -12810,6 +12859,14 @@
                 "paras": [
                   "您的订单 {{order.number}} 的第 {{proof.version}} 版校样展示了我们即将制作的样子。请在订单页面查看，然后确认，或告诉我们要修改哪里。"
                 ]
+              }
+            },
+            {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "您的校样"
               }
             },
             {
@@ -12878,6 +12935,14 @@
               }
             },
             {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "您的校樣"
+              }
+            },
+            {
               "block": "email.quote",
               "id": "note",
               "data": {
@@ -12943,6 +13008,7 @@
         "order.number",
         "practice.address",
         "proof.note",
+        "proof.picture",
         "proof.sent_at.date",
         "proof.version",
         "recipient.first_name"
@@ -12966,6 +13032,14 @@
                 "paras": [
                   "We sent proof {{proof.version}} for your order {{order.number}} on {{proof.sent_at.date}}."
                 ]
+              }
+            },
+            {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "Your proof"
               }
             },
             {
@@ -13034,6 +13108,14 @@
               }
             },
             {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "Ihr Probeabzug"
+              }
+            },
+            {
               "block": "email.quote",
               "id": "note",
               "data": {
@@ -13096,6 +13178,14 @@
                 "paras": [
                   "Nous vous avons envoyé l’épreuve {{proof.version}} de votre commande {{order.number}} le {{proof.sent_at.date}}."
                 ]
+              }
+            },
+            {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "Votre épreuve"
               }
             },
             {
@@ -13164,6 +13254,14 @@
               }
             },
             {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "Din prøve"
+              }
+            },
+            {
               "block": "email.quote",
               "id": "note",
               "data": {
@@ -13226,6 +13324,14 @@
                 "paras": [
                   "Náhled č. {{proof.version}} k vaší objednávce {{order.number}} jsme poslali {{proof.sent_at.date}}."
                 ]
+              }
+            },
+            {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "Váš náhled"
               }
             },
             {
@@ -13294,6 +13400,14 @@
               }
             },
             {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "نموذجك"
+              }
+            },
+            {
               "block": "email.quote",
               "id": "note",
               "data": {
@@ -13359,6 +13473,14 @@
               }
             },
             {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "您的校样"
+              }
+            },
+            {
               "block": "email.quote",
               "id": "note",
               "data": {
@@ -13421,6 +13543,14 @@
                 "paras": [
                   "我們已於 {{proof.sent_at.date}} 寄出您的訂單 {{order.number}} 的第 {{proof.version}} 版校樣。"
                 ]
+              }
+            },
+            {
+              "block": "email.image",
+              "id": "picture",
+              "data": {
+                "fileId": "{{proof.picture}}",
+                "alt": "您的校樣"
               }
             },
             {

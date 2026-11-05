@@ -32,6 +32,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     happened: "Was passiert ist",
     proof: "Probeabzug",
     sent: "Gesendet",
+    proofPicture: "Ihr Probeabzug",
     foot: "{{appName}} · {{practice.address|}}. Antworten Sie auf diese E-Mail, dann erreicht sie die Werkstatt.",
     staffFoot: "Vom Shop an die Werkstatt gesendet.",
     "order-received": {
@@ -123,6 +124,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     happened: "Ce qui s’est passé",
     proof: "Épreuve",
     sent: "Envoyée",
+    proofPicture: "Votre épreuve",
     foot: "{{appName}} · {{practice.address|}}. Répondez à cet e-mail : votre réponse arrive à l’atelier.",
     staffFoot: "Envoyé par la boutique à l’atelier.",
     "order-received": {
@@ -214,6 +216,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     happened: "Hvad der skete",
     proof: "Prøve",
     sent: "Sendt",
+    proofPicture: "Din prøve",
     foot: "{{appName}} · {{practice.address|}}. Svar på denne e-mail, så når den værkstedet.",
     staffFoot: "Sendt af butikken til værkstedet.",
     "order-received": {
@@ -305,6 +308,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     happened: "Co se stalo",
     proof: "Náhled",
     sent: "Odesláno",
+    proofPicture: "Váš náhled",
     foot: "{{appName}} · {{practice.address|}}. Odpovězte na tento e-mail a odpověď dorazí přímo do dílny.",
     staffFoot: "Posláno z obchodu do dílny.",
     "order-received": {
@@ -396,6 +400,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     happened: "ما الذي حدث",
     proof: "النموذج",
     sent: "أُرسل",
+    proofPicture: "نموذجك",
     foot: "{{appName}} · {{practice.address|}}. ردّ على هذه الرسالة وسيصل ردّك إلى الورشة.",
     staffFoot: "أرسله المتجر إلى الورشة.",
     "order-received": {
@@ -487,6 +492,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     happened: "发生了什么",
     proof: "校样",
     sent: "发送时间",
+    proofPicture: "您的校样",
     foot: "{{appName}} · {{practice.address|}}。回复此邮件即可直接联系工作室。",
     staffFoot: "由网店发送给工作室。",
     "order-received": {
@@ -578,6 +584,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     happened: "發生了什麼",
     proof: "校樣",
     sent: "寄出時間",
+    proofPicture: "您的校樣",
     foot: "{{appName}} · {{practice.address|}}。回覆這封郵件即可直接聯絡工作室。",
     staffFoot: "由網路商店寄給工作室。",
     "order-received": {

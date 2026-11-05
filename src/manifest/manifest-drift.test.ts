@@ -277,6 +277,18 @@ describe("the studio writes only what its work needs", () => {
     expect(ours.maxBytes).toBeGreaterThanOrEqual(proof.maxBytes);
   });
 
+  it("shows the proof's own picture in the proof e-mails, in every language, and makes it optional", () => {
+    const templates = (manifest["emailTemplates"] as { key: string; locales: Record<string, { blocks: Json[] }> }[]).filter((t) => t.key === "maker-proof-ready" || t.key === "maker-proof-reminder");
+    expect(templates).toHaveLength(2);
+    for (const template of templates) {
+      for (const [tag, { blocks }] of Object.entries(template.locales)) {
+        const picture = blocks.find((b) => b["block"] === "email.image");
+        // A PDF proof is no picture: left out, never `required`, so the e-mail still goes.
+        expect(picture?.["data"], `${template.key} ${tag}`).toEqual({ fileId: "{{proof.picture}}", alt: expect.any(String) });
+      }
+    }
+  });
+
   it("ties a proof to its line's own order, which nobody sends", () => {
     expect(rules("proofs", "order_id")["copy"]).toEqual({ via: "line_id", from: "order_id", mode: "always" });
     expect((role("maker").limits!["proofs"] as Json)["creatable"]).not.toContain("order_id");

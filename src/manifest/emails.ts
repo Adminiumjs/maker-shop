@@ -63,6 +63,8 @@ export type EmailWords = Record<Kind, Words> & {
   happened: string;
   proof: string;
   sent: string;
+  /** What a proof's picture says to a reader who sees no pictures. */
+  proofPicture: string;
   /** The footer of a shopper's e-mail, and of the studio's own. */
   foot: string;
   staffFoot: string;
@@ -88,6 +90,7 @@ export const EMAIL_EN: EmailWords = {
   happened: "What happened",
   proof: "Proof",
   sent: "Sent",
+  proofPicture: "Your proof",
   foot: "{{appName}} · {{practice.address|}}. Reply to this e-mail and it reaches the studio.",
   staffFoot: "Sent by the shop to the studio.",
   "order-received": {
@@ -199,6 +202,8 @@ function layout(kind: Kind, all: EmailWords) {
       break;
     case "proof-ready":
     case "proof-reminder":
+      // The proof's own picture; a proof sent as a PDF is no picture, and is left out: the buttons open it.
+      blocks.push({ block: "email.image", id: "picture", data: { fileId: "{{proof.picture}}", alt: all.proofPicture } });
       blocks.push({ block: "email.quote", id: "note", data: { text: "{{proof.note}}", onlyWith: "proof.note" } });
       blocks.push(button("yes", all.yes), button("change", all.change));
       break;
