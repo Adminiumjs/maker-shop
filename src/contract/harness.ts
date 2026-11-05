@@ -108,7 +108,7 @@ const bundle = (files: Record<string, Buffer>): Bundle => {
 export function addOnVersions(key = "customiser"): { floor: string | null; checkout: string } {
   const app = JSON.parse(read(join(REPO, "manifest.json"))) as { addOns?: { requires?: { key: string; range: string }[]; suggests?: { key: string; range: string }[] } };
   const range = [...(app.addOns?.requires ?? []), ...(app.addOns?.suggests ?? [])].find((r) => r.key === key)?.range ?? "";
-  // `>=1.0.16` or `^1.0.16`: either way the release named is the floor.
+  // `>=1.0.17` or `^1.0.17`: either way the release named is the floor.
   const floor = /^(?:>=|\^)\s*(\d+\.\d+\.\d+)$/.exec(range.trim())?.[1] ?? null;
   const checkout = (JSON.parse(read(join(addOnDir(key), "manifest.json"))) as { version: string }).version;
   return { floor, checkout };
