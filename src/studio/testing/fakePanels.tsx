@@ -9,7 +9,7 @@
  */
 import type { ReactNode } from "react";
 
-import type { PanelDoor, PanelList, PanelOpen, PanelUploaded } from "../door.ts";
+import type { Action, PanelDoor, PanelList, PanelOpen, PanelUploaded } from "../door.ts";
 import { ApiError, same, type Id, type Row } from "../wire.ts";
 import { installRuntime, PanelRefused } from "../../add-ons/connected.ts";
 import { PANEL_HOST } from "../panels/host.tsx";
@@ -65,6 +65,12 @@ export class FakePanels implements PanelDoor {
   refuseLoad: number | null = null;
   /** The next write of a table refused, as Adminium would. */
   refuseWrite: ApiError | null = null;
+  /** What the person may do with each table, as the staff config would say; unsaid: everything. */
+  rights: Record<string, Action[]> | null = null;
+
+  access(_addOn: string, table: string): readonly Action[] | null {
+    return this.rights === null ? null : (this.rights[table] ?? []);
+  }
 
   constructor(tables: Record<string, Row[]> = {}) {
     this.tables = tables;

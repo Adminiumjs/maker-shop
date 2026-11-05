@@ -204,6 +204,8 @@ export class AdminiumStudio implements StudioDoor {
           ...(this.options.importBundle === undefined ? {} : { importBundle: this.options.importBundle }),
         });
       },
+      // Said by Adminium in the staff config, by the add-on's tables' real names.
+      access: (addOn: string, table: string) => (this.cfg.access === null ? null : (this.cfg.access.tables[this.realAddOn(table, addOn)] ?? [])),
       list: async (addOn: string, table: string, query: PanelList) => {
         const search = new URLSearchParams({ limit: String(query.limit), offset: String(query.offset) });
         if (query.where !== undefined) search.set("where", JSON.stringify(query.where));

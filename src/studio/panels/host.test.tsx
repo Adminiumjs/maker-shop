@@ -13,7 +13,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { loadPanelModule, PanelRefused } from "../../add-ons/connected.ts";
 import { clearAddOnRuntime } from "../../add-ons/vendor/host/runtime/index.ts";
 import { FakePanels } from "../testing/fakePanels.tsx";
-import { formatMessage, listQuery, PANEL_HOST, PanelScopeProvider, registerMessages, useRecords, useUpload } from "./host.tsx";
+import { formatMessage, listQuery, PANEL_HOST, PanelScopeProvider, registerMessages, useAccess, useRecords, useUpload } from "./host.tsx";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -73,10 +73,29 @@ describe("the data kit over the studio's door", () => {
     act(() => root.unmount());
   });
 
+  it("says what the person may do with the add-on's tables as the staff config says it, and everything where it says nothing", async () => {
+    const door = new FakePanels();
+    const seen: string[] = [];
+    function Probe() {
+      const access = useAccess();
+      seen.push([access.ready, access.canRead("designs"), access.canUpdate("design_versions"), access.canCreate("version_files")].join(","));
+      return null;
+    }
+    const draw = async () => {
+      const root = createRoot(document.createElement("div"));
+      await act(async () => root.render(<PanelScopeProvider scope={{ door, addOn: "customiser", locale: "en-US" }}><Probe /></PanelScopeProvider>));
+      act(() => root.unmount());
+    };
+    await draw();
+    door.rights = { designs: ["read"], version_files: ["read", "create"] };
+    await draw();
+    expect([seen[0], seen.at(-1)]).toEqual(["true,true,true,true", "true,true,false,true"]);
+  });
+
   it("publishes the host a panel bundle reads: version 1, the data kit 1, every part the two panels draw", () => {
     expect(PANEL_HOST.version).toBe(1);
     expect(PANEL_HOST.data.version).toBe(1);
-    const parts = { ui: ["Button", "EmptyState", "SegmentedControl"], data: ["Card", "Stack", "Grid", "KeyValueList", "StatusPill", "MonoText", "Link", "useRecords", "useRecord", "useWrite", "useUpload"], app: ["lucideByName", "registerMessages", "useLocaleTag", "useAppToasts"] } as const;
+    const parts = { ui: ["Button", "EmptyState", "SegmentedControl"], data: ["Card", "Stack", "Grid", "KeyValueList", "StatusPill", "MonoText", "Link", "useRecords", "useRecord", "useWrite", "useUpload", "useAccess"], app: ["lucideByName", "registerMessages", "useLocaleTag", "useAppToasts"] } as const;
     for (const [where, names] of Object.entries(parts)) for (const name of names) expect(typeof (PANEL_HOST as unknown as Record<string, Record<string, unknown>>)[where]![name], `${where}.${name}`).toBe("function");
     expect(typeof PANEL_HOST.app.lucideByName("triangle-alert")).toBe("function");
   });

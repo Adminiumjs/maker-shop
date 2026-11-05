@@ -141,6 +141,15 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         expect((refused as PanelRefused).status).toBe(403);
       });
 
+      it("tells the panel what each role may do with the Customiser's tables, as Adminium says it", () => {
+        for (const who of ["maker", "owner"]) {
+          const panels = panelsOf(who);
+          for (const table of ["designs", "bases", "ready_designs", "ready_parts", "base_areas", "base_pieces", "palettes", "palette_colours", "fonts"]) expect(panels.access("customiser", table), `${who} reads ${table}`).toContain("read");
+          expect(panels.access("customiser", "version_files"), who).toEqual(expect.arrayContaining(["read", "create", "update"]));
+        }
+        expect(panelsOf("packer").access("customiser", "design_versions")).toEqual([]);
+      });
+
       it("serves the product's panel to the owner, and refuses it to the maker", async () => {
         const data = await doors["owner"]!.load();
         const product = data.products.find((p) => p["base_id"] !== null && p["base_id"] !== undefined)!;

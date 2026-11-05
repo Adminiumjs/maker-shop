@@ -141,6 +141,8 @@ export interface PanelUploaded {
 export interface PanelDoor {
   /** The panel's code (its default export), served for that row only to a role that holds the panel; refused (403) otherwise. */
   load(panel: PanelOpen): Promise<unknown>;
+  /** What the person may do with one of the add-on's tables, as Adminium said it; null when it did not say. */
+  access(addOn: string, table: string): readonly Action[] | null;
   list(addOn: string, table: string, query: PanelList): Promise<Row[]>;
   /** One row by its key; null when it is not there or out of reach. */
   get(addOn: string, table: string, key: Id): Promise<Row | null>;

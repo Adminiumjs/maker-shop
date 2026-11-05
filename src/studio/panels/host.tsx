@@ -13,7 +13,8 @@
  *     facts, a status pill, a button, an empty state, a segmented control),
  *     drawn with the studio's own classes;
  *   - the data kit's reads and writes of the add-on's own tables
- *     (`useRecords`, `useRecord`, `useRead`, `useWrite`, `useUpload`) over
+ *     (`useRecords`, `useRecord`, `useRead`, `useWrite`, `useUpload`), and
+ *     what the person may do with them (`useAccess`, from the staff config), over
  *     the studio's door: the same data and files routes the dashboard's kit
  *     calls, as the person signed in, by the add-on's short table names (the
  *     staff config says their real names), so their role's grants and limits
@@ -198,6 +199,31 @@ export function useRead() {
     }),
     [door, addOn],
   );
+}
+
+/**
+ * What the person may do with the add-on's tables, as the staff config says
+ * it: a panel tells a role what right it lacks instead of drawing an empty
+ * design. Where Adminium said nothing, every action reads as allowed and the
+ * server refuses what it refuses. No table here moves by a declared action,
+ * and the panels ask for no feature.
+ */
+export function useAccess() {
+  const { door, addOn } = useScope();
+  return useMemo(() => {
+    const may = (table: string, action: "read" | "create" | "update") => {
+      const held = door.access(addOn, table);
+      return held === null || held.includes(action);
+    };
+    return {
+      ready: true,
+      canRead: (table: string) => may(table, "read"),
+      canCreate: (table: string) => may(table, "create"),
+      canUpdate: (table: string) => may(table, "update"),
+      canMove: () => false,
+      has: () => false,
+    };
+  }, [door, addOn]);
 }
 
 // ── writing ──────────────────────────────────────────────────────────────────
@@ -552,6 +578,7 @@ export const PANEL_HOST = Object.freeze({
     useRead,
     useWrite,
     useUpload,
+    useAccess,
   }),
   router: Object.freeze({
     // The panels move nowhere by themselves; a way to a page is a link (`Link`).
