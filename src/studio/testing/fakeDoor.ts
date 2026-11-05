@@ -62,6 +62,10 @@ export class FakeDoor implements StudioDoor {
     return this.panelDoor;
   }
 
+  async signOut(): Promise<void> {
+    this.record("signOut", {});
+  }
+
   who(): Person {
     return this.person;
   }

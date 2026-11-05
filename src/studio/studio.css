@@ -84,6 +84,12 @@
 .st-user { display: flex; align-items: center; gap: 9px; border: 1px solid var(--border-strong); border-radius: 99px; padding-block: 4px; padding-inline: 5px 12px; background: var(--surface-2); }
 .st-user-initials { inline-size: 25px; block-size: 25px; border-radius: 99px; display: grid; place-items: center; background: var(--accent); color: var(--accent-fg); font-size: 11px; font-weight: 800; }
 .st-user-name { font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.st-user-wrap { position: relative; }
+.st-user--button { font: inherit; color: inherit; cursor: pointer; }
+.st-user--button:hover { border-color: var(--accent); }
+.st-user-menu { position: absolute; inset-block-start: calc(100% + 6px); inset-inline-end: 0; z-index: 30; min-inline-size: 160px; padding: 5px; border: 1px solid var(--border-strong); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow-md); }
+.st-user-out { inline-size: 100%; display: flex; align-items: center; gap: 8px; border: 0; background: transparent; border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 13px; font-weight: 700; color: var(--fg); cursor: pointer; text-align: start; }
+.st-user-out:hover, .st-user-out:focus-visible { background: var(--surface-3); }
 
 .st-main { flex: 1; padding: 22px 24px 100px; }
 @media (max-width: 899px) { .st-main { padding: 16px 15px 110px; } }

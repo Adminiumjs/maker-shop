@@ -7,8 +7,8 @@
  * owner, the post office run to the owner and the packer, the bench to the
  * owner and the maker. What their roles cannot do, Adminium refuses anyway.
  */
-import { useEffect, useMemo, type ReactNode } from "react";
-import { Eye, LayoutGrid, Layers, Menu, Moon, Package, ReceiptText, Search, Sun, Trees, Truck, Users, X, Zap } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Eye, LayoutGrid, Layers, LogOut, Menu, Moon, Package, ReceiptText, Search, Sun, Trees, Truck, Users, X, Zap } from "lucide-react";
 
 import { useData, useEnv } from "./env.tsx";
 import { productOf } from "./facts.ts";
@@ -134,17 +134,7 @@ function Shell() {
           </button>
           <SearchBox />
           <ThemeButton />
-          <span className="st-user">
-            <span className="st-user-initials" aria-hidden="true">
-              {who.name
-                .split(/\s+/)
-                .filter(Boolean)
-                .slice(0, 2)
-                .map((w) => w[0]!.toLocaleUpperCase())
-                .join("")}
-            </span>
-            <span className="st-user-name">{who.name}</span>
-          </span>
+          <UserChip name={who.name} />
         </header>
         <main className="st-main" id="st-main">
           <Screen view={view} reach={reach} />
@@ -172,6 +162,57 @@ function Shell() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Who is signed in: their initials and name. Where there is a session to
+ * end, the chip opens the way out: "Sign out" ends it, and the studio goes
+ * to Adminium's sign-in.
+ */
+function UserChip({ name }: { name: string }) {
+  const t = useT();
+  const { door, leave } = useEnv();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const initials = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toLocaleUpperCase())
+    .join("");
+  const face = (
+    <>
+      <span className="st-user-initials" aria-hidden="true">
+        {initials}
+      </span>
+      <span className="st-user-name">{name}</span>
+    </>
+  );
+  if (door.signOut === undefined) return <span className="st-user">{face}</span>;
+  const signOut = async () => {
+    setBusy(true);
+    try {
+      await door.signOut!();
+    } catch {
+      // Signed out or not, the way on is the sign-in: it says which.
+    }
+    leave?.();
+  };
+  return (
+    <div className="st-user-wrap" onKeyDown={(e) => e.key === "Escape" && setOpen(false)}>
+      <button type="button" className="st-user st-user--button" aria-expanded={open} aria-controls="st-user-menu" onClick={() => setOpen(!open)}>
+        {face}
+      </button>
+      {open && (
+        <div className="st-user-menu" id="st-user-menu">
+          <button type="button" className="st-user-out" disabled={busy} onClick={() => void signOut()}>
+            <LogOut size={15} aria-hidden="true" />
+            {t("studio.signOut")}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -291,6 +291,14 @@ export class AdminiumStudio implements StudioDoor {
     return Date.now() + this.skew;
   }
 
+  async signOut(): Promise<void> {
+    await this.run(async () => {
+      // The session's write token comes with the first read.
+      await this.t.port.config();
+      await this.t.mutate("/api/v1/auth/logout", "POST", {});
+    });
+  }
+
   load(): Promise<StudioData> {
     return this.run(async () => {
       // The session's write token comes with the first read.

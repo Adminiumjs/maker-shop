@@ -164,6 +164,8 @@ export interface StudioDoor {
   addOnRegistry(): Promise<AddOnRegistry>;
   /** The server's clock, as epoch ms. */
   now(): number;
+  /** Ends the person's session; absent where there is none to end (the demo). */
+  signOut?(): Promise<void>;
   load(): Promise<StudioData>;
 
   /** A line along the bench; `from` is the stage the screen saw, so a line moved on since is refused. */

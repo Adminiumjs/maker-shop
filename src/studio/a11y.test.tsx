@@ -182,6 +182,7 @@ const STATES: Row[] = [
   { view: "today", state: "reading", go: () => set({ data: null }), shows: "[aria-busy='true']", noHeading: "a skeleton for a moment, its busy status says it is reading" },
   { view: "today", state: "the read failed", go: () => set({ data: null, failure: "Adminium did not answer." }), shows: ".st-failed[role='alert']", says: "The workshop could not be read", noHeading: "the shell's one alert, with nothing else drawn" },
   { view: "today", state: "the nav drawer", go: () => click(".st-menu-btn"), shows: ".st-drawer" },
+  { view: "today", state: "the name chip open", go: () => click(".st-user--button"), shows: "#st-user-menu", says: "Sign out" },
   { view: "today", state: "search with results", go: () => type("input[type='search']", "iris"), shows: "#st-results .st-result", says: "BR-2276 · Iris P." },
   { view: "today", state: "search with none", go: () => type("input[type='search']", "zzz"), shows: "#st-results .st-noresults" },
   { view: "today", state: "a toast", go: () => set({ toasts: [{ id: 1, tone: "pos", text: "Marked made. On to finishing." }, { id: 2, tone: "danger", text: "Waiting on the proof — send it first" }] }), shows: ".st-toast--danger" },

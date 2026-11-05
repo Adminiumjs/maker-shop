@@ -21,6 +21,8 @@ export interface StudioEnv {
   door: StudioDoor;
   /** A picture of a line's words, as its proof shows them; null where this browser cannot draw. */
   draw: (line: Row, data: StudioData) => Promise<Blob | null>;
+  /** Where the studio goes once its person signed out: Adminium's sign-in, which brings the next person back here. */
+  leave?: () => void;
 }
 
 const Ctx = createContext<StudioEnv | null>(null);

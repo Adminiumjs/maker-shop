@@ -27,6 +27,8 @@ let root: Root | null = null;
 let host: HTMLElement;
 
 const INITIAL = useStudio.getState();
+/** How many times the studio went to Adminium's sign-in. */
+let left = 0;
 
 beforeEach(() => {
   useStudio.setState({ ...INITIAL, toasts: [], overlay: null, data: null, failure: null });
@@ -44,7 +46,7 @@ afterEach(() => {
 const draw = async () => new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47])], { type: "image/png" });
 
 async function mount(door: FakeDoor, view: View = "today", more: Partial<ReturnType<typeof useStudio.getState>> = {}): Promise<void> {
-  const env: StudioEnv = { door, draw };
+  const env: StudioEnv = { door, draw, leave: () => void (left += 1) };
   useStudio.setState({ data: await door.load(), view, ...more });
   await act(async () => {
     root = createRoot(host);
@@ -440,6 +442,32 @@ describe("the post office run", () => {
     await click(button("Packed: BR-2271"));
     await click(button("Mark the run posted"));
     expect(door.calls.at(-1)).toEqual({ method: "moveOrder", args: { id: 14, from: "ready", to: "posted", values: { tracking: "00 3400 1234 5678 9012" } } });
+  });
+});
+
+describe("signing out", () => {
+  it("ends the session from the name chip and goes to Adminium's sign-in", async () => {
+    left = 0;
+    const door = new FakeDoor({ roles: ["packer"] });
+    await mount(door, "post");
+    const chip = document.querySelector<HTMLButtonElement>(".st-user--button")!;
+    expect(chip.getAttribute("aria-expanded")).toBe("false");
+    await click(chip);
+    expect(chip.getAttribute("aria-expanded")).toBe("true");
+    await sweep("the name chip open");
+    await click(button("Sign out"));
+    expect(door.calls).toEqual([{ method: "signOut", args: {} }]);
+    expect(left).toBe(1);
+  });
+
+  it("goes to the sign-in even when the session had already ended", async () => {
+    left = 0;
+    const door = new FakeDoor();
+    door.refuse("signOut", new ApiError(401, "UNAUTHENTICATED", "Not signed in."));
+    await mount(door, "today");
+    await click(document.querySelector(".st-user--button"));
+    await click(button("Sign out"));
+    expect(left).toBe(1);
   });
 });
 

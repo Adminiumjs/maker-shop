@@ -267,6 +267,12 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         expect(found.status, JSON.stringify(found.body).slice(0, 400)).toBe(200);
       });
 
+      it("signs the packer out from the studio's screens: the session ends", async () => {
+        await doors["packer"]!.signOut();
+        const cfg = await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: callers["packer"]!.fetchAs() });
+        expect(cfg?.user ?? null).toBeNull();
+      });
+
       /*
        * "Make the files again" takes the version's old files away first (the
        * panel's `remove`): an app's role may read, add and change an add-on's

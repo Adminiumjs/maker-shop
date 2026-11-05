@@ -76,6 +76,7 @@ export async function bootStudio(mount: HTMLElement): Promise<void> {
   const env: StudioEnv = {
     door,
     draw: drawLettering,
+    leave: () => window.location.assign(`/login?next=${encodeURIComponent(window.location.pathname)}`),
   };
 
   // The address and the screen in step; inside the dashboard, its sidebar too.
