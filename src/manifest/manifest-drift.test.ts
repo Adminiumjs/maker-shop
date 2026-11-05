@@ -222,6 +222,11 @@ describe("the studio writes only what its work needs", () => {
     }
   });
 
+  it("ties a proof to its line's own order, which nobody sends", () => {
+    expect(rules("proofs", "order_id")["copy"]).toEqual({ via: "line_id", from: "order_id", mode: "always" });
+    expect((role("maker").limits!["proofs"] as Json)["creatable"]).not.toContain("order_id");
+  });
+
   it("lets the packer only post what is ready", () => {
     expect(role("packer").limits!["orders"]).toEqual({ writable: ["status", "tracking"], writableValues: { status: ["posted"] }, writableFrom: { status: ["ready"] } });
   });

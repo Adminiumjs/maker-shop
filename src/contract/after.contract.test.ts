@@ -171,10 +171,15 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         const quoted = await door.quote(body);
         return door.place(body, key, String(quoted.order["total"]));
       };
-      /** The studio sends a proof of a line: its picture stored through the files route, then the proof row. */
+      /**
+       * The studio sends a proof of a line: its picture stored through the files route, then the proof row. The
+       * order is never the writer's to name: it is sent wrong here, and Adminium takes the line's.
+       */
       const sendProof = async (order: Row, line: Row, note: string): Promise<Row> => {
         const stored = ok(await staff.send<{ ref: string }>("POST", `/api/v1/files?${new URLSearchParams({ filename: "proof.png", connectionId, table: tables()["proofs"] ?? "maker_proofs", column: "picture" }).toString()}`, PNG, { "content-type": "image/png" }), 201);
-        return ok(await staff.post<{ data: Row }>(`/api/v1/data/${connectionId}/${table("proofs")}`, { values: { order_id: order["id"], line_id: line["id"], kind: "lettering", picture: stored.ref, note } }), 201).data;
+        const made = ok(await staff.post<{ data: Row }>(`/api/v1/data/${connectionId}/${table("proofs")}`, { values: { order_id: Number(order["id"]) + 100000, line_id: line["id"], kind: "lettering", picture: stored.ref, note } }), 201).data;
+        expect(String(made["order_id"])).toBe(String(order["id"]));
+        return made;
       };
 
       let first1: Awaited<ReturnType<AdminiumShop["place"]>>;

@@ -118,9 +118,9 @@ export const ROLES = [
       // The order moves along the bench; nothing of the shopper's or its money.
       orders: { writable: ["status"], writableValues: { status: ["making", "ready"] } },
       order_lines: { writable: ["stage", "batch_id", "spoiled"], writableValues: { stage: ["make", "making", "finishing", "ready"] } },
-      // A proof: the line, its picture, the note and the design version it shows; sent again, or a reminder.
+      // A proof: the line (its order is the line's), its picture, the note and the design version it shows; sent again, or a reminder.
       proofs: {
-        creatable: ["order_id", "line_id", "kind", "picture", "design_version_id", "note"],
+        creatable: ["line_id", "kind", "picture", "design_version_id", "note"],
         writable: ["state", "reminded_at"],
         writableValues: { state: ["superseded"] },
       },

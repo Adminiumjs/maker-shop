@@ -94,7 +94,7 @@ describe("the studio's writes, as Adminium receives them", () => {
     expect(sent).toEqual([{ path: "/api/v1/data/conn-1/maker_proofs/1001", method: "PATCH", body: { values: { state: "superseded" }, from: "change_asked" } }]);
   });
 
-  it("stores a drawn picture through the files route for the proofs' picture column, then sends the proof naming it", async () => {
+  it("stores a drawn picture through the files route for the proofs' picture column, then sends the proof naming it and its line, never an order", async () => {
     const { t, sent } = transport();
     const uploads: { url: string; init: RequestInit }[] = [];
     const fetchImpl = (async (url: string, init: RequestInit) => {
@@ -112,7 +112,7 @@ describe("the studio's writes, as Adminium receives them", () => {
       {
         path: "/api/v1/data/conn-1/maker_proofs",
         method: "POST",
-        body: { values: { order_id: 11, line_id: 111, kind: "lettering", picture: "https://studio.example/api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1XC/content" } },
+        body: { values: { line_id: 111, kind: "lettering", picture: "https://studio.example/api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1XC/content" } },
       },
     ]);
   });
@@ -125,7 +125,7 @@ describe("the studio's writes, as Adminium receives them", () => {
       {
         path: "/api/v1/data/conn-1/maker_proofs",
         method: "POST",
-        body: { values: { order_id: 16, line_id: 161, kind: "design", picture: "https://studio.example/api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1XB/content", design_version_id: 30 } },
+        body: { values: { line_id: 161, kind: "design", picture: "https://studio.example/api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1XB/content", design_version_id: 30 } },
       },
     ]);
   });

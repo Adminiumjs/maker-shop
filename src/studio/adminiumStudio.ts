@@ -287,8 +287,8 @@ export class AdminiumStudio implements StudioDoor {
   sendProof(input: { order: Row; line: Row; kind: "lettering" | "design"; picture: ProofPicture | null; designVersionId: Id | null; note: string | null }): Promise<Row> {
     return this.run(async () => {
       const picture = input.picture === null ? null : await this.storePicture(input.picture);
+      // The order is not sent: Adminium copies it from the line.
       return this.create("proofs", {
-        order_id: input.order.id,
         line_id: input.line.id,
         kind: input.kind,
         ...(picture === null ? {} : { picture }),

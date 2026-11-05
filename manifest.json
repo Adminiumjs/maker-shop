@@ -5566,6 +5566,14 @@
               "ar-EG": "الطلب",
               "zh-CN": "订单",
               "zh-TW": "訂單"
+            },
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "line_id",
+                "from": "order_id",
+                "mode": "always"
+              }
             }
           },
           {
@@ -10203,7 +10211,6 @@
         },
         "proofs": {
           "creatable": [
-            "order_id",
             "line_id",
             "kind",
             "picture",

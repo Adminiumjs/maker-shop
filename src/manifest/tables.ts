@@ -719,7 +719,8 @@ export const TABLES: Table[] = [
     },
     columns: [
       id,
-      fk("order_id", "orders", "Order"),
+      // The order is the line's own: a proof can name no other.
+      fk("order_id", "orders", "Order", { ...opt, rules: { copy: { via: "line_id", from: "order_id", mode: "always" } } }),
       fk("line_id", "order_lines", "Order line", { index: true }),
       int("version", "Proof", { ...opt, rules: { sequence: { gapless: true, scope: "line_id", sample: true } } }),
       choice("kind", "Drawn from", { lettering: "The lettering", design: "The Customiser design" }, { default: "lettering" }),
