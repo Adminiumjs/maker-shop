@@ -19,7 +19,7 @@ import { dueForProof, fileSrc, productOf, versionOf } from "../facts.ts";
 import { wordsOfDesign } from "../designs.ts";
 import { wordsOf } from "../picture.ts";
 import { useStudio } from "../store.ts";
-import { LineTile, Typed } from "../ui.tsx";
+import { LineTile, ProofImage, Typed } from "../ui.tsx";
 import { num, same, text, type Row } from "../wire.ts";
 import { useT } from "../../i18n/index.tsx";
 import { BatchDialog } from "./Batches.tsx";
@@ -107,7 +107,7 @@ function ProofSheet({ orderId }: { orderId: Row["id"] }) {
             <div key={String(line.id)} className="st-ps-line">
               {picture !== null ? (
                 <div className="st-ps-pic">
-                  <img src={picture} alt={t("studio.proof.alt", { name, customer })} />
+                  <ProofImage src={picture} alt={t("studio.proof.alt", { name, customer })} name={name} />
                   {version !== undefined && <span className="st-ps-version">{t("studio.proof.version", { version: num(version["version"]) ?? 1 })}</span>}
                 </div>
               ) : designed ? (

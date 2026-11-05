@@ -84,8 +84,11 @@ export interface AfterState {
   opened: Opened | null;
   /** How the order's own link went: being opened, opening nothing, or stopped. */
   link: "opening" | "unknown" | "closed" | null;
-  /** Each waiting proof's picture, as an address the page may draw (an object URL), or null for none. */
-  pictures: Record<string, string | null>;
+  /**
+   * Each waiting proof's picture, as an address the page may draw (an object URL) and whether it is a PDF (a proof
+   * the Customiser made as one), or null for none.
+   */
+  pictures: Record<string, { url: string; pdf: boolean } | null>;
   /** The proof whose change box is open, what is typed in it, and whether Send was pressed empty. */
   change: { proofId: string | null; note: string; tried: boolean };
   answering: string | null;
@@ -142,7 +145,7 @@ function port(): AfterPort | null {
 
 /** For tests: back to a fresh page, with this door. */
 export function resetAfter(next: AfterPort | null): void {
-  for (const url of Object.values(get().pictures)) if (url !== null) revoke(url);
+  for (const picture of Object.values(get().pictures)) if (picture !== null) revoke(picture.url);
   useAfter.setState({ port: next, ...initial() }, true);
 }
 
@@ -390,7 +393,7 @@ async function loadPictures(read: OrderRead): Promise<void> {
     try {
       const blob = await door.proofPicture(read.via, proof["id"] as Id);
       const url = blob === null || typeof URL.createObjectURL !== "function" ? null : URL.createObjectURL(blob);
-      set({ pictures: { ...get().pictures, [id]: url } });
+      set({ pictures: { ...get().pictures, [id]: url === null ? null : { url, pdf: blob!.type === "application/pdf" } } });
     } catch {
       // drawn from its words instead
     }

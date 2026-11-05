@@ -28,6 +28,8 @@ export interface FakeAfter extends AfterPort {
   /** Who is signed in, by address, or nobody. */
   session: string | null;
   linkOpen: boolean;
+  /** What a waiting proof's picture reads as: none, unless a test gives one. */
+  picture: Blob | null;
 }
 
 const SHOPPER = "iris.p@example.com";
@@ -69,6 +71,7 @@ export function fakeAfter(settings: Record<string, unknown> = { studio_days: "tu
     rows: sampleAfterRows(),
     session: null,
     linkOpen: false,
+    picture: null,
     refuseNext: (r) => {
       refusal = { status: 400, column: null, child: null, index: null, reason: null, changed: null, raw: null, ...r };
     },
@@ -131,7 +134,7 @@ export function fakeAfter(settings: Record<string, unknown> = { studio_days: "tu
     },
     async proofPicture(via, proofId) {
       record("proofPicture", via, proofId);
-      return null;
+      return fake.picture;
     },
     async ask(values) {
       record("ask", values);

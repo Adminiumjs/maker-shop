@@ -125,6 +125,20 @@ describe("answering a proof", () => {
     await findOrder("order");
   }
 
+  it("keeps a picture as one to draw, and a proof the Customiser made as a PDF as one to open", async () => {
+    vi.stubGlobal("URL", Object.assign(URL, { createObjectURL: (blob: Blob) => `blob:${blob.type}`, revokeObjectURL: () => undefined }));
+    port.afterFake.picture = new Blob(["%PDF-1.7"], { type: "application/pdf" });
+    await signedIn();
+    await vi.runAllTimersAsync();
+    expect(Object.values(useAfter.getState().pictures)).toEqual([{ url: "blob:application/pdf", pdf: true }]);
+    resetAfter(null);
+    port.afterFake.picture = new Blob([new Uint8Array([0x89, 0x50])], { type: "image/png" });
+    await signedIn();
+    await vi.runAllTimersAsync();
+    expect(Object.values(useAfter.getState().pictures)).toEqual([{ url: "blob:image/png", pdf: false }]);
+    vi.unstubAllGlobals();
+  });
+
   it("approves it through the shopper's own session: the state, and nothing else", async () => {
     await signedIn();
     expect(await answerProof("502", "approved")).toBe("done");

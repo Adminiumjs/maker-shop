@@ -289,8 +289,8 @@ function ProofCard({ proof }: { proof: OrderView["waiting"][number] }) {
       <div className="sa-proof-body">
         <div className="sa-proof-grid">
           <div className="sa-proof-picture">
-            {picture !== null ? (
-              <img src={picture} alt={t("after.proof.picture", { version: proof.version, piece: proof.productName })} />
+            {picture !== null && !picture.pdf ? (
+              <img src={picture.url} alt={t("after.proof.picture", { version: proof.version, piece: proof.productName })} />
             ) : (
               <Tile tint={proof.tint} className="sa-proof-tile">
                 {proof.words.length === 0 ? (
@@ -311,6 +311,12 @@ function ProofCard({ proof }: { proof: OrderView["waiting"][number] }) {
           <div className="sa-col">
             <span className="sa-strong">{proof.productName}</span>
             <p className="sh-small">{proof.note ?? t("after.proof.detail")}</p>
+            {/* A proof the Customiser made as a PDF opens on its own: a page draws no PDF as a picture. */}
+            {picture !== null && picture.pdf && (
+              <a className="sh-link" href={picture.url} target="_blank" rel="noopener">
+                {t("after.proof.openPdf", { version: proof.version })}
+              </a>
+            )}
             <Mono className="sa-faint">{rich(t, "after.proof.sent", { when: day(proof.sentAt) })}</Mono>
           </div>
         </div>

@@ -5757,7 +5757,6 @@
             "type": "text",
             "maxLength": 64,
             "nullable": true,
-            "semantic": "image",
             "label": {
               "en-US": "Picture",
               "de-DE": "Bild",
@@ -5773,9 +5772,10 @@
                 "accept": [
                   "png",
                   "jpeg",
-                  "webp"
+                  "webp",
+                  "pdf"
                 ],
-                "maxBytes": 5242880
+                "maxBytes": 26214400
               }
             }
           },
@@ -8625,8 +8625,7 @@
                   "control": "segmented"
                 },
                 {
-                  "column": "picture",
-                  "control": "image"
+                  "column": "picture"
                 },
                 {
                   "column": "note",

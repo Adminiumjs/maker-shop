@@ -306,6 +306,8 @@ textarea.st-input { font-size: 13.5px; line-height: 1.5; resize: vertical; }
 @media (max-width: 899px) { .st-proof { grid-template-columns: 1fr; } }
 .st-proof-pic { aspect-ratio: 3 / 2; border-radius: 10px; }
 .st-proof-pic img { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; }
+/* A proof made as a PDF: a link where its picture would be. */
+.st-proof-pic .st-proof-open { position: absolute; inset: 0; display: grid; place-items: center; padding: 6px; text-align: center; background: var(--surface); }
 .st-size { position: absolute; inset-block-end: 7px; inset-inline-start: 7px; font-family: var(--font-mono); font-size: 9px; font-weight: 600; color: #fff; background: rgba(10, 10, 15, 0.42); border-radius: 5px; padding: 2px 6px; }
 .st-proof-text { display: flex; flex-direction: column; gap: 7px; min-inline-size: 0; }
 .st-proof-ids { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }

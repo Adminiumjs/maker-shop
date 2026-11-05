@@ -291,6 +291,15 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "change-asked", to: STUDIO, known: { "order.number": "BR-2292", "proof.version": "1" }, row: messageOf("change-asked", "proof_id", proof["id"]) });
       }, 180_000);
 
+      it("keeps a proof made as a PDF, as the Customiser's proof of a design's version may be", async () => {
+        const pdf = Buffer.from("%PDF-1.4\n1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n2 0 obj << /Type /Pages /Kids [] /Count 0 >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n", "latin1");
+        const query = new URLSearchParams({ filename: "proof.pdf", connectionId, table: tables()["proofs"] ?? "maker_proofs", column: "picture" });
+        const stored = ok(await staff.send<{ ref: string }>("POST", `/api/v1/files?${query.toString()}`, pdf, { "content-type": "application/pdf" }), 201);
+        const line = (await rows("order_lines")).find((l) => String(l["order_id"]) === String(first1.order["id"]))!;
+        const made = ok(await staff.post<{ data: Row }>(`/api/v1/data/${connectionId}/${table("proofs")}`, { values: { line_id: line["id"], kind: "design", picture: stored.ref } }), 201).data;
+        expect(made["picture"]).not.toBeNull();
+      }, 60_000);
+
       it("takes a request behind the human check, every field it was sent kept", async () => {
         const door = browser().after();
         const asked = await door.ask({ name: "Bex Thorne", email: ASKER, language: "en-US", idea: "A sign for the allotment gate", material: "Slate", wanted_when: "End of August", client_key: `maker-after-${engine}-ask-000001` }).catch((e: unknown) => {

@@ -2,7 +2,7 @@
  * The small pieces every studio screen draws with: a material's tile, a
  * post-by chip, a customer's own words.
  */
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Bone, Bookmark, Box, Cake, Coffee, Disc, Flower2, Heart, House, Image, Inbox, KeyRound, Sprout, UtensilsCrossed, Zap, type LucideIcon } from "lucide-react";
 
 import type { StudioData } from "./door.ts";
@@ -61,6 +61,23 @@ export function ProductTile({ data, product, size, iconSize }: { data: StudioDat
 }
 
 /** Words a customer typed, isolated so a name in another script reads the right way round. */
+/**
+ * A proof's picture. A proof the Customiser made as a PDF draws as no picture, so the studio is given a link that
+ * opens it instead, in the same place.
+ */
+export function ProofImage({ src, alt, name }: { src: string; alt: string; name: string }) {
+  const t = useT();
+  const [failed, setFailed] = useState<string | null>(null);
+  if (failed === src) {
+    return (
+      <a className="st-linkbtn st-proof-open" href={src} target="_blank" rel="noopener">
+        {t("studio.proof.open", { name })}
+      </a>
+    );
+  }
+  return <img src={src} alt={alt} onError={() => setFailed(src)} />;
+}
+
 export function Typed({ children }: { children: ReactNode }) {
   return <bdi>{children}</bdi>;
 }

@@ -309,6 +309,17 @@ describe("the proofs", () => {
     expect([...document.querySelectorAll("button")].some((b) => b.textContent === "Send a reminder")).toBe(false);
   });
 
+  it("gives a link to a proof that draws as no picture, as one the Customiser made as a PDF", async () => {
+    await mount(new FakeDoor(), "proofs");
+    const img = document.querySelector(".st-proof-pic img")!;
+    await act(async () => {
+      img.dispatchEvent(new Event("error"));
+    });
+    expect(document.querySelector(".st-proof-pic img")).toBeNull();
+    const link = document.querySelector<HTMLAnchorElement>(".st-proof-pic a.st-proof-open")!;
+    expect([link.textContent, link.getAttribute("href"), link.getAttribute("target")]).toEqual(["Open the proof of Wedding sign", "/api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1X2/content", "_blank"]);
+  });
+
   it("sends a reminder of a proof that has waited as long as the settings say", async () => {
     const door = new FakeDoor();
     await mount(door, "proofs");

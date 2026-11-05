@@ -134,6 +134,9 @@ export const HOLIDAYS = "holiday-calendars";
 function link(ref: string, table: string, label: string, rules: Record<string, unknown> = {}): Column {
   return { ref, type: "int", nullable: true, label: l(label), rules: { addOnLink: { addOn: CUSTOMISER, table }, ...rules } };
 }
+/** What a proof may be: the kinds and size of the Customiser's proof of a design's version (`design_versions.proof_file`), and the studio's PNG. */
+export const PROOF_KINDS = ["png", "jpeg", "webp", "pdf"] as const;
+export const PROOF_MAX_BYTES = 26214400;
 /** A picture somebody uploads for the row, shown on the shop where an entry says so. */
 function picture(ref: string, label: string): Column {
   return { ref, type: "text", maxLength: 64, nullable: true, semantic: "image", label: l(label), rules: { file: { accept: ["png", "jpeg", "webp"], maxBytes: 5242880 } } };
@@ -735,7 +738,9 @@ export const TABLES: Table[] = [
       fk("customer_id", "customers", "Customer", { ...opt, rules: { copy: { via: "line_id", from: "customer_id", mode: "always" } } }),
       int("version", "Proof", { ...opt, rules: { sequence: { gapless: true, scope: "line_id", sample: true } } }),
       choice("kind", "Drawn from", { lettering: "The lettering", design: "The Customiser design" }, { default: "lettering" }),
-      picture("picture", "Picture"),
+      // What the customer is shown: the lettering drawn here, or the Customiser's proof of the design's version copied
+      // as it is, of the kinds and size that proof may be (a PDF among them, so this is a file, not a picture).
+      { ref: "picture", type: "text", maxLength: 64, nullable: true, label: l("Picture"), rules: { file: { accept: [...PROOF_KINDS], maxBytes: PROOF_MAX_BYTES } } },
       // The language its order was placed in: its e-mails are written in it.
       { ...language("language"), rules: { copy: { via: "order_id", from: "language", mode: "always" } } },
       // The Customiser's version of the design this proof shows, when the line has one.

@@ -12,7 +12,7 @@ import { closuresOf, fileSrc, isLive, linesOf, postRun, productOf, proofQueue, r
 import { useFmt } from "../format.ts";
 import { go, toast, useStudio, type OrderFilter } from "../store.ts";
 import { studioDaysBetween } from "../time.ts";
-import { LineTile, ShipChip, Typed } from "../ui.tsx";
+import { LineTile, ProofImage, ShipChip, Typed } from "../ui.tsx";
 import { dayOf, num, text } from "../wire.ts";
 import { wordsOfDesign } from "../designs.ts";
 import { useT, type MessageKey } from "../../i18n/index.tsx";
@@ -195,7 +195,7 @@ function Waiting({ item }: { item: ProofItem }) {
     <li className="st-proof">
       <div className="st-proof-pic st-tile">
         <LineTile data={data} line={line} product={product} size={62} iconSize={26} />
-        {picture !== null && <img src={picture} alt={t("studio.proof.alt", { name, customer })} />}
+        {picture !== null && <ProofImage src={picture} alt={t("studio.proof.alt", { name, customer })} name={name} />}
         {text(product?.["size_text"]) !== null && <span className="st-size">{text(product?.["size_text"])}</span>}
       </div>
       <div className="st-proof-text">

@@ -9,7 +9,7 @@
  * bound as its README asks; the studio's roles write only what their work
  * needs.
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -243,6 +243,18 @@ describe("the studio writes only what its work needs", () => {
         }
       }
     }
+  });
+
+  it("takes as a proof's picture every kind and size the Customiser's proof of a version may be", () => {
+    expect(rules("proofs", "picture")["file"]).toEqual({ accept: ["png", "jpeg", "webp", "pdf"], maxBytes: 26214400 });
+    // Held to the add-on's own column when its checkout is beside this one (CI's contract job has it).
+    const theirs = join(process.env["ADD_ONS_REPO"] ?? join(__dirname, "..", "..", "..", "add-ons"), "packages", "customiser", "manifest.json");
+    if (!existsSync(theirs)) return;
+    const customiser = JSON.parse(readFileSync(theirs, "utf8")) as { requiredSchema: { tables: { ref: string; columns: { ref: string; rules?: { file?: { accept: string[]; maxBytes: number } } }[] }[] } };
+    const proof = customiser.requiredSchema.tables.find((t) => t.ref === "design_versions")!.columns.find((c) => c.ref === "proof_file")!.rules!.file!;
+    const ours = rules("proofs", "picture")["file"] as { accept: string[]; maxBytes: number };
+    expect(proof.accept.filter((kind) => !ours.accept.includes(kind))).toEqual([]);
+    expect(ours.maxBytes).toBeGreaterThanOrEqual(proof.maxBytes);
   });
 
   it("ties a proof to its line's own order, which nobody sends", () => {
