@@ -182,6 +182,10 @@ describe("a shopper reads nothing of anyone else's, and nothing the studio keeps
     expect(rules("problem_reports", "order_id")["lookup"]).toEqual({ from: "order_ref", table: "orders", column: "number_code", scope: [{ column: "email", equals: "email" }] });
   });
 
+  it("keeps every address a shopper types trimmed and in lower case, so one typed in another case is the same", () => {
+    for (const ref of ["customers", "orders", "commission_requests", "problem_reports"]) expect(rules(ref, "email")["normalize"], ref).toBe("email");
+  });
+
   it("places an order with a retry key, a quote first, and a refusal if the total moved", () => {
     const create = manifest.publicAccess.find((e) => e.table === "orders" && e.methods.includes("POST"))!;
     expect([create["dryRun"], create["expect"], create["clientKey"], create["humanCheck"]]).toEqual([true, "total", "client_key", true]);

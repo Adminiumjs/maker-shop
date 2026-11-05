@@ -61,6 +61,8 @@ const THURSDAY = Date.parse("2026-08-06T15:40:00Z");
  */
 const SHOPPER = { name: "Priya Shah", email: "priya.shah@birch-row-shoppers.dev", address_line1: "12 Mill Lane", town: "Settle", postcode: "BD24 9AA", may_email: false, language: "en-US" };
 const ASKER = "bex.thorne@birch-row-shoppers.dev";
+/** The shopper's address as they might type it another time. */
+const MIXED_CASE = "Priya.Shah@Birch-Row-Shoppers.DEV";
 /** The studio's own address, where its copy of a request or a problem goes (the sample's is one kept for examples). */
 const STUDIO = "studio@birch-row-studio.dev";
 /** Before 0.3.44 an order's number as typed stayed empty, so no problem could find its order by it. */
@@ -165,9 +167,9 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
       };
       const second = () => catalogue.services.find((s) => s.code === "second")!.id;
 
-      /** An order placed through the shop's door, as its checkout places it. */
-      const place = async (door: AdminiumShop, line: BasketLine, key: string) => {
-        const body = orderBody({ ...SHOPPER, service_id: second() }, [line]);
+      /** An order placed through the shop's door, as its checkout places it (with the address as typed, when given). */
+      const place = async (door: AdminiumShop, line: BasketLine, key: string, email = SHOPPER.email) => {
+        const body = orderBody({ ...SHOPPER, email, service_id: second() }, [line]);
         const quoted = await door.quote(body);
         return door.place(body, key, String(quoted.order["total"]));
       };
@@ -256,8 +258,11 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
       }, 180_000);
 
       it("opens an order by its own link and asks for a change through it, in the shopper's words", async () => {
-        const made = await place(shop, lineOf("sign-house", 1, { lettering: "Mill House" }), `maker-after-${engine}-0000000002`);
+        // Typed with capitals: kept as the customer's address is, so it is the same shopper's.
+        const made = await place(shop, lineOf("sign-house", 1, { lettering: "Mill House" }), `maker-after-${engine}-0000000002`, MIXED_CASE);
         expect(made.order["number"]).toBe("BR-2292");
+        const placedRow = (await rows("orders")).find((o) => String(o["id"]) === String(made.order["id"]))!;
+        expect([placedRow["email"], String(placedRow["customer_id"])]).toEqual([SHOPPER.email, String((await rows("orders")).find((o) => o["number"] === "BR-2291")!["customer_id"])]);
         const line = (await rows("order_lines")).find((l) => String(l["order_id"]) === String(made.order["id"]))!;
         const proof = await sendProof(made.order, line, "Slate, lettering 40 mm.");
 
@@ -312,11 +317,12 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         const own = (await rows("orders")).find((o) => o["number"] === "BR-2291")!;
         expect(own["number_code"]).toBe("BR2291");
         const door = browser().after();
-        // Typed as a shopper types it: small letters, no dash.
-        const reported = await door.report({ order_ref: "br 2291", name: "Priya Shah", email: SHOPPER.email, language: "en-US", what: "damaged", details: "One coaster came cracked.", client_key: `maker-after-${engine}-fix-000001` });
+        // Typed as a shopper types it: small letters, no dash, and the address with capitals the order was not sent to.
+        const reported = await door.report({ order_ref: "br 2291", name: "Priya Shah", email: MIXED_CASE, language: "en-US", what: "damaged", details: "One coaster came cracked.", client_key: `maker-after-${engine}-fix-000001` });
         expect(reported["ref"]).toMatch(/^FIX-\d{4}$/);
         const problem = (await rows("problem_reports")).find((r) => r["ref"] === reported["ref"])!;
         expect(String(problem["order_id"])).toBe(String(first1.order["id"]));
+        expect(problem["email"]).toBe(SHOPPER.email);
         const known = { "problem.ref": String(reported["ref"]), "order.number": "BR-2291" };
         await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "problem-received", to: SHOPPER.email, known, row: messageOf("problem-received", "problem_id", problem["id"]) });
         await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "problem-copy", to: STUDIO, known, row: messageOf("problem-copy", "problem_id", problem["id"]) });

@@ -534,9 +534,10 @@ export const TABLES: Table[] = [
         default: "placed",
         tones: { placed: "info", making: "warn", ready: "accent", posted: "pos", cancelled: "danger" },
       }),
-      // Who it goes to: the shopper's own details, kept with the order.
+      // Who it goes to: the shopper's own details, kept with the order. The address is kept trimmed and in lower
+      // case, as the customer's is, so a problem typed in another case still finds the order.
       text("name", 80, "Name", { semantic: "name" }),
-      text("email", 254, "E-mail", { semantic: "email", rules: { validation: { format: "email" } } }),
+      text("email", 254, "E-mail", { semantic: "email", rules: { normalize: "email", validation: { format: "email" } } }),
       text("address_line1", 120, "Address"),
       text("address_line2", 120, "Address, second line", opt),
       text("town", 80, "Town"),
@@ -758,7 +759,7 @@ export const TABLES: Table[] = [
       text("ref", 16, "Reference", { ...opt, unique: true, rules: { format: { from: "ref_seq", prefix: "ASK-", pad: 4 } } }),
       choice("status", "Status", { new: "New", replied: "Replied", closed: "Closed" }, { default: "new", tones: { new: "info", replied: "accent", closed: "neutral" } }),
       text("name", 80, "Name", { semantic: "name" }),
-      text("email", 254, "E-mail", { semantic: "email", rules: { validation: { format: "email" } } }),
+      text("email", 254, "E-mail", { semantic: "email", rules: { normalize: "email", validation: { format: "email" } } }),
       language("language"),
       text("idea", 200, "What they would like"),
       // The material they named, if any, and when they need it, in their own words ("a date, or no rush").
@@ -790,7 +791,7 @@ export const TABLES: Table[] = [
         rules: { lookup: { from: "order_ref", table: "orders", column: "number_code", scope: [{ column: "email", equals: "email" }] } },
       }),
       text("name", 80, "Name", { semantic: "name" }),
-      text("email", 254, "E-mail", { semantic: "email", rules: { validation: { format: "email" } } }),
+      text("email", 254, "E-mail", { semantic: "email", rules: { normalize: "email", validation: { format: "email" } } }),
       language("language"),
       choice("what", "What went wrong", { damaged: "It arrived damaged", wrong: "Something is wrong on it", late: "It has not arrived", other: "Something else", mind: "They changed their mind" }),
       text("details", 200, "What happened"),

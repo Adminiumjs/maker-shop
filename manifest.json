@@ -3250,6 +3250,7 @@
             },
             "semantic": "email",
             "rules": {
+              "normalize": "email",
               "validation": {
                 "format": "email"
               }
@@ -6147,6 +6148,7 @@
             },
             "semantic": "email",
             "rules": {
+              "normalize": "email",
               "validation": {
                 "format": "email"
               }
@@ -6569,6 +6571,7 @@
             },
             "semantic": "email",
             "rules": {
+              "normalize": "email",
               "validation": {
                 "format": "email"
               }
