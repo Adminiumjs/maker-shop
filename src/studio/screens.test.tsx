@@ -255,6 +255,27 @@ describe("the order", () => {
     expect(useStudio.getState().overlay).toBeNull();
   });
 
+  it("sends a PDF the maker chose in place of the drawn picture, and can take it back", async () => {
+    const door = new FakeDoor({ roles: ["maker"] });
+    await mount(door, "order", { orderId: 11 });
+    await click(button("Send a proof"));
+    const input = document.querySelector<HTMLInputElement>("[role='dialog'] input[type='file']")!;
+    expect(input.accept).toContain("application/pdf");
+    const choose = async (file: File | null) => {
+      Object.defineProperty(input, "files", { value: file === null ? [] : [file], configurable: true });
+      await act(async () => void input.dispatchEvent(new Event("change", { bubbles: true })));
+      await settle();
+    };
+    await choose(new File(["%PDF-1.7"], "morning-then.pdf", { type: "application/pdf" }));
+    expect(document.querySelector("[role='dialog']")?.textContent).toContain("Sending your file: morning-then.pdf");
+    await click(button("Don't send this file"));
+    expect(document.querySelector("[role='dialog']")?.textContent).not.toContain("Sending your file");
+    await choose(new File(["%PDF-1.7"], "morning-then.pdf", { type: "application/pdf" }));
+    await click(button(/^Send — we'll e-mail/));
+    expect(door.calls[0]).toEqual({ method: "sendProof", args: { order: 11, line: 111, kind: "lettering", picture: { filename: "morning-then.pdf", type: "application/pdf" }, designVersionId: null, note: null } });
+    await sweep("the proof sheet with a file chosen");
+  });
+
   it("sends a design's proof as the Customiser made it", async () => {
     const door = new FakeDoor();
     await mount(door, "order", { orderId: 16 });

@@ -100,6 +100,18 @@ describe("a proof sent", () => {
     expect(door.calls).toEqual([{ method: "sendProof", args: { order: 16, line: 161, kind: "design", picture: { copyOf: "file_01J8Z6Q3M4N5P6R7S8T9V0W1XA" }, designVersionId: 30, note: null } }]);
   });
 
+  it("sends a PDF the maker chose as it is, for a lettered line and for a design whose proof is not made", async () => {
+    const door = new FakeDoor();
+    door.data.versions[0]!["proof_file"] = null;
+    const pdf = { blob: new Blob(["%PDF-1.7"], { type: "application/pdf" }), filename: "mill-house-proof.pdf" };
+    const { sent, missing } = await sendProofs(door, door.data, order(door, 16), png, null, (l) => (l.id === 161 ? pdf : null));
+    expect([sent.length, missing.length]).toEqual([1, 0]);
+    expect(door.calls).toEqual([{ method: "sendProof", args: { order: 16, line: 161, kind: "design", picture: { filename: "mill-house-proof.pdf", type: "application/pdf" }, designVersionId: 30, note: null } }]);
+    const lettered = new FakeDoor();
+    await sendProofs(lettered, lettered.data, order(lettered, 11), png, null, () => pdf);
+    expect(lettered.calls[0]).toEqual({ method: "sendProof", args: { order: 11, line: 111, kind: "lettering", picture: { filename: "mill-house-proof.pdf", type: "application/pdf" }, designVersionId: null, note: null } });
+  });
+
   it("names a design whose proof is not made yet, and sends nothing for it", async () => {
     const door = new FakeDoor();
     door.data.versions[0]!["proof_file"] = null;

@@ -44,7 +44,7 @@ import { PanelRefused } from "../add-ons/connected.ts";
 import { sendProofs } from "../studio/actions.ts";
 import { AdminiumStudio } from "../studio/adminiumStudio.ts";
 import type { PanelDoor, StudioData } from "../studio/door.ts";
-import { fileIdOf, linesOf } from "../studio/facts.ts";
+import { dueForProof, fileIdOf, linesOf } from "../studio/facts.ts";
 import { PanelScopeProvider } from "../studio/panels/host.tsx";
 import { createSessionTransport } from "../studio/transport/sessionSource.ts";
 import { loadStaffConfig } from "../studio/transport/staffConnection.ts";
@@ -82,6 +82,8 @@ const THURSDAY = Date.parse("2026-08-06T15:40:00Z");
 
 /** A file as the browser hands one over, in the bytes this process's `fetch` sends. */
 const pngFile = () => new NodeBlob([new Uint8Array(png())], { type: "image/png" }) as unknown as Blob;
+/** The smallest PDF a reader opens: one empty page. */
+const MINIMAL_PDF = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n";
 const svgFile = () => new NodeBlob(['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M0 0H10V10H0Z" fill="none" stroke="#000"/></svg>'], { type: "image/svg+xml" }) as unknown as Blob;
 
 describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, against a built Adminium${why === null ? "" : ` — skipped: ${why}`}`, () => {
@@ -227,6 +229,20 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
           expect(sent.length).toBeGreaterThan(0);
         }, 60_000);
       }
+
+      it("sends a PDF the maker chose as a lettered piece's proof, stored as the proof's own file", async () => {
+        const door = doors["maker"]!;
+        const data = await door.load();
+        const order = data.orders.find((o) => dueForProof(data, o).some((l) => l["design_id"] === null || l["design_id"] === undefined))!;
+        const line = dueForProof(data, order).find((l) => l["design_id"] === null || l["design_id"] === undefined)!;
+        const pdf = { blob: new NodeBlob([MINIMAL_PDF], { type: "application/pdf" }) as unknown as Blob, filename: "proof-from-the-bench.pdf" };
+        const { sent } = await sendProofs(door, data, order, async () => null, null, (l) => (String(l.id) === String(line.id) ? pdf : null));
+        const proof = sent.find((p) => String(p["line_id"]) === String(line.id))!;
+        expect(proof["kind"]).toBe("lettering");
+        const stored = await callers["owner"]!.fetchAs()(`/api/v1/files/${fileIdOf(proof["picture"])!}/content`);
+        expect(stored.status).toBe(200);
+        expect(new TextDecoder().decode(new Uint8Array(await stored.arrayBuffer()).slice(0, 5))).toBe("%PDF-");
+      });
 
       // ── the owner's own: Holiday calendars' closed days, and a customer erased ──
 

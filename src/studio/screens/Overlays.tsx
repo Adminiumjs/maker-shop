@@ -5,14 +5,15 @@
  * The proof sheet shows each piece of the order that waits for a proof as the
  * customer will see it: a design's proof as the Customiser's panel made it
  * from the design's newest version, or the words drawn here on the piece's
- * material. Sending stores each picture and makes the proof rows; Adminium
+ * material; or, for either, a file the maker chose instead (a PDF, or a
+ * picture made elsewhere), sent as it is. Sending stores each picture and makes the proof rows; Adminium
  * numbers them, e-mails the customer, and holds the pieces until they say
  * yes. A design whose proof is not made yet is named, with the way to the
  * Customiser's panel that makes it (for a role that opens it), and is not
  * sent.
  */
 import { useEffect, useMemo, useState } from "react";
-import { TriangleAlert, X } from "lucide-react";
+import { FileText, TriangleAlert, X } from "lucide-react";
 
 import { sendProofs, spoil } from "../actions.ts";
 import { useData, useEnv, useRun } from "../env.tsx";
@@ -37,6 +38,9 @@ export function Overlays() {
   return <SpoilDialog lineId={overlay.lineId} />;
 }
 
+/** The kinds a proof's file may be, as the proofs table takes them (`PROOF_KINDS`): a PDF, or a picture. */
+const PROOF_ACCEPT = "application/pdf,image/png,image/jpeg,image/webp,.pdf,.png,.jpg,.jpeg,.webp";
+
 function ProofSheet({ orderId }: { orderId: Row["id"] }) {
   const t = useT();
   const data = useData();
@@ -47,6 +51,15 @@ function ProofSheet({ orderId }: { orderId: Row["id"] }) {
   const due = useMemo(() => (order === undefined ? [] : dueForProof(data, order)), [data, order]);
   const [drawn, setDrawn] = useState<Map<string, Blob | null>>(new Map());
   const [urls, setUrls] = useState<Map<string, string>>(new Map());
+  /** The files the maker chose to send instead (a PDF, or a picture made elsewhere), by line. */
+  const [own, setOwn] = useState<Map<string, File>>(new Map());
+  const choose = (line: Row, file: File | null) =>
+    setOwn((held) => {
+      const next = new Map(held);
+      if (file === null) next.delete(String(line.id));
+      else next.set(String(line.id), file);
+      return next;
+    });
 
   // The words' pictures, drawn once each: what is shown is what is sent.
   useEffect(() => {
@@ -78,11 +91,15 @@ function ProofSheet({ orderId }: { orderId: Row["id"] }) {
 
   if (order === undefined) return null;
   const customer = text(order["name"]) ?? "";
-  const ready = due.filter((line) => (line["design_id"] !== null && line["design_id"] !== undefined ? text(versionOf(data, line)?.["proof_file"]) !== null : drawn.get(String(line.id)) != null));
+  const ready = due.filter((line) => own.has(String(line.id)) || (line["design_id"] !== null && line["design_id"] !== undefined ? text(versionOf(data, line)?.["proof_file"]) !== null : drawn.get(String(line.id)) != null));
 
   const send = () =>
     run(async (door, fresh) => {
-      const { sent, missing } = await sendProofs(door, fresh, order, async (line) => drawn.get(String(line.id)) ?? null);
+      const ownFor = (line: Row) => {
+        const file = own.get(String(line.id));
+        return file === undefined ? null : { blob: file, filename: file.name === "" ? `proof-line-${String(line.id)}` : file.name };
+      };
+      const { sent, missing } = await sendProofs(door, fresh, order, async (line) => drawn.get(String(line.id)) ?? null, null, ownFor);
       useStudio.setState({ overlay: null });
       const said = sent.length === 0 ? "" : t("studio.proof.sent", { customer }, sent.length);
       return missing.length === 0 ? said : `${said} ${t("studio.proof.missing", { count: missing.length }, missing.length)}`.trim();
@@ -108,9 +125,18 @@ function ProofSheet({ orderId }: { orderId: Row["id"] }) {
           const version = designed ? versionOf(data, line) : undefined;
           const picture = designed ? fileSrc(version?.["proof_file"]) : (urls.get(String(line.id)) ?? null);
           const words = designed ? wordsOfDesign(data, line) : wordsOf(line);
+          const chosen = own.get(String(line.id));
           return (
             <div key={String(line.id)} className="st-ps-line">
-              {picture !== null ? (
+              {chosen !== undefined ? (
+                <div className="st-ps-own">
+                  <FileText size={18} aria-hidden="true" />
+                  <span className="st-mono">{t("studio.proof.ownChosen", { name: chosen.name })}</span>
+                  <button type="button" className="st-btn st-btn--link" onClick={() => choose(line, null)}>
+                    {t("studio.proof.ownClear")}
+                  </button>
+                </div>
+              ) : picture !== null ? (
                 <div className="st-ps-pic">
                   <ProofImage src={picture} alt={t("studio.proof.alt", { name, customer })} name={name} />
                   {version !== undefined && <span className="st-ps-version">{t("studio.proof.version", { version: num(version["version"]) ?? 1 })}</span>}
@@ -138,6 +164,10 @@ function ProofSheet({ orderId }: { orderId: Row["id"] }) {
                     <Typed>{`“${words.join(" / ")}”`}</Typed>
                   </span>
                 )}
+                <label className="st-ps-file">
+                  <span>{t("studio.proof.ownFile")}</span>
+                  <input type="file" accept={PROOF_ACCEPT} onChange={(e) => choose(line, e.target.files?.[0] ?? null)} />
+                </label>
               </div>
             </div>
           );

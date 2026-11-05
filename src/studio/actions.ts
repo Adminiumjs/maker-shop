@@ -92,9 +92,19 @@ export async function moveOrderLines(door: StudioDoor, data: StudioData, order: 
 /** A proof's picture and what it shows, for one line. Null when the line's design has no proof made yet. */
 export type Drawn = { picture: ProofPicture; kind: "lettering" | "design"; designVersionId: Row["id"] | null } | null;
 
-/** What a line's proof is: the Customiser's proof of the design's newest version, or a picture of the words drawn here. */
-export async function proofFor(data: StudioData, line: Row, draw: (line: Row) => Promise<Blob | null>): Promise<Drawn> {
-  if (line["design_id"] !== null && line["design_id"] !== undefined) {
+/** A file the maker chose to send as a line's proof (a PDF, or a picture made elsewhere), named as it came. */
+export type OwnProof = (line: Row) => { blob: Blob; filename: string } | null;
+
+/**
+ * What a line's proof is: a file the maker chose for it, else the
+ * Customiser's proof of the design's newest version, else a picture of the
+ * words drawn here.
+ */
+export async function proofFor(data: StudioData, line: Row, draw: (line: Row) => Promise<Blob | null>, own: OwnProof = () => null): Promise<Drawn> {
+  const designed = line["design_id"] !== null && line["design_id"] !== undefined;
+  const chosen = own(line);
+  if (chosen !== null) return { picture: chosen, kind: designed ? "design" : "lettering", designVersionId: designed ? (versionOf(data, line)?.id ?? null) : null };
+  if (designed) {
     const version = versionOf(data, line);
     const file = fileIdOf(version?.["proof_file"]);
     if (version === undefined || file === null) return null;
@@ -111,11 +121,11 @@ export async function proofFor(data: StudioData, line: Row, draw: (line: Row) =>
  * each line had before is then answered by it (superseded). Lines whose
  * design has no proof made yet are left, and named.
  */
-export async function sendProofs(door: StudioDoor, data: StudioData, order: Row, draw: (line: Row) => Promise<Blob | null>, note: string | null = null): Promise<{ sent: Row[]; missing: Row[] }> {
+export async function sendProofs(door: StudioDoor, data: StudioData, order: Row, draw: (line: Row) => Promise<Blob | null>, note: string | null = null, own: OwnProof = () => null): Promise<{ sent: Row[]; missing: Row[] }> {
   const sent: Row[] = [];
   const missing: Row[] = [];
   for (const line of dueForProof(data, order)) {
-    const drawn = await proofFor(data, line, draw);
+    const drawn = await proofFor(data, line, draw, own);
     if (drawn === null) {
       missing.push(line);
       continue;
