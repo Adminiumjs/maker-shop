@@ -18,7 +18,7 @@
     "commerce"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.47",
+    "minAdminiumVersion": "0.3.48",
     "engines": [
       "sqlite",
       "postgres",
@@ -112,7 +112,7 @@
     "requires": [
       {
         "key": "customiser",
-        "range": "^1.0.17",
+        "range": "^1.0.19",
         "reason": {
           "en-US": "Shoppers make a piece their own: their words, their logo, a ready-made design.",
           "de-DE": "Die Kundschaft macht ein Stück zu ihrem eigenen: eigene Worte, eigenes Logo, ein fertiger Entwurf.",
@@ -128,7 +128,7 @@
     "suggests": [
       {
         "key": "shipping-dhl",
-        "range": "^1.0.17",
+        "range": "^1.0.19",
         "reason": {
           "en-US": "Book DHL for a parcel, print its label, and send the shopper a tracking number.",
           "de-DE": "DHL für ein Paket buchen, das Etikett drucken und der Kundschaft eine Sendungsnummer schicken.",
@@ -142,7 +142,7 @@
       },
       {
         "key": "barcode-labels",
-        "range": "^1.0.17",
+        "range": "^1.0.19",
         "reason": {
           "en-US": "Print a label for each piece and each parcel.",
           "de-DE": "Für jedes Stück und jedes Paket ein Etikett drucken.",
@@ -156,7 +156,7 @@
       },
       {
         "key": "inventory",
-        "range": "^1.0.17",
+        "range": "^1.0.19",
         "reason": {
           "en-US": "Keep sheets, blanks, filament and glaze in stock, with what each batch takes.",
           "de-DE": "Platten, Rohlinge, Filament und Glasur auf Lager halten, mit dem, was jede Charge verbraucht.",
@@ -170,7 +170,7 @@
       },
       {
         "key": "invoices",
-        "range": "^1.0.17",
+        "range": "^1.0.19",
         "checked": true,
         "reason": {
           "en-US": "Send a receipt with each order, and print one from the dashboard.",
@@ -185,7 +185,7 @@
       },
       {
         "key": "holiday-calendars",
-        "range": "^1.0.17",
+        "range": "^1.0.19",
         "reason": {
           "en-US": "Close the studio for public holidays in a tap.",
           "de-DE": "Die Werkstatt an Feiertagen mit einem Tippen schließen.",

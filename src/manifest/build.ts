@@ -31,9 +31,11 @@ export const VERSION = "0.2.0";
  * its product's limit, a person's copies in the versions of their designs,
  * a proof's picture in its e-mail; and a role's personal-column read and
  * delete on the Customiser's tables, more than twelve of them, and the
- * owner's right to find and erase a customer.
+ * owner's right to find and erase a customer; and the Customiser 1.0.19 it
+ * bundles, whose tables open to an app's roles (a proof made on the studio's
+ * screens).
  */
-export const MIN_ADMINIUM = "0.3.47";
+export const MIN_ADMINIUM = "0.3.48";
 
 const ENV = {
   VITE_ADMINIUM_API_BASE_URL: { required: false, example: "https://admin.example.com" },

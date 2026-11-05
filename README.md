@@ -20,8 +20,8 @@ the five o'clock cut-off — and the studio works Tuesday to Saturday.
 
 ## What it needs
 
-- Adminium **0.3.45** or later, on SQLite, Postgres or MySQL.
-- The **Customiser** add-on (1.0.17 or later): it is where a shopper makes a piece
+- Adminium **0.3.48** or later, on SQLite, Postgres or MySQL.
+- The **Customiser** add-on (1.0.19 or later): it is where a shopper makes a piece
   their own, and the order line names the design they made. Adminium installs it
   with the app.
 - Nothing else. Five add-ons are offered at install, and the app is whole without
@@ -60,9 +60,15 @@ the five o'clock cut-off — and the studio works Tuesday to Saturday.
 **For the studio** (the app's staff side): Today's board with the proof gate (a
 piece with words goes to the bench only once its proof is approved), one order,
 proofs, the post office run, customers, products and their lettering settings,
-batches and the cut list, machine time, materials and the stock count. Roles:
-**owner** (everything), **maker** (the bench, proofs, batches, stock; never a price
-or a customer's details beyond the order) and **packer** (posting what is ready).
+batches and the cut list, machine time, materials and the stock count. The
+Customiser's own panel opens on these screens in a sheet: a line's design as it
+will be made, where the proof and the machine's files are made, and a product's
+base. A proof can also be a PDF or a picture made elsewhere, sent as it is. The
+name chip signs out. Roles: **owner** (everything, including finding and erasing
+a customer on Adminium's privacy page and choosing the studio's closed days in
+Holiday calendars), **maker** (the bench, proofs and the Customiser's panel,
+batches, stock; never a price or a customer's details beyond the order) and
+**packer** (posting what is ready; no panel).
 
 **In the dashboard** (the Maker Shop section): orders, proofs, requests, problems,
 the catalogue (products, options, postage), the workshop (materials, stock,
