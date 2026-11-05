@@ -7,7 +7,7 @@
  *   - a line's price is its product's price plus the differences of the
  *     options it names (each option a row of that product's own, held to it
  *     by `linkable.same`), less the product's quantity break (`band` over the
- *     quantity), plus each priced customising feature at its own flat
+ *     quantity, among its offered breaks only), plus each priced customising feature at its own flat
  *     price a piece, never lowered by the break;
  *   - an order's postage is its service's rate for the parcel's weight (a
  *     `band` over the lines' weight, scoped to the service), its total the
@@ -224,6 +224,8 @@ const ORDER_STATUSES: Record<string, string> = {
 
 // ── formulas ────────────────────────────────────────────────────────────────
 
+/** An option's quantity as a break: only an offered break has one (an empty `div` is no value). */
+const BREAK_FROM = { if: [{ and: [{ eq: ["kind", "break"] }, { eq: ["active", true] }] }, "min_qty", { div: [0, 0] }] };
 /** A line's price of one, before the break: the product's price and its options' differences. */
 const BASE_EACH = {
   add: ["unit_price", { coalesce: ["material_delta", 0] }, { coalesce: ["size_delta", 0] }, { coalesce: ["finish_delta", 0] }],
@@ -438,6 +440,9 @@ export const TABLES: Table[] = [
       int("min_qty", "From (quantity)", { ...opt, rules: { validation: { min: 1, max: 1000 }, requiredWhen: { column: "kind", in: ["break"] } } }),
       num("percent_off", 2, "Off (%)", { ...opt, rules: { validation: { min: 0, max: 90 } } }),
       bool("active", "Offered", true),
+      // Where a line's quantity break is picked from: an offered break's quantity, and empty on any other option (one
+      // switched off, or a material, size, finish or feature with a quantity typed on it), so the band never picks it.
+      figure("break_from", "int", "Break picked from (quantity)", { formula: BREAK_FROM }),
       int("position", "Position", opt),
     ],
   },
@@ -631,7 +636,7 @@ export const TABLES: Table[] = [
       // The product's quantity break, picked by Adminium from the quantity.
       fk("break_id", "options", "Quantity break", {
         ...opt,
-        rules: { band: { table: "options", min: "min_qty", value: "qty", scope: [{ column: "product_id", equals: "product_id" }] } },
+        rules: { band: { table: "options", min: "break_from", value: "qty", scope: [{ column: "product_id", equals: "product_id" }] } },
       }),
       figure("percent_off", "decimal", "Off (%)", { copy: { via: "break_id", from: "percent_off", mode: "always" } }, 2),
       money("each", "Each", { formula: EACH }),

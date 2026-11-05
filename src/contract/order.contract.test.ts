@@ -25,7 +25,9 @@
  * - a total that moved is refused with the figures it came to, and a field
  *   Adminium refuses is named;
  * - words longer than the piece takes are refused, by the dry run and by the
- *   order alike; words that just fit go in (Adminium 0.3.44 and later).
+ *   order alike; words that just fit go in (Adminium 0.3.44 and later);
+ * - a quantity is priced by the breaks still offered: one switched off is
+ *   never picked, nor an option of another kind with a quantity on it.
  *
  * It runs with `CONTRACT=1` where a built Adminium and a built add-ons checkout
  * are, and says why it skipped otherwise. On SQLite the studio's database is
@@ -250,6 +252,25 @@ describe.skipIf(why !== null)(`a shopper buys on a built Adminium${why === null 
         const priced = await door.quote(fits);
         const made = await door.place(fits, `maker-contract-${engine}-fits-0001`, String(priced.order["total"]));
         expect(made.lines.map((l) => l["lettering"])).toEqual([words(limit)]);
+      });
+
+      it("prices a quantity by the breaks still offered: one switched off is never picked, nor a quantity typed on a material", async () => {
+        const coasters = productOf("coast-wal");
+        const options = (await rows("options")).filter((o) => String(o["product_id"]) === String(coasters.id));
+        const twelve = options.find((o) => o["kind"] === "break" && Number(o["min_qty"]) === 12)!;
+        const material = options.find((o) => o["kind"] === "material")!;
+        const optionsTable = encodeURIComponent(tables["options"] ?? "maker_options");
+        const quoteTwelve = async () => Number((await door.quote(orderBody({ service_id: second(), language: "en-US" }, [lineOf("coast-wal", 12)]))).lines[0]!["each"]);
+        expect(await quoteTwelve()).toBe(27.88);
+        // The twelve break switched off: twelve sets are priced at the eight break.
+        ok(await staff.patch(`/api/v1/data/${connectionId}/${optionsTable}/${String(twelve["id"])}`, { values: { active: false } }));
+        expect(await quoteTwelve()).toBe(29.24);
+        // A quantity typed on a material is no break: twelve sets stay at the eight break.
+        ok(await staff.patch(`/api/v1/data/${connectionId}/${optionsTable}/${String(material["id"])}`, { values: { min_qty: 10 } }));
+        expect(await quoteTwelve()).toBe(29.24);
+        ok(await staff.patch(`/api/v1/data/${connectionId}/${optionsTable}/${String(material["id"])}`, { values: { min_qty: null } }));
+        ok(await staff.patch(`/api/v1/data/${connectionId}/${optionsTable}/${String(twelve["id"])}`, { values: { active: true } }));
+        expect(await quoteTwelve()).toBe(27.88);
       });
     });
   });

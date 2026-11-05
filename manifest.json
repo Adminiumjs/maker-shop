@@ -2398,6 +2398,50 @@
             }
           },
           {
+            "ref": "break_from",
+            "type": "int",
+            "nullable": true,
+            "label": {
+              "en-US": "Break picked from (quantity)",
+              "de-DE": "Staffel gilt ab (Menge)",
+              "fr-FR": "Palier appliqué à partir de (quantité)",
+              "da-DK": "Rabattrin gælder fra (antal)",
+              "cs-CZ": "Sleva platí od (množství)",
+              "ar-EG": "يُطبَّق الخصم من (الكمية)",
+              "zh-CN": "折扣适用起始（数量）",
+              "zh-TW": "折扣適用起始（數量）"
+            },
+            "rules": {
+              "formula": {
+                "if": [
+                  {
+                    "and": [
+                      {
+                        "eq": [
+                          "kind",
+                          "break"
+                        ]
+                      },
+                      {
+                        "eq": [
+                          "active",
+                          true
+                        ]
+                      }
+                    ]
+                  },
+                  "min_qty",
+                  {
+                    "div": [
+                      0,
+                      0
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
             "ref": "position",
             "type": "int",
             "label": {
@@ -4549,7 +4593,7 @@
             "rules": {
               "band": {
                 "table": "options",
-                "min": "min_qty",
+                "min": "break_from",
                 "value": "qty",
                 "scope": [
                   {

@@ -69,7 +69,9 @@ describe("every price, weight and date is Adminium's", () => {
   });
 
   it("picks the product's quantity break and the postage rate by band", () => {
-    expect(rules("order_lines", "break_id")["band"]).toEqual({ table: "options", min: "min_qty", value: "qty", scope: [{ column: "product_id", equals: "product_id" }] });
+    expect(rules("order_lines", "break_id")["band"]).toEqual({ table: "options", min: "break_from", value: "qty", scope: [{ column: "product_id", equals: "product_id" }] });
+    // Only an offered break has a quantity the band reads: one switched off, or another kind of option, has none.
+    expect(rules("options", "break_from")["formula"]).toEqual({ if: [{ and: [{ eq: ["kind", "break"] }, { eq: ["active", true] }] }, "min_qty", { div: [0, 0] }] });
     expect(rules("orders", "postage_rate_id")["band"]).toMatchObject({ table: "postage_rates", value: "weight_g", scope: [{ column: "service_id", equals: "service_id" }] });
     expect(rules("orders", "postage")["copy"]).toEqual({ via: "postage_rate_id", from: "price", mode: "always" });
   });
