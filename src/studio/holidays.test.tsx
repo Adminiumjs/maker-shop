@@ -7,6 +7,9 @@
  * add-on, its days, or the right to add a closure. And the door: which
  * holidays it reads and the row it writes.
  */
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -14,7 +17,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { I18nProvider } from "../i18n/index.tsx";
 import { AdminiumStudio } from "./adminiumStudio.ts";
 import { StudioProvider, type StudioEnv } from "./env.tsx";
-import { comingHolidays, holidayClosure, holidayPlace } from "./holidays.ts";
+import { comingHolidays, holidayClosure, holidayPlace, inPlace } from "./holidays.ts";
 import { StudioApp } from "./StudioApp.tsx";
 import { useStudio } from "./store.ts";
 import { FakeDoor } from "./testing/fakeDoor.ts";
@@ -62,7 +65,7 @@ async function mount(door: FakeDoor): Promise<void> {
 }
 
 /** The studio with Holiday calendars attached and its British days readable, a past one among them. */
-function withHolidays(options: ConstructorParameters<typeof FakeDoor>[0] = {}, holidays: Row[] | null = [{ id: 900, country: "GB", region: null, day: "2026-05-25", name: "Spring bank holiday" }, ...UK_HOLIDAYS]): FakeDoor {
+function withHolidays(options: ConstructorParameters<typeof FakeDoor>[0] = {}, holidays: Row[] | null = [{ id: 900, country: "GB", region: "england-and-wales", day: "2026-05-25", name: "Spring bank holiday" }, ...UK_HOLIDAYS]): FakeDoor {
   const door = new FakeDoor({ ...options, facts: { addOns: ["customiser", "holiday-calendars"], ...options.facts } });
   door.data.holidays = holidays;
   return door;
@@ -119,8 +122,16 @@ describe("which country, and the closure written", () => {
   });
 
   it("is the studio's own by its money when nothing was imported", () => {
-    expect(holidayPlace(undefined, "GBP")).toEqual({ country: "GB", region: null });
+    expect(holidayPlace(undefined, "GBP")).toEqual({ country: "GB", region: "england-and-wales" });
     expect(holidayPlace({ days: [{ date: "2026-12-24", name: "Closed for the day" }] }, "DKK")).toEqual({ country: "DK", region: null });
+  });
+
+  it("finds the add-on's own British days for pounds, when its checkout is beside this one", () => {
+    const seeds = join(process.env["ADD_ONS_REPO"] ?? join(__dirname, "..", "..", "..", "add-ons"), "packages", "holiday-calendars", "seeds", "holidays.json");
+    if (!existsSync(seeds)) return;
+    const place = holidayPlace(undefined, "GBP");
+    const days = (JSON.parse(readFileSync(seeds, "utf8")) as Row[]).filter((row) => inPlace(row, place));
+    expect(days.map((d) => d["name"])).toEqual(expect.arrayContaining(["Summer bank holiday", "Christmas Day", "Boxing Day (substitute day)"]));
   });
 
   it("keeps the holidays from today on", () => {
@@ -179,7 +190,7 @@ describe("the door, on the wire", () => {
     return { t, reads, sent };
   }
 
-  it("reads the add-on's days for the studio's country, keeping the country's own and none of an area", async () => {
+  it("reads the add-on's days for the studio's place, England and Wales for pounds, and none of another area", async () => {
     const { t, reads } = transport([...UK_HOLIDAYS, { id: 950, country: "GB", region: "scotland", day: "2026-11-30", name: "St Andrew's Day" }]);
     const data = await new AdminiumStudio(t, config()).load();
     expect(data.holidays?.map((h) => h.id)).toEqual([901, 902, 903]);

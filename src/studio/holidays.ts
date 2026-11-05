@@ -10,8 +10,9 @@
  * setting is `days`, the sets the owner imported in its panel, each day
  * stamped `from: { country, region, year }`. So the studio's country is the
  * one the owner imported (the first set's, with its area), and, when nothing
- * has been imported, the country the studio's money says it is in (Great
- * Britain for pounds), with no area.
+ * has been imported, the place the studio's money says it is in: for pounds,
+ * England and Wales (`GB`, area `england-and-wales`), the add-on's only set
+ * for Great Britain; for another money, its country's own set.
  */
 import type { StudioData } from "./door.ts";
 import { dayOf, same, text, type Row } from "./wire.ts";
@@ -32,6 +33,9 @@ export interface HolidayPlace {
   region: string | null;
 }
 
+/** The add-on's areas a studio's money names, where its country has no set of its own. */
+const AREA_BY_CURRENCY: Record<string, string> = { GBP: "england-and-wales" };
+
 /** The country and area the studio's holidays are read for (see the header). */
 export function holidayPlace(settings: Record<string, unknown> | undefined, currency: string): HolidayPlace {
   const days = settings?.["days"];
@@ -43,7 +47,7 @@ export function holidayPlace(settings: Record<string, unknown> | undefined, curr
       if (country !== null) return { country: country.toUpperCase(), region: text((from as Record<string, unknown>)["region"]) };
     }
   }
-  return { country: countryOf(currency), region: null };
+  return { country: countryOf(currency), region: AREA_BY_CURRENCY[currency] ?? null };
 }
 
 /** A holiday row is the place's: its country, and its area or none. */

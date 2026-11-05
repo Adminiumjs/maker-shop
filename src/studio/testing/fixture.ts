@@ -117,9 +117,9 @@ export function fixture(): StudioData {
  * imported them would read them (the add-on itself carries no British set).
  */
 export const UK_HOLIDAYS: Row[] = [
-  r({ id: 901, country: "GB", region: null, day: "2026-08-31", name: "Summer bank holiday" }),
-  r({ id: 902, country: "GB", region: null, day: "2026-12-25", name: "Christmas Day" }),
-  r({ id: 903, country: "GB", region: null, day: "2026-12-28", name: "Boxing Day (substitute day)" }),
+  r({ id: 901, country: "GB", region: "england-and-wales", day: "2026-08-31", name: "Summer bank holiday" }),
+  r({ id: 902, country: "GB", region: "england-and-wales", day: "2026-12-25", name: "Christmas Day" }),
+  r({ id: 903, country: "GB", region: "england-and-wales", day: "2026-12-28", name: "Boxing Day (substitute day)" }),
 ];
 
 /** Someone whose roles are named, and who may do what those roles may (owner: everything). */

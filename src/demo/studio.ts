@@ -29,9 +29,9 @@ const byNumber = (column: string) => (a: Row, b: Row) => Number(a[column] ?? 0) 
  * The names are the ones GOV.UK gives the English bank holidays.
  */
 export const DEMO_HOLIDAYS: readonly Row[] = [
-  { id: 1, country: "GB", region: null, day: "2026-08-31", name: "Summer bank holiday" },
-  { id: 2, country: "GB", region: null, day: "2026-12-25", name: "Christmas Day" },
-  { id: 3, country: "GB", region: null, day: "2026-12-28", name: "Boxing Day (substitute day)" },
+  { id: 1, country: "GB", region: "england-and-wales", day: "2026-08-31", name: "Summer bank holiday" },
+  { id: 2, country: "GB", region: "england-and-wales", day: "2026-12-25", name: "Christmas Day" },
+  { id: 3, country: "GB", region: "england-and-wales", day: "2026-12-28", name: "Boxing Day (substitute day)" },
 ];
 
 /** The person the studio is signed in as. */
