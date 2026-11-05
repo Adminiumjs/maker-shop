@@ -19,7 +19,7 @@
  *     sheet then sends that proof;
  *   - the product's panel is served to the owner;
  *   - the owner keeps Holiday calendars' closed days (its settings grant),
- *     and finds a customer to erase (an engine gap: no app role holds it).
+ *     and finds a customer to erase (`privacy:@:people`).
  *
  * The panel is drawn in a page of jsdom's, made for the drawing only: the
  * suite itself runs in Node, as the other contracts do, so its harness reads
@@ -196,13 +196,8 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
           expect(drawn).not.toContain("No design on this line");
         }, 60_000);
 
-        /*
-         * The shopper's words are a design's personal column (`values`): an
-         * app's role is given read, create and update of an add-on's table
-         * (`ROLE_ADD_ON_ACTIONS`), never its personal columns in clear, so the
-         * panel draws the design with them masked.
-         */
-        it.fails(`shows the ${who} the shopper's own words in the panel (gap G2: an app role cannot hold read_pii on the Customiser's designs and versions)`, async () => {
+        // The shopper's words are a design's personal column (`values`), held in clear by the role's `read_pii`.
+        it(`shows the ${who} the shopper's own words in the panel, read in clear (read_pii)`, async () => {
           const line = designedLine(await doors[who]!.load());
           const words = await wordsOf(line);
           expect(words.length).toBeGreaterThan(0);
@@ -219,13 +214,8 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
           expect((await panels.get("customiser", "version_files", made.data.id))?.["file"]).toBe(file.row["file"]);
         }, 60_000);
 
-        /*
-         * The Customiser's `designs` ledger writes `design_versions` (an order
-         * snapshots one), and an app's role is held to read on a table a
-         * ledger writes, whatever it asks: the proof the panel makes is
-         * refused (`You need create or update on …design_versions`).
-         */
-        it.fails(`stores the proof the panel makes as the ${who}, and the proof sheet sends it (gap G2: an app role cannot write design_versions, a table the designs ledger writes)`, async () => {
+        // `design_versions` is a table the Customiser's designs ledger writes; the add-on's `appGrants` open it to an app's role.
+        it(`stores the proof the panel makes as the ${who}, and the proof sheet sends it`, async () => {
           const door = doors[who]!;
           let data = await door.load();
           const line = designedLine(data);
@@ -265,15 +255,11 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         expect((await callers["maker"]!.send("PUT", "/api/v1/add-ons/holiday-calendars/settings", { values: { days: [] } })).status).toBe(403);
       });
 
-      /*
-       * Finding and erasing a person is `system:privacy:manage`, which an
-       * app's manifest may not hand out (`system:` grants are refused at
-       * plan time): the shop's owner, who is not an administrator, is
-       * refused the studio's privacy page.
-       */
-      it.fails("lets the owner find a customer to erase them (gap: an app role cannot hold the erase right)", async () => {
+      // Finding a person and erasing them: the owner's `privacy:@:people`, which no screens-only role may hold.
+      it("lets the owner find a customer to erase them, and refuses the maker", async () => {
         const found = await callers["owner"]!.post("/api/v1/privacy/find", { address: "iris.p@example.com" });
         expect(found.status, JSON.stringify(found.body).slice(0, 400)).toBe(200);
+        expect((await callers["maker"]!.post("/api/v1/privacy/find", { address: "iris.p@example.com" })).status).toBe(403);
       });
 
       it("signs the packer out from the studio's screens: the session ends", async () => {
@@ -282,28 +268,16 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         expect(cfg?.user ?? null).toBeNull();
       });
 
-      /*
-       * A starter font nobody uploaded is read, when the files are made, from
-       * the file the Customiser ships beside its set-up page (its page-files
-       * route, `page:@customiser:view`). Adminium answers that route only
-       * while the add-on is attached to the dashboard, and not to a
-       * screens-only person at all, so "Make the files" in a starter font
-       * says the font file is missing.
-       */
+      // A starter font nobody uploaded is read from the file the Customiser ships beside its set-up page (`page:@customiser:view`).
       for (const who of ["maker", "owner"] as const) {
-        it.fails(`hands the ${who} a starter font's file to make the files with (gap G1: the set-up page's files of an app-attached add-on)`, async () => {
+        it(`hands the ${who} a starter font's file to make the files with`, async () => {
           const font = await callers[who]!.fetchAs()("/api/v1/add-ons/customiser/pages/customiser/files/fonts/Archivo.woff2");
           expect(font.status).toBe(200);
         });
       }
 
-      /*
-       * "Make the files again" takes the version's old files away first (the
-       * panel's `remove`): an app's role may read, add and change an add-on's
-       * rows, never delete them (`ROLE_ADD_ON_ACTIONS`), so this is refused
-       * until Adminium or the Customiser gives an app's role that one delete.
-       */
-      it.fails("lets the maker make the files again: the version's old files taken away (gap G2: an app role cannot hold delete on version_files)", async () => {
+      // "Make the files again" takes the version's old files away first: the role's `delete` on `version_files`.
+      it("lets the maker make the files again: the version's old files taken away", async () => {
         const panels = panelsOf("maker");
         const files = await panels.list("customiser", "version_files", { where: { column: "name", op: "eq", value: "piece-maker.svg" }, limit: 2, offset: 0 });
         expect(files.length).toBe(1);

@@ -280,17 +280,11 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect(postedMail.html).not.toContain("dhl.com");
       }, 300_000);
 
-      /*
-       * The banner at the top of a customer's e-mail names the workspace
-       * (`branding.appName`, "Adminium" with its hexagon unless the operator
-       * set one), not the business whose e-mail it is: an app's template
-       * carries no brand of its own (the manifest's `emailTemplates` have no
-       * such field), and the outbox's `appName` (the studio's name, from its
-       * settings row) fills the words, never the banner.
-       */
-      it.fails("names the studio in the banner of the e-mails it sends a customer (gap: an app's mail takes the workspace's banner)", async () => {
+      // The banner at the top of a customer's e-mail names the business whose e-mail it is: the studio's name, from its settings row.
+      it("names the studio in the banner of the e-mails it sends a customer, not Adminium", async () => {
         const studio = String((await rows("settings"))[0]!["studio_name"]);
         const mail = (await sinkMail(server.sink)).filter((m) => m.to.includes(SHOPPER)).at(-1)!;
+        expect(studio).toBe("Birch Row");
         expect(/letter-spacing:-\.01em;color:[^"]*">([^<]*)<\/td>/.exec(mail.html)?.[1]).toBe(studio);
       });
 

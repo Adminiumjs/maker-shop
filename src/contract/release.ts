@@ -30,8 +30,18 @@ const atLeast = (a: string, b: string): boolean => {
   return true;
 };
 
+/**
+ * The release a checkout built before its version was moved becomes
+ * (`CONTRACT_ENGINE_RELEASE=0.3.47`): its server still says the release
+ * before, and refuses a manifest whose floor is the one it is about to be.
+ * Given, the contract runs on that checkout as that release, and the manifest
+ * is installed with its floor at what the server says. Never set in CI, which
+ * runs a released Adminium.
+ */
+const BECOMES = process.env["CONTRACT_ENGINE_RELEASE"] ?? null;
+
 const asked = process.env["CONTRACT"] === "1" || process.env["ADMINIUM_REQUIRE_CONTRACT"] === "1";
-if (asked && ENGINE_VERSION !== null && !atLeast(ENGINE_VERSION, MIN_ADMINIUM)) {
+if (asked && ENGINE_VERSION !== null && !atLeast(BECOMES ?? ENGINE_VERSION, MIN_ADMINIUM)) {
   throw new Error(`the contract needs Adminium ${MIN_ADMINIUM} or later, the app's floor; ADMINIUM_REPO has ${ENGINE_VERSION}`);
 }
 

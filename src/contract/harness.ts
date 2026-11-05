@@ -238,7 +238,7 @@ export async function boot(engine: Engine, port: number, now: number, options: B
     E2E_DATABASE: options.database ?? `maker_contract_${engine}${process.env["CONTRACT_DB_SUFFIX"] ?? ""}`,
     CONTRACT_NOW: String(now),
     CONTRACT_CLOCK_FILE: clockFile,
-    NODE_OPTIONS: `${process.env["NODE_OPTIONS"] ?? ""} --import=${pathToFileURL(fileURLToPath(new URL("./clock.mjs", import.meta.url))).href}`.trim(),
+    NODE_OPTIONS: [process.env["NODE_OPTIONS"] ?? "", `--import=${pathToFileURL(fileURLToPath(new URL("./clock.mjs", import.meta.url))).href}`, ...(process.env["CONTRACT_ENGINE_RELEASE"] === undefined ? [] : [`--import=${pathToFileURL(fileURLToPath(new URL("./engine-release.mjs", import.meta.url))).href}`])].join(" ").trim(),
   };
   const script = join(checkout, "apps", "e2e", "scripts", "e2e-server.mjs");
   const child: ChildProcess = spawn(process.execPath, [script], { cwd: join(checkout, "apps", "e2e"), env, stdio: ["ignore", "pipe", "pipe"] });
