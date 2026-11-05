@@ -14,37 +14,24 @@ import { DOCUMENTS } from "./documents.ts";
 import { emailTemplates } from "./emails.ts";
 import { KINDS, OUTBOX } from "./outbox.ts";
 import { NAV_GROUPS, pages } from "./pages.ts";
-import { peopleFor } from "./people.ts";
-import { PUBLIC_KEYS, publicAccessFor } from "./public.ts";
-import { rolesFor } from "./roles.ts";
+import { PEOPLE } from "./people.ts";
+import { PUBLIC_ACCESS, PUBLIC_KEYS } from "./public.ts";
+import { ROLES } from "./roles.ts";
 import { SETTINGS } from "./settings.ts";
 import { TABLES } from "./tables.ts";
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.2.0";
 
 /**
  * The Adminium release that first reads everything below: quantity breaks
  * and postage rates picked by band, post-by dates in studio days, the
  * Customiser's design checked and snapshotted by an order line, its copies
- * of a person, and its panels on a record.
+ * of a person and its panels on a record; a role's grant of those panels
+ * (opened to a role that sees only the app's screens), a lettering held to
+ * its product's limit, a person's copies in the versions of their designs,
+ * and a proof's picture in its e-mail.
  */
-export const MIN_ADMINIUM = "0.3.43";
-
-/**
- * The release that reads three more things this app says: a role's grant of
- * the Customiser's panels, a lettering held to its product's limit, and a
- * person's copies in the versions of their designs. They are written only in
- * a manifest whose floor is that release, so raising `MIN_ADMINIUM` to it is
- * the one change that turns them on.
- */
-export const PANELS_AND_LIMITS = "0.3.44";
-
-/** Whether release `a` is `b` or later, on major.minor.patch. */
-export function atLeast(a: string, b: string): boolean {
-  const [x, y] = [a, b].map((v) => v.split(/[.-]/).slice(0, 3).map(Number));
-  for (let i = 0; i < 3; i += 1) if (x![i] !== y![i]) return x![i]! > y![i]!;
-  return true;
-}
+export const MIN_ADMINIUM = "0.3.45";
 
 const ENV = {
   VITE_ADMINIUM_API_BASE_URL: { required: false, example: "https://admin.example.com" },
@@ -73,10 +60,7 @@ export const CUSTOMER_ROUTES = {
   customiserDesign: "/design",
 };
 
-/** `floor` builds the manifest for another floor than the one it ships with (the contract tries the next one). */
-export function buildManifest(options: { floor?: string } = {}): Record<string, unknown> {
-  const floor = options.floor ?? MIN_ADMINIUM;
-  const newer = atLeast(floor, PANELS_AND_LIMITS);
+export function buildManifest(): Record<string, unknown> {
   return {
     kind: "app",
     manifestVersion: 1,
@@ -92,7 +76,7 @@ export function buildManifest(options: { floor?: string } = {}): Record<string, 
     },
     categories: ["commerce"],
     compatibility: {
-      minAdminiumVersion: floor,
+      minAdminiumVersion: MIN_ADMINIUM,
       engines: ["sqlite", "postgres", "mysql"],
     },
     capabilities: ["email-delivery", "file-storage"],
@@ -106,17 +90,17 @@ export function buildManifest(options: { floor?: string } = {}): Record<string, 
     navGroups: NAV_GROUPS,
     requiredSchema: { prefixed: true, tables: TABLES },
     pages: pages(),
-    roles: rolesFor(newer),
+    roles: ROLES,
     publicKeys: PUBLIC_KEYS,
-    publicAccess: publicAccessFor(newer),
+    publicAccess: PUBLIC_ACCESS,
     outbox: OUTBOX,
-    people: peopleFor(newer),
+    people: PEOPLE,
     emailTemplates: emailTemplates(KINDS),
     sampleData: { file: "seeds/maker.sample.json", addOns: { customiser: { file: "seeds/maker.customiser.sample.json" } } },
   };
 }
 
 /** The file's text: two-space JSON and a final newline. */
-export function manifestText(options: { floor?: string } = {}): string {
-  return `${JSON.stringify(buildManifest(options), null, 2)}\n`;
+export function manifestText(): string {
+  return `${JSON.stringify(buildManifest(), null, 2)}\n`;
 }

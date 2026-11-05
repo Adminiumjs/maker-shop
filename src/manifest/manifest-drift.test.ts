@@ -44,7 +44,7 @@ describe("manifest.json is what src/manifest/ writes", () => {
   it("is prefixed, keyed maker, and needs the engine that reads its rules", () => {
     expect(manifest.requiredSchema.prefixed).toBe(true);
     expect(manifest["key"]).toBe("maker");
-    expect((manifest["compatibility"] as Json)["minAdminiumVersion"]).toBe("0.3.43");
+    expect((manifest["compatibility"] as Json)["minAdminiumVersion"]).toBe("0.3.45");
   });
 
   it("holds its English-only labels to the list recorded, so a new one cannot slip in untranslated", () => {
@@ -126,22 +126,28 @@ describe("the Customiser is bound as its README asks", () => {
     expect(rules("options", "feature_id")["addOnLink"]).toEqual({ addOn: "customiser", table: "features" });
   });
 
-  it("copies a person onto the words on their lines and what they asked to change on a proof", () => {
+  it("copies a person onto the words on their lines, and what they asked to change on a proof and its picture", () => {
     const own = manifest.people[0]!.copies.filter((c) => c["table"] === "order_lines" || c["table"] === "proofs");
     expect(own).toEqual([
       { table: "order_lines", column: "lettering", holds: "details", via: "customer_id" },
       { table: "order_lines", column: "summary", holds: "details", via: "customer_id" },
       { table: "proofs", column: "change_note", holds: "details", via: "customer_id" },
+      { table: "proofs", column: "picture", holds: "details", via: "customer_id" },
     ]);
     expect(rules("order_lines", "customer_id")["copy"]).toEqual({ via: "order_id", from: "customer_id", mode: "always" });
     expect(rules("proofs", "customer_id")["copy"]).toEqual({ via: "line_id", from: "customer_id", mode: "always" });
   });
 
-  it("copies a person onto the designs their lines name", () => {
+  it("copies a person onto the designs their lines name, their versions and files", () => {
     const copies = manifest.people[0]!.copies.filter((c) => c["addOn"] === "customiser");
     expect(copies).toEqual([
       { addOn: "customiser", table: "designs", column: "email", holds: "email", via: "order_lines.design_id" },
       { addOn: "customiser", table: "designs", column: "values", holds: "details", via: "order_lines.design_id" },
+      { addOn: "customiser", table: "designs", column: "logo_file", holds: "details", via: "order_lines.design_id" },
+      { addOn: "customiser", table: "designs", column: "photo_file", holds: "details", via: "order_lines.design_id" },
+      { addOn: "customiser", table: "design_versions", column: "values", holds: "details", via: "order_lines.design_id", from: ["design_id"] },
+      { addOn: "customiser", table: "design_versions", column: "proof_file", holds: "details", via: "order_lines.design_id", from: ["design_id"] },
+      { addOn: "customiser", table: "version_files", column: "file", holds: "details", via: "order_lines.design_id", from: ["version_id", "design_id"] },
     ]);
   });
 });

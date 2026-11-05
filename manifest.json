@@ -3,7 +3,7 @@
   "manifestVersion": 1,
   "key": "maker",
   "name": "Maker Shop",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": {
     "id": "adminium",
     "name": "Adminium",
@@ -18,7 +18,7 @@
     "commerce"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.43",
+    "minAdminiumVersion": "0.3.45",
     "engines": [
       "sqlite",
       "postgres",
@@ -10233,7 +10233,9 @@
         "table:@customers:read_pii",
         "table:@commission_requests:read_pii",
         "table:@problem_reports:read_pii",
-        "table:@messages:read_pii"
+        "table:@messages:read_pii",
+        "page:@customiser-line:view",
+        "page:@customiser-product:view"
       ],
       "limits": {
         "orders": {
@@ -10353,7 +10355,8 @@
         "table:@stock_movements:create",
         "page:@maker-orders:view",
         "page:@maker-proofs:view",
-        "page:@maker-lines:view"
+        "page:@maker-lines:view",
+        "page:@customiser-line:view"
       ],
       "limits": {
         "orders": {
@@ -11053,7 +11056,17 @@
               ],
               "max": 4
             }
-          }
+          },
+          "agrees": [
+            {
+              "column": "lettering",
+              "length": true,
+              "lte": {
+                "via": "product_id",
+                "column": "lettering_limit"
+              }
+            }
+          ]
         }
       },
       "dryRun": true,
@@ -11579,6 +11592,57 @@
           "column": "values",
           "holds": "details",
           "via": "order_lines.design_id"
+        },
+        {
+          "table": "proofs",
+          "column": "picture",
+          "holds": "details",
+          "via": "customer_id"
+        },
+        {
+          "addOn": "customiser",
+          "table": "designs",
+          "column": "logo_file",
+          "holds": "details",
+          "via": "order_lines.design_id"
+        },
+        {
+          "addOn": "customiser",
+          "table": "designs",
+          "column": "photo_file",
+          "holds": "details",
+          "via": "order_lines.design_id"
+        },
+        {
+          "addOn": "customiser",
+          "table": "design_versions",
+          "column": "values",
+          "holds": "details",
+          "via": "order_lines.design_id",
+          "from": [
+            "design_id"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "design_versions",
+          "column": "proof_file",
+          "holds": "details",
+          "via": "order_lines.design_id",
+          "from": [
+            "design_id"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "version_files",
+          "column": "file",
+          "holds": "details",
+          "via": "order_lines.design_id",
+          "from": [
+            "version_id",
+            "design_id"
+          ]
         }
       ]
     }

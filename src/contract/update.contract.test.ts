@@ -31,10 +31,9 @@
  *      is still the snapshot.
  *
  * It runs with `CONTRACT=1` where a built Adminium and a built add-ons
- * checkout are, and says why it skipped otherwise. A prefixed app beside bare
- * tables of the same names needs Adminium 0.3.44: on an older one it is
- * skipped by name. The database drivers are the Adminium checkout's own (this
- * repo adds none). Its servers take ports from `CONTRACT_PORT_BASE`.
+ * checkout are, and says why it skipped otherwise. The database drivers are
+ * the Adminium checkout's own (this repo adds none). Its servers take ports
+ * from `CONTRACT_PORT_BASE`.
  */
 import { rmSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -46,7 +45,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AdminiumShop } from "../shop/door.ts";
 import { orderBody, useShop, type BasketLine } from "../shop/store.ts";
 import { ADMINIUM_REPO, addOnBundle, addSample, appBundle, boot, Caller, ENGINES, missing, missingAddOn, ok, PORTS_PER_ENGINE, until, type Engine, type Server } from "./harness.ts";
-import { engineAtLeast, ENGINE_VERSION, MANIFEST_TEXT } from "./release.ts";
+import { MANIFEST_TEXT } from "./release.ts";
 
 const why = missing() ?? missingAddOn("customiser");
 if (why !== null && process.env["ADMINIUM_REQUIRE_CONTRACT"] === "1") throw new Error(`the update contract must run here, and cannot: ${why}`);
@@ -54,7 +53,6 @@ const PORT_BASE = Number(process.env["CONTRACT_PORT_BASE"] ?? 4950);
 const ADMIN = { email: process.env["E2E_ADMIN_EMAIL"] ?? "e2e@adminium.local", password: process.env["E2E_ADMIN_PASSWORD"] ?? "adminium-e2e-password" };
 /** 16:40 on Thursday 6 August 2026 in Settle (British Summer Time), before the five o'clock cut-off. */
 const THURSDAY = Date.parse("2026-08-06T15:40:00Z");
-const BESIDE_BARE_TABLES = engineAtLeast("0.3.44");
 const SHOPPER = { name: "Priya Shah", email: "priya.shah@birch-row-shoppers.dev", address_line1: "12 Mill Lane", town: "Settle", postcode: "BD24 9AA", may_email: false, language: "en-US" };
 
 // ── the old example's database ──────────────────────────────────────────────
@@ -281,7 +279,7 @@ async function dropOld(place: Place): Promise<void> {
 
 describe.skipIf(why !== null)(`a studio on the old example takes the rework${why === null ? "" : ` — skipped: ${why}`}`, () => {
   ENGINES.forEach(([engine, available], index) => {
-    describe.skipIf(!available || !BESIDE_BARE_TABLES)(`on ${engine}${BESIDE_BARE_TABLES ? "" : ` — skipped: a prefixed app beside bare tables of the same names needs Adminium 0.3.44 (this run has ${ENGINE_VERSION})`}`, () => {
+    describe.skipIf(!available)(`on ${engine}`, () => {
       let server: Server;
       let staff: Caller;
       let place: Place;

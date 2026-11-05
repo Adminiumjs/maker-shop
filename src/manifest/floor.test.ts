@@ -1,11 +1,12 @@
 /**
- * The manifest at the next floor: what raising `MIN_ADMINIUM` to 0.3.44
- * writes, held to the validator of that release before anybody raises it.
+ * The manifest at its floor (`MIN_ADMINIUM`): the words that floor first
+ * reads are written, they pass its validator, and an older floor refuses
+ * them, so they cannot ship to an Adminium that would not read them.
  */
 import { describe, expect, it } from "vitest";
 
 import { validateManifest } from "../testing/manifest/index.ts";
-import { buildManifest, MIN_ADMINIUM, PANELS_AND_LIMITS } from "./build.ts";
+import { buildManifest, MIN_ADMINIUM } from "./build.ts";
 import { LETTERING_FITS } from "./public.ts";
 import { ROLE_PANELS } from "./roles.ts";
 
@@ -16,40 +17,28 @@ const linesOf = (m: Json) => (orderEntry(m)["children"] as Record<string, Json>)
 const copiesOf = (m: Json) => ((m["people"] as Json[])[0]!["copies"] as Json[]).filter((c) => c["addOn"] === "customiser").map((c) => `${String(c["table"])}.${String(c["column"])}`);
 const ownCopiesOf = (m: Json, table: string) => ((m["people"] as Json[])[0]!["copies"] as Json[]).filter((c) => c["addOn"] === undefined && c["table"] === table).map((c) => String(c["column"]));
 
-describe("the manifest at the floor it ships with", () => {
+describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
   const shipped = buildManifest();
 
-  it("says none of the next release's words", () => {
+  it("asks for that floor and passes its validator", () => {
     expect(shipped["compatibility"]).toMatchObject({ minAdminiumVersion: MIN_ADMINIUM });
-    expect(roleOf(shipped, "maker").permissions.filter((p) => p.startsWith("page:@customiser-"))).toEqual([]);
-    expect(linesOf(shipped)["agrees"]).toBeUndefined();
-    expect(copiesOf(shipped)).toEqual(["designs.email", "designs.values"]);
-    // A proof's picture is a file: emptied with the person only from the next release.
-    expect(ownCopiesOf(shipped, "proofs")).toEqual(["change_note"]);
-  });
-});
-
-describe(`the manifest at ${PANELS_AND_LIMITS}`, () => {
-  const next = buildManifest({ floor: PANELS_AND_LIMITS });
-
-  it("passes that release's validator", () => {
-    const result = validateManifest(next);
+    const result = validateManifest(shipped);
     expect(result.ok ? [] : result.issues).toEqual([]);
   });
 
   it("grants the Customiser's panels to the owner and the maker, and none to the packer", () => {
     for (const [key, panels] of Object.entries(ROLE_PANELS)) {
-      expect(roleOf(next, key).permissions.filter((p) => p.startsWith("page:@customiser-")).sort()).toEqual(panels.map((p) => `page:@${p}:view`).sort());
+      expect(roleOf(shipped, key).permissions.filter((p) => p.startsWith("page:@customiser-")).sort()).toEqual(panels.map((p) => `page:@${p}:view`).sort());
     }
-    expect(roleOf(next, "packer").permissions.filter((p) => p.startsWith("page:@customiser-"))).toEqual([]);
+    expect(roleOf(shipped, "packer").permissions.filter((p) => p.startsWith("page:@customiser-"))).toEqual([]);
   });
 
   it("holds a placed line's lettering to its product's limit", () => {
-    expect(linesOf(next)["agrees"]).toEqual([LETTERING_FITS]);
+    expect(linesOf(shipped)["agrees"]).toEqual([LETTERING_FITS]);
   });
 
   it("follows a person into their designs' logo, photo, versions and files", () => {
-    expect(copiesOf(next)).toEqual([
+    expect(copiesOf(shipped)).toEqual([
       "designs.email",
       "designs.values",
       "designs.logo_file",
@@ -61,10 +50,10 @@ describe(`the manifest at ${PANELS_AND_LIMITS}`, () => {
   });
 
   it("deletes the picture of a proof with the person it was sent to", () => {
-    expect(ownCopiesOf(next, "proofs")).toEqual(["change_note", "picture"]);
+    expect(ownCopiesOf(shipped, "proofs")).toEqual(["change_note", "picture"]);
   });
 
-  it("is refused by the validator at the older floor, so the words cannot ship early", () => {
-    expect(validateManifest({ ...next, compatibility: { ...(next["compatibility"] as Json), minAdminiumVersion: MIN_ADMINIUM } }).ok).toBe(false);
+  it("is refused by the validator at an older floor, so its words cannot ship early", () => {
+    expect(validateManifest({ ...shipped, compatibility: { ...(shipped["compatibility"] as Json), minAdminiumVersion: "0.3.43" } }).ok).toBe(false);
   });
 });

@@ -26,10 +26,8 @@
  * opens only the app's screens); a spoil taking its share of a walnut sheet
  * off the shelf as Adminium works it out; the customers' totals from their
  * orders; and the Customiser's panel on an order line's record, open to the
- * owner and closed to the packer (Adminium 0.3.44 and later, with the
- * manifest written for it: `release.ts`). The maker's role grants it too,
- * but the maker opens only the app's screens, which the core does not yet
- * serve a panel to: see the `.fails` case.
+ * owner and to the maker, whose role grants it though they open only the
+ * app's screens, and closed to the packer.
  *
  * It runs with `CONTRACT=1` where an Adminium checkout with its built server
  * and dashboard is (`ADMINIUM_REPO`) and a built add-ons checkout
@@ -51,7 +49,7 @@ import { createSessionTransport } from "../studio/transport/sessionSource.ts";
 import { loadStaffConfig } from "../studio/transport/staffConnection.ts";
 import { ApiError, num, type Row } from "../studio/wire.ts";
 import { delivered, mailCount, plain, subjectOf } from "./mail.ts";
-import { engineAtLeast, ENGINE_VERSION, MANIFEST_TEXT, NEEDS_PANELS_AND_LIMITS, READS_PANELS_AND_LIMITS } from "./release.ts";
+import { MANIFEST_TEXT } from "./release.ts";
 import { addOnBundle, addSample, appBundle, boot, Caller, ENGINES, missing, newPassword, ok, png, PORTS_PER_ENGINE, type Engine, type Server } from "./studio-harness.ts";
 
 const why = missing();
@@ -64,8 +62,6 @@ const THURSDAY = Date.parse("2026-08-06T15:40:00Z");
 const SHOPPER = "ada.w@birch-row-shoppers.dev";
 /** A second shopper, whose parcel DHL carries. */
 const CARRIED = "tom.h@birch-row-shoppers.dev";
-/** Before 0.3.44 a role that opens only the app's screens was refused the files' copy route. */
-const SCREENS_COPY = engineAtLeast("0.3.44");
 
 describe.skipIf(why !== null)(`the studio against a built Adminium${why === null ? "" : ` — skipped: ${why}`}`, () => {
   ENGINES.forEach(([engine, available], index) => {
@@ -344,7 +340,7 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect((await rows("proofs")).find((p) => String(p.id) === String(waiting.id))!["reminded_at"]).not.toBeNull();
       });
 
-      it.skipIf(!SCREENS_COPY)(`sends a design's proof as the Customiser made it from the design's version, copied by the maker's own session${SCREENS_COPY ? "" : ` — skipped: the copy route for a screens-only role needs Adminium 0.3.44 (this run has ${ENGINE_VERSION})`}`, async () => {
+      it("sends a design's proof as the Customiser made it from the design's version, copied by the maker's own session", async () => {
         let data = await maker.load();
         // Iris's book nook: its design ordered (versions snapshotted), its proof waiting.
         const order = orderOf(data, "BR-2288");
@@ -386,7 +382,7 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         return caller.get<string>(`/api/v1/add-ons/customiser/panels/customiser-line/bundle?${new URLSearchParams({ connection: connectionId, table: id, row: String(line.id) }).toString()}`);
       };
 
-      it.skipIf(!READS_PANELS_AND_LIMITS)(`opens the Customiser's panel on an order line's record to the owner, and not to the packer${READS_PANELS_AND_LIMITS ? "" : ` — skipped: ${NEEDS_PANELS_AND_LIMITS}`}`, async () => {
+      it("opens the Customiser's panel on an order line's record to the owner, and not to the packer", async () => {
         const opened = await linePanel(await person("owner"));
         expect(opened.status, JSON.stringify(opened.body).slice(0, 600)).toBe(200);
         expect(String(opened.body).length).toBeGreaterThan(0);
@@ -394,13 +390,8 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect(closed.status, JSON.stringify(closed.body).slice(0, 600)).toBe(403);
       });
 
-      /*
-       * WAITS ON THE CORE: the maker's role grants the panel, but the maker opens only the app's own
-       * screens, and Adminium answers a screens-only account's ask for a panel's code `APP_SCREENS_ONLY`
-       * (the panel's route is not among the routes such an account may use). When the core lets a
-       * screens-only account load a panel its role grants, this flips red: take the `.fails` off.
-       */
-      it.skipIf(!READS_PANELS_AND_LIMITS).fails(`opens the Customiser's panel on an order line's record to the maker, whose role grants it${READS_PANELS_AND_LIMITS ? "" : ` — skipped: ${NEEDS_PANELS_AND_LIMITS}`}`, async () => {
+      // The maker opens only the app's own screens, and is still served the panel their role grants.
+      it("opens the Customiser's panel on an order line's record to the maker, whose role grants it", async () => {
         const opened = await linePanel(makerCaller);
         expect(opened.status, JSON.stringify(opened.body).slice(0, 600)).toBe(200);
       });

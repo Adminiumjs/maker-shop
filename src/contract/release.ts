@@ -1,13 +1,10 @@
 /**
- * Which Adminium the contract runs on, and so which manifest it installs.
+ * The manifest the contract installs, and the Adminium it needs.
  *
- * The app ships at its floor (`MIN_ADMINIUM`), but the same modules write the
- * manifest for the next release, which grants the Customiser's panels, holds
- * a line's lettering to its product's limit and lets a person's copies follow
- * into the Customiser's tables. On an Adminium that reads those, the contract
- * installs that manifest, so the checks of the next release run against the
- * real thing; on an older one it installs the manifest that ships, and the
- * checks that need the next release are skipped by name.
+ * The contract installs the manifest that ships, so it runs on its floor
+ * (`MIN_ADMINIUM`) or a later Adminium; when the contract is asked for, an
+ * older checkout is refused here by name rather than by an install that
+ * fails half way.
  *
  * Tests only; nothing that ships imports it.
  */
@@ -15,25 +12,28 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { atLeast, manifestText, PANELS_AND_LIMITS } from "../manifest/build.ts";
+import { MIN_ADMINIUM } from "../manifest/build.ts";
 
 const REPO = fileURLToPath(new URL("../..", import.meta.url));
 
-/** The release of the Adminium under test, as its server's own package says it ("0.0.0" when there is no checkout). */
-export const ENGINE_VERSION: string = (() => {
+/** The release of the Adminium under test, as its server's own package says it (null when there is no checkout). */
+const ENGINE_VERSION: string | null = (() => {
   const file = join(process.env["ADMINIUM_REPO"] ?? "", "apps", "server", "package.json");
-  if (!existsSync(file)) return "0.0.0";
-  return (JSON.parse(readFileSync(file, "utf8")) as { version?: string }).version ?? "0.0.0";
+  if (!existsSync(file)) return null;
+  return (JSON.parse(readFileSync(file, "utf8")) as { version?: string }).version ?? null;
 })();
 
-/** Whether the Adminium under test is that release or a later one. */
-export const engineAtLeast = (release: string): boolean => atLeast(ENGINE_VERSION, release);
+/** Whether release `a` is `b` or later, on major.minor.patch. */
+const atLeast = (a: string, b: string): boolean => {
+  const [x, y] = [a, b].map((v) => v.split(/[.-]/).slice(0, 3).map(Number));
+  for (let i = 0; i < 3; i += 1) if (x![i] !== y![i]) return x![i]! > y![i]!;
+  return true;
+};
 
-/** Whether that Adminium reads the panels' grants, the lettering's limit and the copies into the Customiser. */
-export const READS_PANELS_AND_LIMITS = atLeast(ENGINE_VERSION, PANELS_AND_LIMITS);
+const asked = process.env["CONTRACT"] === "1" || process.env["ADMINIUM_REQUIRE_CONTRACT"] === "1";
+if (asked && ENGINE_VERSION !== null && !atLeast(ENGINE_VERSION, MIN_ADMINIUM)) {
+  throw new Error(`the contract needs Adminium ${MIN_ADMINIUM} or later, the app's floor; ADMINIUM_REPO has ${ENGINE_VERSION}`);
+}
 
-/** Said in a skipped check's name: what it waits for. */
-export const NEEDS_PANELS_AND_LIMITS = `needs Adminium ${PANELS_AND_LIMITS} (this run has ${ENGINE_VERSION})`;
-
-/** The manifest the contract installs: written for the next release when the Adminium reads it, else the one that ships. */
-export const MANIFEST_TEXT: string = READS_PANELS_AND_LIMITS ? manifestText({ floor: PANELS_AND_LIMITS }) : readFileSync(join(REPO, "manifest.json"), "utf8");
+/** The manifest that ships. */
+export const MANIFEST_TEXT: string = readFileSync(join(REPO, "manifest.json"), "utf8");

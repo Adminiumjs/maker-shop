@@ -18,9 +18,6 @@
  *   - counts the shelf: Adminium keeps the book's figure beside the count and
  *     moves the stock by the difference.
  *
- * A batch's booking below it in one write needs Adminium 0.3.44; on an older
- * one those checks are skipped by name.
- *
  * It runs with `CONTRACT=1` where an Adminium checkout with its built server
  * and dashboard is (`ADMINIUM_REPO`) and a built add-ons checkout
  * (`ADD_ONS_REPO`), and says why it skipped otherwise. Its ports start at
@@ -38,7 +35,7 @@ import { isTaken, saveCount, startBatch } from "../studio/making-actions.ts";
 import { createSessionTransport } from "../studio/transport/sessionSource.ts";
 import { loadStaffConfig } from "../studio/transport/staffConnection.ts";
 import { ApiError, num, type Row } from "../studio/wire.ts";
-import { engineAtLeast, ENGINE_VERSION, MANIFEST_TEXT } from "./release.ts";
+import { MANIFEST_TEXT } from "./release.ts";
 import { addOnBundle, addSample, appBundle, boot, Caller, ENGINES, missing, newPassword, ok, PORTS_PER_ENGINE, type Engine, type Server } from "./studio-harness.ts";
 
 const why = missing();
@@ -48,8 +45,6 @@ const ADMIN = { email: process.env["E2E_ADMIN_EMAIL"] ?? "e2e@adminium.local", p
 /** 16:40 on Thursday 6 August 2026 in Settle (British Summer Time). */
 const THURSDAY = Date.parse("2026-08-06T15:40:00Z");
 /** A booking below a staff create, judged inside the one write. */
-const ONE_WRITE = engineAtLeast("0.3.44");
-const NEEDS_ONE_WRITE = ONE_WRITE ? "" : ` — skipped: a booking below a batch's create needs Adminium 0.3.44 (this run has ${ENGINE_VERSION})`;
 
 describe.skipIf(why !== null)(`the workshop against a built Adminium${why === null ? "" : ` — skipped: ${why}`}`, () => {
   ENGINES.forEach(([engine, available], index) => {
@@ -139,7 +134,7 @@ describe.skipIf(why !== null)(`the workshop against a built Adminium${why === nu
         ]);
       });
 
-      it.skipIf(!ONE_WRITE)(`batches the walnut sheet: the batch, the laser's booking and its sheet in one write, the lines to making${NEEDS_ONE_WRITE}`, async () => {
+      it("batches the walnut sheet: the batch, the laser's booking and its sheet in one write, the lines to making", async () => {
         let data = await maker.load();
         const group = batchGroups(data).find((g) => g["material"]["code"] === "wal6")!;
         const before = data.materials.find((m) => m["code"] === "wal6")!;
@@ -170,7 +165,7 @@ describe.skipIf(why !== null)(`the workshop against a built Adminium${why === nu
         expect(batchGroups(data).some((g) => g.material["code"] === "wal6")).toBe(false);
       }, 120_000);
 
-      it.skipIf(!ONE_WRITE)(`is refused the whole batch, by Adminium, when the machine's time was taken after the screen read it${NEEDS_ONE_WRITE}`, async () => {
+      it("is refused the whole batch, by Adminium, when the machine's time was taken after the screen read it", async () => {
         // The screen reads the studio; then someone else books the laser for the time the screen would pick.
         const seen = await maker.load();
         const group = batchGroups(seen).find((g) => g.material["code"] === "ply3")!;
@@ -193,7 +188,7 @@ describe.skipIf(why !== null)(`the workshop against a built Adminium${why === nu
       });
 
       // Over the walnut sheet's booking, and from the shelf that sheet left: both stand on the batch above.
-      it.skipIf(!ONE_WRITE)(`is refused, by Adminium, a booking over another on the same machine${NEEDS_ONE_WRITE}`, async () => {
+      it("is refused, by Adminium, a booking over another on the same machine", async () => {
         const data = await maker.load();
         const laser = data.machines.find((m) => m["code"] === "laser")!;
         const refused = await maker.book({ machineId: laser.id, label: "Over the walnut sheet", startsAt: "2026-08-06T17:00:00.000Z", endsAt: "2026-08-06T17:30:00.000Z" }).catch((e: unknown) => e);
@@ -207,7 +202,7 @@ describe.skipIf(why !== null)(`the workshop against a built Adminium${why === nu
         expect((await rows("machine_bookings")).some((b) => String(b.id) === String(booked.id))).toBe(false);
       });
 
-      it.skipIf(!ONE_WRITE)(`counts the shelf: the book's figure kept beside the count, the stock moved by the difference${NEEDS_ONE_WRITE}`, async () => {
+      it("counts the shelf: the book's figure kept beside the count, the stock moved by the difference", async () => {
         let data = await maker.load();
         const walnut = data.materials.find((m) => m["code"] === "wal6")!;
         const ply = data.materials.find((m) => m["code"] === "ply3")!;

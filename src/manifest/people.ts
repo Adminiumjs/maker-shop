@@ -10,7 +10,7 @@
  * A customer is also copied onto every order of theirs (the name and address
  * the parcel goes to, the address the e-mails went to), onto its lines (the
  * words they asked for on a piece), onto the proofs the studio sent them (what
- * they asked to change, and, from 0.3.44, the proof's picture), onto a request
+ * they asked to change, and the proof's picture), onto a request
  * or a problem they sent, and onto the designs they made in the Customiser
  * (the address the design's link went to, and the words and choices in it).
  * Each copy is declared, so finding, exporting and erasing a person reaches
@@ -39,6 +39,24 @@ export const NEWS_TICK = {
     },
   },
 };
+
+/**
+ * The picture of a proof the studio sent them; the logo and photo a shopper
+ * put on their design, the versions of it the Customiser keeps as it was
+ * ordered, and their files: the person's because their proof or their design
+ * is, so erasing them deletes the proof's picture, the logo and photo, blanks
+ * the words in each version and deletes its proof picture and production
+ * files. Adminium empties a copy that holds files, and follows one that far
+ * into an add-on.
+ */
+const VERSION_COPIES = [
+  { table: "proofs", column: "picture", holds: "details", via: "customer_id" },
+  { addOn: CUSTOMISER, table: "designs", column: "logo_file", holds: "details", via: "order_lines.design_id" },
+  { addOn: CUSTOMISER, table: "designs", column: "photo_file", holds: "details", via: "order_lines.design_id" },
+  { addOn: CUSTOMISER, table: "design_versions", column: "values", holds: "details", via: "order_lines.design_id", from: ["design_id"] },
+  { addOn: CUSTOMISER, table: "design_versions", column: "proof_file", holds: "details", via: "order_lines.design_id", from: ["design_id"] },
+  { addOn: CUSTOMISER, table: "version_files", column: "file", holds: "details", via: "order_lines.design_id", from: ["version_id", "design_id"] },
+];
 
 export const PEOPLE = [
   {
@@ -69,30 +87,7 @@ export const PEOPLE = [
       // The designs their order lines name: the address its link went to, and what they put on it.
       { addOn: CUSTOMISER, table: "designs", column: "email", holds: "email", via: "order_lines.design_id" },
       { addOn: CUSTOMISER, table: "designs", column: "values", holds: "details", via: "order_lines.design_id" },
+      ...VERSION_COPIES,
     ],
   },
 ];
-
-/**
- * The picture of a proof the studio sent them; the logo and photo a shopper
- * put on their design, the versions of it the Customiser keeps as it was
- * ordered, and their files: the person's because their proof or their design
- * is, so erasing them deletes the proof's picture, the logo and photo, blanks
- * the words in each version and deletes its proof picture and production
- * files. Adminium empties a copy that holds files, and follows one that far
- * into an add-on, from 0.3.44.
- */
-export const VERSION_COPIES = [
-  { table: "proofs", column: "picture", holds: "details", via: "customer_id" },
-  { addOn: CUSTOMISER, table: "designs", column: "logo_file", holds: "details", via: "order_lines.design_id" },
-  { addOn: CUSTOMISER, table: "designs", column: "photo_file", holds: "details", via: "order_lines.design_id" },
-  { addOn: CUSTOMISER, table: "design_versions", column: "values", holds: "details", via: "order_lines.design_id", from: ["design_id"] },
-  { addOn: CUSTOMISER, table: "design_versions", column: "proof_file", holds: "details", via: "order_lines.design_id", from: ["design_id"] },
-  { addOn: CUSTOMISER, table: "version_files", column: "file", holds: "details", via: "order_lines.design_id", from: ["version_id", "design_id"] },
-];
-
-/** The people declaration as a manifest at a floor that reads `from` writes it. */
-export function peopleFor(versions: boolean): typeof PEOPLE {
-  if (!versions) return PEOPLE;
-  return PEOPLE.map((person) => ({ ...person, copies: [...person.copies, ...VERSION_COPIES] })) as typeof PEOPLE;
-}

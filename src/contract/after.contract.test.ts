@@ -33,7 +33,7 @@
  * are, and says why it skipped otherwise. On SQLite the studio's database is
  * a file it makes; on Postgres and MySQL it is the e2e server's Northwind,
  * whose own bare `products`, `orders` and `customers` the install keeps clear
- * of (Adminium 0.3.44 and later).
+ * of.
  */
 import { rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -47,7 +47,7 @@ import { isShopError, type Row } from "../shop/port.ts";
 import { orderBody, useShop, type BasketLine } from "../shop/store.ts";
 import { addOnBundle, addSample, appBundle, boot, Caller, ENGINES, missing, missingAddOn, ok, PORTS_PER_ENGINE, until, type Engine, type Server } from "./harness.ts";
 import { delivered, sinkMail, type Mail } from "./mail.ts";
-import { engineAtLeast, ENGINE_VERSION, MANIFEST_TEXT } from "./release.ts";
+import { MANIFEST_TEXT } from "./release.ts";
 
 const why = missing() ?? missingAddOn("customiser");
 if (why !== null && process.env["ADMINIUM_REQUIRE_CONTRACT"] === "1") throw new Error(`the contract must run here, and cannot: ${why}`);
@@ -65,17 +65,12 @@ const ASKER = "bex.thorne@birch-row-shoppers.dev";
 const MIXED_CASE = "Priya.Shah@Birch-Row-Shoppers.DEV";
 /** The studio's own address, where its copy of a request or a problem goes (the sample's is one kept for examples). */
 const STUDIO = "studio@birch-row-studio.dev";
-/** Before 0.3.44 an order's number as typed stayed empty, so no problem could find its order by it. */
-const NUMBER_AS_TYPED = engineAtLeast("0.3.44");
-/** Before 0.3.44 an install beside bare tables of the same names took them for the app's own. */
-const BESIDE_BARE_TABLES = engineAtLeast("0.3.44");
 /** A one-pixel PNG: the proof's picture as the studio's browser stores it. */
 const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
 
 describe.skipIf(why !== null)(`after the order, on a built Adminium${why === null ? "" : ` — skipped: ${why}`}`, () => {
   ENGINES.forEach(([engine, available], index) => {
-    const beside = engine !== "sqlite" && !BESIDE_BARE_TABLES;
-    describe.skipIf(!available || beside)(`on ${engine}${beside ? ` — skipped: an install beside Northwind's bare tables needs Adminium 0.3.44 (this run has ${ENGINE_VERSION})` : ""}`, () => {
+    describe.skipIf(!available)(`on ${engine}`, () => {
       let server: Server;
       let staff: Caller;
       let connectionId = "";
@@ -322,7 +317,7 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         expect((await rows("problem_reports")).length).toBe(before);
       }, 60_000);
 
-      it.skipIf(!NUMBER_AS_TYPED)(`takes a problem about the address's own order by its number, links it to that order, and e-mails both${NUMBER_AS_TYPED ? "" : ` — skipped: an order's number as typed needs Adminium 0.3.44 (this run has ${ENGINE_VERSION})`}`, async () => {
+      it("takes a problem about the address's own order by its number, links it to that order, and e-mails both", async () => {
         const own = (await rows("orders")).find((o) => o["number"] === "BR-2291")!;
         expect(own["number_code"]).toBe("BR2291");
         const door = browser().after();
@@ -352,13 +347,13 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         expect(of("proofs").flatMap((s) => s.keys).sort()).toEqual(proofs.map((p) => String(p["id"])).sort());
 
         ok(await staff.post("/api/v1/privacy/erase", { address: SHOPPER.email, confirm: SHOPPER.email }));
-        // A line is the record of a sale: its words stay. A proof is not: what they asked to change goes, and from
-        // 0.3.44 its picture too, the file deleted.
+        // A line is the record of a sale: its words stay. A proof is not: what they asked to change goes, and its
+        // picture too, the file deleted.
         const kept = (await rows("order_lines")).filter((l) => ids.has(String(l["order_id"])));
         expect(kept.map((l) => l["lettering"]).sort()).toEqual(["Mill House", "Mill Lane"]);
         const erased = (await rows("proofs")).filter((p) => ids.has(String(p["order_id"])));
         expect(erased.map((p) => p["change_note"] ?? null)).toEqual(erased.map(() => null));
-        if (engineAtLeast("0.3.44")) expect(erased.map((p) => p["picture"] ?? null)).toEqual(erased.map(() => null));
+        expect(erased.map((p) => p["picture"] ?? null)).toEqual(erased.map(() => null));
       }, 120_000);
     });
   });

@@ -25,7 +25,7 @@
  * - a total that moved is refused with the figures it came to, and a field
  *   Adminium refuses is named;
  * - words longer than the piece takes are refused, by the dry run and by the
- *   order alike; words that just fit go in (Adminium 0.3.44 and later);
+ *   order alike; words that just fit go in;
  * - a quantity is priced by the breaks still offered: one switched off is
  *   never picked, nor an option of another kind with a quantity on it.
  *
@@ -33,7 +33,7 @@
  * are, and says why it skipped otherwise. On SQLite the studio's database is
  * a file it makes; on Postgres and MySQL it is the e2e server's Northwind,
  * whose own bare `products`, `orders` and `customers` the install keeps clear
- * of (Adminium 0.3.44 and later).
+ * of.
  */
 import { rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -46,7 +46,7 @@ import { isShopError, type Row } from "../shop/port.ts";
 import { orderBody, productQuantities, useShop, type BasketLine } from "../shop/store.ts";
 import { addOnBundle, addSample, appBundle, boot, Caller, ENGINES, missing, missingAddOn, ok, PORTS_PER_ENGINE, type Engine, type Server } from "./harness.ts";
 import { delivered, plain } from "./mail.ts";
-import { engineAtLeast, ENGINE_VERSION, MANIFEST_TEXT, NEEDS_PANELS_AND_LIMITS, READS_PANELS_AND_LIMITS } from "./release.ts";
+import { MANIFEST_TEXT } from "./release.ts";
 
 const why = missing() ?? missingAddOn("customiser");
 /** Whether Invoices & Receipts is built beside this checkout, to draw the order's receipt. */
@@ -61,8 +61,7 @@ const SHOPPER = { name: "Priya Shah", email: "priya.shah@birch-row-shoppers.dev"
 
 describe.skipIf(why !== null)(`a shopper buys on a built Adminium${why === null ? "" : ` — skipped: ${why}`}`, () => {
   ENGINES.forEach(([engine, available], index) => {
-    const beside = engine !== "sqlite" && !engineAtLeast("0.3.44");
-    describe.skipIf(!available || beside)(`on ${engine}${beside ? ` — skipped: an install beside Northwind's bare tables needs Adminium 0.3.44 (this run has ${ENGINE_VERSION})` : ""}`, () => {
+    describe.skipIf(!available)(`on ${engine}`, () => {
       let server: Server;
       let staff: Caller;
       let connectionId = "";
@@ -255,7 +254,7 @@ describe.skipIf(why !== null)(`a shopper buys on a built Adminium${why === null 
         expect([error.refused.code, error.refused.column]).toEqual(["PUBLIC_WRITE_REFUSED", "name"]);
       });
 
-      it.skipIf(!READS_PANELS_AND_LIMITS)(`refuses words longer than the piece takes, by the dry run and by the order, and takes words that just fit${READS_PANELS_AND_LIMITS ? "" : ` — skipped: ${NEEDS_PANELS_AND_LIMITS}`}`, async () => {
+      it("refuses words longer than the piece takes, by the dry run and by the order, and takes words that just fit", async () => {
         const ply = productOf("coast-ply");
         const limit = ply.letteringLimit!;
         expect(limit).toBeGreaterThan(0);

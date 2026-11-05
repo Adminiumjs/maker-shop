@@ -139,6 +139,13 @@ export const ORDER_KEY = "order";
 
 export const PUBLIC_KEYS = { [ORDER_KEY]: {} };
 
+/**
+ * A line's lettering no longer than its product allows, held by Adminium on
+ * every order a shopper places (`agrees` with `length`); the shop's page
+ * counts the same limit as the shopper types.
+ */
+export const LETTERING_FITS = { column: "lettering", length: true, lte: { via: "product_id", column: "lettering_limit" } };
+
 export const PUBLIC_ACCESS = [
   // ── the shopper who signs in with a link or code e-mailed to them ───────────
   {
@@ -209,6 +216,7 @@ export const PUBLIC_ACCESS = [
             max: 4,
           },
         },
+        agrees: [LETTERING_FITS],
       },
     },
     dryRun: true,
@@ -285,22 +293,3 @@ export const PUBLIC_REFS = {
   linkFeatures: "maker_order_line_features_verified_2",
   linkProofs: "maker_proofs_verified_2",
 } as const;
-
-/**
- * A line's lettering no longer than its product allows, held by Adminium on
- * every order a shopper places (`agrees` with `length`, read from 0.3.44).
- * Before it the lettering column's own width, 80 characters, is the only
- * limit the server holds, and the shop's page counts the product's.
- */
-export const LETTERING_FITS = { column: "lettering", length: true, lte: { via: "product_id", column: "lettering_limit" } };
-
-/** The entries as a manifest at a floor that reads `agrees.length` writes them. */
-export function publicAccessFor(letteringFits: boolean): typeof PUBLIC_ACCESS {
-  if (!letteringFits) return PUBLIC_ACCESS;
-  return PUBLIC_ACCESS.map((entry) => {
-    const lines = (entry as { children?: { order_lines?: Record<string, unknown> } }).children?.order_lines;
-    if (lines === undefined) return entry;
-    const children = (entry as { children: Record<string, unknown> }).children;
-    return { ...entry, children: { ...children, order_lines: { ...lines, agrees: [LETTERING_FITS] } } };
-  }) as typeof PUBLIC_ACCESS;
-}
