@@ -193,7 +193,7 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
          * (`ROLE_ADD_ON_ACTIONS`), never its personal columns in clear, so the
          * panel draws the design with them masked.
          */
-        it.fails(`shows the ${who} the shopper's own words in the panel (gap: an app role cannot read the Customiser's personal columns)`, async () => {
+        it.fails(`shows the ${who} the shopper's own words in the panel (gap G2: an app role cannot hold read_pii on the Customiser's designs and versions)`, async () => {
           const line = designedLine(await doors[who]!.load());
           const words = await wordsOf(line);
           expect(words.length).toBeGreaterThan(0);
@@ -216,7 +216,7 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
          * ledger writes, whatever it asks: the proof the panel makes is
          * refused (`You need create or update on …design_versions`).
          */
-        it.fails(`stores the proof the panel makes as the ${who}, and the proof sheet sends it (gap: an app role cannot write design_versions)`, async () => {
+        it.fails(`stores the proof the panel makes as the ${who}, and the proof sheet sends it (gap G2: an app role cannot write design_versions, a table the designs ledger writes)`, async () => {
           const door = doors[who]!;
           let data = await door.load();
           const line = designedLine(data);
@@ -274,12 +274,27 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
       });
 
       /*
+       * A starter font nobody uploaded is read, when the files are made, from
+       * the file the Customiser ships beside its set-up page (its page-files
+       * route, `page:@customiser:view`). Adminium answers that route only
+       * while the add-on is attached to the dashboard, and not to a
+       * screens-only person at all, so "Make the files" in a starter font
+       * says the font file is missing.
+       */
+      for (const who of ["maker", "owner"] as const) {
+        it.fails(`hands the ${who} a starter font's file to make the files with (gap G1: the set-up page's files of an app-attached add-on)`, async () => {
+          const font = await callers[who]!.fetchAs()("/api/v1/add-ons/customiser/pages/customiser/files/fonts/Archivo.woff2");
+          expect(font.status).toBe(200);
+        });
+      }
+
+      /*
        * "Make the files again" takes the version's old files away first (the
        * panel's `remove`): an app's role may read, add and change an add-on's
        * rows, never delete them (`ROLE_ADD_ON_ACTIONS`), so this is refused
        * until Adminium or the Customiser gives an app's role that one delete.
        */
-      it.fails("lets the maker make the files again: the version's old files taken away (gap: an app role cannot delete version_files)", async () => {
+      it.fails("lets the maker make the files again: the version's old files taken away (gap G2: an app role cannot hold delete on version_files)", async () => {
         const panels = panelsOf("maker");
         const files = await panels.list("customiser", "version_files", { where: { column: "name", op: "eq", value: "piece-maker.svg" }, limit: 2, offset: 0 });
         expect(files.length).toBe(1);

@@ -29,8 +29,10 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
   it("grants the Customiser's panels to the owner and the maker, and none to the packer", () => {
     for (const [key, panels] of Object.entries(ROLE_PANELS)) {
       expect(roleOf(shipped, key).permissions.filter((p) => p.startsWith("page:@customiser-")).sort()).toEqual(panels.map((p) => `page:@${p}:view`).sort());
+      // The set-up page, beside which the starter fonts' files are handed out: whoever makes the files holds it.
+      expect(roleOf(shipped, key).permissions).toContain("page:@customiser:view");
     }
-    expect(roleOf(shipped, "packer").permissions.filter((p) => p.startsWith("page:@customiser-"))).toEqual([]);
+    expect(roleOf(shipped, "packer").permissions.filter((p) => p.startsWith("page:@customiser"))).toEqual([]);
   });
 
   it("gives the owner and the maker what the Customiser's line panel reads and writes, and the packer only the design", () => {

@@ -10236,6 +10236,7 @@
         "table:@messages:read_pii",
         "page:@customiser-line:view",
         "page:@customiser-product:view",
+        "page:@customiser:view",
         "addOn:holiday-calendars:settings"
       ],
       "limits": {
@@ -10430,7 +10431,8 @@
         "page:@maker-orders:view",
         "page:@maker-proofs:view",
         "page:@maker-lines:view",
-        "page:@customiser-line:view"
+        "page:@customiser-line:view",
+        "page:@customiser:view"
       ],
       "limits": {
         "orders": {

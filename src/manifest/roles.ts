@@ -73,6 +73,20 @@ const CUSTOMISER_PANEL = [
  */
 const OWNER_CUSTOMISER = CUSTOMISER_PANEL.filter((grant) => grant.table !== "features");
 
+/**
+ * The Customiser's set-up page: a starter font nobody uploaded is read from
+ * the file the add-on ships, handed out beside that page, so whoever makes
+ * the machine's files holds it (the Customiser's README, "What an app's role
+ * needs").
+ *
+ * Not grantable yet, and so declared nowhere: `read_pii` on `designs` and
+ * `design_versions` (the shopper's words, logo and photo are personal
+ * columns) and `delete` on `version_files` (making the files again). An
+ * app's role takes read, create and update of an add-on's table only; the
+ * contract names each as a known gap.
+ */
+const CUSTOMISER_SETUP_PAGE = view("customiser");
+
 /** Columns Adminium decides: nobody writes them, whatever their role. */
 const decided = (ref: string): Set<string> =>
   new Set(
@@ -127,6 +141,7 @@ export const ROLES = [
       ...PAGE_REFS.flatMap((page) => [view(page), `page:@${page}:edit`]),
       ...["orders", "customers", "commission_requests", "problem_reports", "messages"].map(pii),
       ...ROLE_PANELS["owner"]!.map(view),
+      CUSTOMISER_SETUP_PAGE,
       // Holiday calendars' one setting, the days the studio is closed: the owner's to keep, not only an administrator's.
       `addOn:${HOLIDAYS}:settings`,
     ],
@@ -153,6 +168,7 @@ export const ROLES = [
       ...grant("stock_movements", "create"),
       ...STUDIO_PAGES.map(view),
       ...ROLE_PANELS["maker"]!.map(view),
+      CUSTOMISER_SETUP_PAGE,
     ],
     limits: {
       // The order moves along the bench; nothing of the shopper's or its money.
