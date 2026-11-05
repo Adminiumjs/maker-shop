@@ -503,9 +503,10 @@ export const TABLES: Table[] = [
       bool("may_email", "News from the workshop", false),
       at("forgotten_at", "Details deleted", opt),
       at("created_at", "First order", { ...opt, rules: stamp("now", onCreate) }),
-      // What the studio's Customers screen shows of them: how many orders, and what they were charged in all.
-      figure("order_count", "int", "Orders", { rollup: { from: "orders", via: "customer_id", count: true } }),
-      money("spent", "Charged in all", { rollup: { from: "orders", via: "customer_id", sum: "total" } }),
+      // What the studio's Customers screen shows of them: how many orders, and what they were charged in all. A
+      // cancelled order is neither: it is left out from the moment it is cancelled (`cancelled_at` is stamped then).
+      figure("order_count", "int", "Orders", { rollup: { from: "orders", via: "customer_id", count: true, unlessSet: "cancelled_at" } }),
+      money("spent", "Charged in all", { rollup: { from: "orders", via: "customer_id", sum: "total", unlessSet: "cancelled_at" } }),
     ],
   },
   {

@@ -2968,7 +2968,8 @@
               "rollup": {
                 "from": "orders",
                 "via": "customer_id",
-                "count": true
+                "count": true,
+                "unlessSet": "cancelled_at"
               }
             }
           },
@@ -2991,7 +2992,8 @@
               "rollup": {
                 "from": "orders",
                 "via": "customer_id",
-                "sum": "total"
+                "sum": "total",
+                "unlessSet": "cancelled_at"
               }
             }
           }

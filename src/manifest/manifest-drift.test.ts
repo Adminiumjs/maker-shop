@@ -182,6 +182,12 @@ describe("a shopper reads nothing of anyone else's, and nothing the studio keeps
     expect(rules("problem_reports", "order_id")["lookup"]).toEqual({ from: "order_ref", table: "orders", column: "number_code", scope: [{ column: "email", equals: "email" }] });
   });
 
+  it("counts a customer's orders and what they were charged without the cancelled ones", () => {
+    expect(rules("customers", "order_count")["rollup"]).toEqual({ from: "orders", via: "customer_id", count: true, unlessSet: "cancelled_at" });
+    expect(rules("customers", "spent")["rollup"]).toEqual({ from: "orders", via: "customer_id", sum: "total", unlessSet: "cancelled_at" });
+    expect(rules("orders", "cancelled_at")["stamp"]).toEqual({ set: "now", on: { column: "status", values: ["cancelled"] } });
+  });
+
   it("keeps every address a shopper types trimmed and in lower case, so one typed in another case is the same", () => {
     for (const ref of ["customers", "orders", "commission_requests", "problem_reports"]) expect(rules(ref, "email")["normalize"], ref).toBe("email");
   });

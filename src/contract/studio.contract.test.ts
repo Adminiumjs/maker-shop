@@ -423,10 +423,18 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect([Number(movement["units"]), Number(movement["per_unit"]), movement["made_by"]]).toEqual([1, perUnit, "Jo Marsh"]);
       });
 
-      it("keeps each customer's orders and what they were charged in all from their orders", async () => {
+      it("keeps each customer's orders and what they were charged in all from their orders, a cancelled one left out", async () => {
+        // An order still waiting to be made, cancelled by the owner: its customer's count and spend drop by it.
+        const waiting = (await rows("orders")).find((o) => o["status"] === "placed" && o["customer_id"] !== null)!;
+        const before = (await rows("customers")).find((c) => String(c.id) === String(waiting["customer_id"]))!;
+        ok(await owner.patch(`/api/v1/data/${connectionId}/${encodeURIComponent(tables["orders"] ?? "maker_orders")}/${String(waiting.id)}`, { values: { status: "cancelled", cancel_reason: "Asked by the customer" }, from: "placed" }));
+        const after = (await rows("customers")).find((c) => String(c.id) === String(before.id))!;
+        expect(Number(after["order_count"] ?? 0)).toBe(Number(before["order_count"] ?? 0) - 1);
+        expect(Number(after["spent"] ?? 0)).toBeCloseTo(Number(before["spent"] ?? 0) - Number(waiting["total"]), 2);
+
         const [customers, orders] = await Promise.all([rows("customers"), rows("orders")]);
         for (const customer of customers) {
-          const theirs = orders.filter((o) => String(o["customer_id"]) === String(customer.id));
+          const theirs = orders.filter((o) => String(o["customer_id"]) === String(customer.id) && o["status"] !== "cancelled");
           expect(Number(customer["order_count"] ?? 0), String(customer["email"])).toBe(theirs.length);
           const total = theirs.reduce((sum, o) => sum + Math.round(Number(o["total"]) * 100), 0) / 100;
           expect(Number(customer["spent"] ?? 0), String(customer["email"])).toBeCloseTo(total, 2);
