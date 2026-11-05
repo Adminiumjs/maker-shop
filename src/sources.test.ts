@@ -281,11 +281,16 @@ const INERT: readonly InertOrigin[] = [
  * a finding.
  */
 const HOSTED_STAFF: Readonly<Record<string, readonly string[]>> = {
+  // The add-ons Adminium has for this app: its own list over the session, and the bundles it names, fetched and
+  // checked; a bundle URL not on this origin under /api/v1/add-ons/ is refused (add-ons/connected.test.ts).
+  "add-ons/connected.ts": ["fetch reached through a global"],
   "studio/transport/sessionSource.ts": ["fetch reached through a global"],
   "studio/adminiumStudio.ts": ["fetch reached through a global", "Date.now() \u2014 the real clock"],
   "studio/boot.tsx": ["location.assign()/replace(), a navigation", "Date.now() \u2014 the real clock"],
 };
 const allowedHere = (rel: string, means: string): boolean => HOSTED_STAFF[rel]?.includes(means) === true;
+/** The one `import()` of something not a relative file: an add-on's bundle from this Adminium, behind `bundleUrlIsSafe`. */
+const DECLARED_DYNAMIC_IMPORT = "add-ons/connected.ts";
 
 describe("nothing here can reach a host we do not control", () => {
   /*
@@ -320,13 +325,20 @@ describe("nothing here can reach a host we do not control", () => {
       ...sendersIn(f.code)
         .filter((means) => !allowedHere(f.rel, means))
         .map((means) => `${f.rel} → ${means}`),
-      ...foreignImportsIn(f.code).map((spec) => `${f.rel} → ${spec}`),
+      ...(f.rel === DECLARED_DYNAMIC_IMPORT ? [] : foreignImportsIn(f.code)).map((spec) => `${f.rel} → ${spec}`),
       // The static half, which neither of the two above ever looked at.
       ...foreignModulesIn(f.code, ALLOWED_MODULES).map(
         (spec) => `${f.rel} → imports ${spec}, which nobody declared`,
       ),
     ]);
     expect(offenders).toEqual([]);
+  });
+
+  it("forgives the add-on loader's import of a bundle by its address only while it still makes one", () => {
+    const loader = SHIPPED.find((f) => f.rel === DECLARED_DYNAMIC_IMPORT);
+    expect(loader, DECLARED_DYNAMIC_IMPORT).toBeDefined();
+    expect(foreignImportsIn(loader!.code).length).toBeGreaterThan(0);
+    expect(sendersIn(loader!.code).filter((means) => !allowedHere(loader!.rel, means))).toEqual([]);
   });
 
   /*

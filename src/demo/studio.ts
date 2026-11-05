@@ -15,6 +15,7 @@ import { HOLIDAY_ADD_ON, holidayClosure } from "../studio/holidays.ts";
 import { ApiError, type Id, type Row } from "../studio/wire.ts";
 import { STUDIO_DAYS } from "./rules.ts";
 import type { DemoWorld } from "./world.ts";
+import type { AddOnRegistry } from "../add-ons/host.ts";
 
 const same = (a: unknown, b: unknown) => a !== null && a !== undefined && b !== null && b !== undefined && String(a) === String(b);
 const copy = <T>(value: T): T => structuredClone(value);
@@ -43,6 +44,10 @@ export class DemoStudio implements StudioDoor {
     this.world = world;
   }
 
+  /** The DHL client half compiled into the demo, answering from its demo carrier: no real booking is made. */
+  async addOnRegistry(): Promise<AddOnRegistry> {
+    return (await import("../add-ons/registry.ts")).STUDIO_REGISTRY;
+  }
   who(): Person {
     return DEMO_PERSON;
   }

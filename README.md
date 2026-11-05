@@ -130,7 +130,9 @@ src/
                the e-mails in eight languages, the people, the add-ons
   shop/        the shopper's side: its screens and its door (the public API)
   studio/      the studio's side: its screens and its door (the staff session)
-  add-ons/     the host the studio mounts DHL's dispatch flow with
+  add-ons/     the host the studio mounts DHL's dispatch flow with: the client half
+               Adminium serves for the app (`connected.ts`), or in the demo a
+               vendored copy that answers from its demo carrier
   demo/        the in-browser demo for the website's card (never in a hosted build)
   sample/      Birch Row's Thursday, which both the bundle and the demo are made from
   contract/    the contract with a built Adminium (`npm run contract`)

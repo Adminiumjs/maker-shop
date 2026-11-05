@@ -323,3 +323,47 @@ describe("the moments and yes/no columns the door reads back are the manifest's"
     });
   }
 });
+
+describe("the add-ons' screens on a real install", () => {
+  const BUNDLE = "/api/v1/add-ons/shipping-dhl/bundle/dist/client.js";
+  // sha256 of the empty body the bundle answers with below.
+  const EMPTY = "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=";
+  const served = (attachedTo: string) => ({
+    addOns: [{ key: "shipping-dhl", name: "DHL Shipping", version: "1.0.17", attachments: [{ attachedTo, enabled: true }], bundles: [{ path: "dist/client.js", url: BUNDLE, integrity: EMPTY }] }],
+  });
+  const dhl = { key: "shipping-dhl", name: "DHL Shipping", shortName: "DHL", lineKey: "l", whatKey: "w", monogram: "DH", category: "delivery", connect: "api-key", permissions: [], settings: [], namesCompany: false, fills: [{ slot: "order.dispatch.actions", order: 0, render: () => "booked with DHL" }] };
+
+  function door(list: unknown) {
+    const asked: string[] = [];
+    const fetchImpl = (async (url: string) => {
+      asked.push(url);
+      return url.endsWith("/api/v1/add-ons") ? new Response(JSON.stringify(list), { status: 200 }) : new Response(new Uint8Array(), { status: 200 });
+    }) as unknown as typeof fetch;
+    const imported: string[] = [];
+    const importBundle = async (url: string) => {
+      imported.push(url);
+      return { register: () => dhl };
+    };
+    return { asked, imported, studio: new AdminiumStudio(transport().t, config(), { fetchImpl, origin: "https://studio.example", importBundle }) };
+  }
+
+  it("draws DHL's dispatch flow as Adminium serves it for this app, never the demo's copy", async () => {
+    const { asked, imported, studio } = door(served("maker"));
+    const registry = await studio.addOnRegistry();
+    expect(asked).toEqual(["https://studio.example/api/v1/add-ons", `https://studio.example${BUNDLE}`]);
+    expect(imported).toEqual([`https://studio.example${BUNDLE}`]);
+    const fills = registry.fillsFor("order.dispatch.actions", new Set(["shipping-dhl"]));
+    expect(fills.map((f) => f.fill.render({} as never))).toEqual(["booked with DHL"]);
+    // Asked once.
+    expect(await studio.addOnRegistry()).toBe(registry);
+    expect(asked).toHaveLength(2);
+  });
+
+  it("draws nothing of an add-on attached to another app, and says why nothing loaded when the list is not there", async () => {
+    const other = door(served("printing"));
+    expect((await other.studio.addOnRegistry()).all).toEqual([]);
+    expect(other.imported).toEqual([]);
+    const none = door(null);
+    expect((await none.studio.addOnRegistry()).all).toEqual([]);
+  });
+});

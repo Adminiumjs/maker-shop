@@ -338,9 +338,9 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
       }, 180_000);
 
       it("finds the words on a shopper's lines and proofs with them, erases a proof's, and keeps a line's for the law", async () => {
-        type Source = { table: string | null; keptByLaw: unknown; count: number; keys: string[] };
+        type Source = { app: string | null; ref: string | null; keptByLaw: unknown; count: number; keys: string[] };
         const found = ok(await staff.post<{ data: { sources: Source[] } }>("/api/v1/privacy/find", { address: SHOPPER.email })).data.sources;
-        const of = (ref: string) => found.filter((s) => s.table === (tables()[ref] ?? `maker_${ref}`));
+        const of = (ref: string) => found.filter((s) => s.app === "maker" && s.ref === ref);
         const placed = (await rows("orders")).filter((o) => ["BR-2291", "BR-2292"].includes(String(o["number"])));
         const ids = new Set(placed.map((o) => String(o["id"])));
         const lines = (await rows("order_lines")).filter((l) => ids.has(String(l["order_id"])));

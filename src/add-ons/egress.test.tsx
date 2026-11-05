@@ -3,12 +3,13 @@
  *
  * THE VENDORED DHL CLIENT REACHES NOTHING BUT ADMINIUM.
  *
- * The studio compiles DHL Shipping's client half in (`./vendor/shipping-dhl/`)
- * and mounts its dispatch flow on the post office run. The add-on's carrier
- * calls happen in its SERVER half, where the credentials are; its client half,
- * with no carrier injected (this app injects none), answers from its demo
- * carrier in the page. So nothing it draws or does may ask for anything off
- * the origin serving the studio, which is Adminium's.
+ * The demo studio compiles DHL Shipping's client half in (`./vendor/shipping-dhl/`)
+ * and mounts its dispatch flow on the post office run (a real install draws the
+ * one Adminium serves instead: `connected.ts`). The add-on's carrier calls
+ * happen in its SERVER half, where the credentials are; its client half, with
+ * no carrier injected (this app injects none), answers from its demo carrier in
+ * the page. So nothing it draws or does may ask for anything off the origin
+ * serving the studio, which is Adminium's.
  *
  * Two nets, because each sees what the other cannot:
  *

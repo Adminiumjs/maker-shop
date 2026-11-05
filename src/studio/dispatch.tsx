@@ -1,46 +1,45 @@
 /**
- * DHL's own dispatch flow on the post office run: its `order.dispatch.actions`
- * fill (the parcel, its rates, booking the collection, the label, the
- * tracking), handed the order as the studio keeps it and the service the
- * shopper chose, so it opens with that service picked.
+ * The delivery company's own dispatch flow on the post office run: its
+ * `order.dispatch.actions` fill (the parcel, its rates, booking the
+ * collection, the label, the tracking), handed the order as the studio keeps
+ * it and the service the shopper chose, so it opens with that service picked.
  *
- * NOTHING OF IT LOADS WITHOUT DHL. The add-on's client half is compiled into
- * its own chunk (`add-ons/registry.ts`) and imported the first time a screen
- * asks for it with DHL attached to the studio; a studio without DHL never
- * fetches it, and the run shows the service as it always has.
+ * WHERE IT COMES FROM is the door's (`StudioDoor.addOnRegistry`): on a real
+ * install, the add-on's client half as Adminium serves it for this app
+ * (`add-ons/connected.ts`), which books with the carrier through the add-on's
+ * server half and its account; in the demo, the vendored copy compiled in,
+ * which answers from its demo carrier and says so on every screen.
+ *
+ * NOTHING OF IT LOADS WITHOUT A CARRIER. The registry is asked for the first
+ * time a screen needs it with DHL attached to the studio; a studio without it
+ * never fetches it, and the run shows the service as it always has.
  */
 import { useEffect, useState } from "react";
 
 import type { AddOnRegistry } from "../add-ons/host.ts";
+import type { StudioDoor } from "./door.ts";
 import { useData, useEnv } from "./env.tsx";
 import { DHL, dispatchPayload } from "./outbound.ts";
 import type { Row } from "./wire.ts";
 
-let loaded: AddOnRegistry | null = null;
-let loading: Promise<AddOnRegistry> | null = null;
+/** Each door's registry once it has loaded, so a screen drawn again does not wait for it twice. */
+const loaded = new WeakMap<StudioDoor, AddOnRegistry>();
 
-/** The registry of the add-ons the studio compiles in, imported once. */
-export function loadRegistry(): Promise<AddOnRegistry> {
-  loading ??= import("../add-ons/registry.ts").then((m) => {
-    loaded = m.STUDIO_REGISTRY;
-    return loaded;
-  });
-  return loading;
-}
-
-/** The registry once it is loaded; null until then, and null (never loaded) when `wanted` is false. */
+/** The door's add-on registry once it is loaded; null until then, and null (never asked) when `wanted` is false. */
 export function useRegistry(wanted: boolean): AddOnRegistry | null {
-  const [registry, setRegistry] = useState<AddOnRegistry | null>(loaded);
+  const { door } = useEnv();
+  const [registry, setRegistry] = useState<AddOnRegistry | null>(loaded.get(door) ?? null);
   useEffect(() => {
     if (!wanted || registry !== null) return;
     let live = true;
-    void loadRegistry().then((r) => {
+    void door.addOnRegistry().then((r) => {
+      loaded.set(door, r);
       if (live) setRegistry(r);
     });
     return () => {
       live = false;
     };
-  }, [wanted, registry]);
+  }, [wanted, registry, door]);
   return wanted ? registry : null;
 }
 

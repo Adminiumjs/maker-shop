@@ -10,6 +10,7 @@ import type { Person, SendProof, StudioData, StudioDoor, StudioFacts } from "../
 import { ApiError, same, type Id, type Row } from "../wire.ts";
 import { holidayClosure } from "../holidays.ts";
 import { FACTS, fixture, person, THURSDAY } from "./fixture.ts";
+import type { AddOnRegistry } from "../../add-ons/host.ts";
 
 export interface Call {
   method: string;
@@ -51,6 +52,10 @@ export class FakeDoor implements StudioDoor {
     return list[i]!;
   }
 
+  /** The DHL client half compiled into the demo, answering from its demo carrier: no real booking is made. */
+  async addOnRegistry(): Promise<AddOnRegistry> {
+    return (await import("../../add-ons/registry.ts")).STUDIO_REGISTRY;
+  }
   who(): Person {
     return this.person;
   }

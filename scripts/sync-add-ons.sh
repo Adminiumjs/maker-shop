@@ -47,8 +47,11 @@
 #                  the SERVER half. Secrets are server-only and the client
 #                  bundle must not be able to reach the module that holds them.
 #                  `status` fails if one ever appears under vendor/.
-#   runtime/       the host's loader ABI for a bundle served by Adminium; this
-#                  studio compiles the client half in rather than loading one.
+#
+# `runtime/index.ts` IS copied: the host's loader ABI for a bundle served by
+# Adminium. On a real install the studio loads DHL's client half from Adminium
+# (`src/add-ons/connected.ts`) and publishes its React to it through this
+# module; only the demo build compiles the vendored client half in.
 #
 # With no monorepo checkout present, `status` reports SOURCE-MISSING and exits 0
 # — a clean clone of this app alone still builds. `sync` is then an error.
@@ -69,9 +72,9 @@ VENDOR="$HOST/src/add-ons/vendor"
 # its directory under vendor/.
 TARGETS=(host shipping-dhl)
 
-# The shared contract. `testing/` and `runtime/` are not here and must not be.
+# The shared contract, and the loader ABI a served bundle reads. `testing/` is not here and must not be.
 FILES_host=(
-  index.ts host.ts payloads.ts slots.ts delivery.ts
+  index.ts host.ts payloads.ts slots.ts delivery.ts runtime/index.ts
   contracts/index.ts contracts/common.ts
   contracts/artwork-source.ts contracts/shipping-carrier.ts
   contracts/product-personalizer.ts contracts/document-render.ts

@@ -25,6 +25,8 @@ import { momentOf } from "./time.ts";
 import type { Action, AddOnTable, Person, ProofPicture, SendProof, StudioData, StudioDoor, StudioFacts, Table } from "./door.ts";
 import { HOLIDAY_ADD_ON, holidayClosure, holidayPlace, inPlace } from "./holidays.ts";
 import { ApiError, type Id, type Row } from "./wire.ts";
+import { loadConnectedAddOns, type ConnectedProblem } from "../add-ons/connected.ts";
+import { createRegistry, type AddOnRegistry } from "../add-ons/host.ts";
 
 const APP_KEY = "maker";
 const CUSTOMISER = "customiser";
@@ -74,8 +76,12 @@ const q = (value: unknown) => encodeURIComponent(JSON.stringify(value));
 export interface StudioDoorOptions {
   /** The server's clock less the device's, as the config said it. */
   skew?: number;
-  /** How the picture of a proof is sent: the browser's `fetch`, or a test's. */
+  /** How the picture of a proof is sent, and the add-ons' list and bundles read: the browser's `fetch`, or a test's. */
   fetchImpl?: typeof fetch;
+  /** The origin the studio was served from: where Adminium serves the add-ons' bundles. */
+  origin?: string;
+  /** How a checked bundle is imported: the browser's `import()`, or a test's. */
+  importBundle?: (url: string) => Promise<unknown>;
 }
 
 export class AdminiumStudio implements StudioDoor {
@@ -83,12 +89,31 @@ export class AdminiumStudio implements StudioDoor {
   private readonly cfg: StaffConfig;
   private readonly skew: number;
   private readonly fetchImpl: typeof fetch;
+  private readonly options: StudioDoorOptions;
+  private registry: Promise<AddOnRegistry> | null = null;
+  /** Why an add-on Adminium listed for this app did not load, for whoever looks (none is shown: its slot stays empty). */
+  addOnProblems: ConnectedProblem[] = [];
 
   constructor(transport: SessionTransport, config: StaffConfig, options: StudioDoorOptions = {}) {
     this.t = transport;
     this.cfg = config;
     this.skew = options.skew ?? 0;
     this.fetchImpl = options.fetchImpl ?? globalThis.fetch.bind(globalThis);
+    this.options = options;
+  }
+
+  /** The add-ons Adminium serves for this app, loaded once: DHL's real dispatch flow, never the vendored demo's. */
+  addOnRegistry(): Promise<AddOnRegistry> {
+    this.registry ??= loadConnectedAddOns({
+      appKey: APP_KEY,
+      origin: this.options.origin ?? window.location.origin,
+      request: this.fetchImpl,
+      ...(this.options.importBundle === undefined ? {} : { importBundle: this.options.importBundle }),
+    }).then((loaded) => {
+      this.addOnProblems = loaded.problems;
+      return createRegistry(loaded.addOns);
+    });
+    return this.registry;
   }
 
   // ── the wire ──────────────────────────────────────────────────────────────

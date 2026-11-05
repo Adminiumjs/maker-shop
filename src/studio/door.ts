@@ -9,6 +9,7 @@
  * back as the API answers them and never adds a figure of its own.
  */
 import type { Id, Row } from "./wire.ts";
+import type { AddOnRegistry } from "../add-ons/host.ts";
 
 /** The app's tables, by the names the manifest gives them. */
 export type Table =
@@ -105,6 +106,12 @@ export interface SendProof {
 export interface StudioDoor {
   who(): Person;
   facts(): StudioFacts;
+  /**
+   * The add-ons' client halves the studio's slots draw (DHL's dispatch flow on the post run): on a real install the
+   * ones Adminium serves for this app, which book with the carrier through the add-on's server half; in the demo the
+   * one compiled in, which answers from its demo carrier. Asked only once a screen needs a slot filled.
+   */
+  addOnRegistry(): Promise<AddOnRegistry>;
   /** The server's clock, as epoch ms. */
   now(): number;
   load(): Promise<StudioData>;
