@@ -90,7 +90,7 @@ FILES_shipping_dhl=(
   demo-carrier.ts settings.ts runtime.ts index.ts
   i18n/strings.ts i18n/t.ts
   ui/atoms.tsx ui/labels.ts ui/DispatchAction.tsx ui/DeliveryMethods.tsx
-  ui/SettingsPanel.tsx ui/TrackingPanel.tsx ui/ReturnLabel.tsx
+  ui/SettingsPanel.tsx ui/TrackingPanel.tsx ui/ReturnLabel.tsx ui/account.tsx
 )
 
 # Modules that must never be reachable from the browser half: the server
