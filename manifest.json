@@ -307,14 +307,25 @@
               "columns": {
                 "desc": "product_name",
                 "qty": "qty",
-                "rate": "each",
-                "amount": "line_total"
+                "rate": "each_with_features",
+                "amount": "line_total",
+                "options": {
+                  "list": {
+                    "table": "order_line_features",
+                    "via": "line_id",
+                    "column": "name",
+                    "orderBy": "id"
+                  }
+                }
               }
             }
           ]
         },
         "subtotal": {
           "column": "pieces_total"
+        },
+        "tax": {
+          "column": "tax"
         },
         "total": {
           "column": "total"
@@ -3676,6 +3687,35 @@
             }
           },
           {
+            "ref": "tax",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "label": {
+              "en-US": "Tax",
+              "de-DE": "Steuer",
+              "fr-FR": "Taxe",
+              "da-DK": "Moms",
+              "cs-CZ": "Daň",
+              "ar-EG": "الضريبة",
+              "zh-CN": "税额",
+              "zh-TW": "稅額"
+            },
+            "rules": {
+              "formula": {
+                "mul": [
+                  {
+                    "coalesce": [
+                      "total",
+                      0
+                    ]
+                  },
+                  0
+                ]
+              }
+            }
+          },
+          {
             "ref": "placed_at",
             "type": "timestamptz",
             "label": {
@@ -4801,6 +4841,45 @@
                     "coalesce": [
                       "features_total",
                       0
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "ref": "each_with_features",
+            "type": "decimal",
+            "scale": "currency",
+            "nullable": true,
+            "label": {
+              "en-US": "Each with its features",
+              "de-DE": "Stückpreis mit Extras",
+              "fr-FR": "Prix unitaire avec options",
+              "da-DK": "Stykpris med tilvalg",
+              "cs-CZ": "Cena za kus s doplňky",
+              "ar-EG": "سعر القطعة مع إضافاتها",
+              "zh-CN": "含附加项的单价",
+              "zh-TW": "含附加項的單價"
+            },
+            "rules": {
+              "formula": {
+                "add": [
+                  "each",
+                  {
+                    "mul": [
+                      {
+                        "coalesce": [
+                          "features_each",
+                          0
+                        ]
+                      },
+                      {
+                        "coalesce": [
+                          "pieces_per_unit",
+                          1
+                        ]
+                      }
                     ]
                   }
                 ]

@@ -49,6 +49,8 @@ import { delivered, plain } from "./mail.ts";
 import { engineAtLeast, ENGINE_VERSION, MANIFEST_TEXT, NEEDS_PANELS_AND_LIMITS, READS_PANELS_AND_LIMITS } from "./release.ts";
 
 const why = missing() ?? missingAddOn("customiser");
+/** Whether Invoices & Receipts is built beside this checkout, to draw the order's receipt. */
+const INVOICES = why === null && missingAddOn("invoices") === null;
 if (why !== null && process.env["ADMINIUM_REQUIRE_CONTRACT"] === "1") throw new Error(`the contract must run here, and cannot: ${why}`);
 const PORT_BASE = Number(process.env["CONTRACT_PORT_BASE"] ?? 4960);
 const ADMIN = { email: process.env["E2E_ADMIN_EMAIL"] ?? "e2e@adminium.local", password: process.env["E2E_ADMIN_PASSWORD"] ?? "adminium-e2e-password" };
@@ -88,13 +90,19 @@ describe.skipIf(why !== null)(`a shopper buys on a built Adminium${why === null 
         const addOn = addOnBundle("customiser");
         const stagedAddOn = await staff.post(`/api/v1/add-ons/upload?expectedSha512=${encodeURIComponent(addOn.integrity)}`, addOn.buffer);
         if (![200, 201].includes(stagedAddOn.status)) throw new Error(`add-on upload: ${JSON.stringify(stagedAddOn.body).slice(0, 600)}`);
+        // Invoices & Receipts too, where the add-ons checkout has it built: the order's receipt is drawn by it.
+        const receipts = INVOICES ? addOnBundle("invoices") : null;
+        if (receipts !== null) {
+          const stagedReceipts = await staff.post(`/api/v1/add-ons/upload?expectedSha512=${encodeURIComponent(receipts.integrity)}`, receipts.buffer);
+          if (![200, 201].includes(stagedReceipts.status)) throw new Error(`invoices upload: ${JSON.stringify(stagedReceipts.body).slice(0, 600)}`);
+        }
         const app = appBundle({ manifest: MANIFEST_TEXT });
         const staged = await staff.post(`/api/v1/apps/upload?expectedSha512=${encodeURIComponent(app.integrity)}`, app.buffer);
         if (![200, 201].includes(staged.status)) throw new Error(`upload: ${JSON.stringify(staged.body).slice(0, 600)}`);
         const body = { key: app.key, version: app.version, connectionId };
         const plan = ok(await staff.post<{ plan: { checksum: string; installable: boolean } }>("/api/v1/apps/plan", body)).plan;
         if (!plan.installable) throw new Error(`not installable: ${JSON.stringify(plan).slice(0, 2000)}`);
-        const installed = ok(await staff.post<{ rules: { skipped: unknown[] } }>("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, addOns: [{ key: addOn.key, version: addOn.version }] }));
+        const installed = ok(await staff.post<{ rules: { skipped: unknown[] } }>("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, addOns: [{ key: addOn.key, version: addOn.version }, ...(receipts === null ? [] : [{ key: receipts.key, version: receipts.version }])] }));
         if (installed.rules.skipped.length > 0) throw new Error(`the install skipped rules: ${JSON.stringify(installed.rules.skipped).slice(0, 1500)}`);
         // The studio's zone decides its five o'clock cut-off; its money is pounds.
         ok(await staff.patch(`/api/v1/connections/${connectionId}`, { timezone: "Europe/London", currency: "GBP" }));
@@ -211,6 +219,19 @@ describe.skipIf(why !== null)(`a shopper buys on a built Adminium${why === null 
         expect(words).toMatch(/Postage · Second class £3\.95/);
         expect(words).toMatch(/Total £37\.95/);
         expect(words).toMatch(/Post by \S.*11/);
+      }, 120_000);
+
+      it.skipIf(!INVOICES)(`draws BR-2291's receipt: the line at its price with its features, the pieces, no tax, and the total${INVOICES ? "" : " — skipped: no built invoices add-on beside this checkout"}`, async () => {
+        const render = await staff.post<{ printUrl: string }>("/api/v1/apps/maker/documents/render", { kind: "receipt", ref: "orders", pk: { id: placed.order["id"] }, locale: "en-US" });
+        expect([200, 201], JSON.stringify(render.body).slice(0, 800)).toContain(render.status);
+        const printed = ok(await staff.get<unknown>(render.body.printUrl.replace(server.base, "")));
+        const words = plain(String(printed));
+        expect(words).toContain("Engraved walnut coasters");
+        expect(words).toMatch(/Subtotal\s*£34\.00/);
+        expect(words).toMatch(/Total\s*£37\.95/);
+        // The postage is not tax: the studio's prices include any, and the receipt says none.
+        expect(words).not.toMatch(/\bTax\b/);
+        expect(words).not.toContain("£3.95");
       }, 120_000);
 
       it("answers a retry with the order already made", async () => {

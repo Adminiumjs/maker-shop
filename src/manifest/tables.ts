@@ -238,6 +238,8 @@ const EACH = { round: [{ div: [{ mul: ["base_each", { sub: [100, { coalesce: ["p
 /** Customising features are flat a piece, never broken: "+£1.50 a piece" on a set of four is £6.00 a set. */
 const FEATURES_TOTAL = { mul: [{ coalesce: ["features_each", 0] }, "pieces"] };
 const LINE_TOTAL = { add: [{ mul: ["each", "qty"] }, { coalesce: ["features_total", 0] }] };
+/** A unit's price with its features: the features a piece times the pieces a unit, so `qty` times it is the line total exactly. */
+const EACH_WITH_FEATURES = { add: ["each", { mul: [{ coalesce: ["features_each", 0] }, { coalesce: ["pieces_per_unit", 1] }] }] };
 /**
  * Whether a line may go to the bench: one with nothing on it to proof goes;
  * one with words or a design goes once its latest proof is approved.
@@ -568,6 +570,9 @@ export const TABLES: Table[] = [
       money("postage", "Postage", { copy: { via: "postage_rate_id", from: "price", mode: "always" } }),
       money("pieces_total", "Pieces", { rollup: { from: "order_lines", via: "order_id", sum: "line_total" } }),
       money("total", "Total", { formula: { add: [{ coalesce: ["pieces_total", 0] }, { coalesce: ["postage", 0] }] } }),
+      // The studio's prices include any tax: nothing is added on top. Kept as a figure so a receipt says so, and
+      // never reads the postage as tax.
+      money("tax", "Tax", { formula: { mul: [{ coalesce: ["total", 0] }, 0] } }),
       at("placed_at", "Placed", { ...opt, rules: stamp("now", onCreate) }),
       // The day the last of its pieces goes in the post: its latest line's.
       date("post_by", "Post by", { ...opt, rules: { rollup: { from: "order_lines", via: "order_id", latest: { of: "post_by", by: "post_by" } } } }),
@@ -648,6 +653,8 @@ export const TABLES: Table[] = [
       money("features_each", "Features a piece", { rollup: { from: "order_line_features", via: "line_id", sum: "price" } }),
       money("features_total", "Features", { formula: FEATURES_TOTAL }),
       money("line_total", "Line total", { formula: LINE_TOTAL }),
+      // One unit with its features: what a receipt prints as "each", so its quantity times it is the line's total.
+      money("each_with_features", "Each with its features", { formula: EACH_WITH_FEATURES }),
       figure("grams", "int", "Weight a unit (g)", { copy: { via: "product_id", from: "grams", mode: "always" } }),
       figure("weight_g", "int", "Weight (g)", { formula: { mul: ["qty", { coalesce: ["grams", 0] }] } }),
       // What the line takes off the shelf, in its material's unit.

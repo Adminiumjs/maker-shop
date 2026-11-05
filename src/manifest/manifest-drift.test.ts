@@ -184,6 +184,20 @@ describe("a shopper reads nothing of anyone else's, and nothing the studio keeps
     expect(rules("problem_reports", "order_id")["lookup"]).toEqual({ from: "order_ref", table: "orders", column: "number_code", scope: [{ column: "email", equals: "email" }] });
   });
 
+  it("prints a receipt whose each times how many is the line's total, the features named under it, and no postage as tax", () => {
+    const receipt = (manifest["documents"] as (Json & { kind: string; mapping: Record<string, Json> })[]).find((d) => d.kind === "receipt")!;
+    const lines = (receipt.mapping["items"]!["collections"] as Json[])[0]!;
+    expect(lines["columns"]).toMatchObject({ qty: "qty", rate: "each_with_features", amount: "line_total", options: { list: { table: "order_line_features", via: "line_id", column: "name", orderBy: "id" } } });
+    // line_total = each × qty + features a piece × pieces, and pieces = qty × pieces a unit: so each_with_features × qty is it.
+    expect(rules("order_lines", "line_total")["formula"]).toEqual({ add: [{ mul: ["each", "qty"] }, { coalesce: ["features_total", 0] }] });
+    expect(rules("order_lines", "features_total")["formula"]).toEqual({ mul: [{ coalesce: ["features_each", 0] }, "pieces"] });
+    expect(rules("order_lines", "pieces")["formula"]).toEqual({ mul: ["qty", { coalesce: ["pieces_per_unit", 1] }] });
+    expect(rules("order_lines", "each_with_features")["formula"]).toEqual({ add: ["each", { mul: [{ coalesce: ["features_each", 0] }, { coalesce: ["pieces_per_unit", 1] }] }] });
+    // A tax the add-on would otherwise take as the total less the pieces, which is the postage.
+    expect([receipt.mapping["subtotal"], receipt.mapping["tax"], receipt.mapping["total"]]).toEqual([{ column: "pieces_total" }, { column: "tax" }, { column: "total" }]);
+    expect(rules("orders", "tax")["formula"]).toEqual({ mul: [{ coalesce: ["total", 0] }, 0] });
+  });
+
   it("counts a customer's orders and what they were charged without the cancelled ones", () => {
     expect(rules("customers", "order_count")["rollup"]).toEqual({ from: "orders", via: "customer_id", count: true, unlessSet: "cancelled_at" });
     expect(rules("customers", "spent")["rollup"]).toEqual({ from: "orders", via: "customer_id", sum: "total", unlessSet: "cancelled_at" });

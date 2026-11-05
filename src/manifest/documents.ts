@@ -7,8 +7,11 @@
  * is copied into the add-on and nothing is written back.
  *
  * Each line is a piece as the order kept it: its name, how many, the price
- * of one after the break, and the line's total with its customising
- * features. The postage is the order's own line under them.
+ * of one after the break with its customising features (named under it), and
+ * the line's total, so how many times each is the total. Under them the
+ * pieces' total, no tax (the studio's prices include any), and the total
+ * with the postage. Invoices & Receipts has no row for a delivery charge yet,
+ * so the postage is in the total and not on a line of its own.
  */
 import { l } from "./labels.ts";
 
@@ -26,11 +29,18 @@ export const DOCUMENTS = [
             table: "order_lines",
             via: "order_id",
             orderBy: "position",
-            columns: { desc: "product_name", qty: "qty", rate: "each", amount: "line_total" },
+            columns: {
+              desc: "product_name",
+              qty: "qty",
+              rate: "each_with_features",
+              amount: "line_total",
+              options: { list: { table: "order_line_features", via: "line_id", column: "name", orderBy: "id" } },
+            },
           },
         ],
       },
       subtotal: { column: "pieces_total" },
+      tax: { column: "tax" },
       total: { column: "total" },
       reference: { column: "number" },
       issuedAt: { column: "placed_at" },
