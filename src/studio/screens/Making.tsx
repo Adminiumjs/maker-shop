@@ -19,6 +19,7 @@ import { saveCount } from "../making-actions.ts";
 import { go, toast, useStudio } from "../store.ts";
 import { num, text, type Row } from "../wire.ts";
 import { closureFor, comingHolidays, HOLIDAY_ADD_ON, holidayPlace } from "../holidays.ts";
+import { mayKeepClosedDays } from "../roles.ts";
 import { useI18n, useT, type MessageKey } from "../../i18n/index.tsx";
 
 const MACHINE_ICONS: Readonly<Record<string, LucideIcon>> = { zap: Zap, box: Box, flame: Flame };
@@ -144,6 +145,12 @@ function PublicHolidays() {
         {t("studio.holidays.title")}
       </h2>
       <p className="mk-holidays-sub">{t("studio.holidays.sub")}</p>
+      {mayKeepClosedDays(door.who()) && (
+        // Holiday calendars' own picker, drawn by Adminium: which country's days, and the studio's own closed days.
+        <a className="st-linkbtn mk-holidays-settings" href="/add-on-settings/holiday-calendars" target="_top">
+          {t("studio.holidays.settings")}
+        </a>
+      )}
       {coming.length === 0 ? (
         <p className="mk-holidays-none">{t("studio.holidays.none", { country: countryName })}</p>
       ) : (

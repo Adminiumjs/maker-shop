@@ -18,7 +18,7 @@ import { go, useStudio } from "../store.ts";
 import { LineTile, ProductTile, Typed } from "../ui.tsx";
 import { num, same, text, type Id, type Row } from "../wire.ts";
 import { useT, type MessageKey } from "../../i18n/index.tsx";
-import { mayOpenPanel, mayReadCustomers } from "../roles.ts";
+import { mayErase, mayOpenPanel, mayReadCustomers } from "../roles.ts";
 
 // ── customers ───────────────────────────────────────────────────────────────
 
@@ -68,10 +68,14 @@ export function CustomersScreen() {
   );
 }
 
+/** Adminium's privacy page, on its tab for finding one person. */
+const PRIVACY_PAGE = "/studio/privacy?tab=person";
+
 function Person({ person }: { person: Row }) {
   const t = useT();
   const fmt = useFmt();
   const data = useData();
+  const { door } = useEnv();
   const orders = ordersOfCustomer(data, person);
   const town = orders.map((o) => text(o["town"])).find((v) => v !== null) ?? "";
   const usual = usualMaterial(data, orders);
@@ -85,6 +89,12 @@ function Person({ person }: { person: Row }) {
           {text(person["email"])}
           {town !== "" && ` · ${town}`}
         </div>
+        {mayErase(door.who()) && (
+          // Adminium's privacy page finds them by their address and erases what the studio keeps of them; nothing of theirs goes in the link.
+          <a className="st-linkbtn st-erase" href={PRIVACY_PAGE} target="_top">
+            {t("studio.customers.erase")}
+          </a>
+        )}
         <dl className="st-stats">
           <div className="st-stat">
             <dt>{t("bench.customers.count")}</dt>

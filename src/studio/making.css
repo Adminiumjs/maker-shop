@@ -442,3 +442,4 @@
 .mk-holiday-day { font-size: 12.5px; color: var(--fg-muted); min-inline-size: 92px; }
 .mk-holiday-name { font-size: 13.5px; font-weight: 700; margin-inline-end: auto; }
 .mk-holiday-added { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--pos); }
+.mk-holidays-settings { margin-block-end: 12px; }

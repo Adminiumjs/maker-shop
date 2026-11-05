@@ -18,6 +18,12 @@ export const mayMake = (who: Person): boolean => has(who, "owner", "maker") && w
 /** Takes the post office run. */
 export const mayPost = (who: Person): boolean => has(who, "owner", "packer") && who.can("orders", "update");
 
+/** Finds a customer and erases what the studio keeps of them, on Adminium's privacy page (the owner's `privacy:@:people`). */
+export const mayErase = (who: Person): boolean => who.roles.includes("owner");
+
+/** Chooses the days the studio closes, on Holiday calendars' own settings (the owner's `addOn:holiday-calendars:settings`). */
+export const mayKeepClosedDays = (who: Person): boolean => who.roles.includes("owner");
+
 /** Reads the customers and what they were charged. */
 export const mayReadCustomers = (who: Person): boolean => who.can("customers", "read");
 

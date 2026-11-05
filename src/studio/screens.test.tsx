@@ -546,6 +546,13 @@ describe("what each role sees", () => {
     await sweep("packer's order");
   });
 
+  it("takes the owner to Adminium's privacy page to erase a customer, with nothing of theirs in the link", async () => {
+    await mount(new FakeDoor({ roles: ["owner"] }), "customers", { customerId: 1 });
+    const link = document.querySelector<HTMLAnchorElement>(".st-erase");
+    expect([link?.getAttribute("href"), link?.getAttribute("target"), link?.textContent]).toEqual(["/studio/privacy?tab=person", "_top", "Erase what we keep of them"]);
+    await sweep("a customer with the way to erase them");
+  });
+
   it("shows a maker who opens the customers' address the 404", async () => {
     await mount(new FakeDoor({ roles: ["maker"] }), "customers");
     expect(text()).toContain("Nothing on this bench");

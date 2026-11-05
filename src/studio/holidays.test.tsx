@@ -100,6 +100,12 @@ describe("the coming public holidays on Machine time", () => {
     expect(document.querySelector("[aria-label^='Add as a closure: Christmas Day']")).toBeNull();
   });
 
+  it("takes the owner to Holiday calendars' own settings, where the closed days are chosen", async () => {
+    await mount(withHolidays({ roles: ["owner"] }));
+    const link = document.querySelector<HTMLAnchorElement>(".mk-holidays-settings");
+    expect([link?.getAttribute("href"), link?.getAttribute("target"), link?.textContent]).toEqual(["/add-on-settings/holiday-calendars", "_top", "Choose the country's holidays and the studio's own closed days"]);
+  });
+
   it("says plainly when the country has none coming", async () => {
     await mount(withHolidays({}, []));
     expect(document.querySelector(".mk-holidays-none")?.textContent).toBe("United Kingdom: no public holidays coming up.");
