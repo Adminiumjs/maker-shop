@@ -166,7 +166,7 @@ export async function boot(engine: Engine, port: number, now: number, database: 
   const env: NodeJS.ProcessEnv = {
     ...process.env,
     // An add-on packed from a checkout has no catalogue to vouch for its bytes: a developer's server runs it by name.
-    ADMINIUM_ADD_ON_DEV_TRUST: "customiser",
+    ADMINIUM_ADD_ON_DEV_TRUST: "customiser,holiday-calendars",
     E2E_ENGINE: engine,
     E2E_PORT: String(port),
     E2E_SMTP_PORT: String(port + 1),
@@ -376,7 +376,7 @@ const ADMIN = { email: process.env["E2E_ADMIN_EMAIL"] ?? "e2e@adminium.local", p
  * clock standing there. Hands back the operator, signed in, and the
  * connection.
  */
-export async function installStudio(server: Server, engine: Engine, at: number, manifest: string, dbFile: string): Promise<{ owner: Caller; connectionId: string }> {
+export async function installStudio(server: Server, engine: Engine, at: number, manifest: string, dbFile: string, addOns: readonly string[] = ["customiser"]): Promise<{ owner: Caller; connectionId: string }> {
   const owner = new Caller(server.base);
   await owner.signIn(ADMIN.email, ADMIN.password);
   let connectionId: string;
@@ -387,16 +387,18 @@ export async function installStudio(server: Server, engine: Engine, at: number, 
   } else {
     connectionId = ok(await owner.get<{ connections: { id: string; name: string }[] }>("/api/v1/connections")).connections.find((c) => c.name === "northwind")!.id;
   }
-  const customiser = addOnBundle("customiser");
-  const stagedAddOn = await owner.post(`/api/v1/add-ons/upload?expectedSha512=${encodeURIComponent(customiser.integrity)}`, customiser.buffer);
-  if (![200, 201].includes(stagedAddOn.status)) throw new Error(`the Customiser was not staged: ${JSON.stringify(stagedAddOn.body).slice(0, 800)}`);
+  const bundles = addOns.map((key) => addOnBundle(key));
+  for (const addOn of bundles) {
+    const stagedAddOn = await owner.post(`/api/v1/add-ons/upload?expectedSha512=${encodeURIComponent(addOn.integrity)}`, addOn.buffer);
+    if (![200, 201].includes(stagedAddOn.status)) throw new Error(`${addOn.key} was not staged: ${JSON.stringify(stagedAddOn.body).slice(0, 800)}`);
+  }
   const app = appBundle({ manifest });
   const staged = await owner.post(`/api/v1/apps/upload?expectedSha512=${encodeURIComponent(app.integrity)}`, app.buffer);
   if (![200, 201].includes(staged.status)) throw new Error(`the app was not staged: ${JSON.stringify(staged.body).slice(0, 800)}`);
   const body = { key: app.key, version: app.version, connectionId };
-  const plan = ok(await owner.post<{ plan: { installable: boolean; checksum: string } }>("/api/v1/apps/plan", { ...body, addOns: [customiser.key] })).plan;
+  const plan = ok(await owner.post<{ plan: { installable: boolean; checksum: string } }>("/api/v1/apps/plan", { ...body, addOns: bundles.map((addOn) => addOn.key) })).plan;
   if (!plan.installable) throw new Error(`not installable: ${JSON.stringify(plan).slice(0, 3000)}`);
-  ok(await owner.post("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, addOns: [{ key: customiser.key, version: customiser.version }] }));
+  ok(await owner.post("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, addOns: bundles.map((addOn) => ({ key: addOn.key, version: addOn.version })) }));
   ok(await owner.patch(`/api/v1/connections/${connectionId}`, { timezone: "Europe/London", currency: "GBP" }));
   await server.setClock(at, true);
   await addSample(owner);

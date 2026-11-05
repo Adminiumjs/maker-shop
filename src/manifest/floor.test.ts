@@ -49,6 +49,11 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
     expect(tablesOf("packer")).toEqual({ designs: ["read"] });
   });
 
+  it("gives the owner Holiday calendars' settings, and no other role", () => {
+    expect(roleOf(shipped, "owner").permissions).toContain("addOn:holiday-calendars:settings");
+    for (const key of ["maker", "packer"]) expect(roleOf(shipped, key).permissions.filter((p) => p.startsWith("addOn:"))).toEqual([]);
+  });
+
   it("holds a placed line's lettering to its product's limit", () => {
     expect(linesOf(shipped)["agrees"]).toEqual([LETTERING_FITS]);
   });

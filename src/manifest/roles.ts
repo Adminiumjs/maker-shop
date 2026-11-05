@@ -2,8 +2,8 @@
  * Who may do what, enforced by Adminium on every read and write.
  *
  *   owner    everything: the dashboard section, the catalogue and its prices,
- *            the settings, the customers, the e-mails; and the studio's own
- *            screens.
+ *            the settings, the customers, the e-mails; the studio's own
+ *            screens; and Holiday calendars' closed days (its settings).
  *   maker    the studio's screens, never the dashboard: the board and the
  *            orders' lines, the proofs (send one, remind, send again),
  *            batches, machine bookings and the stock, and a product's
@@ -127,6 +127,8 @@ export const ROLES = [
       ...PAGE_REFS.flatMap((page) => [view(page), `page:@${page}:edit`]),
       ...["orders", "customers", "commission_requests", "problem_reports", "messages"].map(pii),
       ...ROLE_PANELS["owner"]!.map(view),
+      // Holiday calendars' one setting, the days the studio is closed: the owner's to keep, not only an administrator's.
+      `addOn:${HOLIDAYS}:settings`,
     ],
     limits: {
       orders: { writable: typed("orders", ...SHOPPERS_OWN), creatable: typed("orders", ...SHOPPERS_OWN) },

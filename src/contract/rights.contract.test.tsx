@@ -17,7 +17,9 @@
  *     host's `useWrite` and `useUpload` make (the drawing itself needs a
  *     browser's canvas, which this suite has not), and the studio's proof
  *     sheet then sends that proof;
- *   - the product's panel is served to the owner.
+ *   - the product's panel is served to the owner;
+ *   - the owner keeps Holiday calendars' closed days (its settings grant),
+ *     and finds a customer to erase (an engine gap: no app role holds it).
  *
  * The panel is drawn in a page of jsdom's, made for the drawing only: the
  * suite itself runs in Node, as the other contracts do, so its harness reads
@@ -115,7 +117,7 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
 
       beforeAll(async () => {
         server = await boot(engine as Engine, PORT_BASE + index * PORTS_PER_ENGINE, THURSDAY - 60_000, `maker_panel_contract_${engine}${process.env["CONTRACT_DB_SUFFIX"] ?? ""}`);
-        ({ owner } = await installStudio(server, engine as Engine, THURSDAY, MANIFEST_TEXT, join(tmpdir(), `maker-panel-contract-${String(PORT_BASE)}.db`)));
+        ({ owner } = await installStudio(server, engine as Engine, THURSDAY, MANIFEST_TEXT, join(tmpdir(), `maker-panel-contract-${String(PORT_BASE)}.db`), ["customiser", "holiday-calendars"]));
         for (const [slug, name] of [["owner", "Nell Birch"], ["maker", "Jo Marsh"], ["packer", "Ade Pack"]] as const) {
           callers[slug] = await personWith(owner, server, slug, `${slug}.panel.${engine}@birchrow.example`, name);
           doors[slug] = await doorFor(callers[slug]!);
@@ -225,6 +227,29 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
           expect(sent.length).toBeGreaterThan(0);
         }, 60_000);
       }
+
+      // ── the owner's own: Holiday calendars' closed days, and a customer erased ──
+
+      it("lets the owner keep Holiday calendars' closed days, and refuses the maker", async () => {
+        const days = [{ day: "2026-12-28", name: "Bank holiday", from: { country: "GB", region: "england-and-wales", year: 2026 } }];
+        const kept = await callers["owner"]!.send<{ values: Record<string, unknown> }>("PUT", "/api/v1/add-ons/holiday-calendars/settings", { values: { days } });
+        expect(kept.status, JSON.stringify(kept.body).slice(0, 400)).toBe(200);
+        // The studio's screens read them back from the staff config, as the add-on's public setting.
+        const cfg = (await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: callers["owner"]!.fetchAs() }))!;
+        expect(cfg.addOns["holiday-calendars"]?.settings["days"]).toEqual(days);
+        expect((await callers["maker"]!.send("PUT", "/api/v1/add-ons/holiday-calendars/settings", { values: { days: [] } })).status).toBe(403);
+      });
+
+      /*
+       * Finding and erasing a person is `system:privacy:manage`, which an
+       * app's manifest may not hand out (`system:` grants are refused at
+       * plan time): the shop's owner, who is not an administrator, is
+       * refused the studio's privacy page.
+       */
+      it.fails("lets the owner find a customer to erase them (gap: an app role cannot hold the erase right)", async () => {
+        const found = await callers["owner"]!.post("/api/v1/privacy/find", { address: "iris.p@example.com" });
+        expect(found.status, JSON.stringify(found.body).slice(0, 400)).toBe(200);
+      });
 
       /*
        * "Make the files again" takes the version's old files away first (the

@@ -10235,7 +10235,8 @@
         "table:@problem_reports:read_pii",
         "table:@messages:read_pii",
         "page:@customiser-line:view",
-        "page:@customiser-product:view"
+        "page:@customiser-product:view",
+        "addOn:holiday-calendars:settings"
       ],
       "limits": {
         "orders": {
