@@ -35,8 +35,9 @@
 .mk-block-time { font-family: var(--font-mono); font-size: 9.5px; color: var(--fg-subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mk-now { grid-row: 1; justify-self: start; inline-size: 2px; margin-block: -4px; background: var(--danger); }
 .mk-day-empty { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12.5px; color: var(--fg-subtle); }
-.mk-ticks { display: grid; grid-template-columns: repeat(10, 1fr); margin-inline: calc(-100% / 18); margin-block-start: 4px; }
-.mk-tick { text-align: center; font-family: var(--font-mono); font-size: 9.5px; color: var(--fg-subtle); }
+/* Each hour's label centred on its line: boxes of no width at the day's edges and between, so the first and last labels sit in the card's padding and never widen the page. */
+.mk-ticks { display: flex; justify-content: space-between; margin-block-start: 4px; }
+.mk-tick { inline-size: 0; display: flex; justify-content: center; white-space: nowrap; font-family: var(--font-mono); font-size: 9.5px; color: var(--fg-subtle); }
 .mk-at-0 { grid-column-start: 1; }
 .mk-at-1 { grid-column-start: 2; }
 .mk-at-2 { grid-column-start: 3; }
