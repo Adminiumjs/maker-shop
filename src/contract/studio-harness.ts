@@ -12,7 +12,7 @@
  */
 import { spawn, type ChildProcess } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -362,4 +362,56 @@ export function png(width = 12, height = 8): Buffer {
   const rows = Buffer.alloc((width * 3 + 1) * height);
   for (let y = 0; y < height; y += 1) for (let x = 0; x < width; x += 1) rows.set([0x6b, 0x44, 0x23], y * (width * 3 + 1) + 1 + x * 3);
   return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk("IHDR", ihdr), chunk("IDAT", deflateSync(rows)), chunk("IEND", Buffer.alloc(0))]);
+}
+
+// ── the studio, installed ───────────────────────────────────────────────────
+
+const ADMIN = { email: process.env["E2E_ADMIN_EMAIL"] ?? "e2e@adminium.local", password: process.env["E2E_ADMIN_PASSWORD"] ?? "adminium-e2e-password" };
+
+/**
+ * The Customiser and this app installed together on a booted server, as an
+ * operator installs them, in the studio's own database (a file of its own on
+ * SQLite; the e2e server's database on Postgres and MySQL), the connection in
+ * Settle's zone and pounds, and the app's sample written at `at` with the
+ * clock standing there. Hands back the operator, signed in, and the
+ * connection.
+ */
+export async function installStudio(server: Server, engine: Engine, at: number, manifest: string, dbFile: string): Promise<{ owner: Caller; connectionId: string }> {
+  const owner = new Caller(server.base);
+  await owner.signIn(ADMIN.email, ADMIN.password);
+  let connectionId: string;
+  if (engine === "sqlite") {
+    rmSync(dbFile, { force: true });
+    writeFileSync(dbFile, "");
+    connectionId = ok(await owner.post<{ id: string }>("/api/v1/connections", { name: "birch-row", engine: "sqlite", dsn: `sqlite:${dbFile}` }), 201).id;
+  } else {
+    connectionId = ok(await owner.get<{ connections: { id: string; name: string }[] }>("/api/v1/connections")).connections.find((c) => c.name === "northwind")!.id;
+  }
+  const customiser = addOnBundle("customiser");
+  const stagedAddOn = await owner.post(`/api/v1/add-ons/upload?expectedSha512=${encodeURIComponent(customiser.integrity)}`, customiser.buffer);
+  if (![200, 201].includes(stagedAddOn.status)) throw new Error(`the Customiser was not staged: ${JSON.stringify(stagedAddOn.body).slice(0, 800)}`);
+  const app = appBundle({ manifest });
+  const staged = await owner.post(`/api/v1/apps/upload?expectedSha512=${encodeURIComponent(app.integrity)}`, app.buffer);
+  if (![200, 201].includes(staged.status)) throw new Error(`the app was not staged: ${JSON.stringify(staged.body).slice(0, 800)}`);
+  const body = { key: app.key, version: app.version, connectionId };
+  const plan = ok(await owner.post<{ plan: { installable: boolean; checksum: string } }>("/api/v1/apps/plan", { ...body, addOns: [customiser.key] })).plan;
+  if (!plan.installable) throw new Error(`not installable: ${JSON.stringify(plan).slice(0, 3000)}`);
+  ok(await owner.post("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, addOns: [{ key: customiser.key, version: customiser.version }] }));
+  ok(await owner.patch(`/api/v1/connections/${connectionId}`, { timezone: "Europe/London", currency: "GBP" }));
+  await server.setClock(at, true);
+  await addSample(owner);
+  await server.setClock(at);
+  return { owner, connectionId };
+}
+
+/** Someone holding one of the app's roles and no other, signed in to the studio's own screens. */
+export async function personWith(owner: Caller, server: Server, slug: string, email: string, name: string): Promise<Caller> {
+  const roles = ok(await owner.get<{ roles: { id: string; name: string; slug?: string }[] }>("/api/v1/roles")).roles;
+  const role = roles.find((r) => r.slug === `maker-${slug}`) ?? roles.find((r) => r.name.toLowerCase() === slug)!;
+  const invited = ok(await owner.post<{ invite: { token: string } }>("/api/v1/users", { email, name, roleIds: [role.id] }), 201);
+  const password = newPassword();
+  ok(await new Caller(server.base).post("/api/v1/auth/password/reset", { token: invited.invite.token, newPassword: password }));
+  const caller = new Caller(server.base);
+  await caller.signInToScreens(email, password);
+  return caller;
 }

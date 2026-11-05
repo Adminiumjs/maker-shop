@@ -17,6 +17,7 @@ import { StudioProvider, type StudioEnv } from "./env.tsx";
 import { StudioApp, screensFor } from "./StudioApp.tsx";
 import { useStudio, type View } from "./store.ts";
 import { FakeDoor } from "./testing/fakeDoor.ts";
+import { FakePanels } from "./testing/fakePanels.tsx";
 import { fixture } from "./testing/fixture.ts";
 import { ApiError } from "./wire.ts";
 
@@ -43,7 +44,7 @@ afterEach(() => {
 const draw = async () => new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47])], { type: "image/png" });
 
 async function mount(door: FakeDoor, view: View = "today", more: Partial<ReturnType<typeof useStudio.getState>> = {}): Promise<void> {
-  const env: StudioEnv = { door, draw, recordHref: (page, id) => `/p/${page}/r/${String(id)}` };
+  const env: StudioEnv = { door, draw };
   useStudio.setState({ data: await door.load(), view, ...more });
   await act(async () => {
     root = createRoot(host);
@@ -263,13 +264,71 @@ describe("the order", () => {
     expect(door.calls[0]).toEqual({ method: "sendProof", args: { order: 16, line: 161, kind: "design", picture: { copyOf: "file_01J8Z6Q3M4N5P6R7S8T9V0W1XA" }, designVersionId: 30, note: null } });
   });
 
-  it("links a designed piece to its line's page, where the Customiser's panel makes the proof and the files", async () => {
+  it("opens the Customiser's panel on a designed piece, where the proof is made and stored as the maker", async () => {
+    const door = new FakeDoor({ roles: ["maker"] });
+    const panels = new FakePanels({ designs: door.data.designs, design_versions: door.data.versions.map((v) => ({ ...v, proof_file: null })) });
+    door.panelDoor = panels;
+    await mount(door, "order", { orderId: 16 });
+    expect([button("Make the proof"), button("Make the files")].map((b) => b?.tagName)).toEqual(["BUTTON", "BUTTON"]);
+    await click(button("Make the files"));
+    const sheet = document.querySelector("[role='dialog']");
+    expect(sheet?.getAttribute("aria-labelledby")).toBe("st-panel-title");
+    expect(document.getElementById("st-panel-title")?.textContent).toBe("Engraved walnut coasters");
+    expect(panels.calls[0]).toEqual({ method: "load", args: [{ id: "customiser-line", table: "order_lines", row: 161 }] });
+    // The panel's own reads, by the add-on's short names: the design the line links to, its versions.
+    expect(sheet?.textContent).toContain("BR2290H5F3P9V8YA");
+    expect(sheet?.textContent).toContain("1 version");
+    await click([...sheet!.querySelectorAll("button")].find((b) => b.textContent === "Make the proof"));
+    expect(panels.calls.find((c) => c.method === "upload")?.args).toEqual(["customiser", "design_versions", "proof_file", 30, "proof.png", "image/png"]);
+    expect(toasts()).toContain("The proof is made.");
+    await sweep("the Customiser's panel on a line");
+  });
+
+  it("says the server's refusal of a write in the panel, and leaves nothing made", async () => {
+    const door = new FakeDoor({ roles: ["maker"] });
+    const panels = new FakePanels({ designs: door.data.designs, design_versions: door.data.versions });
+    panels.refuseWrite = new ApiError(403, "TABLE_FORBIDDEN", "You may not change design versions.");
+    door.panelDoor = panels;
+    await mount(door, "order", { orderId: 16 });
+    await click(button("Make the proof"));
+    await click([...document.querySelectorAll("[role='dialog'] button")].find((b) => b.textContent === "Make the proof"));
+    expect(document.querySelector("[role='dialog'] [role='alert']")?.textContent).toBe("You may not change design versions.");
+  });
+
+  it("shows a packer neither the way to the Customiser's panel nor the panel", async () => {
+    await mount(new FakeDoor({ roles: ["packer"] }), "order", { orderId: 16 });
+    expect(button("Make the proof")).toBeUndefined();
+    expect(button("Make the files")).toBeUndefined();
+  });
+
+  it("says so when Adminium will not serve the panel to this role, or has none here", async () => {
+    const door = new FakeDoor({ roles: ["maker"] });
+    const panels = new FakePanels();
+    door.panelDoor = panels;
+    panels.refuseLoad = 403;
+    await mount(door, "order", { orderId: 16 });
+    await click(button("Make the proof"));
+    expect(document.querySelector("[role='dialog']")?.textContent).toContain("Your role does not open the Customiser's panel.");
+    act(() => useStudio.setState({ overlay: null }));
+    panels.refuseLoad = 404;
+    await click(button("Make the proof"));
+    expect(document.querySelector("[role='dialog']")?.textContent).toContain("The Customiser has no panel here");
+  });
+
+  it("says where the panel is drawn when no Adminium serves it (the demo)", async () => {
     await mount(new FakeDoor(), "order", { orderId: 16 });
-    const links = [...document.querySelectorAll("a")].filter((a) => /Make the (proof|files)/.test(a.textContent ?? ""));
-    expect(links.map((a) => [a.textContent, a.getAttribute("href"), a.getAttribute("target")])).toEqual([
-      ["Make the proof", "/p/maker-lines/r/161", "_top"],
-      ["Make the files", "/p/maker-lines/r/161", "_top"],
-    ]);
+    await click(button("Make the proof"));
+    expect(document.querySelector("[role='dialog']")?.textContent).toContain("On your own Adminium the Customiser draws its panel here");
+  });
+
+  it("opens the Customiser's panel on the proof sheet's design whose proof is not made", async () => {
+    const door = new FakeDoor({ roles: ["maker"] });
+    door.data.versions = door.data.versions.map((v) => ({ ...v, proof_file: null }));
+    door.panelDoor = new FakePanels({ designs: door.data.designs, design_versions: door.data.versions });
+    await mount(door, "order", { orderId: 16 });
+    await click(button("Send a proof"));
+    await click([...document.querySelectorAll("[role='dialog'] button")].find((b) => b.textContent === "Make the proof"));
+    expect(document.getElementById("st-panel-title")?.textContent).toBe("Engraved walnut coasters");
   });
 
   it("marks the pieces made, and says so", async () => {
@@ -364,6 +423,21 @@ describe("the post office run", () => {
 });
 
 describe("a product's lettering settings", () => {
+  it("opens the Customiser's panel on a product's base for the owner, and shows a maker no way to it", async () => {
+    const door = new FakeDoor({ roles: ["owner"] });
+    const panels = new FakePanels({ bases: [{ id: 7, name: "Coaster, 95 mm" }] });
+    door.panelDoor = panels;
+    await mount(door, "product", { productId: 1 });
+    await click(button("Its designs, in the Customiser"));
+    expect(panels.calls[0]).toEqual({ method: "load", args: [{ id: "customiser-product", table: "products", row: 1 }] });
+    expect(document.querySelector("[role='dialog']")?.textContent).toContain("Coaster, 95 mm");
+    await sweep("the Customiser's panel on a product");
+    act(() => root?.unmount());
+    root = null;
+    await mount(new FakeDoor({ roles: ["maker"] }), "product", { productId: 1 });
+    expect(button("Its designs, in the Customiser")).toBeUndefined();
+  });
+
   it("refuses an empty limit and a limit past 80, on their fields", async () => {
     const door = new FakeDoor();
     await mount(door, "product", { productId: 2 });

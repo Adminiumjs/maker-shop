@@ -57,7 +57,7 @@ export function DemoRoot() {
   const theme = useOneTheme();
   const env = useMemo<StudioEnv>(
     // A record's own page is the dashboard's, which the demo does not have: the link stays on this page.
-    () => ({ door: demoAdminium().studio, draw: drawLettering, recordHref: () => "#" }),
+    () => ({ door: demoAdminium().studio, draw: drawLettering }),
     // A fresh world is a new door.
     [generation],
   );

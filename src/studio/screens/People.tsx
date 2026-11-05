@@ -16,9 +16,9 @@ import { linesOf, materialOf, ordersOfCustomer, productOf, queued, usualMaterial
 import { useFmt } from "../format.ts";
 import { go, useStudio } from "../store.ts";
 import { LineTile, ProductTile, Typed } from "../ui.tsx";
-import { num, same, text, type Row } from "../wire.ts";
+import { num, same, text, type Id, type Row } from "../wire.ts";
 import { useT, type MessageKey } from "../../i18n/index.tsx";
-import { mayReadCustomers } from "../roles.ts";
+import { mayOpenPanel, mayReadCustomers } from "../roles.ts";
 
 // ── customers ───────────────────────────────────────────────────────────────
 
@@ -215,7 +215,7 @@ function ProductEditor({ product }: { product: Row }) {
   const t = useT();
   const fmt = useFmt();
   const data = useData();
-  const { door, recordHref } = useEnv();
+  const { door } = useEnv();
   const { busy, run } = useRun();
   const saved = {
     takes: product["takes_lettering"] === true,
@@ -361,10 +361,10 @@ function ProductEditor({ product }: { product: Row }) {
             <span className="st-small" role="status">
               {dirty ? t("studio.product.unsaved") : t("studio.product.saved")}
             </span>
-            {designed && (
-              <a className="st-linkbtn" href={recordHref("maker-products", product.id)} target="_top">
+            {designed && mayOpenPanel(door.who(), "customiser-product") && (
+              <button type="button" className="st-linkbtn" onClick={() => useStudio.setState({ overlay: { kind: "panel", panel: { id: "customiser-product", table: "products", row: product.id }, linked: product["base_id"] as Id, title: text(product["name"]) ?? "" } })}>
                 {t("studio.product.customiserLink")}
-              </a>
+              </button>
             )}
           </div>
         </div>

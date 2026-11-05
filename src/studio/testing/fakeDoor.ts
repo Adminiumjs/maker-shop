@@ -6,7 +6,7 @@
  *
  * Tests only; nothing that ships imports it.
  */
-import type { Person, SendProof, StudioData, StudioDoor, StudioFacts } from "../door.ts";
+import type { PanelDoor, Person, SendProof, StudioData, StudioDoor, StudioFacts } from "../door.ts";
 import { ApiError, same, type Id, type Row } from "../wire.ts";
 import { holidayClosure } from "../holidays.ts";
 import { FACTS, fixture, person, THURSDAY } from "./fixture.ts";
@@ -56,6 +56,12 @@ export class FakeDoor implements StudioDoor {
   async addOnRegistry(): Promise<AddOnRegistry> {
     return (await import("../../add-ons/registry.ts")).STUDIO_REGISTRY;
   }
+  /** The Customiser's panels' door a test hands in; none by default, as in the demo. */
+  panelDoor: PanelDoor | null = null;
+  panels(): PanelDoor | null {
+    return this.panelDoor;
+  }
+
   who(): Person {
     return this.person;
   }

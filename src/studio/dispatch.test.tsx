@@ -54,7 +54,7 @@ async function until(selector: string): Promise<HTMLElement> {
 }
 
 async function mount(door: FakeDoor): Promise<void> {
-  const env: StudioEnv = { door, draw: async () => null, recordHref: () => "#" };
+  const env: StudioEnv = { door, draw: async () => null };
   useStudio.setState({ data: await door.load(), view: "post" });
   await act(async () => {
     root = createRoot(host);

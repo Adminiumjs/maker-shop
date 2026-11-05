@@ -76,8 +76,6 @@ export async function bootStudio(mount: HTMLElement): Promise<void> {
   const env: StudioEnv = {
     door,
     draw: drawLettering,
-    // A record's page in the dashboard, where the Customiser's panels are drawn.
-    recordHref: (page, id) => `/p/${encodeURIComponent(page)}/r/${encodeURIComponent(String(id))}`,
   };
 
   // The address and the screen in step; inside the dashboard, its sidebar too.

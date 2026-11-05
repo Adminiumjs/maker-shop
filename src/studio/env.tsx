@@ -1,7 +1,7 @@
 /**
  * What every studio screen reaches through React: the door into Adminium,
- * how a proof's picture is drawn in this browser, where a record's own page
- * is in the dashboard, and the hooks that read the rows and run a write.
+ * how a proof's picture is drawn in this browser, and the hooks that read
+ * the rows and run a write.
  *
  * A write is run the same way everywhere: while it is on, the screen says so;
  * when it is done, the rows are read again (Adminium's figures, never the
@@ -14,15 +14,13 @@ import { createContext, useCallback, useContext, useState, type ReactNode } from
 import type { StudioData, StudioDoor } from "./door.ts";
 import { HeldByProof } from "./actions.ts";
 import { toast, useStudio } from "./store.ts";
-import { isApiError, type Id, type Row } from "./wire.ts";
+import { isApiError, type Row } from "./wire.ts";
 import { useT } from "../i18n/index.tsx";
 
 export interface StudioEnv {
   door: StudioDoor;
   /** A picture of a line's words, as its proof shows them; null where this browser cannot draw. */
   draw: (line: Row, data: StudioData) => Promise<Blob | null>;
-  /** A record's own page in the dashboard (where the Customiser's panels are drawn). */
-  recordHref: (page: string, id: Id) => string;
 }
 
 const Ctx = createContext<StudioEnv | null>(null);

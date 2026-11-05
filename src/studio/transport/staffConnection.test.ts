@@ -104,7 +104,7 @@ describe("loadStaffConfig", () => {
       csrfToken: "tok",
       publicKeys: { kiosk: "adm_pub_k", broken: 3 },
       access: { tables: { tickets: ["read", "update", "fly"], odd: "all" }, roles: [{ slug: "pos-cashier", name: "POS cashier" }, { name: "no slug" }] },
-      addOns: { invoices: { version: "1.0.3", settings: { business_name: "Harbour Café" } }, odd: 3 },
+      addOns: { invoices: { version: "1.0.3", settings: { business_name: "Harbour Café" }, tables: { invoices: "invoices_invoices", odd: 4 } }, odd: 3 },
       sharedTables: { menu_items: ["ordering"], tickets: [], odd: "all" },
     });
     expect(await loadStaffConfig({ hostedStaff: true, base: "/apps/pos/staff/", fetchImpl })).toEqual({
@@ -121,7 +121,7 @@ describe("loadStaffConfig", () => {
       csrfToken: "tok",
       publicKeys: { kiosk: "adm_pub_k" },
       access: { tables: { tickets: ["read", "update"] }, roles: [{ slug: "pos-cashier", name: "POS cashier" }] },
-      addOns: { invoices: { version: "1.0.3", settings: { business_name: "Harbour Café" } } },
+      addOns: { invoices: { version: "1.0.3", settings: { business_name: "Harbour Café" }, tables: { invoices: "invoices_invoices" } } },
       sharedTables: { menu_items: ["ordering"] },
     });
   });

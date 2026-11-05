@@ -115,7 +115,7 @@ describe("the vendored DHL client, running", () => {
     try {
       const door = new FakeDoor({ facts: { addOns: ["customiser", "shipping-dhl"], addOnSettings: { "shipping-dhl": { demo_transport: true } } } });
       Object.assign(door.data.orders.find((o) => o.id === 14)!, { service_id: 2, address_line1: "4 Fellside", postcode: "LA9 4AA" });
-      const env: StudioEnv = { door, draw: async () => null, recordHref: () => "#" };
+      const env: StudioEnv = { door, draw: async () => null };
       useStudio.setState({ data: await door.load(), view: "post", toasts: [], overlay: null });
       await act(async () => {
         root = createRoot(host);

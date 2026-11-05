@@ -40,7 +40,7 @@ afterEach(() => {
 const draw = async () => new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47])], { type: "image/png" });
 
 async function mount(door: FakeDoor, view: View = "today", more: Partial<ReturnType<typeof useStudio.getState>> = {}): Promise<void> {
-  const env: StudioEnv = { door, draw, recordHref: (page, id) => `/p/${page}/r/${String(id)}` };
+  const env: StudioEnv = { door, draw };
   useStudio.setState({ data: await door.load(), view, ...more });
   await act(async () => {
     root = createRoot(host);

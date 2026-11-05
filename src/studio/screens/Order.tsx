@@ -6,8 +6,9 @@
  *
  * From here a proof goes (the proof sheet), the pieces are marked made or
  * ready to post, and a spoiled piece is recorded and queued again. A piece
- * with a design of the Customiser's links to its line's own page, where the
- * Customiser's panel makes the proof's picture and the machine's files.
+ * with a design of the Customiser's opens the Customiser's panel on its line
+ * in a sheet, for a role that opens it (the owner, the maker): it makes the
+ * proof and the machine's files.
  */
 import { ArrowLeft, Check, FileCog, Image as ImageIcon, PackageCheck, Send, Truck } from "lucide-react";
 
@@ -18,10 +19,10 @@ import { useFmt } from "../format.ts";
 import { go, useStudio } from "../store.ts";
 import { postTone } from "../facts.ts";
 import { LineTile, Tile, Typed } from "../ui.tsx";
-import { dayOf, num, same, text, type Row } from "../wire.ts";
+import { dayOf, num, same, text, type Id, type Row } from "../wire.ts";
 import { useT, type MessageKey } from "../../i18n/index.tsx";
 import { wordsOfDesign } from "../designs.ts";
-import { mayMake } from "../roles.ts";
+import { mayMake, mayOpenPanel } from "../roles.ts";
 
 const STAGE_LABEL: Record<string, MessageKey> = {
   make: "bench.col.to-make",
@@ -123,7 +124,7 @@ export function OrderScreen() {
       <div className="st-panel st-lines">
         <h2 className="st-lines-title">{t("bench.order.pieces")}</h2>
         {lines.map((line) => (
-          <Line key={String(line.id)} line={line} maker={maker} />
+          <Line key={String(line.id)} line={line} maker={maker} opensPanel={mayOpenPanel(who, "customiser-line")} />
         ))}
       </div>
 
@@ -158,10 +159,9 @@ export function OrderScreen() {
   );
 }
 
-function Line({ line, maker }: { line: Row; maker: boolean }) {
+function Line({ line, maker, opensPanel }: { line: Row; maker: boolean; opensPanel: boolean }) {
   const t = useT();
   const data = useData();
-  const { recordHref } = useEnv();
   const product = productOf(data, line);
   const lock = lockOf(line);
   const stage = String(line["stage"]);
@@ -170,8 +170,10 @@ function Line({ line, maker }: { line: Row; maker: boolean }) {
   const opts = [text(lineMaterial(data, line)?.["name"]), text(optionOf(data, line["size_id"])?.["name"]), text(optionOf(data, line["finish_id"])?.["name"])].filter(Boolean).join(" · ");
   const spoiled = num(line["spoiled"]) ?? 0;
   const held = lock !== null && stage === "make";
-  const panel = recordHref("maker-lines", line.id);
   const designWords = designed ? wordsOfDesign(data, line) : [];
+  const name = text(line["product_name"]) ?? text(product?.["name"]) ?? "";
+  // Both open the Customiser's panel on the line: it makes the proof and the files.
+  const openPanel = () => useStudio.setState({ overlay: { kind: "panel", panel: { id: "customiser-line", table: "order_lines", row: line.id }, linked: line["design_id"] as Id, title: name } });
 
   return (
     <div className="st-line">
@@ -179,7 +181,7 @@ function Line({ line, maker }: { line: Row; maker: boolean }) {
         <LineTile data={data} line={line} product={product} size={62} iconSize={22} />
         <div className="st-line-text">
           <span className="st-line-name">
-            <strong>{text(line["product_name"]) ?? text(product?.["name"])}</strong>
+            <strong>{name}</strong>
             <span className="st-qty">{t("bench.card.qty", { count: num(line["qty"]) ?? 0 })}</span>
             <span className={`st-stage${held ? " st-stage--held" : ""}`}>{held ? t(lock === "waiting" ? "studio.chip.waiting" : "studio.chip.unsent") : t(STAGE_LABEL[stage] ?? "bench.col.to-make")}</span>
           </span>
@@ -204,16 +206,16 @@ function Line({ line, maker }: { line: Row; maker: boolean }) {
         </div>
       </div>
       <div className="st-line-side">
-        {designed && (
+        {designed && opensPanel && (
           <>
-            <a className="st-linkbtn" href={panel} target="_top">
+            <button type="button" className="st-linkbtn" onClick={openPanel}>
               <ImageIcon size={14} aria-hidden="true" />
               {t("studio.order.makeProof")}
-            </a>
-            <a className="st-linkbtn" href={panel} target="_top">
+            </button>
+            <button type="button" className="st-linkbtn" onClick={openPanel}>
               <FileCog size={14} aria-hidden="true" />
               {t("studio.order.makeFiles")}
-            </a>
+            </button>
           </>
         )}
         {maker && isLive(line) && (

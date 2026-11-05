@@ -25,6 +25,7 @@ import { STUDIO_NAV, STUDIO_PLACES } from "./nav.ts";
 import { StudioApp } from "./StudioApp.tsx";
 import { useStudio, type Overlay, type StudioState, type View } from "./store.ts";
 import { FakeDoor } from "./testing/fakeDoor.ts";
+import { FakePanels } from "./testing/fakePanels.tsx";
 import { UK_HOLIDAYS } from "./testing/fixture.ts";
 import { strings as DHL_WORDS } from "../add-ons/vendor/shipping-dhl/i18n/strings.ts";
 
@@ -56,7 +57,7 @@ async function settle(): Promise<void> {
 }
 
 async function mount(door: FakeDoor, view: View, more: Partial<StudioState>): Promise<void> {
-  const env: StudioEnv = { door, draw, recordHref: (page, id) => `/p/${page}/r/${String(id)}` };
+  const env: StudioEnv = { door, draw };
   useStudio.setState({ data: await door.load(), view, ...more });
   await act(async () => {
     root = createRoot(host);
@@ -168,6 +169,13 @@ interface Row {
 }
 
 const proof = (orderId: number): Overlay => ({ kind: "proof", orderId });
+const linePanel: Overlay = { kind: "panel", panel: { id: "customiser-line", table: "order_lines", row: 161 }, linked: 3, title: "Engraved walnut coasters" };
+/** A maker's door whose Customiser panel is served. */
+const withPanels = () => {
+  const door = new FakeDoor({ roles: ["maker"] });
+  door.panelDoor = new FakePanels({ designs: door.data.designs, design_versions: door.data.versions });
+  return door;
+};
 
 const STATES: Row[] = [
   // The shell
@@ -202,6 +210,8 @@ const STATES: Row[] = [
     shows: "[role='dialog']",
     says: "The proof of this design is not made yet.",
   },
+  { view: "order", state: "the Customiser's panel on a line", door: withPanels, more: { orderId: 16, overlay: linePanel }, shows: "[role='dialog'] .st-cz-card", says: "Customising" },
+  { view: "order", state: "the Customiser's panel where no Adminium serves it", more: { orderId: 16, overlay: linePanel }, shows: "[role='dialog'] .st-empty", says: "On your own Adminium" },
   { view: "order", state: "the spoil dialog", more: { orderId: 12, overlay: { kind: "spoil", lineId: 121 } }, shows: "[role='dialog'] input" },
   { view: "order", state: "the spoil dialog refusing nothing", more: { orderId: 12, overlay: { kind: "spoil", lineId: 121 } }, go: async () => (await type("[role='dialog'] input", ""), await click("[role='dialog'] .st-btn--dark")), shows: "[role='dialog'] input[aria-invalid='true']" },
   { view: "order", state: "a packer's order", door: () => new FakeDoor({ roles: ["packer"] }), more: { orderId: 12 }, shows: ".st-screen", says: "BR-2281" },
@@ -296,7 +306,7 @@ const VIEWS = {
 } as const satisfies Record<View, true>;
 
 /** Every overlay a screen opens. */
-const OVERLAYS = { proof: true, spoil: true, batch: true } as const satisfies Record<NonNullable<Overlay>["kind"], true>;
+const OVERLAYS = { proof: true, spoil: true, batch: true, panel: true } as const satisfies Record<NonNullable<Overlay>["kind"], true>;
 
 const LOCALES = [
   ["en-US", "ltr"],

@@ -1,0 +1,125 @@
+/*
+ * The Customiser's panel in the studio's sheet.
+ *
+ * The panel draws with the dashboard's utility classes (`flex`, `gap-2`,
+ * `text-fg-muted`): the ones its two panels use are given here, inside the
+ * sheet only (`.st-cz`), on the studio's own tokens, which carry the same
+ * names as the dashboard's. Below them, the parts `host.tsx` draws.
+ */
+
+.st-sheet--wide { inline-size: min(760px, 96vw); }
+
+/* ── the dashboard's utilities the panels use ─────────────────────────── */
+.st-cz .flex { display: flex; }
+.st-cz .inline-flex { display: inline-flex; }
+.st-cz .flex-col { flex-direction: column; }
+.st-cz .flex-wrap { flex-wrap: wrap; }
+.st-cz .flex-1 { flex: 1 1 0%; }
+.st-cz .min-w-0 { min-inline-size: 0; }
+.st-cz .items-center { align-items: center; }
+.st-cz .self-start { align-self: flex-start; }
+.st-cz .relative { position: relative; }
+.st-cz .absolute { position: absolute; }
+.st-cz .inset-0 { inset: 0; }
+.st-cz .w-full { inline-size: 100%; }
+.st-cz .size-full { inline-size: 100%; block-size: 100%; }
+.st-cz .aspect-square { aspect-ratio: 1 / 1; }
+.st-cz .overflow-hidden { overflow: hidden; }
+.st-cz .list-none { list-style: none; }
+.st-cz .m-0 { margin: 0; }
+.st-cz .p-0 { padding: 0; }
+.st-cz .p-3 { padding: 12px; }
+.st-cz .px-1\.5 { padding-inline: 6px; }
+.st-cz .px-3 { padding-inline: 12px; }
+.st-cz .px-4 { padding-inline: 16px; }
+.st-cz .py-1\.5 { padding-block: 6px; }
+.st-cz .py-2\.5 { padding-block: 10px; }
+.st-cz .py-3 { padding-block: 12px; }
+.st-cz .gap-0\.5 { gap: 2px; }
+.st-cz .gap-1 { gap: 4px; }
+.st-cz .gap-1\.5 { gap: 6px; }
+.st-cz .gap-2 { gap: 8px; }
+.st-cz .gap-2\.5 { gap: 10px; }
+.st-cz .gap-3 { gap: 12px; }
+.st-cz .border { border: 1px solid var(--border); }
+.st-cz .border-b { border-block-end: 1px solid var(--border); }
+.st-cz .border-border { border-color: var(--border); }
+.st-cz .border-border-strong { border-color: var(--border-strong); }
+.st-cz .rounded-xl { border-radius: 12px; }
+.st-cz .rounded-\[10px\] { border-radius: 10px; }
+.st-cz .bg-surface-2 { background: var(--surface-2); }
+.st-cz .bg-surface-3 { background: var(--surface-3); }
+.st-cz .font-mono { font-family: var(--font-mono); }
+.st-cz .font-bold { font-weight: 700; }
+.st-cz .font-extrabold { font-weight: 800; }
+.st-cz .text-\[10px\] { font-size: 10px; }
+.st-cz .text-\[11px\] { font-size: 11px; }
+.st-cz .text-\[11\.5px\] { font-size: 11.5px; }
+.st-cz .text-\[12px\] { font-size: 12px; }
+.st-cz .text-\[12\.5px\] { font-size: 12.5px; }
+.st-cz .text-\[14px\] { font-size: 14px; }
+.st-cz .text-fg-muted { color: var(--fg-muted); }
+.st-cz .text-fg-subtle { color: var(--fg-subtle); }
+.st-cz .text-accent { color: var(--accent); }
+.st-cz .text-danger { color: var(--danger); }
+.st-cz .text-warn { color: var(--warn); }
+.st-cz svg.lucide { inline-size: 15px; block-size: 15px; flex: none; }
+
+/* The Customiser's drawing: as wide as its box, its own outlines on (the editor's rings stay off here). */
+.st-cz .cz-drawing { inline-size: 100%; block-size: auto; display: block; }
+.st-cz .cz-part-ring, .st-cz .cz-part-on, .st-cz .cz-part-lock-on { stroke: none; }
+.st-cz .cz-lock-badge { display: grid; place-items: center; inline-size: 100%; block-size: 100%; border-radius: 99px; background: var(--fg); color: var(--bg); }
+
+/* ── the parts the host draws ──────────────────────────────────────────── */
+.st-cz-card { border: 1px solid var(--border); border-radius: 16px; background: var(--surface); }
+.st-cz-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 14px 16px; border-block-end: 1px solid var(--border); }
+.st-cz-card-titles { display: flex; flex-direction: column; gap: 2px; min-inline-size: 0; }
+.st-cz-card-title { margin: 0; font-size: 15px; font-weight: 800; }
+.st-cz-card-sub { font-size: 12px; color: var(--fg-subtle); }
+.st-cz-card-body { padding: 16px; }
+
+.st-cz-stack { display: flex; flex-direction: column; gap: 12px; }
+.st-cz-stack[data-direction="row"] { flex-direction: row; }
+.st-cz-stack[data-wrap] { flex-wrap: wrap; }
+.st-cz-stack[data-align="center"] { align-items: center; }
+.st-cz-stack[data-align="start"] { align-items: flex-start; }
+.st-cz-stack[data-justify="between"] { justify-content: space-between; }
+.st-cz-stack[data-gap="none"], .st-cz-grid[data-gap="none"] { gap: 0; }
+.st-cz-stack[data-gap="xs"], .st-cz-grid[data-gap="xs"] { gap: 4px; }
+.st-cz-stack[data-gap="sm"], .st-cz-grid[data-gap="sm"] { gap: 8px; }
+.st-cz-stack[data-gap="lg"], .st-cz-grid[data-gap="lg"] { gap: 18px; }
+.st-cz-stack[data-gap="xl"], .st-cz-grid[data-gap="xl"] { gap: 24px; }
+
+.st-cz-grid { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.st-cz-grid[data-columns="1"] { grid-template-columns: minmax(0, 1fr); }
+.st-cz-grid[data-columns="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 640px) {
+  .st-cz-grid, .st-cz-grid[data-columns="3"] { grid-template-columns: minmax(0, 1fr); }
+}
+
+.st-cz-facts { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.st-cz-fact { display: grid; grid-template-columns: minmax(96px, 30%) minmax(0, 1fr); gap: 10px; font-size: 12.5px; }
+.st-cz-fact dt { color: var(--fg-subtle); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+.st-cz-fact dd { margin: 0; overflow-wrap: anywhere; }
+
+.st-cz-pill { display: inline-flex; align-items: center; font-family: var(--font-mono); font-size: 11px; font-weight: 700; border-radius: 6px; padding: 3px 7px; white-space: nowrap; color: var(--fg-muted); background: var(--surface-3); }
+.st-cz-pill[data-tone="pos"] { color: var(--pos); background: var(--pos-soft); }
+.st-cz-pill[data-tone="warn"] { color: var(--warn); background: var(--warn-soft); }
+.st-cz-pill[data-tone="danger"] { color: var(--danger); background: var(--danger-soft); }
+.st-cz-pill[data-tone="info"] { color: var(--info); background: var(--info-soft); }
+.st-cz-pill[data-tone="accent"] { color: var(--accent); background: var(--accent-soft); }
+
+.st-cz-segments { display: inline-flex; gap: 2px; padding: 2px; border-radius: 10px; background: var(--surface-3); }
+.st-cz-segment { border: 0; background: transparent; border-radius: 8px; padding: 5px 10px; font: inherit; font-size: 12px; font-weight: 700; color: var(--fg-muted); cursor: pointer; }
+.st-cz-segment[aria-checked="true"] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow); }
+
+.st-cz-alert { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 10px; font-size: 12.5px; background: var(--info-soft); color: var(--fg); }
+.st-cz-alert[data-tone="warn"] { background: var(--warn-soft); }
+.st-cz-alert[data-tone="danger"] { background: var(--danger-soft); }
+.st-cz-alert[data-tone="pos"] { background: var(--pos-soft); }
+
+.st-cz-body { margin: 0; }
+.st-cz-actions { margin-block-start: 12px; display: flex; justify-content: center; gap: 8px; }
+.st-cz-divider { border: 0; border-block-start: 1px solid var(--border); margin: 0; }
+.st-cz-skeleton { display: block; block-size: 14px; border-radius: 6px; background: var(--surface-3); }
+.st-cz-spinner { font-size: 12.5px; color: var(--fg-subtle); }

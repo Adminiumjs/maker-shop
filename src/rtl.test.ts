@@ -409,7 +409,7 @@ describe("a screen of each side, drawn in Arabic", () => {
     const host = document.createElement("div");
     document.body.append(host);
     root = createRoot(host);
-    const env = { door, draw: async () => new Blob([]), recordHref: (page: string, id: unknown) => `/p/${page}/r/${String(id)}` };
+    const env = { door, draw: async () => new Blob([]) };
     await act(async () => root!.render(createElement(I18nProvider, null, createElement(StudioProvider, { env, children: createElement(StudioApp) }))));
     await settle();
     expect(document.documentElement.getAttribute("dir")).toBe("rtl");

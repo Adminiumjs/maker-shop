@@ -49,7 +49,7 @@ async function settle(): Promise<void> {
 }
 
 async function mount(door: FakeDoor): Promise<void> {
-  const env: StudioEnv = { door, draw: async () => null, recordHref: () => "#" };
+  const env: StudioEnv = { door, draw: async () => null };
   useStudio.setState({ data: await door.load(), view: "machines" });
   await act(async () => {
     root = createRoot(host);

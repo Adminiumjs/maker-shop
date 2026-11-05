@@ -48,6 +48,11 @@ export class DemoStudio implements StudioDoor {
   async addOnRegistry(): Promise<AddOnRegistry> {
     return (await import("../add-ons/registry.ts")).STUDIO_REGISTRY;
   }
+  /** No Adminium serves the Customiser's panels to the demo: the sheet says where they are drawn. */
+  panels(): null {
+    return null;
+  }
+
   who(): Person {
     return DEMO_PERSON;
   }

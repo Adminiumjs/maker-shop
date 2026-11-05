@@ -7,8 +7,9 @@
  * from the design's newest version, or the words drawn here on the piece's
  * material. Sending stores each picture and makes the proof rows; Adminium
  * numbers them, e-mails the customer, and holds the pieces until they say
- * yes. A design whose proof is not made yet is named, with the way to its
- * line's page, and is not sent.
+ * yes. A design whose proof is not made yet is named, with the way to the
+ * Customiser's panel that makes it (for a role that opens it), and is not
+ * sent.
  */
 import { useEffect, useMemo, useState } from "react";
 import { TriangleAlert, X } from "lucide-react";
@@ -20,9 +21,11 @@ import { wordsOfDesign } from "../designs.ts";
 import { wordsOf } from "../picture.ts";
 import { useStudio } from "../store.ts";
 import { LineTile, ProofImage, Typed } from "../ui.tsx";
-import { num, same, text, type Row } from "../wire.ts";
+import { num, same, text, type Id, type Row } from "../wire.ts";
 import { useT } from "../../i18n/index.tsx";
 import { BatchDialog } from "./Batches.tsx";
+import { PanelSheet } from "../panels/PanelSheet.tsx";
+import { mayOpenPanel } from "../roles.ts";
 import { close, Modal } from "./Modal.tsx";
 
 export function Overlays() {
@@ -30,13 +33,15 @@ export function Overlays() {
   if (overlay === null) return null;
   if (overlay.kind === "proof") return <ProofSheet orderId={overlay.orderId} />;
   if (overlay.kind === "batch") return <BatchDialog sheetKey={overlay.key} />;
+  if (overlay.kind === "panel") return <PanelSheet panel={overlay.panel} linked={overlay.linked} title={overlay.title} />;
   return <SpoilDialog lineId={overlay.lineId} />;
 }
 
 function ProofSheet({ orderId }: { orderId: Row["id"] }) {
   const t = useT();
   const data = useData();
-  const { draw, recordHref } = useEnv();
+  const { draw, door } = useEnv();
+  const opensPanel = mayOpenPanel(door.who(), "customiser-line");
   const { busy, run } = useRun();
   const order = data.orders.find((o) => same(o.id, orderId));
   const due = useMemo(() => (order === undefined ? [] : dueForProof(data, order)), [data, order]);
@@ -113,9 +118,11 @@ function ProofSheet({ orderId }: { orderId: Row["id"] }) {
               ) : designed ? (
                 <div className="st-ps-missing">
                   <span>{t("studio.proof.notMade")}</span>
-                  <a className="st-linkbtn" href={recordHref("maker-lines", line.id)} target="_top">
-                    {t("studio.order.makeProof")}
-                  </a>
+                  {opensPanel && (
+                    <button type="button" className="st-linkbtn" onClick={() => useStudio.setState({ overlay: { kind: "panel", panel: { id: "customiser-line", table: "order_lines", row: line.id }, linked: line["design_id"] as Id, title: name } })}>
+                      {t("studio.order.makeProof")}
+                    </button>
+                  )}
                 </div>
               ) : drawn.has(String(line.id)) ? (
                 <div className="st-ps-missing">{t("studio.proof.cannotDraw")}</div>

@@ -22,10 +22,11 @@
 import type { StaffConfig } from "./transport/staffConnection.ts";
 import { SessionPortError, type SessionTransport } from "./transport/sessionSource.ts";
 import { momentOf } from "./time.ts";
-import type { Action, AddOnTable, Person, ProofPicture, SendProof, StudioData, StudioDoor, StudioFacts, Table } from "./door.ts";
+import type { Action, AddOnTable, PanelDoor, PanelList, PanelOpen, PanelUploaded, Person, ProofPicture, SendProof, StudioData, StudioDoor, StudioFacts, Table } from "./door.ts";
 import { HOLIDAY_ADD_ON, holidayClosure, holidayPlace, inPlace } from "./holidays.ts";
 import { ApiError, type Id, type Row } from "./wire.ts";
-import { loadConnectedAddOns, type ConnectedProblem } from "../add-ons/connected.ts";
+import { loadConnectedAddOns, loadPanelModule, type ConnectedProblem } from "../add-ons/connected.ts";
+import { PANEL_HOST } from "./panels/host.tsx";
 import { createRegistry, type AddOnRegistry } from "../add-ons/host.ts";
 
 const APP_KEY = "maker";
@@ -126,8 +127,8 @@ export class AdminiumStudio implements StudioDoor {
     return this.cfg.tables[table] ?? `${APP_KEY}_${table}`;
   }
   /** An add-on's table's real name: the server's, or the add-on's own prefix when it does not say. */
-  private realAddOn(table: AddOnTable, addOn = CUSTOMISER): string {
-    return this.cfg.tables[`${addOn}:${table}`] ?? `${addOn.replace(/-/g, "_")}_${table}`;
+  private realAddOn(table: AddOnTable | string, addOn = CUSTOMISER): string {
+    return this.cfg.addOns[addOn]?.tables?.[table] ?? this.cfg.tables[`${addOn}:${table}`] ?? `${addOn.replace(/-/g, "_")}_${table}`;
   }
   private async conn(): Promise<string> {
     return this.cfg.connectionId ?? (await this.t.connection());
@@ -169,6 +170,96 @@ export class AdminiumStudio implements StudioDoor {
   private async change(table: Table, id: Id, values: Record<string, unknown>, from?: string): Promise<Row> {
     const body = from === undefined ? { values } : { values, from };
     return this.row(table, (await this.t.mutate<{ data: Row }>(await this.path(this.real(table), `/${encodeURIComponent(String(id))}`), "PATCH", body)).data);
+  }
+
+  // ── the Customiser's panels ───────────────────────────────────────────────
+
+  private panelDoor: PanelDoor | null = null;
+
+  /**
+   * The panels' door over this session: the add-on's tables by its short
+   * names (their real names from the staff config), the data routes and the
+   * files route as the person signed in, and the panel's code from the route
+   * that serves it for one row (`/api/v1/add-ons/<key>/panels/<id>/bundle`),
+   * which asks the row, the panel's table and the panel's permission again.
+   * Rows come back as the routes answer them: the panel reads its own.
+   */
+  panels(): PanelDoor {
+    if (this.panelDoor !== null) return this.panelDoor;
+    const at = async (addOn: string, table: string, rest = "") => this.path(this.realAddOn(table, addOn), rest);
+    const one = (key: Id) => `/${encodeURIComponent(String(key))}`;
+    const written = (reply: { data: Row; postings?: unknown[] }) => ({ data: reply.data, ...(reply.postings === undefined ? {} : { postings: reply.postings }) });
+    const ready = async () => {
+      // The session's write token comes with the first read.
+      await this.t.port.config();
+    };
+    this.panelDoor = {
+      load: async (panel: PanelOpen) => {
+        const query = new URLSearchParams({ connection: await this.conn(), table: await this.t.tableId(this.real(panel.table)), row: String(panel.row) });
+        return loadPanelModule({
+          url: `/api/v1/add-ons/${CUSTOMISER}/panels/${encodeURIComponent(panel.id)}/bundle?${query.toString()}`,
+          origin: this.options.origin ?? window.location.origin,
+          host: PANEL_HOST,
+          request: this.fetchImpl,
+          ...(this.options.importBundle === undefined ? {} : { importBundle: this.options.importBundle }),
+        });
+      },
+      list: async (addOn: string, table: string, query: PanelList) => {
+        const search = new URLSearchParams({ limit: String(query.limit), offset: String(query.offset) });
+        if (query.where !== undefined) search.set("where", JSON.stringify(query.where));
+        if (query.order !== undefined && query.order !== "") search.set("order", query.order);
+        if (query.select !== undefined && query.select.length > 0) search.set("select", query.select.join(","));
+        return (await this.t.get<{ data: Row[] }>(await at(addOn, table, `?${search.toString()}`))).data;
+      },
+      get: async (addOn: string, table: string, key: Id) => {
+        try {
+          return (await this.t.get<{ data: Row }>(await at(addOn, table, one(key)))).data;
+        } catch (error) {
+          if (error instanceof SessionPortError && error.status === 404) return null;
+          throw error;
+        }
+      },
+      create: async (addOn: string, table: string, values: Record<string, unknown>) => {
+        await ready();
+        return written(await this.t.mutate<{ data: Row; postings?: unknown[] }>(await at(addOn, table), "POST", { values }));
+      },
+      update: async (addOn: string, table: string, key: Id, values: Record<string, unknown>) => {
+        await ready();
+        return written(await this.t.mutate<{ data: Row; postings?: unknown[] }>(await at(addOn, table, one(key)), "PATCH", { values }));
+      },
+      remove: async (addOn: string, table: string, key: Id) => {
+        await ready();
+        await this.t.mutate(await at(addOn, table, `${one(key)}?confirm=true`), "DELETE");
+      },
+      upload: async (addOn: string, table: string, column: string, key: Id, file: Blob, name: string): Promise<PanelUploaded> => {
+        await ready();
+        const real = this.realAddOn(table, addOn);
+        const query = new URLSearchParams({ filename: name, connectionId: await this.conn(), table: real, column });
+        // The bytes are the body, the session's token beside them, as a proof's picture goes.
+        const res = await this.fetchImpl(`/api/v1/files?${query.toString()}`, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { accept: "application/json", "content-type": file.type === "" ? "application/octet-stream" : file.type, ...(this.cfg.csrfToken === null ? {} : { "x-adminium-csrf": this.cfg.csrfToken }) },
+          body: file,
+        });
+        const body = (await res.json().catch(() => null)) as { ref?: string; removed?: string[]; data?: { id?: string; filename?: string; mime?: string; sizeBytes?: number }; error?: { code?: string; message?: string; details?: unknown } } | null;
+        if (!res.ok || body?.data?.id === undefined) {
+          throw new SessionPortError(body?.error?.message ?? "The file was not stored.", res.status, body?.error?.code ?? "UPLOAD_FAILED", body?.error?.details);
+        }
+        const stored = body.data as { id: string; filename?: string; mime?: string; sizeBytes?: number };
+        const ref = body.ref ?? stored.id;
+        let saved: Row;
+        try {
+          saved = (await this.t.mutate<{ data: Row }>(await at(addOn, table, one(key)), "PATCH", { values: { [column]: ref } })).data;
+        } catch (error) {
+          // Nothing holds it: it goes now, with the refusal the panel shows.
+          await this.t.mutate(`/api/v1/files/${encodeURIComponent(stored.id)}`, "DELETE").catch(() => undefined);
+          throw error;
+        }
+        return { ref, id: stored.id, name: stored.filename ?? name, mime: stored.mime ?? file.type, size: stored.sizeBytes ?? file.size, removed: body.removed ?? [], row: saved };
+      },
+    };
+    return this.panelDoor;
   }
 
   // ── who, and the studio ───────────────────────────────────────────────────

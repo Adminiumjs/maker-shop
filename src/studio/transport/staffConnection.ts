@@ -132,6 +132,8 @@ export interface StaffConfig {
 export interface StaffAddOn {
   version: string | null;
   settings: Record<string, unknown>;
+  /** Its own tables' real names here, by its short names; absent or empty from a server that does not say. */
+  tables?: Record<string, string>;
 }
 
 export type TableAction = "read" | "create" | "update" | "delete";
@@ -176,7 +178,8 @@ function addOnsOf(value: unknown): Record<string, StaffAddOn> {
   for (const [key, entry] of Object.entries(record(value))) {
     if (entry === null || typeof entry !== "object" || Array.isArray(entry)) continue;
     const e = entry as Record<string, unknown>;
-    out[key] = { version: text(e.version), settings: record(e.settings) };
+    const tables = Object.fromEntries(Object.entries(record(e.tables)).flatMap(([ref, real]) => (typeof real === "string" && real !== "" ? [[ref, real] as const] : [])));
+    out[key] = { version: text(e.version), settings: record(e.settings), tables };
   }
   return out;
 }
