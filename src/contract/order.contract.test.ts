@@ -52,6 +52,8 @@ const why = missing() ?? missingAddOn("customiser");
 /** Whether Invoices & Receipts is built beside this checkout, to draw the order's receipt. */
 const INVOICES = why === null && missingAddOn("invoices") === null;
 if (why !== null && process.env["ADMINIUM_REQUIRE_CONTRACT"] === "1") throw new Error(`the contract must run here, and cannot: ${why}`);
+// Where the contract must run (CI), the receipt must too: a missing Invoices build is a failure, not a skip.
+if (!INVOICES && process.env["ADMINIUM_REQUIRE_CONTRACT"] === "1") throw new Error(`the receipt must be drawn here, and cannot: ${missingAddOn("invoices") ?? "no invoices add-on"}`);
 const PORT_BASE = Number(process.env["CONTRACT_PORT_BASE"] ?? 4960);
 const ADMIN = { email: process.env["E2E_ADMIN_EMAIL"] ?? "e2e@adminium.local", password: process.env["E2E_ADMIN_PASSWORD"] ?? "adminium-e2e-password" };
 /** 16:40 on Thursday 6 August 2026 in Settle (British Summer Time), before the five o'clock cut-off. */
