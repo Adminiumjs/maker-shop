@@ -19,6 +19,7 @@ import { LineTile, ProductTile, Typed } from "../ui.tsx";
 import { num, same, text, type Id, type Row } from "../wire.ts";
 import { useT, type MessageKey } from "../../i18n/index.tsx";
 import { mayErase, mayOpenPanel, mayReadCustomers } from "../roles.ts";
+import type { StudioNavEntry } from "../nav.ts";
 
 // ── customers ───────────────────────────────────────────────────────────────
 
@@ -385,15 +386,16 @@ function ProductEditor({ product }: { product: Row }) {
 
 // ── not here ────────────────────────────────────────────────────────────────
 
-export function NotFoundScreen() {
+/** An address with no screen of the studio's: the way back is to the person's own first screen, by its name. */
+export function NotFoundScreen({ home }: { home: StudioNavEntry }) {
   const t = useT();
   return (
     <section className="st-screen st-notfound" aria-labelledby="st-404-title">
       <span className="st-notfound-code">404</span>
       <h1 id="st-404-title">{t("studio.notFound.title")}</h1>
       <p>{t("studio.notFound.body")}</p>
-      <button type="button" className="st-btn st-btn--accent" onClick={() => go("today")}>
-        {t("studio.notFound.back")}
+      <button type="button" className="st-btn st-btn--accent" onClick={() => go(home.view)}>
+        {home.view === "today" ? t("studio.notFound.back") : t("studio.notFound.backTo", { screen: t(home.labelKey) })}
       </button>
     </section>
   );

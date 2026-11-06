@@ -147,6 +147,7 @@ export const studio = {
     "studio.notFound.title": "Nothing on this bench",
     "studio.notFound.body": "That page isn't in the workshop. It may have been an old link.",
     "studio.notFound.back": "Back to today",
+    "studio.notFound.backTo": "Back to {screen}",
   },
   "de-DE": {
     "studio.menu": "Menü",
@@ -266,6 +267,7 @@ export const studio = {
     "studio.notFound.title": "Nichts auf dieser Werkbank",
     "studio.notFound.body": "Diese Seite gibt es in der Werkstatt nicht. Vielleicht war es ein alter Link.",
     "studio.notFound.back": "Zurück zu heute",
+    "studio.notFound.backTo": "Zurück zu {screen}",
   },
   "fr-FR": {
     "studio.menu": "Menu",
@@ -385,6 +387,7 @@ export const studio = {
     "studio.notFound.title": "Rien sur cet établi",
     "studio.notFound.body": "Cette page n'est pas dans l'atelier. C'était peut-être un ancien lien.",
     "studio.notFound.back": "Retour à aujourd'hui",
+    "studio.notFound.backTo": "Retour à {screen}",
   },
   "cs-CZ": {
     "studio.menu": "Nabídka",
@@ -504,6 +507,7 @@ export const studio = {
     "studio.notFound.title": "Na tomto ponku nic není",
     "studio.notFound.body": "Tato stránka v dílně není. Možná šlo o starý odkaz.",
     "studio.notFound.back": "Zpět na dnešek",
+    "studio.notFound.backTo": "Zpět na {screen}",
   },
   "da-DK": {
     "studio.menu": "Menu",
@@ -623,6 +627,7 @@ export const studio = {
     "studio.notFound.title": "Intet på denne bænk",
     "studio.notFound.body": "Den side findes ikke på værkstedet. Det var måske et gammelt link.",
     "studio.notFound.back": "Tilbage til i dag",
+    "studio.notFound.backTo": "Tilbage til {screen}",
   },
   "zh-CN": {
     "studio.menu": "菜单",
@@ -742,6 +747,7 @@ export const studio = {
     "studio.notFound.title": "这个工作台上什么都没有",
     "studio.notFound.body": "工作室里没有这个页面，可能是旧链接。",
     "studio.notFound.back": "回到今天",
+    "studio.notFound.backTo": "回到{screen}",
   },
   "zh-TW": {
     "studio.menu": "選單",
@@ -861,6 +867,7 @@ export const studio = {
     "studio.notFound.title": "這個工作檯上什麼都沒有",
     "studio.notFound.body": "工作室裡沒有這個頁面，可能是舊連結。",
     "studio.notFound.back": "回到今天",
+    "studio.notFound.backTo": "回到{screen}",
   },
   "ar-EG": {
     "studio.menu": "القائمة",
@@ -980,5 +987,6 @@ export const studio = {
     "studio.notFound.title": "لا شيء على هذه الطاولة",
     "studio.notFound.body": "هذه الصفحة ليست في الورشة. ربما كان رابطًا قديمًا.",
     "studio.notFound.back": "العودة إلى اليوم",
+    "studio.notFound.backTo": "العودة إلى {screen}",
   },
 };

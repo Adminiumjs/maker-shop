@@ -17,6 +17,7 @@ import { StudioProvider, type StudioEnv } from "./env.tsx";
 import { StudioApp, screensFor } from "./StudioApp.tsx";
 import { useStudio, type View } from "./store.ts";
 import { FakeDoor } from "./testing/fakeDoor.ts";
+import { signInAfterSignOut } from "./nav.ts";
 import { FakePanels } from "./testing/fakePanels.tsx";
 import { fixture } from "./testing/fixture.ts";
 import { ApiError } from "./wire.ts";
@@ -469,6 +470,10 @@ describe("signing out", () => {
     expect(left).toBe(1);
   });
 
+  it("signs the next person in to the studio's own address, never to the screen the last one was on", () => {
+    expect(signInAfterSignOut("/apps/maker/staff/")).toBe("/login?next=%2Fapps%2Fmaker%2Fstaff%2F");
+  });
+
   it("goes to the sign-in even when the session had already ended", async () => {
     left = 0;
     const door = new FakeDoor();
@@ -553,8 +558,38 @@ describe("what each role sees", () => {
     await sweep("a customer with the way to erase them");
   });
 
-  it("shows a maker who opens the customers' address the 404", async () => {
+  it("lands a maker who opens the customers' address on their own first screen, today", async () => {
     await mount(new FakeDoor({ roles: ["maker"] }), "customers");
+    expect(useStudio.getState().view).toBe("today");
+    expect(text()).not.toContain("Nothing on this bench");
+  });
+
+  // Sign-out kept the last person's screen in the sign-in's `next`: the next person's role may not reach it.
+  for (const [where, view] of [["the proofs", "proofs"], ["today", "today"], ["a batch's sheet", "batch"]] as const) {
+    it(`lands a packer who signs in to ${where}, which their role does not reach, on the orders and not the 404`, async () => {
+      const door = new FakeDoor({ roles: ["packer"] });
+      door.data.proofs = [];
+      door.data.customers = [];
+      await mount(door, view);
+      expect(useStudio.getState().view).toBe("orders");
+      expect(text()).not.toContain("Nothing on this bench");
+    });
+  }
+
+  it("takes a packer from the 404 back to their own first screen, by its name", async () => {
+    const door = new FakeDoor({ roles: ["packer"] });
+    door.data.proofs = [];
+    door.data.customers = [];
+    await mount(door, "notfound");
     expect(text()).toContain("Nothing on this bench");
+    expect(button("Back to today")).toBeUndefined();
+    await click(button("Back to Orders"));
+    expect(useStudio.getState().view).toBe("orders");
+  });
+
+  it("takes the owner from the 404 back to today", async () => {
+    await mount(new FakeDoor({ roles: ["owner"] }), "notfound");
+    await click(button("Back to today"));
+    expect(useStudio.getState().view).toBe("today");
   });
 });

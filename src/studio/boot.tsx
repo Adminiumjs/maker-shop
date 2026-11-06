@@ -21,7 +21,7 @@ import { I18nProvider, useI18n } from "../i18n/index.tsx";
 import { resolveLocale } from "../i18n/locales.ts";
 import { AdminiumStudio } from "./adminiumStudio.ts";
 import { reload, StudioProvider, type StudioEnv } from "./env.tsx";
-import { STUDIO_NAV, STUDIO_PLACES, APP_KEY } from "./nav.ts";
+import { STUDIO_NAV, STUDIO_PLACES, APP_KEY, signInAfterSignOut } from "./nav.ts";
 import { drawLettering } from "./picture.ts";
 import { currentView, go, useStudio } from "./store.ts";
 import { StudioApp } from "./StudioApp.tsx";
@@ -76,11 +76,12 @@ export async function bootStudio(mount: HTMLElement): Promise<void> {
   const env: StudioEnv = {
     door,
     draw: drawLettering,
-    leave: () => window.location.assign(`/login?next=${encodeURIComponent(window.location.pathname)}`),
+    // Signed out, the next person signs in to the studio's own address, never to the screen this person was on.
+    leave: () => window.location.assign(signInAfterSignOut(surfaceBase(window.location.pathname, import.meta.env.BASE_URL))),
   };
 
   // The address and the screen in step; inside the dashboard, its sidebar too.
-  const { attachUrlSync } = await import("../urlSync.ts");
+  const { attachUrlSync, surfaceBase } = await import("../urlSync.ts");
   let bridge: { navigated: (path: string) => void } | null = null;
   const sync = attachUrlSync({ nav: [...STUDIO_NAV, ...STUDIO_PLACES], side: "staff", go: (view) => go(view), current: currentView, onPath: (path) => bridge?.navigated(path) });
   const { connectToHost } = await import("../embed.ts");

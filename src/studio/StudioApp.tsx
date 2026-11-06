@@ -13,7 +13,7 @@ import { Eye, LayoutGrid, Layers, LogOut, Menu, Moon, Package, ReceiptText, Sear
 import { useData, useEnv } from "./env.tsx";
 import { productOf } from "./facts.ts";
 import { useFmt, weekdayName } from "./format.ts";
-import { navOf, STUDIO_NAV } from "./nav.ts";
+import { homeOf, navOf, STUDIO_NAV } from "./nav.ts";
 import { mayMake, mayPost, mayReadCustomers } from "./roles.ts";
 import { go, useStudio, type View } from "./store.ts";
 import { TodayScreen } from "./screens/Today.tsx";
@@ -75,11 +75,15 @@ export function StudioApp() {
     else root.setAttribute("data-theme", theme);
   }, [theme]);
 
-  // A person who may not work the bench opens on the first screen they may.
+  /*
+   * A person opens on a screen their roles reach: one they may not (the bench for the packer, or the screen the
+   * last person was on when they signed out, kept in the sign-in's `next`) is dropped, and they land on their own
+   * first screen. An address the studio has no screen for still says so.
+   */
   useEffect(() => {
     const reach = screensFor(door.who());
-    const view = useStudio.getState().view;
-    if (view === "today" && !reach.includes("today") && reach[0] !== undefined) go(STUDIO_NAV.find((e) => e.id === reach[0])!.view);
+    const lit = navOf(useStudio.getState().view);
+    if (STUDIO_NAV.some((e) => e.id === lit) && !reach.includes(lit) && reach[0] !== undefined) go(homeOf(reach).view);
   }, [door]);
 
   if (data === null) {
@@ -219,7 +223,7 @@ function UserChip({ name }: { name: string }) {
 
 function Screen({ view, reach }: { view: View; reach: string[] }) {
   const lit = navOf(view);
-  if (view !== "notfound" && STUDIO_NAV.some((e) => e.id === lit) && !reach.includes(lit)) return <NotFoundScreen />;
+  if (view !== "notfound" && STUDIO_NAV.some((e) => e.id === lit) && !reach.includes(lit)) return <NotFoundScreen home={homeOf(reach)} />;
   switch (view) {
     case "today":
       return <TodayScreen />;
@@ -248,7 +252,7 @@ function Screen({ view, reach }: { view: View; reach: string[] }) {
     case "cutlist":
       return <CutListScreen />;
     default:
-      return <NotFoundScreen />;
+      return <NotFoundScreen home={homeOf(reach)} />;
   }
 }
 

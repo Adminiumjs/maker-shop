@@ -43,3 +43,17 @@ export function navOf(view: View): string {
   if (view === "cutlist" || view === "batch") return "today";
   return view;
 }
+
+/** A person's own first screen: the first the sidebar offers them (Today for the bench, Orders for the packer). */
+export function homeOf(reach: readonly string[]): StudioNavEntry {
+  return STUDIO_NAV.find((entry) => entry.id === reach[0]) ?? STUDIO_NAV[0];
+}
+
+/**
+ * Where sign-out goes: Adminium's sign-in, coming back to the studio's own
+ * address and not the screen the last person was on, which the next person's
+ * role may not reach. They land on their own first screen.
+ */
+export function signInAfterSignOut(base: string): string {
+  return `/login?next=${encodeURIComponent(base)}`;
+}

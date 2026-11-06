@@ -285,7 +285,7 @@ const STATES: Row[] = [
   { view: "cutlist", state: "nothing queued", door: nothingToBatch, shows: "section", says: "Nothing is queued for a sheet." },
   // The 404
   { view: "notfound", state: "an address with no screen", shows: "h1", says: "Nothing on this bench" },
-  { view: "customers", state: "a maker at the customers' address", door: () => new FakeDoor({ roles: ["maker"] }), shows: "h1", says: "Nothing on this bench" },
+  { view: "notfound", state: "a packer at an address with no screen", door: () => new FakeDoor({ roles: ["packer"] }), shows: "h1", says: "Back to Orders" },
 ];
 
 /** Every screen the studio draws. A new one is a type error here until it is listed, and a failure below until it has a row. */
