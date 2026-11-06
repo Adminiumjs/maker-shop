@@ -70,10 +70,13 @@ const CUSTOMISER_PANEL = [
 ];
 
 /**
- * The Customiser's set-up page (`/add-ons/customiser/customiser`): the owner
- * sets up the shop's side there, and a starter font nobody uploaded is read
- * from the file the add-on ships beside that page, so whoever makes the
- * machine's files holds it, the maker on the studio's screens included.
+ * The Customiser's set-up page (`/add-ons/customiser/customiser`): a starter
+ * font nobody uploaded is read from the file the add-on ships beside that
+ * page, so whoever makes the machine's files holds it, the maker on the
+ * studio's screens included. Setting the shop's side up there is the
+ * Customiser's own designer role's: its `appGrants` give no app role its
+ * settings nor a write to the set-up's tables, so an owner who sets up holds
+ * that role beside Owner (the README, "Installing it").
  */
 const CUSTOMISER_SETUP_PAGE = view("customiser");
 

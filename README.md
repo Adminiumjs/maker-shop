@@ -91,6 +91,13 @@ Customiser, and makes the dashboard pages, the three roles, the shop's browser
 keys and the e-mails. Tick sample data at the install step to start with Birch
 Row's Thursday, or add it later from the app's settings.
 
+Give the studio's people their roles under Staff. The owner who also sets up
+what shoppers customise (the bases, ready-made designs, fonts, finishes and
+priced features) holds the Customiser's own **Customiser designer** role beside
+**Owner**: the Customiser keeps its set-up page,
+`/add-ons/customiser/customiser`, for that role, and no role of an app may hold
+its settings or change its set-up.
+
 Once installed, the studio's screens are served at `/apps/maker/staff/` and the
 shop at `/apps/maker/customer/`. A studio can also give the shop a domain of its
 own.
