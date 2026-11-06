@@ -130,6 +130,10 @@ export class AdminiumStudio implements StudioDoor {
   private realAddOn(table: AddOnTable | string, addOn = CUSTOMISER): string {
     return this.cfg.addOns[addOn]?.tables?.[table] ?? this.cfg.tables[`${addOn}:${table}`] ?? `${addOn.replace(/-/g, "_")}_${table}`;
   }
+  /** Whether this person reads an add-on's table, as Adminium says it; a server that does not say is asked anyway. */
+  private readsAddOn(table: AddOnTable, addOn = CUSTOMISER): boolean {
+    return this.cfg.access === null || (this.cfg.access.tables[this.realAddOn(table, addOn)]?.includes("read") ?? false);
+  }
   private async conn(): Promise<string> {
     return this.cfg.connectionId ?? (await this.t.connection());
   }
@@ -322,7 +326,8 @@ export class AdminiumStudio implements StudioDoor {
         this.list("batches", "id.asc"),
         this.list("stock_movements", "id.asc"),
       ]);
-      // The designs the lines name, and their versions: the Customiser's rows, read as its readers may.
+      // The designs the lines name, and their versions: the Customiser's rows, read as its readers may. A table
+      // the person's role does not read is not asked for (the packer reads whether a line names a design, no more).
       const designIds = [...new Set(lines!.map((l) => l["design_id"]).filter((v) => v !== null && v !== undefined))];
       let designs: Row[] = [];
       let versions: Row[] = [];
@@ -330,8 +335,8 @@ export class AdminiumStudio implements StudioDoor {
       if (designIds.length > 0) {
         try {
           [designs, versions] = await Promise.all([
-            this.listReal("designs", this.realAddOn("designs"), { where: { column: "id", op: "in", value: designIds } }),
-            this.listReal("design_versions", this.realAddOn("design_versions"), { where: { column: "design_id", op: "in", value: designIds }, order: "version.desc" }),
+            this.readsAddOn("designs") ? this.listReal("designs", this.realAddOn("designs"), { where: { column: "id", op: "in", value: designIds } }) : [],
+            this.readsAddOn("design_versions") ? this.listReal("design_versions", this.realAddOn("design_versions"), { where: { column: "design_id", op: "in", value: designIds }, order: "version.desc" }) : [],
           ]);
         } catch (error) {
           // Someone the Customiser's tables are closed to sees the lines without their designs.
@@ -339,7 +344,7 @@ export class AdminiumStudio implements StudioDoor {
         }
       }
       // The machines' files of those versions, for the cut list: read as the Customiser's readers may, or not at all.
-      if (versions.length > 0) {
+      if (versions.length > 0 && this.readsAddOn("version_files")) {
         try {
           files = await this.listReal("version_files", this.realAddOn("version_files"), { where: { column: "version_id", op: "in", value: versions.map((v) => v.id) }, order: "position.asc" });
         } catch (error) {
@@ -355,7 +360,7 @@ export class AdminiumStudio implements StudioDoor {
   private async holidays(): Promise<Row[] | null> {
     const facts = this.facts();
     // Read only for someone who could add one as a closure: nobody else is shown them.
-    if (!facts.addOns.includes(HOLIDAY_ADD_ON) || !this.who().can("closures", "create")) return null;
+    if (!facts.addOns.includes(HOLIDAY_ADD_ON) || !this.who().can("closures", "create") || !this.readsAddOn("holidays", HOLIDAY_ADD_ON)) return null;
     const place = holidayPlace(facts.addOnSettings[HOLIDAY_ADD_ON], facts.currency);
     try {
       const rows = await this.listReal("holidays", this.realAddOn("holidays", HOLIDAY_ADD_ON), { where: { column: "country", op: "eq", value: place.country }, order: "day.asc" });

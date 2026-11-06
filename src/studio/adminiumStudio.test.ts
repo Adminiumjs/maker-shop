@@ -42,7 +42,10 @@ function config(more: Partial<StaffConfig> = {}): StaffConfig {
     user: { id: "u1", name: "Jo Marsh", email: "jo@birchrow.example" },
     csrfToken: "tok-1",
     publicKeys: {},
-    access: { tables: { orders: ["read", "update"], order_lines: ["read", "update"], proofs: ["read", "create", "update"] }, roles: [{ slug: "maker-maker", name: "Maker" }, { slug: "other-app-owner", name: "Owner of another app" }] },
+    access: {
+      tables: { orders: ["read", "update"], order_lines: ["read", "update"], proofs: ["read", "create", "update"], customiser_designs: ["read"], customiser_design_versions: ["read", "create", "update"], customiser_version_files: ["read", "create", "update", "delete"] },
+      roles: [{ slug: "maker-maker", name: "Maker" }, { slug: "other-app-owner", name: "Owner of another app" }],
+    },
     addOns: { customiser: { version: "1.0.16", settings: {} } },
     sharedTables: {},
     ...more,
@@ -238,6 +241,19 @@ describe("the studio's reads", () => {
     // A table the person may not read is not asked for at all.
     expect(reads.some((p) => p.includes("maker_customers"))).toBe(false);
     expect(reads.some((p) => p.includes("customiser_design_versions") && decodeURIComponent(p).includes('"column":"design_id","op":"in","value":[3]'))).toBe(true);
+  });
+
+  // The packer reads whether a line names a design, and nothing of its versions or files: those are never asked for.
+  it("asks a packer for no Customiser table their role does not read", async () => {
+    const { t, reads } = transport(
+      { maker_order_lines: [{ id: 161, order_id: 10, design_id: 3 }], customiser_designs: [{ id: 3, values: "{}" }] },
+      { customiser_design_versions: new SessionPortError("No.", 403, "FORBIDDEN"), customiser_version_files: new SessionPortError("No.", 403, "FORBIDDEN") },
+    );
+    const packer = config({ access: { tables: { orders: ["read", "update"], order_lines: ["read", "update"], customiser_designs: ["read"] }, roles: [{ slug: "maker-packer", name: "Packer" }] } });
+    const data = await new AdminiumStudio(t, packer).load();
+    expect(data.designs).toHaveLength(1);
+    expect(data.versions).toEqual([]);
+    expect(reads.filter((p) => p.includes("customiser_") && !p.includes("customiser_designs"))).toEqual([]);
   });
 
   it("reads the lines without their designs for someone the Customiser's tables are closed to", async () => {
