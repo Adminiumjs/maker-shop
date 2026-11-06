@@ -19,7 +19,12 @@
  *     sheet then sends that proof;
  *   - the product's panel is served to the owner;
  *   - the owner keeps Holiday calendars' closed days (its settings grant),
- *     and finds a customer to erase (`privacy:@:people`).
+ *     and finds a customer to erase (`privacy:@:people`);
+ *   - the Customiser's set-up page opens, reads and saves for the owner who
+ *     also holds the Customiser's designer role;
+ *   - the customer whose design was proofed is erased, the proof pictures
+ *     with them. What only Adminium or the Customiser can close is held
+ *     here as `it.fails`, named after the gap.
  *
  * The panel is drawn in a page of jsdom's, made for the drawing only: the
  * suite itself runs in Node, as the other contracts do, so its harness reads
@@ -50,7 +55,7 @@ import { createSessionTransport } from "../studio/transport/sessionSource.ts";
 import { loadStaffConfig } from "../studio/transport/staffConnection.ts";
 import type { Row } from "../studio/wire.ts";
 import { MANIFEST_TEXT } from "./release.ts";
-import { boot, Caller, ENGINES, installStudio, missing, personWith, png, PORTS_PER_ENGINE, type Engine, type Server } from "./studio-harness.ts";
+import { boot, Caller, ENGINES, installStudio, missing, newPassword, ok, personWith, png, PORTS_PER_ENGINE, type Engine, type Server } from "./studio-harness.ts";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -116,6 +121,8 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         return linesOf(data, order).find((l) => l["design_id"] !== null && l["design_id"] !== undefined)!;
       };
       const panelsOf = (who: string): PanelDoor => doors[who]!.panels();
+      /** The proof file each role's panel made on the design's newest version, the maker's first, then the owner's over it. */
+      const proofFiles: Record<string, string> = {};
 
       beforeAll(async () => {
         server = await boot(engine as Engine, PORT_BASE + index * PORTS_PER_ENGINE, THURSDAY - 60_000, `maker_panel_contract_${engine}${process.env["CONTRACT_DB_SUFFIX"] ?? ""}`);
@@ -223,6 +230,7 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
           const version = (await panels.list("customiser", "design_versions", { where: { column: "design_id", op: "eq", value: line["design_id"] }, order: "version.desc", limit: 51, offset: 0 }))[0]!;
           const proof = await panels.upload("customiser", "design_versions", "proof_file", version.id, pngFile(), `${String(line["design_id"])}-v${String(version["version"])}-proof-${who}.png`);
           expect(fileIdOf(proof.row["proof_file"])).toMatch(/^file_[0-9A-Z]{26}$/);
+          proofFiles[who] = fileIdOf(proof.row["proof_file"])!;
           data = await door.load();
           const { sent } = await sendProofs(door, data, data.orders.find((o) => o["number"] === "BR-2288")!, async () => null);
           expect(sent.length).toBeGreaterThan(0);
@@ -282,6 +290,78 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         const files = await panels.list("customiser", "version_files", { where: { column: "name", op: "eq", value: "piece-maker.svg" }, limit: 2, offset: 0 });
         expect(files.length).toBe(1);
         await panels.remove("customiser", "version_files", files[0]!.id);
+      });
+
+      // ── the Customiser's set-up page, for the owner ──
+
+      /** Every table the set-up page reads (`pages/setup/data.ts`, `SetupPage.tsx`, `KitBase.tsx`), its settings among them. */
+      const SETUP_READS = ["bases", "base_pieces", "base_areas", "ready_designs", "ready_parts", "fonts", "palettes", "palette_colours", "features", "settings"];
+      const setUpRead = async (caller: Caller, table: string): Promise<number> => {
+        const cfg = (await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: callers["owner"]!.fetchAs() }))!;
+        const real = cfg.addOns["customiser"]?.tables?.[table] ?? `customiser_${table}`;
+        return (await caller.get(`/api/v1/data/${doors["owner"]!.facts().connectionId ?? ""}/${real}?limit=1`)).status;
+      };
+
+      // The set-up is the Customiser designer's: its appGrants give no app role its settings, nor any write to the set-up's
+      // tables. The owner works in the dashboard, so the owner is given that role beside the app's Owner (the README).
+      it("opens the Customiser's set-up page to the owner who also holds its designer role: every read, and a save", async () => {
+        const roles = ok(await owner.get<{ roles: { id: string; slug?: string }[] }>("/api/v1/roles")).roles;
+        const roleIds = ["maker-owner", "customiser-designer"].map((slug) => roles.find((r) => r.slug === slug)!.id);
+        const email = `owner.setup.${engine}@birchrow.example`;
+        const invited = ok(await owner.post<{ invite: { token: string } }>("/api/v1/users", { email, name: "Nell Birch", roleIds }), 201);
+        const password = newPassword();
+        ok(await new Caller(server.base).post("/api/v1/auth/password/reset", { token: invited.invite.token, newPassword: password }));
+        const setUp = new Caller(server.base);
+        await setUp.signIn(email, password);
+        for (const table of SETUP_READS) expect(await setUpRead(setUp, table), table).toBe(200);
+        const cfg = (await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: callers["owner"]!.fetchAs() }))!;
+        const settingsTable = cfg.addOns["customiser"]?.tables?.["settings"] ?? "customiser_settings";
+        const connection = doors["owner"]!.facts().connectionId ?? "";
+        const row = ok(await setUp.get<{ data: Row[] }>(`/api/v1/data/${connection}/${settingsTable}?limit=1`)).data[0]!;
+        const saved = await setUp.patch(`/api/v1/data/${connection}/${settingsTable}/${String(row.id)}`, { values: { default_bleed_mm: 3 } });
+        expect(saved.status, JSON.stringify(saved.body).slice(0, 400)).toBe(200);
+        // …and still the app's owner: its own tables and the panel's.
+        expect(await setUpRead(setUp, "designs")).toBe(200);
+      }, 120_000);
+
+      it.fails("lets the owner alone read the set-up page's settings (gap: the Customiser's appGrants give an app's role nothing of customiser_settings)", async () => {
+        expect(await setUpRead(callers["owner"]!, "settings")).toBe(200);
+      });
+
+      // ── a customer erased: the design's proof pictures, the first one made again included ──
+
+      const shopperOf = async (): Promise<string> => String((await doors["owner"]!.load()).orders.find((o) => o["number"] === "BR-2288")!["email"]);
+      const fileStatus = async (id: string): Promise<number> => (await owner.get(`/api/v1/files/${id}`)).status;
+
+      // The person's data lists the proof the owner's replaced, binned but kept, among the files on their rows: the
+      // one more the search counts than the erase takes.
+      it("finds the proof picture the owner's replaced among the customer's files, as the owner", async () => {
+        const address = await shopperOf();
+        const found = ok(await callers["owner"]!.post<{ data: { sources: { kind: string; keys: string[] }[] } }>("/api/v1/privacy/find", { address })).data.sources;
+        expect(found.filter((s) => s.kind === "files").flatMap((s) => s.keys)).toContain(proofFiles["maker"]);
+      });
+
+      it.fails("counts the same files in a person's data as erasing them takes (gap: the search counts a copy row's binned files, the erase does not)", async () => {
+        const address = await shopperOf();
+        type Counted = { kind: string; count: number };
+        const found = ok(await callers["owner"]!.post<{ data: { sources: Counted[] } }>("/api/v1/privacy/find", { address })).data.sources.filter((s) => s.kind === "files");
+        const goes = ok(await callers["owner"]!.post<{ data: { goes: Counted[] } }>("/api/v1/privacy/erase/preview", { address })).data.goes.filter((s) => s.kind === "files");
+        expect(goes.reduce((n, s) => n + s.count, 0)).toBe(found.reduce((n, s) => n + s.count, 0));
+      });
+
+      it("erases the design's proof picture with its customer, as the owner", async () => {
+        // The owner's proof was made over the maker's on the same version: the maker's is in the bin, still kept.
+        expect(proofFiles["maker"]).not.toBe(proofFiles["owner"]);
+        expect(await fileStatus(proofFiles["maker"]!)).toBe(200);
+        expect(await fileStatus(proofFiles["owner"]!)).toBe(200);
+        const address = await shopperOf();
+        const erased = await callers["owner"]!.post("/api/v1/privacy/erase", { address, confirm: address });
+        expect(erased.status, JSON.stringify(erased.body).slice(0, 400)).toBe(200);
+        expect(await fileStatus(proofFiles["owner"]!)).toBe(404);
+      }, 120_000);
+
+      it.fails("erases a proof picture made again with its customer: the one it replaced too (gap: the erase leaves a copy row's binned files)", async () => {
+        expect(await fileStatus(proofFiles["maker"]!)).toBe(404);
       });
     });
   });
