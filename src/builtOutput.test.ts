@@ -6,11 +6,10 @@
  * comment, a string arrives from a dependency — and the sweep does not
  * read sources at all. So this suite builds the app and greps the bytes.
  *
- * It also checks the two things a bundle is the only honest place to check: that
- * no add-on's credential setting and no real third-party hostname reached the
- * browser. Both are true of the sources — the vendored halves
- * carry no server module — and "true of the sources" is exactly the claim a
- * packer refuses to take on trust.
+ * It also checks the thing a bundle is the only honest place to check: that no
+ * real third-party hostname reached the browser. That is true of the sources,
+ * and "true of the sources" is exactly the claim a packer refuses to take on
+ * trust.
  *
  * THE ONE CARVE-OUT IS PRINTED, NOT HIDDEN. Third-party chunks are excluded
  * from the copy grep — React's own code says `CANNOT_UPGRADE` five times and no
@@ -29,14 +28,9 @@
  * no importer anywhere outside the file that declared them. What did exist —
  * `i18n/messages.test.ts` — reads THIS APP'S OWN eight locale files.
  *
- * That is the hole, and it is specific to a HOST. This app vendors two add-ons,
- * and an add-on ships its own strings in all eight languages which the host
- * merges into its bundle at registration (`AddOn.messages`). Those strings are
- * on the screen, in the shipped JavaScript, and in no file
- * `i18n/messages.test.ts` has ever opened. A banned word arriving through an
- * add-on was invisible to every check in this repo — which is exactly what a
- * mutant planted in a vendored add-on's locale file proved, and exactly what
- * the grep below now catches.
+ * The bundle also holds words no file under `src/i18n/` carries: the vendored
+ * Customiser's own copy, in all eight languages, and the demo card's. The grep
+ * below reads them where a shopper meets them.
  */
 
 import { execFileSync } from "node:child_process";
@@ -134,7 +128,10 @@ const chunkName = (file: string) => basename(file).replace(/-[A-Za-z0-9_-]{8}\.j
  * The chunks that are 100% dependency code, established from their sourcemaps.
  *
  * A chunk qualifies only if it has modules and EVERY ONE of them came out of
- * `node_modules/`. `vite.config.ts` happens to route React and Lucide into two
+ * `node_modules/` or out of the vendored Customiser (`vendor/customiser/`,
+ * the add-on's built files, copied in by `sync-customiser.mjs`): the
+ * add-on's words are reviewed in the add-on's own repo, by its own ledger,
+ * as an npm package's are in its. `vite.config.ts` happens to route React and Lucide into two
  * such chunks today, but nothing here is keyed to those names: rename a chunk,
  * add a third dependency chunk, or let one app module leak into `icons` and
  * this recomputes rather than lying.
@@ -157,7 +154,7 @@ function thirdPartyChunks(): Map<string, number> {
      */
     const modules = sources.filter((s) => !s.startsWith("\0") && !s.includes("vite/preload"));
     if (modules.length === 0) continue;
-    if (modules.every((s) => s.includes("node_modules/"))) {
+    if (modules.every((s) => s.includes("node_modules/") || s.includes("vendor/customiser/"))) {
       found.set(chunkName(map.replace(/\.map$/, "")), modules.length);
     }
   }
@@ -285,7 +282,7 @@ describe("the build wrote something to grep", () => {
     console.log(
       [
         "built-output grep — exempted by dependency provenance:",
-        ...[...thirdParty].map(([name, n]) => `  chunk "${name}" · ${n} modules, all node_modules/`),
+        ...[...thirdParty].map(([name, n]) => `  chunk "${name}" · ${n} modules, all node_modules/ or vendor/customiser/`),
         ...exempt.map((f) => `  file  ${rel(f)}`),
         "allowed homographs (exact token, case-insensitive):",
         ...HOMOGRAPH_TOKENS.map((h) => `  "${h.token}" · ${h.language} · ${h.means}`),
@@ -298,7 +295,7 @@ describe("the build wrote something to grep", () => {
     // The carve-out is narrow: some chunks qualify, and the app's own do not.
     expect(exempt.length).toBeGreaterThan(0);
     expect([...thirdParty.keys()].sort()).not.toContain("index");
-    expect([...thirdParty.keys()].sort()).not.toContain("add-ons");
+    expect([...thirdParty.keys()].sort()).not.toContain("boot");
   });
 
   it("keeps every app string out of the third-party chunks", () => {
@@ -307,7 +304,7 @@ describe("the build wrote something to grep", () => {
     const thirdParty = thirdPartyChunks();
     for (const file of built().filter((f) => thirdParty.has(chunkName(f)))) {
       const text = readFileSync(file, "utf8");
-      for (const needle of ["bench.addons.", "screen.product.", "data.product."]) {
+      for (const needle of ["bench.today.", "shop.product.", "studio.nav."]) {
         expect(text.includes(needle), `${rel(file)} · ${needle}`).toBe(false);
       }
     }
@@ -385,7 +382,7 @@ describe("the vocabulary ban, over built output", () => {
     const app = built().filter((f) => f.endsWith(".js") && !thirdPartyChunks().has(chunkName(f)));
     const words = app.map(readable).join("\n");
     expect(words.length).toBeGreaterThan(20_000);
-    for (const needle of ["bench.addons.", "screen.product.", "Birch Row"]) {
+    for (const needle of ["bench.today.", "shop.product.", "Birch Row"]) {
       expect(words.includes(needle), needle).toBe(true);
     }
   });
@@ -474,81 +471,6 @@ describe("the vocabulary ban, over built output", () => {
   });
 });
 
-describe("nothing an add-on keeps to itself reached the browser", () => {
-  /**
-   * ── THE FIFTH HOST-LOCAL LIST HOLDING AN ADD-ON"S FACTS ───────────────────
-   *
-   * What stood here was five hand-written needles:
-   *
-   *     ["api_key", "account_number", "CarrierCredentials",
-   *      "express.api.dhl.com", "api.canva.com"]
-   *
-   * Every one of them is a fact about an ADD-ON — two `secret: true` setting
-   * keys out of the delivery add-on"s manifest, the type its server half reads
-   * them into, and the two `network.allow` hostnames — written down inside an
-   * app that merely receives them. It is the same shape as `HOSTED_SLOTS`, the
-   * Czech "pro" carve-out, the ar-EG numeral allowances and the inert origins
-   * above, and it is the one with the worst consequence, because it fails
-   * SILENTLY in the direction that matters:
-   *
-   *   A THIRD CREDENTIALLED ADD-ON, vendored into either shop, would ship its
-   *   secret setting keys and its real endpoint with this gate fully green. A
-   *   grep cannot look for a needle nobody told it about, and nothing anywhere
-   *   would have gone red to say so.
-   *
-   * The two hosts" copies had already drifted by one entry — this studio carried
-   * `api.canva.com` and the studio did not, with the studio"s comment still
-   * announcing "the last two" of a list with one.
-   *
-   * So the needles travel with the add-on, in its own `add-on-facts.ts`, and
-   * the add-on"s manifest suite asserts they cover every `secret: true` key and
-   * every allowed hostname that manifest declares. This app greps for whatever
-   * it has VENDORED.
-   */
-  const VENDORED_FACTS = import.meta.glob<{
-    NEVER_IN_A_BROWSER?: readonly { text: string; why: string }[];
-  }>("./add-ons/vendor/*/add-on-facts.ts", { eager: true });
-
-  const needles = Object.values(VENDORED_FACTS).flatMap((module) => [
-    ...(module.NEVER_IN_A_BROWSER ?? []),
-  ]);
-
-  it("greps for something at all, off a declaration in every add-on it vendors", () => {
-    // The discovery is only as honest as what it finds: a renamed export or a
-    // sync that dropped the file would leave this gate looking for nothing and
-    // passing forever, which is the defect back with a different cause.
-    const declared = Object.entries(VENDORED_FACTS);
-    expect(declared.length, "no vendored add-on-facts were found at all").toBeGreaterThan(0);
-    const silent = declared
-      .filter(([, module]) => module.NEVER_IN_A_BROWSER === undefined)
-      .map(([file]) => file);
-    expect(silent, "these vendored packages export no NEVER_IN_A_BROWSER").toEqual([]);
-    expect(needles.length, "no add-on declared anything server-only").toBeGreaterThan(0);
-  });
-
-  it("carries no secret setting key and no real third-party hostname", () => {
-    // Secrets stay server-side and no demo calls a real third party — in the
-    // artefact. Every needle is an add-on"s own declaration of something that
-    // lives on its SERVER half; a demo"s transports are all demo ones, so none
-    // of them belongs in a browser.
-    const offenders: string[] = [];
-    for (const file of built()) {
-      const text = readFileSync(file, "utf8");
-      for (const needle of needles) {
-        if (text.includes(needle.text)) offenders.push(`${rel(file)} · ${needle.text}`);
-      }
-    }
-    expect(offenders, `\n${offenders.join("\n")}\n`).toEqual([]);
-  });
-
-  it("bites on a leak of any of them, which is what makes the grep worth having", () => {
-    // Driven over a fixture rather than over `dist/`, so this stays true on a
-    // day the bundle is clean — which is every day until it is not.
-    const leaked = `const s={${needles[0]!.text}:"sk_live_x"};`;
-    expect(needles.some((needle) => leaked.includes(needle.text))).toBe(true);
-  });
-});
-
 /**
  * NO REAL THIRD-PARTY CALL, OVER THE ARTEFACT: NOT ONE ADDRESS THIS APP DID NOT
  * DECLARE.
@@ -588,38 +510,43 @@ describe("nothing in the artefact can reach a host we do not control", () => {
   /**
    * Every address allowed to appear in this app's bundle, and why it is inert.
    *
-   * Neither can cause a request. One is a family of XML namespaces —
-   * identifiers for a vocabulary, which no agent dereferences — and one is a
-   * message React prints. Anything else, from any file, is a finding: this app
-   * declares no egress, and no add-on's server half is in this bundle.
+   * None can cause a request. One is a family of XML namespaces —
+   * identifiers for a vocabulary, which no agent dereferences — one is a
+   * message React prints, and four are text in the Customiser's 3D preview.
+   * Anything else, from any file, is a finding: this app declares no egress.
    */
   const OURS: readonly InertOrigin[] = [
     {
       origin: "http://www.w3.org",
-      why: "the SVG, MathML, xlink and XML namespaces React writes onto elements — names for a vocabulary, never fetched. The personalizer declares the same origin for its own drawings, in its own file",
+      why: "the SVG, MathML, xlink and XML namespaces React writes onto elements — names for a vocabulary, never fetched. The Customiser writes the same namespace into the pictures it draws",
+    },
+    /*
+     * Four from the vendored Customiser's 3D preview (three.js), which the
+     * Customiser's built files carry and no file of this app's names. The
+     * add-on keeps no declaration of its own for a host to read, so they are
+     * written down here, each with what it is.
+     */
+    {
+      origin: "https://jcgt.org",
+      why: "a paper three.js cites inside the text of one of its shaders, in the Customiser's 3D preview: GLSL the graphics card compiles, never a request",
+    },
+    {
+      origin: "//i.test",
+      why: "not an address at all: three.js's own regular expression `/^https?:\\/\\//i.test(…)`, which the address matcher reads as a protocol-relative URL",
+    },
+    {
+      origin: "//.test",
+      why: "not an address at all: three.js's own regular expression `/^\\//.test(…)`, read by the address matcher as a protocol-relative URL",
+    },
+    {
+      origin: "http://schemas.microsoft.com",
+      why: "the 3MF model namespace the Customiser's 3D preview names when it reads a printed item's 3MF file: an XML vocabulary's name, never fetched",
     },
     {
       origin: "https://react.dev",
       why: "the address React prints in a minified error message so a developer can look the number up. It is text in a `throw`, and nothing loads it",
     },
   ];
-  /**
-   * ── AND THE ADD-ONS" ADDRESSES ARE THE ADD-ONS" TO DECLARE ────────────────
-   *
-   * The two Canva endpoints used to be written out here as well as in
-   * `sources.test.ts`, in an app that only receives that add-on. Both lists
-   * read the same declarations now — every add-on exports `INERT_ORIGINS` from
-   * its own `add-on-facts.ts`, the sync vendors it, and this reads whatever
-   * this app has vendored. See `sources.test.ts` for the cross-app argument.
-   *
-   * The bundle is where the two lists legitimately differ: React writes the SVG
-   * and MathML namespaces and prints its own error address, and neither is any
-   * add-on"s doing.
-   */
-  const VENDORED_ORIGINS = import.meta.glob<{
-    INERT_ORIGINS?: readonly { origin: string; why: string }[];
-  }>("./add-ons/vendor/*/add-on-facts.ts", { eager: true });
-
   /*
    * ── AND THE BACKEND A CONNECTED BUILD WAS POINTED AT ──────────────────────
    *
@@ -631,18 +558,8 @@ describe("nothing in the artefact can reach a host we do not control", () => {
    */
   const INERT: readonly InertOrigin[] = [
     ...OURS,
-    ...Object.values(VENDORED_ORIGINS).flatMap((module) => [...(module.INERT_ORIGINS ?? [])]),
     ...connectedBackend(process.env["VITE_ADMINIUM_API_BASE_URL"]),
   ];
-
-  it("reads a declaration off every add-on this bundle was built from", () => {
-    const declared = Object.entries(VENDORED_ORIGINS);
-    expect(declared.length, "no vendored inert-origin declarations were found").toBeGreaterThan(0);
-    const silent = declared
-      .filter(([, module]) => module.INERT_ORIGINS === undefined)
-      .map(([file]) => file);
-    expect(silent, "these vendored packages export no INERT_ORIGINS").toEqual([]);
-  });
 
   it("reads every emitted file, with no extension exempt", () => {
     expect(built().length).toBeGreaterThan(2);

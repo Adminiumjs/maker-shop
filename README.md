@@ -1,315 +1,164 @@
-# Maker Shop — Birch Row
+# Maker Shop
 
-> **This app will be reworked in Q4 2026.** Until then it is kept as it is and may not show what
-> the newest Adminium can do.
+A made-to-order shop and its studio, installed into [Adminium](https://adminium.dev).
+Shoppers choose a piece, its material, size and finish, make it their own in the
+Customiser (their words, their logo, a ready-made design), and see the day it will
+be posted; the studio proofs every piece with words on it, batches pieces from
+different orders onto one sheet of a machine, and posts them. Adminium decides
+every price, quantity break, postage rate, post-by date, order number and status —
+the pages only ask.
 
-An open-source example app for [Adminium](https://adminium.dev): a made-to-order
-shop and workshop for **Birch Row**, a fictional two-person maker studio that
-sells laser-engraved coasters, slate house signs, keyrings and pet tags,
-3D-printed desk pieces and pots, and a few hand-glazed stoneware mugs.
+**Nothing is held in stock.** Every order is made after it is placed. The only
+stock is the studio's materials: sheets, blanks, filament and glaze.
 
-Nothing is held in stock. Every order is made after it is placed, which is the
-one fact the whole app is built around.
+The demo is dressed as **Birch Row**, a fictional two-person studio in Settle that
+sells laser-engraved coasters, slate house signs, 3D-printed pieces and stoneware
+mugs. Its clock stands at **Thursday 6 August 2026, 16:40** — twenty minutes before
+the five o'clock cut-off — and the studio works Tuesday to Saturday.
+
+**Live demo → [adminium.dev/demo/maker-shop](https://adminium.dev/demo/maker-shop)**
+
+## What it needs
+
+- Adminium **0.3.48** or later, on SQLite, Postgres or MySQL.
+- The **Customiser** add-on (1.0.19 or later): it is where a shopper makes a piece
+  their own, and the order line names the design they made. Adminium installs it
+  with the app.
+- Nothing else. Five add-ons are offered at install, and the app is whole without
+  any of them:
+  - **DHL shipping** — book a collection for a parcel from the post office run,
+    with the service the shopper chose already picked, print its label, and send
+    the shopper the tracking number. Without it, the "on its way" e-mail names the
+    service and has no tracking number.
+  - **Barcode labels** — a label for each piece on the cut list, and one for each
+    parcel.
+  - **Inventory** — the sheets, blanks, filament and glaze each batch takes, kept
+    as stock.
+  - **Invoices & Receipts** — a receipt for an order, e-mailed and printed.
+  - **Holiday calendars** — the coming public holidays on the studio's Machines
+    screen, each added as a closure in a tap.
+
+## What it does
+
+**For shoppers** (the app's customer side):
+- The shop and a piece's page: its options, its quantity breaks, the price for
+  each quantity and the post-by date, all worked out by Adminium before anything
+  is placed.
+- "Customise" opens the Customiser's editor on the page: the shopper's words, a
+  logo or a ready-made design, checked for what the machine can make.
+- The basket and the checkout: name, e-mail, address and a postage service. One
+  write places the order, its lines, their designs and the shopper, checked
+  against the total the shopper saw.
+- An e-mail with the order's own link; the order's page with its timeline and its
+  proofs, each answered there ("Yes, make it" or "Ask for a change"); finding an
+  order by its number and a code e-mailed to the shopper; their designs; ordering
+  again.
+- Asking for something made, and telling the studio something went wrong with an
+  order — each copied back to the shopper by e-mail.
+- Postage and the studio's calendar, looking after a piece, About us, search.
+
+**For the studio** (the app's staff side): Today's board with the proof gate (a
+piece with words goes to the bench only once its proof is approved), one order,
+proofs, the post office run, customers, products and their lettering settings,
+batches and the cut list, machine time, materials and the stock count. The
+Customiser's own panel opens on these screens in a sheet: a line's design as it
+will be made, where the proof and the machine's files are made, and a product's
+base. A proof can also be a PDF or a picture made elsewhere, sent as it is. The
+name chip signs out. Roles: **owner** (everything, including finding and erasing
+a customer on Adminium's privacy page and choosing the studio's closed days in
+Holiday calendars), **maker** (the bench, proofs and the Customiser's panel,
+batches, stock; never a price or a customer's details beyond the order) and
+**packer** (posting what is ready; no panel).
+
+**In the dashboard** (the Maker Shop section): orders, proofs, requests, problems,
+the catalogue (products, options, postage), the workshop (materials, stock,
+machines, bookings, batches, closures), customers, the e-mails sent, and the
+studio's settings.
+
+**E-mails.** Order received, proof ready and the one proof reminder (each with
+the proof's picture, unless the proof is a PDF), order posted, and the copies of
+a request or a problem go to the shopper, in the language the order was placed
+in (eight languages); a request, a problem and a change asked to a proof are
+copied to the studio's own address. All of them are service mail:
+the do-not-email list never stops them, none has an unsubscribe line, and a reply
+reaches the studio's e-mail.
+
+## Installing it
+
+Install Maker Shop from Adminium's app catalog and pick the database it should
+use. Adminium creates the app's tables (each named `maker_…`), installs the
+Customiser, and makes the dashboard pages, the three roles, the shop's browser
+keys and the e-mails. Tick sample data at the install step to start with Birch
+Row's Thursday, or add it later from the app's settings.
+
+Give the studio's people their roles under Staff. The owner who also sets up
+what shoppers customise (the bases, ready-made designs, fonts, finishes and
+priced features) holds the Customiser's own **Customiser designer** role beside
+**Owner**: the Customiser keeps its set-up page,
+`/add-ons/customiser/customiser`, for that role, and no role of an app may hold
+its settings or change its set-up.
+
+Once installed, the studio's screens are served at `/apps/maker/staff/` and the
+shop at `/apps/maker/customer/`. A studio can also give the shop a domain of its
+own.
+
+**Coming from 0.1.x?** The 0.1 Maker Shop was an example with its own database,
+and the Live personalizer add-on in place of the Customiser. 0.2 is a different
+app on new tables:
+
+1. **Detach and remove Live personalizer** from the app on its Add-ons page. It is
+   retired; the Customiser does what it did, and more.
+2. **Then install Maker Shop 0.2** on the same database. Its tables are all named
+   `maker_…`, so the old `products`, `orders`, `customers` and the rest stay
+   exactly as they are, row for row, and nothing is carried over from them.
+   Drop them yourself once you no longer need them.
+
+## Local development
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
-npm test           # the engines, the bundle, the source scan, and a DOM render
-npm run build      # tsc -b && vite build
-npm run build:demo # the same, served from /demo/maker-shop/
+npm run dev        # the demo: the shop and the studio on Birch Row's sample, in the browser
 ```
 
-## The studio calendar
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Start the Vite dev server on the in-browser demo. |
+| `npm run dev:staff` | The dev server on the studio's hosted side (it reads its session from the Adminium that serves it). |
+| `npm run build` | Type-check and build to `dist/` (the demo). |
+| `npm run build:demo` | Build the website's demo, at base `/demo/maker-shop/app/`, with its `demo.json`. |
+| `npm run build:surface` | Build the two sides Adminium serves (`dist-surface/maker/`). |
+| `npm run manifest` | Write `manifest.json` from `src/manifest/`. A test fails when the two disagree. |
+| `npm run manifest:check` | Validate `manifest.json` with the vendored validator. |
+| `npm run sample` | Write the sample bundle (`seeds/`) from `src/sample/`. |
+| `npm run sync:customiser` | Vendor the Customiser's editor from its release (`vendor/customiser/`). |
+| `npm test` | Run the suite. |
+| `npm run contract` | Run the contract against a built Adminium (`ADMINIUM_REPO`) and add-ons (`ADD_ONS_REPO`) checkout, on SQLite and, with `TEST_POSTGRES_URL` / `TEST_MYSQL_URL`, Postgres and MySQL. |
 
-**Birch Row works Tuesday to Saturday.** Sunday and Monday the bench is shut,
-and that is not decoration: every lead time, ship-by date and queue chip in this
-app counts **studio days**, so
-
-- a piece finished on Saturday is posted on **Tuesday**;
-- the dock's **"+1 studio day"** chip skips two nights when it lands on a
-  Saturday, which is how the studio week becomes visible without a paragraph
-  explaining it;
-- an order placed before **17:00** starts the same studio day.
-
-The clock is pinned to **Thursday 6 August 2026, 16:40** — twenty minutes before
-the cut-off, so "does this get on today's bench?" is the live question when you
-open the demo. **Nothing anywhere reads a real clock**, which is what lets every
-date be asserted in a test and reproduced on the droplet.
-
-Worked example, asserted in `src/lib/calendar.test.ts`: a set of coasters
-ordered at the pinned moment takes three studio days (Thursday, Friday,
-Saturday), comes off the bench on Saturday, and is **posted by Tuesday 11
-August**. The running demo says the same sentence on the product page.
-
-## The engines
-
-Both are pure and deterministic: no `Date.now()`, no `Math.random()`, no DOM, no
-network. The clock is always passed in, and `src/sources.test.ts` enforces that
-over the tree rather than trusting a comment.
-
-| Module | What it owns |
-|---|---|
-| `src/lib/calendar.ts` | The studio week, the 17:00 cut-off, and studio-day arithmetic. Three engines and two views read it. |
-| `src/lib/orders.ts` | Lead times by kind, the basket's ship-by (its **longest** line), the order machine, **the proof gate**, spoil-and-remake, and materials. |
-| `src/lib/catalogue.ts` | The option graph — fourteen pieces, six materials, the quantity breaks — as data with no display strings in it. |
-
-Lead times, in studio days: coasters and keyrings **3**, printed pieces **4**,
-slate signs **5**, glazed ceramics **10** (they are fired twice).
-
-### The proof gate
-
-A piece cannot leave *To make* until its picture is approved, and **the refusal
-names what is missing** — whether the picture has not been sent yet or has been
-sent and is waiting on a reply. Those need different actions from the maker, so
-they are different sentences. A silent bounce is the worst thing a
-drag-and-drop board can do.
-
-### There is no finished-goods stock
-
-The only inventory in this app is **materials** — sheets of walnut and birch
-ply, slate blanks, filament, glaze — and it belongs to the maker. No
-shopper-facing surface anywhere shows a stock count or a scarcity badge. Where a
-material is running short, the shop says *"made in small batches, while we still
-have walnut"* — naming the shelf it actually looked at, so a stoneware mug says
-*glaze* and a printed pot says *filament* — because inventing urgency is not
-this shop's voice.
-
-Both halves of that are asserted. `orders.test.ts` checks the data shape, and
-`sources.test.ts` holds the copy — as a **rule rather than a phrase list**, in
-all eight languages, over every file that renders. Three rules: nothing may say
-a made piece is on a shelf; nothing may put a **count** beside a word of
-remainder (*left*, *übrig*, *剩*, *متبق*, each of which is an ordinary word on
-its own); and nothing anywhere may hurry the reader. The list it replaced was
-seven English regexes over two directories, and *"Just 2 left · 1 remaining ·
-Selling fast"* passed it.
-
-## Personalization, and the hole left for it
-
-Many pieces are personalized. In this build the shop handles that the plain way,
-which is also the honest way most small shops really work: a **"Make it yours"**
-note field with a character limit, a live counter, the maker's own instructions,
-and a picture sent for approval before anything is cut.
-
-That is a **designed, finished screen**, not a placeholder. The Live Personalizer
-add-on replaces the whole block with a live visual preview later — so its
-arrival is a visible increase in capability rather than the repair of a broken
-page. Underneath it sits one muted line — *"This is the only part of this page
-an add-on changes."* — and that is the entire empty state: no dashed box, no
-upsell. The line belongs to the **page**, not to the slot, so it reads the same
-whichever of the two the slot happens to be drawing. The bench's own piece
-settings carry no such line, because the slot there has nothing to explain.
-
-## What is in this build
-
-**The shopper's side is complete**: the shop with its material-textured tiles
-and filters, a piece's page, the basket, the checkout, the confirmation, looking
-an order up with the proof approve / ask-for-a-change action, About us, and the
-five pages the footer links to — postage and the calendar, looking after it,
-order again, ask us for something, and if something's wrong.
-
-**The maker's side is complete too**: Today (the four-column board, with drag
-*and* a "…" menu on every card, the proof gate refusing a locked move by name,
-KPI chips and the "Batch these" strip), the batch sheet, the cut list, one
-order, the orders list, proofs, the post office run, customers, the pieces and
-their personalization settings, materials, machines, the stocktake, and the
-add-on shelf.
-
-## Cross-order batching
-
-**This is the thing that makes it a workshop rather than a task list.** A print
-works imposes one job onto N sheets; Birch Row packs pieces from **different
-orders** onto **one sheet**. `src/lib/batch.ts` groups the queue by machine and
-material, packs a sheet of a stated size with a kerf gap, and returns the
-placements, the sheet-use percentage and the **overflow list for the next
-sheet**. "Start the batch" then moves every included piece to *Making* in one
-action and books the machine.
-
-The demo shows it: nine pieces from **three different orders** — Priya's
-bookmarks, Sam's coasters and Theo's cake topper — on one 600 × 400 sheet at
-33.3% use, and one press puts all three on the laser.
-
-## The nine add-on slots
-
-Nine places in this shop are open to an add-on, and **three of them speak when
-they are empty**:
-
-| Slot | When nothing fills it |
-|---|---|
-| `product.options.personalize` | the "Make it yours" note field, with its counter |
-| `checkout.delivery.methods` | "These are the studio's own postage options." |
-| `order.dispatch.panel` | "We post everything ourselves — you'll get a note when it goes." |
-| `cart.line.preview` | **nothing at all** |
-| `order.dispatch.actions` | **nothing at all** |
-| `order.line.actions` | **nothing at all** |
-| `product.admin.panel` | **nothing at all** |
-| `settings.add-on.panel` | **nothing at all** |
-| `nav.add-on.routes` | **nothing at all** |
-
-A dashed placeholder drawn for one of the silent six would be the defect —
-their absence is not. There is no `SlotEmpty` component in this repo at all:
-a ready-made dashed box sitting in the shared primitives is one import away
-from every slot that must not have one, so it was deleted rather than left
-unused, and the three that speak say something specific enough to be written
-where it is said.
-
-**Both halves of that are asserted by RENDERING the app.**
-`src/add-ons/slotRender.test.tsx` mounts every host surface in a DOM, twice —
-with nothing connected and with both add-ons on — and collects the slots React
-actually reached. A silent slot that renders so much as one byte fails; a
-speaking slot that stops saying anything fails; and a slot that is declared and
-never drawn fails, because a slot is only counted when it is drawn. That last
-one used to be a grep for `slot="…"` over the sources, which a mount inside a
-**comment** satisfied. A slot a host declares and never draws is worse than an
-absent one, because an add-on author reads the list and writes code against it.
-
-`order.dispatch.actions` was missing for a release, and the suite had written the
-omission down as an invariant — `isHosted(…) === false` — which is how a gap
-survives a review. It is mounted now, and hosting it is what lets an add-on
-written for another shop run here at all.
-
-Both add-ons this build vendors arrive switched **off**. Every screen a reviewer
-opens first is the screen a maker with nothing connected sees.
-
-## Running it on a real database
-
-The SPA above runs on the seeded fiction with nothing behind it. `docker-compose.yml`
-brings up the whole product instead — the shop, Postgres and the **generated
-Adminium dashboard**, which is the back office nothing in the SPA tries to be:
-
-```bash
-cp .env.example .env      # then set ADMINIUM_SECRET — openssl rand -hex 32
-docker compose up
-```
-
-- the shop → <http://localhost:8080>
-- Adminium admin → <http://localhost:4600>, auto-generated from the schema
-
-Both halves run the same studio: a piece moved across the bench on `:8080` is
-the row an administrator opens on `:4600`, and the catalogue the shop prices
-from is edited there rather than in the SPA. `Dockerfile` and `Caddyfile` build
-and serve the static SPA on their own if that is all you want, and
-`.do/deploy.template.yaml` deploys exactly that as a static site.
-
-### The database, and the demo rows
-
-`db/schema.sql` is the **eight tables `manifest.json` asks for**, table for
-table and column for column: `customers`, `products`, `materials`, `machines`,
-`orders`, `order_lines`, `proofs`, `stock_movements`. There is no
-finished-goods column anywhere in it, because there is no such thing in this
-app.
-
-Demo rows load on first boot unless you set `DEMO_DATA=0`, and that choice is
-not permanent in either direction:
-
-```bash
-npm run demo:status    # what is loaded, table by table
-npm run demo:import    # load the demo rows
-npm run demo:wipe      # remove them — your own rows and the schema stay
-npm run demo:reset     # wipe, then import a fresh copy
-```
-
-`db/seed.sql` is **generated, not written**: every row is read out of
-`src/data/demo.ts` and the engines beside it, so the database and the SPA cannot
-drift into showing two different studios. The same twelve customers, the same
-twelve live orders and sixteen posted ones, the same ten stock rows with
-`ply-4mm` under its reorder point — with every total put through
-`piecesTotalCents()` and every shelf movement through `consumptionForLine()`
-rather than typed in by hand.
-
-```bash
-node db/generate-seed.mjs           # rewrite db/seed.sql
-node db/generate-seed.mjs --check   # fail if it is stale, write nothing
-```
-
-`db/README.md` has the rest, including how a wipe knows which rows are the demo's.
-
-## House conventions
-
-- **Eight locales, full parity, real translations**: `en-US`, `de-DE`, `fr-FR`,
-  `cs-CZ`, `da-DK`, `zh-CN`, `zh-TW`, `ar-EG`. A missing translation is a
-  **compile error**, not a runtime fallback to English.
-- **CSS logical properties only.** The app renders RTL for Arabic with no RTL
-  stylesheet; `sources.test.ts` fails on a single `margin-left`.
-- **A number in a sentence is formatted, never `String()`d.** `t()` runs every
-  numeric placeholder — including a plural's own `{count}` — through the
-  reader's `Intl.NumberFormat`, and `<Mono>` does the same for a bare numeric
-  child, so Arabic reads *"جاهزة خلال ٣ أيام عمل"* rather than a Latin 3 beside
-  Arabic-Indic prices. Both seams are asserted in `src/i18n/numerals.test.tsx`.
-- **No screen counts days.** All calendar arithmetic lives in `lib/`; a view
-  asks for a *named* day (`postDay`, `fortnight`, `shopperStageDates`) and never
-  computes one. `sources.test.ts` holds that with no exception list, because the
-  one exception it used to have is where a plain weekday got counted.
-- **No photography.** Every piece is a CSS tint plus a material texture — wood
-  grain as repeating gradients, slate as a mottled radial, ceramic as a soft
-  sheen, resin as flat matte — under an oversized Lucide icon and a mono size
-  chip.
-- **The `DataSource` seam** (`src/data/source.ts`) is the one file to change to
-  point this app at a real Adminium deployment.
-
-## The manifest
-
-`manifest.json` is the marketplace's document about this app: `kind: "app"`, key
-`maker`, publisher `adminium`, the eight tables it needs, the dashboard pages it
-installs, and the three capabilities it declares (`payments`, `file-storage`,
-`email-delivery` — and deliberately not `realtime`, because a queue two people
-watch from the same room does not need it). `src/manifest.test.ts` puts it
-through the real validator and fails the build if the bench machine, the
-catalogue's vocabularies or the two tables the Live Personalizer mounts on ever
-stop matching `src/lib/`.
-
-## Licence
-
-AGPL-3.0-only — see [`LICENSE`](LICENSE). The people, the orders and the studio
-are invented.
-
-## Add-ons
-
-The shop hosts **nine** of the eleven slots in the closed registry and
-vendors **two** add-ons from the
-[`add-ons`](https://github.com/Adminiumjs/add-ons) monorepo: the **Live
-Personalizer** and **DHL Shipping**.
-
-Both arrive switched OFF, independently, and that is the demo device rather than
-an oversight: every screen a reviewer opens first is the screen a maker with
-nothing connected sees — a plain note field with a live counter, the maker's
-instructions and a proof promise, which is a *finished* screen and not a gap —
-and one toggle in the dock turns the same block into a live preview
-of the piece with the customer's own words cut into it. Toggling either back
-leaves no orphan control behind, which `addOns.test.ts` and a browser walk both
-check.
-
-**DHL Shipping is the cross-app proof.** It was written for the
-Print Shop months before this app existed and is vendored here with not one byte
-changed in its package: registration was the whole integration. It fills four
-slots and this shop mounts all four; the fill it does NOT ship — `artwork.sources`
-— is a print works' surface this shop has no use for, and an add-on filling a
-slot its host does not mount is dropped in silence, which is what makes "the same
-add-on, unchanged" possible at all.
-
-Its `manifest.json` names both apps. It did not, for a release: the add-on ran
-here, was demonstrated here and went on declaring `attaches: [{ app: "printing" }]`,
-so the one artefact an installer reads said the thing the demo disproved. Adding
-this app turned out to need one more repair, because the manifest also asked for
-`records:jobs:read` — a table only the print works has, and one this add-on never
-reads: a host hands it the parcel, the two addresses and its own order reference
-across the slot payload. The scope is gone and the claim is checkable, on every
-run, by the add-on monorepo's `packages/host/src/manifest-schema.test.ts`.
-
-**The Live Personalizer names only this app**, for the mirror-image reason. It
-would run in the print works and the print works mounts none of the surfaces it
-draws on, so an install there would give a shop a settings form for a feature with
-nowhere to happen. An attach claim that resolves to no working surface is a promise
-to an installer, not a fill that harmlessly does not render, and the same suite
-gates it.
+## Project structure
 
 ```
-scripts/sync-add-ons.sh status   what is vendored, and whether it has drifted
-scripts/sync-add-ons.sh sync     re-copy from ../add-ons
-scripts/sync-add-ons.sh list     the file list each package contributes
+manifest.json  what Adminium installs (written from src/manifest/)
+seeds/         the sample bundle, the app's rows and the Customiser's (written from src/sample/)
+src/
+  manifest/    the tables and their rules, the pages, the roles, the shop's doors,
+               the e-mails in eight languages, the people, the add-ons
+  shop/        the shopper's side: its screens and its door (the public API)
+  studio/      the studio's side: its screens and its door (the staff session)
+  add-ons/     the host the studio mounts DHL's dispatch flow with: the client half
+               Adminium serves for the app (`connected.ts`), or in the demo a
+               vendored copy that answers from its demo carrier
+  demo/        the in-browser demo for the website's card (never in a hosted build)
+  sample/      Birch Row's Thursday, which both the bundle and the demo are made from
+  contract/    the contract with a built Adminium (`npm run contract`)
+  i18n/        the 8-locale runtime and the keyed strings
+  styles/      design tokens and base styles
+  testing/     the product's manifest validator, vendored for the tests
+vendor/        the Customiser's editor, as its release ships it
 ```
 
-The monorepo is the source of truth; a hand-edit under `src/add-ons/vendor/` is
-invisible until it is a bug in two places at once, which is what `status` is for.
+## License
+
+[AGPL-3.0](LICENSE) © 2026 Maker Shop. An example app for Adminium.
 
 ## Building on this app with a coding agent
 

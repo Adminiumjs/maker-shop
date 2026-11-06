@@ -1,0 +1,393 @@
+/**
+ * THE CUSTOMISER'S PANELS ON THE STUDIO'S SCREENS, AGAINST A REAL ADMINIUM.
+ *
+ * This repo's manifest and sample, installed with the built Customiser on a
+ * BUILT Adminium (`ADMINIUM_REPO`), on every engine this run reaches. The
+ * studio's own door is booted on an owner's, a maker's and a packer's
+ * sessions, as their screens boot it, and the Customiser's panels are asked
+ * for as the staff screens ask for them:
+ *
+ *   - the line's panel is served to the maker (whose role opens only the
+ *     studio's screens) and to the owner, and refused to the packer;
+ *   - the REAL panel code Adminium serves is imported and drawn here with the
+ *     studio's host (`studio/panels/host.tsx`), and draws the design from the
+ *     Customiser's rows, read as the maker;
+ *   - what the panel saves when it makes a proof and the machine's files is
+ *     saved as the maker and as the owner, through the same door calls the
+ *     host's `useWrite` and `useUpload` make (the drawing itself needs a
+ *     browser's canvas, which this suite has not), and the studio's proof
+ *     sheet then sends that proof;
+ *   - the product's panel is served to the owner;
+ *   - the owner keeps Holiday calendars' closed days (its settings grant),
+ *     and finds a customer to erase (`privacy:@:people`);
+ *   - the Customiser's set-up page opens, reads and saves for the owner who
+ *     also holds the Customiser's designer role;
+ *   - the customer whose design was proofed is erased, the proof pictures
+ *     with them. What only Adminium or the Customiser can close is held
+ *     here as `it.fails`, named after the gap.
+ *
+ * The panel is drawn in a page of jsdom's, made for the drawing only: the
+ * suite itself runs in Node, as the other contracts do, so its harness reads
+ * its own files where they are.
+ *
+ * It runs with `CONTRACT=1` where an Adminium checkout with its built server
+ * and dashboard is (`ADMINIUM_REPO`) and a built add-ons checkout
+ * (`ADD_ONS_REPO`), and says why it skipped otherwise.
+ */
+import { createHash } from "node:crypto";
+import { writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+import { Blob as NodeBlob } from "node:buffer";
+
+import { JSDOM } from "jsdom";
+import { act } from "react";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+import { PanelRefused } from "../add-ons/connected.ts";
+import { sendProofs } from "../studio/actions.ts";
+import { AdminiumStudio } from "../studio/adminiumStudio.ts";
+import type { PanelDoor, StudioData } from "../studio/door.ts";
+import { dueForProof, fileIdOf, linesOf } from "../studio/facts.ts";
+import { PanelScopeProvider } from "../studio/panels/host.tsx";
+import { createSessionTransport } from "../studio/transport/sessionSource.ts";
+import { loadStaffConfig } from "../studio/transport/staffConnection.ts";
+import type { Row } from "../studio/wire.ts";
+import { MANIFEST_TEXT } from "./release.ts";
+import { boot, Caller, ENGINES, installStudio, missing, newPassword, ok, personWith, png, PORTS_PER_ENGINE, type Engine, type Server } from "./studio-harness.ts";
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+/** The names a page gives React and the panel, put on this process for the drawing and taken away after. */
+const PAGE_NAMES = ["window", "document", "navigator", "Node", "Element", "HTMLElement", "SVGElement", "HTMLCanvasElement", "HTMLIFrameElement", "Text", "Event", "CustomEvent", "MutationObserver", "getComputedStyle", "requestAnimationFrame", "cancelAnimationFrame", "Image"] as const;
+
+/** Draw something in a page of its own, at the server's address (the panel reads its files from there). */
+async function inAPage<T>(base: string, work: (page: Document) => Promise<T>): Promise<T> {
+  const dom = new JSDOM("<!doctype html><html><body></body></html>", { url: base, pretendToBeVisual: true });
+  const held = globalThis as unknown as Record<string, unknown>;
+  const before = new Map(PAGE_NAMES.map((name) => [name, Object.getOwnPropertyDescriptor(held, name)]));
+  for (const name of PAGE_NAMES) Object.defineProperty(held, name, { value: (dom.window as unknown as Record<string, unknown>)[name], configurable: true, writable: true });
+  try {
+    return await work(dom.window.document);
+  } finally {
+    for (const [name, descriptor] of before) {
+      if (descriptor === undefined) delete held[name];
+      else Object.defineProperty(held, name, descriptor);
+    }
+    dom.window.close();
+  }
+}
+
+const why = missing();
+if (why !== null && process.env["ADMINIUM_REQUIRE_CONTRACT"] === "1") throw new Error(`the contract must run here, and cannot: ${why}`);
+const PORT_BASE = Number(process.env["CONTRACT_PORT_BASE"] ?? 4950);
+/** 16:40 on Thursday 6 August 2026 in Settle. */
+const THURSDAY = Date.parse("2026-08-06T15:40:00Z");
+
+/** A file as the browser hands one over, in the bytes this process's `fetch` sends. */
+const pngFile = () => new NodeBlob([new Uint8Array(png())], { type: "image/png" }) as unknown as Blob;
+/** The smallest PDF a reader opens: one empty page. */
+const MINIMAL_PDF = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n";
+const svgFile = () => new NodeBlob(['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M0 0H10V10H0Z" fill="none" stroke="#000"/></svg>'], { type: "image/svg+xml" }) as unknown as Blob;
+
+describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, against a built Adminium${why === null ? "" : ` — skipped: ${why}`}`, () => {
+  ENGINES.forEach(([engine, available], index) => {
+    describe.skipIf(!available)(`on ${engine}`, () => {
+      let server: Server;
+      let owner: Caller;
+      const callers: Record<string, Caller> = {};
+      const doors: Record<string, AdminiumStudio> = {};
+
+      /** A door booted as the staff build boots it, on a person's own session; a panel's code imported as the browser imports it. */
+      const doorFor = async (caller: Caller): Promise<AdminiumStudio> => {
+        const cfg = (await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: caller.fetchAs() }))!;
+        const transport = createSessionTransport({
+          tableOfRef: cfg.tables,
+          connectionId: cfg.connectionId ?? undefined,
+          staff: { csrfToken: cfg.csrfToken, timezone: cfg.timezone, timezoneSource: cfg.timezoneSource, serverTimezone: cfg.serverTimezone, currency: cfg.currency },
+          fetchImpl: caller.fetchAs(),
+        });
+        const importBundle = async (url: string) => {
+          const code = await (await caller.fetchAs()(url)).text();
+          const file = join(tmpdir(), `maker-panel-${createHash("sha256").update(code).digest("hex").slice(0, 16)}.mjs`);
+          writeFileSync(file, code);
+          return import(/* @vite-ignore */ pathToFileURL(file).href);
+        };
+        return new AdminiumStudio(transport, cfg, { fetchImpl: caller.fetchAs(), origin: server.base, importBundle });
+      };
+      const designedLine = (data: StudioData): Row => {
+        const order = data.orders.find((o) => o["number"] === "BR-2288")!;
+        return linesOf(data, order).find((l) => l["design_id"] !== null && l["design_id"] !== undefined)!;
+      };
+      const panelsOf = (who: string): PanelDoor => doors[who]!.panels();
+      /** The proof file each role's panel made on the design's newest version, the maker's first, then the owner's over it. */
+      const proofFiles: Record<string, string> = {};
+
+      beforeAll(async () => {
+        server = await boot(engine as Engine, PORT_BASE + index * PORTS_PER_ENGINE, THURSDAY - 60_000, `maker_panel_contract_${engine}${process.env["CONTRACT_DB_SUFFIX"] ?? ""}`);
+        ({ owner } = await installStudio(server, engine as Engine, THURSDAY, MANIFEST_TEXT, join(tmpdir(), `maker-panel-contract-${String(PORT_BASE)}.db`), ["customiser", "holiday-calendars"]));
+        for (const [slug, name] of [["owner", "Nell Birch"], ["maker", "Jo Marsh"], ["packer", "Ade Pack"]] as const) {
+          callers[slug] = await personWith(owner, server, slug, `${slug}.panel.${engine}@birchrow.example`, name);
+          doors[slug] = await doorFor(callers[slug]!);
+        }
+      }, 420_000);
+
+      afterAll(async () => {
+        await server?.stop();
+      });
+
+      it("serves the line's panel to the maker and the owner, and refuses it to the packer", async () => {
+        const line = designedLine(await doors["maker"]!.load());
+        for (const who of ["maker", "owner"]) {
+          const loaded = await panelsOf(who).load({ id: "customiser-line", table: "order_lines", row: line.id });
+          expect(typeof loaded, who).toBe("function");
+        }
+        const refused = await doors["packer"]!.panels().load({ id: "customiser-line", table: "order_lines", row: line.id }).catch((e: unknown) => e);
+        expect(refused).toBeInstanceOf(PanelRefused);
+        expect((refused as PanelRefused).status).toBe(403);
+      });
+
+      it("tells the panel what each role may do with the Customiser's tables, as Adminium says it", () => {
+        for (const who of ["maker", "owner"]) {
+          const panels = panelsOf(who);
+          for (const table of ["designs", "bases", "ready_designs", "ready_parts", "base_areas", "base_pieces", "palettes", "palette_colours", "fonts"]) expect(panels.access("customiser", table), `${who} reads ${table}`).toContain("read");
+          expect(panels.access("customiser", "version_files"), who).toEqual(expect.arrayContaining(["read", "create", "update"]));
+        }
+        expect(panelsOf("packer").access("customiser", "design_versions")).toEqual([]);
+      });
+
+      it("serves the product's panel to the owner, and refuses it to the maker", async () => {
+        const data = await doors["owner"]!.load();
+        const product = data.products.find((p) => p["base_id"] !== null && p["base_id"] !== undefined)!;
+        expect(typeof (await panelsOf("owner").load({ id: "customiser-product", table: "products", row: product.id }))).toBe("function");
+        expect(await panelsOf("maker").load({ id: "customiser-product", table: "products", row: product.id }).catch((e: unknown) => (e as PanelRefused).status)).toBe(403);
+      });
+
+      /** The Customiser's own line panel, drawn here with the studio's host as this role: what it says. */
+      const drawnFor = async (who: string, line: Row): Promise<string> => {
+        const Panel = (await panelsOf(who).load({ id: "customiser-line", table: "order_lines", row: line.id })) as (props: Record<string, unknown>) => null;
+        return inAPage(server.base, async (page) => {
+          // React's page half, imported once there is a page for it.
+          const { createRoot } = await import("react-dom/client");
+          const host = page.createElement("div");
+          page.body.append(host);
+          const root = createRoot(host);
+          await act(async () =>
+            root.render(
+              <PanelScopeProvider scope={{ door: panelsOf(who), addOn: "customiser", locale: "en-US" }}>
+                <Panel connectionId={doors[who]!.facts().connectionId} table="order_lines" row={String(line.id)} linked={String(line["design_id"])} />
+              </PanelScopeProvider>,
+            ),
+          );
+          const deadline = Date.now() + 30_000;
+          while (!(host.textContent ?? "").includes("Make the proof") && Date.now() < deadline) await act(async () => new Promise((resolve) => setTimeout(resolve, 200)));
+          const said = host.textContent ?? "";
+          act(() => root.unmount());
+          return said;
+        });
+      };
+      /** The shopper's own words on the line's design, as the operator reads them. */
+      const wordsOf = async (line: Row): Promise<string[]> => {
+        const design = (await owner.get<{ data: Row }>(`/api/v1/data/${doors["owner"]!.facts().connectionId ?? ""}/customiser_designs/${String(line["design_id"])}`)).body.data;
+        const values = typeof design["values"] === "string" ? (JSON.parse(design["values"]) as { parts?: Record<string, { text?: string }> }) : ((design["values"] ?? {}) as { parts?: Record<string, { text?: string }> });
+        return Object.values(values.parts ?? {}).map((part) => part.text).filter((text): text is string => typeof text === "string" && text !== "");
+      };
+
+      for (const who of ["maker", "owner"] as const) {
+        it(`draws the Customiser's own panel on a line for the ${who}, from the rows of the design that role reads`, async () => {
+          const drawn = await drawnFor(who, designedLine(await doors[who]!.load()));
+          // Past "Loading": the design, its ready-made design and base, the parts, fonts, palettes and versions all read as this role.
+          expect(drawn, drawn.slice(0, 600)).toContain("Make the proof");
+          expect(drawn).toContain("Design");
+          expect(drawn).not.toContain("No design on this line");
+        }, 60_000);
+
+        // The shopper's words are a design's personal column (`values`), held in clear by the role's `read_pii`.
+        it(`shows the ${who} the shopper's own words in the panel, read in clear (read_pii)`, async () => {
+          const line = designedLine(await doors[who]!.load());
+          const words = await wordsOf(line);
+          expect(words.length).toBeGreaterThan(0);
+          expect(await drawnFor(who, line)).toContain(words[0]!);
+        }, 60_000);
+
+        it(`stores the machine's files the panel makes as the ${who}: a row of the design's version, then its file`, async () => {
+          const line = designedLine(await doors[who]!.load());
+          const panels = panelsOf(who);
+          const version = (await panels.list("customiser", "design_versions", { where: { column: "design_id", op: "eq", value: line["design_id"] }, order: "version.desc", limit: 51, offset: 0 }))[0]!;
+          const made = await panels.create("customiser", "version_files", { app: version["app"], version_id: version.id, kind: "machine", name: `piece-${who}.svg`, about: "Shop sign · 120 × 80 mm", position: 1 });
+          const file = await panels.upload("customiser", "version_files", "file", made.data.id, svgFile(), `piece-${who}.svg`);
+          expect(fileIdOf(file.row["file"])).toMatch(/^file_[0-9A-Z]{26}$/);
+          expect((await panels.get("customiser", "version_files", made.data.id))?.["file"]).toBe(file.row["file"]);
+        }, 60_000);
+
+        // `design_versions` is a table the Customiser's designs ledger writes; the add-on's `appGrants` open it to an app's role.
+        it(`stores the proof the panel makes as the ${who}, and the proof sheet sends it`, async () => {
+          const door = doors[who]!;
+          let data = await door.load();
+          const line = designedLine(data);
+          const panels = panelsOf(who);
+          const version = (await panels.list("customiser", "design_versions", { where: { column: "design_id", op: "eq", value: line["design_id"] }, order: "version.desc", limit: 51, offset: 0 }))[0]!;
+          const proof = await panels.upload("customiser", "design_versions", "proof_file", version.id, pngFile(), `${String(line["design_id"])}-v${String(version["version"])}-proof-${who}.png`);
+          expect(fileIdOf(proof.row["proof_file"])).toMatch(/^file_[0-9A-Z]{26}$/);
+          proofFiles[who] = fileIdOf(proof.row["proof_file"])!;
+          data = await door.load();
+          const { sent } = await sendProofs(door, data, data.orders.find((o) => o["number"] === "BR-2288")!, async () => null);
+          expect(sent.length).toBeGreaterThan(0);
+        }, 60_000);
+      }
+
+      it("sends a PDF the maker chose as a lettered piece's proof, stored as the proof's own file", async () => {
+        const door = doors["maker"]!;
+        const data = await door.load();
+        const order = data.orders.find((o) => dueForProof(data, o).some((l) => l["design_id"] === null || l["design_id"] === undefined))!;
+        const line = dueForProof(data, order).find((l) => l["design_id"] === null || l["design_id"] === undefined)!;
+        const pdf = { blob: new NodeBlob([MINIMAL_PDF], { type: "application/pdf" }) as unknown as Blob, filename: "proof-from-the-bench.pdf" };
+        const { sent } = await sendProofs(door, data, order, async () => null, null, (l) => (String(l.id) === String(line.id) ? pdf : null));
+        const proof = sent.find((p) => String(p["line_id"]) === String(line.id))!;
+        expect(proof["kind"]).toBe("lettering");
+        const stored = await callers["owner"]!.fetchAs()(`/api/v1/files/${fileIdOf(proof["picture"])!}/content`);
+        expect(stored.status).toBe(200);
+        expect(new TextDecoder().decode(new Uint8Array(await stored.arrayBuffer()).slice(0, 5))).toBe("%PDF-");
+      });
+
+      // ── the owner's own: Holiday calendars' closed days, and a customer erased ──
+
+      it("lets the owner keep Holiday calendars' closed days, and refuses the maker", async () => {
+        const days = [{ day: "2026-12-28", name: "Bank holiday", from: { country: "GB", region: "england-and-wales", year: 2026 } }];
+        const kept = await callers["owner"]!.send<{ values: Record<string, unknown> }>("PUT", "/api/v1/add-ons/holiday-calendars/settings", { values: { days } });
+        expect(kept.status, JSON.stringify(kept.body).slice(0, 400)).toBe(200);
+        // The studio's screens read them back from the staff config, as the add-on's public setting.
+        const cfg = (await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: callers["owner"]!.fetchAs() }))!;
+        expect(cfg.addOns["holiday-calendars"]?.settings["days"]).toEqual(days);
+        expect((await callers["maker"]!.send("PUT", "/api/v1/add-ons/holiday-calendars/settings", { values: { days: [] } })).status).toBe(403);
+      });
+
+      // Finding a person and erasing them: the owner's `privacy:@:people`, which no screens-only role may hold.
+      it("lets the owner find a customer to erase them, and refuses the maker", async () => {
+        const found = await callers["owner"]!.post("/api/v1/privacy/find", { address: "iris.p@example.com" });
+        expect(found.status, JSON.stringify(found.body).slice(0, 400)).toBe(200);
+        expect((await callers["maker"]!.post("/api/v1/privacy/find", { address: "iris.p@example.com" })).status).toBe(403);
+      });
+
+      // The packer's screens read what the role reads, and ask for nothing Adminium would refuse it.
+      it("loads the packer's screens with no read Adminium refuses", async () => {
+        const refused: string[] = [];
+        const seen = callers["packer"]!.fetchAs();
+        const recording = (async (input: RequestInfo | URL, init?: RequestInit) => {
+          const res = await seen(input, init);
+          if (res.status === 403) refused.push(String(input));
+          return res;
+        }) as typeof fetch;
+        const cfg = (await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: recording }))!;
+        const transport = createSessionTransport({
+          tableOfRef: cfg.tables,
+          connectionId: cfg.connectionId ?? undefined,
+          staff: { csrfToken: cfg.csrfToken, timezone: cfg.timezone, timezoneSource: cfg.timezoneSource, serverTimezone: cfg.serverTimezone, currency: cfg.currency },
+          fetchImpl: recording,
+        });
+        const data = await new AdminiumStudio(transport, cfg, { fetchImpl: recording, origin: server.base }).load();
+        expect(data.lines.some((l) => l["design_id"] !== null && l["design_id"] !== undefined)).toBe(true);
+        expect(refused).toEqual([]);
+      });
+
+      it.fails("hands a packer's session the workspace's public name and logo (gap: a screens-only session is refused GET /branding)", async () => {
+        expect((await callers["packer"]!.get("/api/v1/branding")).status).toBe(200);
+      });
+
+      it("signs the packer out from the studio's screens: the session ends", async () => {
+        await doors["packer"]!.signOut();
+        const cfg = await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: callers["packer"]!.fetchAs() });
+        expect(cfg?.user ?? null).toBeNull();
+      });
+
+      // A starter font nobody uploaded is read from the file the Customiser ships beside its set-up page (`page:@customiser:view`).
+      for (const who of ["maker", "owner"] as const) {
+        it(`hands the ${who} a starter font's file to make the files with`, async () => {
+          const font = await callers[who]!.fetchAs()("/api/v1/add-ons/customiser/pages/customiser/files/fonts/Archivo.woff2");
+          expect(font.status).toBe(200);
+        });
+      }
+
+      // "Make the files again" takes the version's old files away first: the role's `delete` on `version_files`.
+      it("lets the maker make the files again: the version's old files taken away", async () => {
+        const panels = panelsOf("maker");
+        const files = await panels.list("customiser", "version_files", { where: { column: "name", op: "eq", value: "piece-maker.svg" }, limit: 2, offset: 0 });
+        expect(files.length).toBe(1);
+        await panels.remove("customiser", "version_files", files[0]!.id);
+      });
+
+      // ── the Customiser's set-up page, for the owner ──
+
+      /** Every table the set-up page reads (`pages/setup/data.ts`, `SetupPage.tsx`, `KitBase.tsx`), its settings among them. */
+      const SETUP_READS = ["bases", "base_pieces", "base_areas", "ready_designs", "ready_parts", "fonts", "palettes", "palette_colours", "features", "settings"];
+      const setUpRead = async (caller: Caller, table: string): Promise<number> => {
+        const cfg = (await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: callers["owner"]!.fetchAs() }))!;
+        const real = cfg.addOns["customiser"]?.tables?.[table] ?? `customiser_${table}`;
+        return (await caller.get(`/api/v1/data/${doors["owner"]!.facts().connectionId ?? ""}/${real}?limit=1`)).status;
+      };
+
+      // The set-up is the Customiser designer's: its appGrants give no app role its settings, nor any write to the set-up's
+      // tables. The owner works in the dashboard, so the owner is given that role beside the app's Owner (the README).
+      it("opens the Customiser's set-up page to the owner who also holds its designer role: every read, and a save", async () => {
+        const roles = ok(await owner.get<{ roles: { id: string; slug?: string }[] }>("/api/v1/roles")).roles;
+        const roleIds = ["maker-owner", "customiser-designer"].map((slug) => roles.find((r) => r.slug === slug)!.id);
+        const email = `owner.setup.${engine}@birchrow.example`;
+        const invited = ok(await owner.post<{ invite: { token: string } }>("/api/v1/users", { email, name: "Nell Birch", roleIds }), 201);
+        const password = newPassword();
+        ok(await new Caller(server.base).post("/api/v1/auth/password/reset", { token: invited.invite.token, newPassword: password }));
+        const setUp = new Caller(server.base);
+        await setUp.signIn(email, password);
+        for (const table of SETUP_READS) expect(await setUpRead(setUp, table), table).toBe(200);
+        const cfg = (await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: callers["owner"]!.fetchAs() }))!;
+        const settingsTable = cfg.addOns["customiser"]?.tables?.["settings"] ?? "customiser_settings";
+        const connection = doors["owner"]!.facts().connectionId ?? "";
+        const row = ok(await setUp.get<{ data: Row[] }>(`/api/v1/data/${connection}/${settingsTable}?limit=1`)).data[0]!;
+        const saved = await setUp.patch(`/api/v1/data/${connection}/${settingsTable}/${String(row.id)}`, { values: { default_bleed_mm: 3 } });
+        expect(saved.status, JSON.stringify(saved.body).slice(0, 400)).toBe(200);
+        // …and still the app's owner: its own tables and the panel's.
+        expect(await setUpRead(setUp, "designs")).toBe(200);
+      }, 120_000);
+
+      it.fails("lets the owner alone read the set-up page's settings (gap: the Customiser's appGrants give an app's role nothing of customiser_settings)", async () => {
+        expect(await setUpRead(callers["owner"]!, "settings")).toBe(200);
+      });
+
+      // ── a customer erased: the design's proof pictures, the first one made again included ──
+
+      const shopperOf = async (): Promise<string> => String((await doors["owner"]!.load()).orders.find((o) => o["number"] === "BR-2288")!["email"]);
+      const fileStatus = async (id: string): Promise<number> => (await owner.get(`/api/v1/files/${id}`)).status;
+
+      // The person's data lists the proof the owner's replaced, binned but kept, among the files on their rows: the
+      // one more the search counts than the erase takes.
+      it("finds the proof picture the owner's replaced among the customer's files, as the owner", async () => {
+        const address = await shopperOf();
+        const found = ok(await callers["owner"]!.post<{ data: { sources: { kind: string; keys: string[] }[] } }>("/api/v1/privacy/find", { address })).data.sources;
+        expect(found.filter((s) => s.kind === "files").flatMap((s) => s.keys)).toContain(proofFiles["maker"]);
+      });
+
+      it.fails("counts the same files in a person's data as erasing them takes (gap: the search counts a copy row's binned files, the erase does not)", async () => {
+        const address = await shopperOf();
+        type Counted = { kind: string; count: number };
+        const found = ok(await callers["owner"]!.post<{ data: { sources: Counted[] } }>("/api/v1/privacy/find", { address })).data.sources.filter((s) => s.kind === "files");
+        const goes = ok(await callers["owner"]!.post<{ data: { goes: Counted[] } }>("/api/v1/privacy/erase/preview", { address })).data.goes.filter((s) => s.kind === "files");
+        expect(goes.reduce((n, s) => n + s.count, 0)).toBe(found.reduce((n, s) => n + s.count, 0));
+      });
+
+      it("erases the design's proof picture with its customer, as the owner", async () => {
+        // The owner's proof was made over the maker's on the same version: the maker's is in the bin, still kept.
+        expect(proofFiles["maker"]).not.toBe(proofFiles["owner"]);
+        expect(await fileStatus(proofFiles["maker"]!)).toBe(200);
+        expect(await fileStatus(proofFiles["owner"]!)).toBe(200);
+        const address = await shopperOf();
+        const erased = await callers["owner"]!.post("/api/v1/privacy/erase", { address, confirm: address });
+        expect(erased.status, JSON.stringify(erased.body).slice(0, 400)).toBe(200);
+        expect(await fileStatus(proofFiles["owner"]!)).toBe(404);
+      }, 120_000);
+
+      it.fails("erases a proof picture made again with its customer: the one it replaced too (gap: the erase leaves a copy row's binned files)", async () => {
+        expect(await fileStatus(proofFiles["maker"]!)).toBe(404);
+      });
+    });
+  });
+});

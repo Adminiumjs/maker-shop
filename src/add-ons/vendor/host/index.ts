@@ -1,7 +1,7 @@
 /*
  * VENDORED from add-ons/packages/host/src/index.ts — synced by scripts/sync-add-ons.sh.
  * Never hand-edit this copy: edit the monorepo and re-run `sync-add-ons.sh sync`.
- * The ONE shared contract; every add-on here imports it by relative path.
+ * The shared contract; the vendored add-on imports it by relative path.
  */
 /**
  * `@adminium/add-on-host` — the host seam every add-on in this repo registers

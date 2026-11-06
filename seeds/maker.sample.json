@@ -1,0 +1,1453 @@
+{
+  "format": "adminium.sample/1",
+  "app": "maker",
+  "weekAnchor": "thu",
+  "tables": [
+    {
+      "ref": "settings",
+      "onlyIfEmpty": true,
+      "rows": [
+        {
+          "@label": "settings",
+          "studio_name": "Birch Row",
+          "address": "Unit 4, Station Yard, Settle BD24 9AA",
+          "email": "studio@birchrow.example",
+          "about": "Two of us, a laser, two printers and a kiln, in a unit by the station in Settle. Everything is made to order.",
+          "about_page": "Birch Row is Ada and Nell. Ada came from a joinery shop and does the cutting and the wood; Nell throws the mugs and runs the kiln. We work from a unit behind the station, Tuesday to Saturday, and between us we make everything ourselves.\n\nWe don't hold finished pieces. When an order comes in we cut it, print it or throw it that week, then send you a picture before anything is engraved. That is why a coaster takes three days and a mug takes ten — the mug is fired twice.",
+          "materials_note": "Walnut, ply and slate are all real, so the grain and the mottling change from piece to piece. Two coasters cut from the same board will not match exactly, and a slate sign has whatever the quarry gave it. We pick the nicest face for the lettering and let the rest be what it is.",
+          "ref_prefix": "BR-",
+          "first_order_number": 2291,
+          "proof_reminder_days": 1,
+          "packaging_grams": 120,
+          "taking_orders": true
+        }
+      ]
+    },
+    {
+      "ref": "machines",
+      "rows": [
+        {
+          "@label": "machine:laser",
+          "code": "laser",
+          "name": "The laser",
+          "kind": "laser",
+          "detail": "60 W CO₂, 300 × 200 bed",
+          "icon": "zap",
+          "run_minutes": 135,
+          "power": "60 W",
+          "cut_settings": "18 mm/s at 78% power, one pass",
+          "engrave_settings": "300 mm/s at 22% power, 500 dpi",
+          "air_settings": "On. Check the lens before the run.",
+          "shop_note": "Cuts and engraves the wood, ply, acrylic and slate. It runs most of the day.",
+          "active": true,
+          "position": 1
+        },
+        {
+          "@label": "machine:printer-a",
+          "code": "printer-a",
+          "name": "Printer A",
+          "kind": "printer",
+          "detail": "0.4 mm nozzle",
+          "icon": "box",
+          "run_minutes": 200,
+          "shop_note": "Prints the trays and the pots in matte PLA, usually overnight.",
+          "active": true,
+          "position": 2
+        },
+        {
+          "@label": "machine:printer-b",
+          "code": "printer-b",
+          "name": "Printer B",
+          "kind": "printer",
+          "detail": "0.4 mm nozzle",
+          "icon": "box",
+          "run_minutes": 200,
+          "shop_note": "Prints the trays and the pots in matte PLA, usually overnight.",
+          "active": true,
+          "position": 3
+        },
+        {
+          "@label": "machine:kiln",
+          "code": "kiln",
+          "name": "The kiln",
+          "kind": "kiln",
+          "detail": "60 litre, top loader",
+          "icon": "flame",
+          "run_minutes": 540,
+          "shop_note": "Fires the mugs twice — bisque first, then glaze at 1240°C.",
+          "active": true,
+          "position": 4
+        }
+      ]
+    },
+    {
+      "ref": "materials",
+      "rows": [
+        {
+          "@label": "material:wal6",
+          "code": "wal6",
+          "name": "Walnut, 6 mm",
+          "family": "Walnut",
+          "group": "sheet",
+          "thickness_mm": 6,
+          "size_note": "400 × 300 mm sheet",
+          "sheet_w_mm": 400,
+          "sheet_h_mm": 300,
+          "unit": "sheets",
+          "machine_id": {
+            "@ref": "machine:laser"
+          },
+          "tint": "#6b4423",
+          "reorder_at": 6,
+          "cost": 6.4,
+          "care": "Wipe it with a damp cloth and dry it off. No dishwasher — the heat opens the grain and lifts the oil.\nWhen the surface starts looking dry and pale, rub in a little food-safe oil and leave it overnight.\nRings and marks sand out with 240 grit if you ever need to start again.",
+          "active": true,
+          "position": 1
+        },
+        {
+          "@label": "material:ply3",
+          "code": "ply3",
+          "name": "Birch ply, 3 mm",
+          "family": "Birch ply",
+          "group": "sheet",
+          "thickness_mm": 3,
+          "size_note": "400 × 300 mm sheet",
+          "sheet_w_mm": 400,
+          "sheet_h_mm": 300,
+          "unit": "sheets",
+          "machine_id": {
+            "@ref": "machine:laser"
+          },
+          "tint": "#c2a175",
+          "reorder_at": 6,
+          "cost": 3.2,
+          "care": "Indoors only. Ply and rain do not get on, and a wet edge will lift within a season.\nDust it, and wipe spills off quickly rather than letting them soak in.\nIf it was waxed, a fresh coat once a year keeps the face even.",
+          "active": true,
+          "position": 2
+        },
+        {
+          "@label": "material:acr3",
+          "code": "acr3",
+          "name": "Acrylic, 3 mm",
+          "family": "Acrylic",
+          "group": "sheet",
+          "thickness_mm": 3,
+          "size_note": "400 × 300 mm sheet",
+          "sheet_w_mm": 400,
+          "sheet_h_mm": 300,
+          "unit": "sheets",
+          "machine_id": {
+            "@ref": "machine:laser"
+          },
+          "tint": "#6f8299",
+          "reorder_at": 4,
+          "cost": 5.1,
+          "care": "Warm soapy water and a soft cloth. Solvent cleaners cloud the surface permanently.\nIt scuffs with use, which is what keys and cake tins do to things.\nCheck the split ring on a keyring or a pet tag every few months.",
+          "active": true,
+          "position": 3
+        },
+        {
+          "@label": "material:wal18",
+          "code": "wal18",
+          "name": "Walnut board, 18 mm",
+          "family": "Walnut",
+          "group": "blank",
+          "thickness_mm": 18,
+          "size_note": "400 × 280 mm blank",
+          "sheet_w_mm": null,
+          "sheet_h_mm": null,
+          "unit": "blanks",
+          "machine_id": {
+            "@ref": "machine:laser"
+          },
+          "tint": "#6b4423",
+          "reorder_at": 2,
+          "cost": 21,
+          "care": "Wipe it with a damp cloth and dry it off. No dishwasher — the heat opens the grain and lifts the oil.\nWhen the surface starts looking dry and pale, rub in a little food-safe oil and leave it overnight.\nRings and marks sand out with 240 grit if you ever need to start again.",
+          "active": true,
+          "position": 4
+        },
+        {
+          "@label": "material:pla-chalk",
+          "code": "pla-chalk",
+          "name": "PLA, chalk",
+          "family": "PLA",
+          "group": "filament",
+          "thickness_mm": null,
+          "size_note": "1.75 mm, matte",
+          "sheet_w_mm": null,
+          "sheet_h_mm": null,
+          "unit": "g",
+          "machine_id": {
+            "@ref": "machine:printer-a"
+          },
+          "tint": "#e8e4dc",
+          "reorder_at": 800,
+          "cost": 0.021,
+          "care": "Keep it off a sunny windowsill and out of a hot car — PLA softens at about 60°C.\nWash it by hand in cool water. The dishwasher will warp it.\nA pot is for the windowsill, not the garden. Empty the saucer so it does not sit wet.",
+          "active": true,
+          "position": 5
+        },
+        {
+          "@label": "material:pla-grey",
+          "code": "pla-grey",
+          "name": "PLA, warm grey",
+          "family": "PLA",
+          "group": "filament",
+          "thickness_mm": null,
+          "size_note": "1.75 mm, matte",
+          "sheet_w_mm": null,
+          "sheet_h_mm": null,
+          "unit": "g",
+          "machine_id": {
+            "@ref": "machine:printer-a"
+          },
+          "tint": "#8a8378",
+          "reorder_at": 800,
+          "cost": 0.021,
+          "care": "Keep it off a sunny windowsill and out of a hot car — PLA softens at about 60°C.\nWash it by hand in cool water. The dishwasher will warp it.\nA pot is for the windowsill, not the garden. Empty the saucer so it does not sit wet.",
+          "active": true,
+          "position": 6
+        },
+        {
+          "@label": "material:slate5",
+          "code": "slate5",
+          "name": "Slate blanks, 5 mm",
+          "family": "Slate",
+          "group": "blank",
+          "thickness_mm": 5,
+          "size_note": "300 × 200 mm, riven",
+          "sheet_w_mm": null,
+          "sheet_h_mm": null,
+          "unit": "blanks",
+          "machine_id": {
+            "@ref": "machine:laser"
+          },
+          "tint": "#3d4348",
+          "reorder_at": 8,
+          "cost": 9.5,
+          "care": "A house sign lives outside quite happily. Wipe the face once a year with water and nothing else.\nFilled lettering is sealed, but a wire brush will take the fill out — use a cloth.\nSlate chips if you drop it on a hard floor. Fix it to the wall with the pads we send.",
+          "active": true,
+          "position": 7
+        },
+        {
+          "@label": "material:glaze-oat",
+          "code": "glaze-oat",
+          "name": "Oatmeal glaze",
+          "family": "Stoneware",
+          "group": "glaze",
+          "thickness_mm": null,
+          "size_note": "2 kg tub",
+          "sheet_w_mm": null,
+          "sheet_h_mm": null,
+          "unit": "tubs",
+          "machine_id": {
+            "@ref": "machine:kiln"
+          },
+          "tint": "#cbb9a1",
+          "reorder_at": 2,
+          "cost": 26,
+          "care": "Dishwasher and microwave are both fine — it is fired to 1240°C.\nDo not take it from the fridge straight to a hot oven; the shock crazes the glaze.\nSmall variations in the glaze are how it comes out of the kiln, not a fault.",
+          "active": true,
+          "position": 8
+        },
+        {
+          "@label": "material:glaze-sea",
+          "code": "glaze-sea",
+          "name": "Sea green glaze",
+          "family": "Stoneware",
+          "group": "glaze",
+          "thickness_mm": null,
+          "size_note": "2 kg tub",
+          "sheet_w_mm": null,
+          "sheet_h_mm": null,
+          "unit": "tubs",
+          "machine_id": {
+            "@ref": "machine:kiln"
+          },
+          "tint": "#6f8f80",
+          "reorder_at": 2,
+          "cost": 28,
+          "care": "Dishwasher and microwave are both fine — it is fired to 1240°C.\nDo not take it from the fridge straight to a hot oven; the shock crazes the glaze.\nSmall variations in the glaze are how it comes out of the kiln, not a fault.",
+          "active": true,
+          "position": 9
+        },
+        {
+          "@label": "material:glaze-chalk",
+          "code": "glaze-chalk",
+          "name": "Chalk white glaze",
+          "family": "Stoneware",
+          "group": "glaze",
+          "thickness_mm": null,
+          "size_note": "2 kg tub",
+          "sheet_w_mm": null,
+          "sheet_h_mm": null,
+          "unit": "tubs",
+          "machine_id": {
+            "@ref": "machine:kiln"
+          },
+          "tint": "#ece7de",
+          "reorder_at": 2,
+          "cost": 24,
+          "care": "Dishwasher and microwave are both fine — it is fired to 1240°C.\nDo not take it from the fridge straight to a hot oven; the shock crazes the glaze.\nSmall variations in the glaze are how it comes out of the kiln, not a fault.",
+          "active": true,
+          "position": 10
+        }
+      ]
+    },
+    {
+      "ref": "postage_services",
+      "rows": [
+        {
+          "@label": "service:second",
+          "code": "second",
+          "name": "Second class",
+          "detail": "2–3 days once it's posted",
+          "tracked": false,
+          "dhl_product": "ECO-2WD",
+          "active": true,
+          "position": 1
+        },
+        {
+          "@label": "service:tracked",
+          "code": "tracked",
+          "name": "Tracked",
+          "detail": "Next day once it's posted, with a tracking number",
+          "tracked": true,
+          "dhl_product": "EXP-NWD",
+          "active": true,
+          "position": 2
+        }
+      ]
+    },
+    {
+      "ref": "postage_rates",
+      "rows": [
+        {
+          "service_id": {
+            "@ref": "service:second"
+          },
+          "min_grams": 0,
+          "max_grams": null,
+          "price": 3.95
+        },
+        {
+          "service_id": {
+            "@ref": "service:tracked"
+          },
+          "min_grams": 0,
+          "max_grams": null,
+          "price": 7.5
+        }
+      ]
+    },
+    {
+      "ref": "closures",
+      "rows": [
+        {
+          "from_date": {
+            "@day": 9,
+            "@week": true
+          },
+          "to_date": {
+            "@day": 9,
+            "@week": true
+          },
+          "reason": "Closed — we're at the Whitby craft fair",
+          "active": true
+        }
+      ]
+    },
+    {
+      "ref": "customers",
+      "rows": [
+        {
+          "@label": "customer:hana.w",
+          "email": "hana.w@mail.example",
+          "name": "Hana W.",
+          "language": "en-US",
+          "may_email": false,
+          "created_at": {
+            "@day": -51,
+            "@time": "10:00",
+            "@week": true
+          }
+        },
+        {
+          "@label": "customer:iris.p",
+          "email": "iris.p@mail.example",
+          "name": "Iris P.",
+          "language": "en-US",
+          "may_email": false,
+          "created_at": {
+            "@day": -37,
+            "@time": "10:00",
+            "@week": true
+          }
+        },
+        {
+          "@label": "customer:sam.o",
+          "email": "sam.o@mail.example",
+          "name": "Sam O.",
+          "language": "en-US",
+          "may_email": false,
+          "created_at": {
+            "@day": -28,
+            "@time": "10:00",
+            "@week": true
+          }
+        },
+        {
+          "@label": "customer:bex.t",
+          "email": "bex.t@mail.example",
+          "name": "Bex T.",
+          "language": "en-US",
+          "may_email": false,
+          "created_at": {
+            "@day": -23,
+            "@time": "10:00",
+            "@week": true
+          }
+        },
+        {
+          "@label": "customer:priya.s",
+          "email": "priya.s@mail.example",
+          "name": "Priya S.",
+          "language": "en-US",
+          "may_email": false,
+          "created_at": {
+            "@day": -16,
+            "@time": "10:00",
+            "@week": true
+          }
+        },
+        {
+          "@label": "customer:erin.m",
+          "email": "erin.m@mail.example",
+          "name": "Erin M.",
+          "language": "en-US",
+          "may_email": false,
+          "created_at": {
+            "@day": -14,
+            "@time": "10:00",
+            "@week": true
+          }
+        },
+        {
+          "@label": "customer:devon.a",
+          "email": "devon.a@mail.example",
+          "name": "Devon A.",
+          "language": "en-US",
+          "may_email": false,
+          "created_at": {
+            "@day": -1,
+            "@time": "10:00",
+            "@week": true
+          }
+        },
+        {
+          "@label": "customer:nadia.r",
+          "email": "nadia.r@mail.example",
+          "name": "Nadia R.",
+          "language": "en-US",
+          "may_email": false,
+          "created_at": {
+            "@day": 0,
+            "@time": "10:00",
+            "@week": true
+          }
+        },
+        {
+          "@label": "customer:tom.h",
+          "email": "tom.h@mail.example",
+          "name": "Tom H.",
+          "language": "en-US",
+          "may_email": false,
+          "created_at": {
+            "@day": 0,
+            "@time": "10:00",
+            "@week": true
+          }
+        },
+        {
+          "@label": "customer:maya.l",
+          "email": "maya.l@mail.example",
+          "name": "Maya L.",
+          "language": "en-US",
+          "may_email": false,
+          "created_at": {
+            "@day": 0,
+            "@time": "10:00",
+            "@week": true
+          }
+        },
+        {
+          "@label": "customer:rafe.d",
+          "email": "rafe.d@mail.example",
+          "name": "Rafe D.",
+          "language": "en-US",
+          "may_email": false,
+          "created_at": {
+            "@day": 0,
+            "@time": "10:00",
+            "@week": true
+          }
+        },
+        {
+          "@label": "customer:callum.b",
+          "email": "callum.b@mail.example",
+          "name": "Callum B.",
+          "language": "en-US",
+          "may_email": false,
+          "created_at": {
+            "@day": 0,
+            "@time": "10:00",
+            "@week": true
+          }
+        }
+      ]
+    },
+    {
+      "ref": "orders",
+      "rows": [
+        {
+          "@label": "order:BR-2241",
+          "number_seq": null,
+          "number": "BR-2241",
+          "status": "posted",
+          "name": "Hana W.",
+          "email": "hana.w@mail.example",
+          "address_line1": "Wren Cottage, Back Lane",
+          "town": "Bramley",
+          "postcode": "LS13 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:hana.w"
+          },
+          "service_id": {
+            "@ref": "service:second"
+          },
+          "placed_at": {
+            "@day": -51,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": {
+            "@day": -47,
+            "@time": "16:00",
+            "@week": true
+          },
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2247",
+          "number_seq": null,
+          "number": "BR-2247",
+          "status": "posted",
+          "name": "Iris P.",
+          "email": "iris.p@mail.example",
+          "address_line1": "4 Mill Row",
+          "town": "Colne",
+          "postcode": "BB8 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:iris.p"
+          },
+          "service_id": {
+            "@ref": "service:tracked"
+          },
+          "placed_at": {
+            "@day": -37,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": {
+            "@day": -33,
+            "@time": "16:00",
+            "@week": true
+          },
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2252",
+          "number_seq": null,
+          "number": "BR-2252",
+          "status": "posted",
+          "name": "Sam O.",
+          "email": "sam.o@mail.example",
+          "address_line1": "12 Station Road",
+          "town": "Ashby",
+          "postcode": "LE65 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:sam.o"
+          },
+          "service_id": {
+            "@ref": "service:second"
+          },
+          "placed_at": {
+            "@day": -28,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": {
+            "@day": -23,
+            "@time": "16:00",
+            "@week": true
+          },
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2255",
+          "number_seq": null,
+          "number": "BR-2255",
+          "status": "posted",
+          "name": "Bex T.",
+          "email": "bex.t@mail.example",
+          "address_line1": "The Old Dairy, 14 Fellside",
+          "town": "Kendal",
+          "postcode": "LA9 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:bex.t"
+          },
+          "service_id": {
+            "@ref": "service:tracked"
+          },
+          "placed_at": {
+            "@day": -23,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": {
+            "@day": -19,
+            "@time": "16:00",
+            "@week": true
+          },
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2258",
+          "number_seq": null,
+          "number": "BR-2258",
+          "status": "posted",
+          "name": "Priya S.",
+          "email": "priya.s@mail.example",
+          "address_line1": "9 Ventnor Villas",
+          "town": "Hove",
+          "postcode": "BN3 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:priya.s"
+          },
+          "service_id": {
+            "@ref": "service:second"
+          },
+          "placed_at": {
+            "@day": -16,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": {
+            "@day": -12,
+            "@time": "16:00",
+            "@week": true
+          },
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2260",
+          "number_seq": null,
+          "number": "BR-2260",
+          "status": "posted",
+          "name": "Erin M.",
+          "email": "erin.m@mail.example",
+          "address_line1": "2 Mermaid Steps",
+          "town": "Rye",
+          "postcode": "TN31 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:erin.m"
+          },
+          "service_id": {
+            "@ref": "service:tracked"
+          },
+          "placed_at": {
+            "@day": -14,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": {
+            "@day": -9,
+            "@time": "16:00",
+            "@week": true
+          },
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2262",
+          "number_seq": null,
+          "number": "BR-2262",
+          "status": "making",
+          "name": "Hana W.",
+          "email": "hana.w@mail.example",
+          "address_line1": "Wren Cottage, Back Lane",
+          "town": "Bramley",
+          "postcode": "LS13 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:hana.w"
+          },
+          "service_id": {
+            "@ref": "service:tracked"
+          },
+          "placed_at": {
+            "@day": -8,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2268",
+          "number_seq": null,
+          "number": "BR-2268",
+          "status": "making",
+          "name": "Iris P.",
+          "email": "iris.p@mail.example",
+          "address_line1": "4 Mill Row",
+          "town": "Colne",
+          "postcode": "BB8 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:iris.p"
+          },
+          "service_id": {
+            "@ref": "service:second"
+          },
+          "placed_at": {
+            "@day": -13,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2271",
+          "number_seq": null,
+          "number": "BR-2271",
+          "status": "making",
+          "name": "Sam O.",
+          "email": "sam.o@mail.example",
+          "address_line1": "12 Station Road",
+          "town": "Ashby",
+          "postcode": "LE65 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:sam.o"
+          },
+          "service_id": {
+            "@ref": "service:tracked"
+          },
+          "placed_at": {
+            "@day": -2,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2276",
+          "number_seq": null,
+          "number": "BR-2276",
+          "status": "placed",
+          "name": "Iris P.",
+          "email": "iris.p@mail.example",
+          "address_line1": "4 Mill Row",
+          "town": "Colne",
+          "postcode": "BB8 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:iris.p"
+          },
+          "service_id": {
+            "@ref": "service:tracked"
+          },
+          "placed_at": {
+            "@day": -2,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2278",
+          "number_seq": null,
+          "number": "BR-2278",
+          "status": "placed",
+          "name": "Erin M.",
+          "email": "erin.m@mail.example",
+          "address_line1": "2 Mermaid Steps",
+          "town": "Rye",
+          "postcode": "TN31 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:erin.m"
+          },
+          "service_id": {
+            "@ref": "service:second"
+          },
+          "placed_at": {
+            "@day": -1,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2280",
+          "number_seq": null,
+          "number": "BR-2280",
+          "status": "placed",
+          "name": "Devon A.",
+          "email": "devon.a@mail.example",
+          "address_line1": "31 Abbey Walk",
+          "town": "Selby",
+          "postcode": "YO8 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:devon.a"
+          },
+          "service_id": {
+            "@ref": "service:second"
+          },
+          "placed_at": {
+            "@day": -1,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2281",
+          "number_seq": null,
+          "number": "BR-2281",
+          "status": "placed",
+          "name": "Nadia R.",
+          "email": "nadia.r@mail.example",
+          "address_line1": "7 Castle Banks",
+          "town": "Lewes",
+          "postcode": "BN7 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:nadia.r"
+          },
+          "service_id": {
+            "@ref": "service:second"
+          },
+          "placed_at": {
+            "@day": 0,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2282",
+          "number_seq": null,
+          "number": "BR-2282",
+          "status": "placed",
+          "name": "Tom H.",
+          "email": "tom.h@mail.example",
+          "address_line1": "19 Catherine Hill",
+          "town": "Frome",
+          "postcode": "BA11 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:tom.h"
+          },
+          "service_id": {
+            "@ref": "service:second"
+          },
+          "placed_at": {
+            "@day": 0,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2283",
+          "number_seq": null,
+          "number": "BR-2283",
+          "status": "placed",
+          "name": "Maya L.",
+          "email": "maya.l@mail.example",
+          "address_line1": "5 Kirkgate Yard",
+          "town": "Otley",
+          "postcode": "LS21 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:maya.l"
+          },
+          "service_id": {
+            "@ref": "service:tracked"
+          },
+          "placed_at": {
+            "@day": 0,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2284",
+          "number_seq": null,
+          "number": "BR-2284",
+          "status": "placed",
+          "name": "Rafe D.",
+          "email": "rafe.d@mail.example",
+          "address_line1": "Flat 3, 8 Lemon Quay",
+          "town": "Truro",
+          "postcode": "TR1 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:rafe.d"
+          },
+          "service_id": {
+            "@ref": "service:second"
+          },
+          "placed_at": {
+            "@day": 0,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2285",
+          "number_seq": null,
+          "number": "BR-2285",
+          "status": "placed",
+          "name": "Callum B.",
+          "email": "callum.b@mail.example",
+          "address_line1": "22 Harbour Street",
+          "town": "Ayr",
+          "postcode": "KA7 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:callum.b"
+          },
+          "service_id": {
+            "@ref": "service:second"
+          },
+          "placed_at": {
+            "@day": 0,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2286",
+          "number_seq": null,
+          "number": "BR-2286",
+          "status": "placed",
+          "name": "Priya S.",
+          "email": "priya.s@mail.example",
+          "address_line1": "9 Ventnor Villas",
+          "town": "Hove",
+          "postcode": "BN3 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:priya.s"
+          },
+          "service_id": {
+            "@ref": "service:tracked"
+          },
+          "placed_at": {
+            "@day": 0,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2287",
+          "number_seq": null,
+          "number": "BR-2287",
+          "status": "placed",
+          "name": "Bex T.",
+          "email": "bex.t@mail.example",
+          "address_line1": "The Old Dairy, 14 Fellside",
+          "town": "Kendal",
+          "postcode": "LA9 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:bex.t"
+          },
+          "service_id": {
+            "@ref": "service:tracked"
+          },
+          "placed_at": {
+            "@day": 0,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2288",
+          "number_seq": null,
+          "number": "BR-2288",
+          "status": "placed",
+          "name": "Iris P.",
+          "email": "iris.p@mail.example",
+          "address_line1": "4 Mill Row",
+          "town": "Colne",
+          "postcode": "BB8 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:iris.p"
+          },
+          "service_id": {
+            "@ref": "service:tracked"
+          },
+          "placed_at": {
+            "@day": -1,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2289",
+          "number_seq": null,
+          "number": "BR-2289",
+          "status": "placed",
+          "name": "Sam O.",
+          "email": "sam.o@mail.example",
+          "address_line1": "12 Station Road",
+          "town": "Ashby",
+          "postcode": "LE65 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:sam.o"
+          },
+          "service_id": {
+            "@ref": "service:second"
+          },
+          "placed_at": {
+            "@day": 0,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        },
+        {
+          "@label": "order:BR-2290",
+          "number_seq": null,
+          "number": "BR-2290",
+          "status": "placed",
+          "name": "Tom H.",
+          "email": "tom.h@mail.example",
+          "address_line1": "19 Catherine Hill",
+          "town": "Frome",
+          "postcode": "BA11 9ZZ",
+          "language": "en-US",
+          "customer_id": {
+            "@ref": "customer:tom.h"
+          },
+          "service_id": {
+            "@ref": "service:second"
+          },
+          "placed_at": {
+            "@day": 0,
+            "@time": "10:00",
+            "@week": true
+          },
+          "posted_at": null,
+          "may_email": false
+        }
+      ]
+    },
+    {
+      "ref": "machine_bookings",
+      "rows": [
+        {
+          "machine_id": {
+            "@ref": "machine:laser"
+          },
+          "kind": "run",
+          "label": "Walnut sheet · 6 pieces",
+          "starts_at": {
+            "@day": 0,
+            "@time": "09:00",
+            "@week": true
+          },
+          "ends_at": {
+            "@day": 0,
+            "@time": "11:15",
+            "@week": true
+          }
+        },
+        {
+          "machine_id": {
+            "@ref": "machine:laser"
+          },
+          "kind": "upkeep",
+          "label": "Clean the lens",
+          "starts_at": {
+            "@day": 0,
+            "@time": "11:15",
+            "@week": true
+          },
+          "ends_at": {
+            "@day": 0,
+            "@time": "11:45",
+            "@week": true
+          }
+        },
+        {
+          "machine_id": {
+            "@ref": "machine:laser"
+          },
+          "kind": "run",
+          "label": "Ply sheet · wedding sign and blocks",
+          "starts_at": {
+            "@day": 0,
+            "@time": "11:45",
+            "@week": true
+          },
+          "ends_at": {
+            "@day": 0,
+            "@time": "14:30",
+            "@week": true
+          }
+        },
+        {
+          "machine_id": {
+            "@ref": "machine:laser"
+          },
+          "kind": "run",
+          "label": "Slate · house sign",
+          "starts_at": {
+            "@day": 0,
+            "@time": "15:00",
+            "@week": true
+          },
+          "ends_at": {
+            "@day": 0,
+            "@time": "17:40",
+            "@week": true
+          }
+        },
+        {
+          "machine_id": {
+            "@ref": "machine:printer-a"
+          },
+          "kind": "run",
+          "label": "Desk tray",
+          "starts_at": {
+            "@day": 0,
+            "@time": "09:00",
+            "@week": true
+          },
+          "ends_at": {
+            "@day": 0,
+            "@time": "12:20",
+            "@week": true
+          }
+        },
+        {
+          "machine_id": {
+            "@ref": "machine:printer-a"
+          },
+          "kind": "run",
+          "label": "Desk tray · second half",
+          "starts_at": {
+            "@day": 0,
+            "@time": "13:00",
+            "@week": true
+          },
+          "ends_at": {
+            "@day": 0,
+            "@time": "18:00",
+            "@week": true
+          }
+        },
+        {
+          "machine_id": {
+            "@ref": "machine:kiln"
+          },
+          "kind": "run",
+          "label": "Glaze firing · 2 mugs, holds overnight",
+          "starts_at": {
+            "@day": 0,
+            "@time": "09:00",
+            "@week": true
+          },
+          "ends_at": {
+            "@day": 0,
+            "@time": "18:00",
+            "@week": true
+          }
+        }
+      ]
+    },
+    {
+      "ref": "stock_movements",
+      "rows": [
+        {
+          "material_id": {
+            "@ref": "material:wal6"
+          },
+          "kind": "received",
+          "qty": 14,
+          "note": "Opening stock",
+          "made_at": {
+            "@day": -28,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:wal6"
+          },
+          "kind": "committed",
+          "qty": 2,
+          "note": "This week's batches",
+          "made_at": {
+            "@day": -2,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:ply3"
+          },
+          "kind": "received",
+          "qty": 5,
+          "note": "Opening stock",
+          "made_at": {
+            "@day": -28,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:ply3"
+          },
+          "kind": "committed",
+          "qty": 3,
+          "note": "This week's batches",
+          "made_at": {
+            "@day": -2,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:acr3"
+          },
+          "kind": "received",
+          "qty": 9,
+          "note": "Opening stock",
+          "made_at": {
+            "@day": -28,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:acr3"
+          },
+          "kind": "committed",
+          "qty": 2,
+          "note": "This week's batches",
+          "made_at": {
+            "@day": -2,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:wal18"
+          },
+          "kind": "received",
+          "qty": 4,
+          "note": "Opening stock",
+          "made_at": {
+            "@day": -28,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:pla-chalk"
+          },
+          "kind": "received",
+          "qty": 2400,
+          "note": "Opening stock",
+          "made_at": {
+            "@day": -28,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:pla-chalk"
+          },
+          "kind": "committed",
+          "qty": 330,
+          "note": "This week's batches",
+          "made_at": {
+            "@day": -2,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:pla-grey"
+          },
+          "kind": "received",
+          "qty": 1400,
+          "note": "Opening stock",
+          "made_at": {
+            "@day": -28,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:pla-grey"
+          },
+          "kind": "committed",
+          "qty": 240,
+          "note": "This week's batches",
+          "made_at": {
+            "@day": -2,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:slate5"
+          },
+          "kind": "received",
+          "qty": 22,
+          "note": "Opening stock",
+          "made_at": {
+            "@day": -28,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:slate5"
+          },
+          "kind": "committed",
+          "qty": 3,
+          "note": "This week's batches",
+          "made_at": {
+            "@day": -2,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:glaze-oat"
+          },
+          "kind": "received",
+          "qty": 4,
+          "note": "Opening stock",
+          "made_at": {
+            "@day": -28,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:glaze-oat"
+          },
+          "kind": "committed",
+          "qty": 1,
+          "note": "This week's batches",
+          "made_at": {
+            "@day": -2,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:glaze-sea"
+          },
+          "kind": "received",
+          "qty": 2,
+          "note": "Opening stock",
+          "made_at": {
+            "@day": -28,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:glaze-sea"
+          },
+          "kind": "committed",
+          "qty": 1,
+          "note": "This week's batches",
+          "made_at": {
+            "@day": -2,
+            "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:glaze-chalk"
+          },
+          "kind": "received",
+          "qty": 3,
+          "note": "Opening stock",
+          "made_at": {
+            "@day": -28,
+            "@time": "09:00",
+            "@week": true
+          }
+        }
+      ]
+    }
+  ]
+}

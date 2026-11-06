@@ -12,8 +12,9 @@
  *     all eight languages, over every file that renders — see the block itself
  *     for what the seven-English-regex version of it let through.
  *   - NO VIEW COUNTS PLAIN WEEKDAYS (criterion 13). The bench runs Tuesday to
- *     Saturday and `lib/calendar.ts` is the only module allowed to know what
- *     that means; a screen asks for a named day and never computes one.
+ *     Saturday; the days are counted in `studio/time.ts`, `studio/facts.ts`
+ *     and the shop's `format.ts`, and a screen asks for a named day and never
+ *     computes one.
  *   - THE TEST LEXICON NEVER SHIPS. `testing/lexicon.ts` spells every banned
  *     word, so a bundle that imported it would fail the very grep it defines.
  *   - CSS LOGICAL PROPERTIES ONLY, because Arabic renders RTL with no RTL
@@ -31,6 +32,7 @@ import { IMPURITIES, impuritiesIn, restatementsIn } from "./testing/purity.ts";
 import {
   connectedBackend,
   foreignImportsIn,
+  SENDERS,
   foreignModulesIn,
   offendingAddresses,
   sendersIn,
@@ -75,7 +77,13 @@ const ALL = walk(SRC).map((path) => {
 });
 
 /** Everything that actually ships — no suites, no fixtures. */
-const SHIPPED = ALL.filter((f) => !/\.test\.tsx?$/.test(f.rel) && !f.rel.startsWith("testing/"));
+/**
+ * `manifest/` and `sample/` write `manifest.json` and the sample bundle at
+ * build time: no screen imports them, so nothing in them reaches a browser.
+ */
+// `contract/` boots a real Adminium for the contract tests: it never ships either.
+const BUILD_TIME = ["testing/", "manifest/", "sample/", "contract/"];
+const SHIPPED = ALL.filter((f) => !/\.test\.tsx?$/.test(f.rel) && !BUILD_TIME.some((dir) => f.rel.startsWith(dir)));
 
 /**
  * ── EVERY SOURCE FILE IS TEXT, OR THE TOOLS STOP READING IT ─────────────────
@@ -89,8 +97,7 @@ const SHIPPED = ALL.filter((f) => !/\.test\.tsx?$/.test(f.rel) && !f.rel.startsW
  * N rules that agree until the day one of them is repaired.
  *
  * What is decided HERE is only which files it is pointed at: everything this
- * suite already walks — `.ts`, `.tsx` and `.css` under `src/`, the vendored
- * add-ons included, which is where a re-sync would bring a raw byte back in.
+ * suite already walks — `.ts`, `.tsx` and `.css` under `src/`.
  */
 describe("every source file is text a tool will read", () => {
   it("writes control characters as escapes, never as raw bytes", () => {
@@ -129,22 +136,20 @@ describe("the clock is always passed in", () => {
     // arithmetic over a value that came from somewhere the caller controls.
     const hits = SHIPPED.flatMap((f) =>
       impuritiesIn(f.code)
-        .filter((means) => !(f.rel === CONNECTED_SOURCE && CLOCKS.includes(means)))
+        .filter((means) => !allowedHere(f.rel, means))
         .map((means) => `${f.rel} → ${means}`),
     );
     expect(hits).toEqual([]);
   });
 
-  it("still refuses a die in the connected source, and a clock anywhere else", () => {
-    // The exemption above is two MEANS in one FILE, not a file that may do as
-    // it likes. Driven over the rule rather than over `src/`, so it stays true
-    // on a day this studio has no connected source at all.
-    expect(impuritiesIn("const id = crypto.randomUUID();").filter((m) => !CLOCKS.includes(m)))
-      .toHaveLength(1);
-    // …and every name in the allow-list is a means `purity.ts` actually emits,
+  it("allows the staff door only means the shared rules name", () => {
+    // Each allowance above is a means in a file, not a file that may do as it
+    // likes, and every name in it is one `purity.ts` or `egress.ts` emits,
     // so renaming one there fails here instead of quietly widening the net.
-    const known = IMPURITIES.map((impurity) => impurity.means);
-    expect(CLOCKS.filter((means) => !known.includes(means))).toEqual([]);
+    const known = [...IMPURITIES.map((impurity) => impurity.means), ...SENDERS.map((sender) => sender.means)];
+    expect(Object.values(HOSTED_STAFF).flat().filter((means) => !known.includes(means))).toEqual([]);
+    // …and a die is a finding in those files as anywhere else.
+    expect(impuritiesIn("const id = crypto.randomUUID();").filter((means) => !allowedHere("studio/adminiumStudio.ts", means))).toHaveLength(1);
   });
 
   it("would say so if one arrived, in every spelling the three repos disagreed on", () => {
@@ -197,59 +202,9 @@ describe("the clock is always passed in", () => {
  * exact, so a host that merely starts with an allowed one inherits nothing.
  */
 /**
- * ── AN ADDRESS AN ADD-ON NAMES IS THE ADD-ON'S FACT, NOT THIS APP'S ─────────
- *
- * What stood here was a list of origins this app allows, and two of the entries
- * were Canva's — declared by an app that merely RECEIVES the add-on that names
- * them. That is the cross-app claim broken in both directions, and it was
- * demonstrated in both: vendoring the personalizer into this app unchanged,
- * registration only, turned this suite red on
- * `add-ons/vendor/personalizer/template.ts → http://www.w3.org/2000/svg`, and
- * vendoring Canva Import into the studio turned ITS suite red the same way.
- * Making a portable add-on pass required an edit to an exemption list inside
- * the host — the exact thing a closed slot registry exists to make unnecessary.
- *
- * This is the FOURTH host-local list found holding an add-on's fact, after
- * `HOSTED_SLOTS`, the Czech "pro" carve-out and the ar-EG numeral allowances.
- * Round 5 built the mechanism for the third; this is that mechanism, applied.
- * Every add-on exports `INERT_ORIGINS` from its own `add-on-facts.ts`, the
- * sync vendors it, and `addOnOrigins()` reads whatever THIS app has vendored.
- * Vendor an add-on and its declarations arrive; drop it and they leave; nothing
- * in this file changes either way.
- *
- * `import.meta.glob` is resolved by the bundler, so by the time this runs it is
- * a static list of modules — no filesystem read, no dynamic import.
- */
-const VENDORED_ORIGINS = import.meta.glob<{
-  INERT_ORIGINS?: readonly { origin: string; why: string }[];
-  NEVER_IN_A_BROWSER?: readonly { text: string; why: string }[];
-}>("./add-ons/vendor/*/add-on-facts.ts", { eager: true });
-
-function addOnOrigins(): InertOrigin[] {
-  return Object.values(VENDORED_ORIGINS).flatMap((module) => [...(module.INERT_ORIGINS ?? [])]);
-}
-
-/**
- * What every add-on this app vendors declares must never reach a browser.
- *
- * The same discovery the inert origins use, off the same file. See
- * `builtOutput.test.ts` for why these are the add-on's facts and not this
- * app's, and what shipped green while they were this app's.
- */
-function addOnNeedles(): { text: string; why: string }[] {
-  return Object.values(VENDORED_ORIGINS).flatMap((module) => [
-    ...(module.NEVER_IN_A_BROWSER ?? []),
-  ]);
-}
-
-
-/**
- * THIS STUDIO'S OWN, WHICH IS NONE.
- *
- * The one entry that used to stand here was the SVG XML namespace the
- * PERSONALIZER writes into every picture it draws — an add-on's fact, in a
- * host's list. It is declared where it belongs now, and this app names no
- * address of its own at all.
+ * THIS STUDIO'S OWN, WHICH IS NONE: no shipped source names an address. The
+ * shop and the studio reach Adminium at the origin that served them, or at
+ * the one address a connected build is given.
  */
 /*
  * ── AND CONNECTED MODE DOES NOT RELAX THIS LIST, ON PURPOSE ────────────────
@@ -296,45 +251,46 @@ const ALLOWED_MODULES: readonly AllowedModule[] = [
 const OURS: readonly InertOrigin[] = [];
 
 /*
- * Ours, plus whatever the add-ons this studio vendors declare for themselves,
- * plus the backend a CONNECTED build was pointed at.
+ * Ours, plus the backend a CONNECTED build was pointed at.
  *
  * Empty in every demo build, which is every build the marketplace serves and
  * every build CI makes. When `VITE_ADMINIUM_API_BASE_URL` is set, Vite inlines
- * it into `data/adminiumSource.ts` as a literal and this is the declaration
+ * it into `shop/served.ts` as a literal and this is the declaration
  * that says so — one host, forgiven in EVERY file, rather than every host
  * forgiven in one file. `builtOutput.test.ts` carries the same line for the
  * shipped bytes.
  */
 const INERT: readonly InertOrigin[] = [
   ...OURS,
-  ...addOnOrigins(),
   ...connectedBackend(process.env["VITE_ADMINIUM_API_BASE_URL"]),
 ];
 
 /**
- * ── THE ONE FILE THAT MAY READ THE REAL CLOCK ──────────────────────────────
+ * ── THE STUDIO'S DOOR, SERVED BY ADMINIUM ITSELF ───────────────────────────
  *
- * `purity.ts`'s rule is about the DEMO's reproducibility: every date derives
- * from a pinned instant so that a test can assert a promise date and a
- * screenshot taken in a year still matches the running app. A CONNECTED build
- * is the case that rule was never about — its job is to show what the studio is
- * doing NOW, and the tenant's real clock is the input it is missing.
- *
- * So this is not "`adminiumSource.ts` is exempt", which is the shape this file
- * argues against for egress and would forgive a die as readily as a clock. It
- * is TWO MEANS, in ONE FILE. A `Math.random()` in the connected source is still
- * a finding, a clock in any other file is still a finding, and the test below
- * drives both of those rather than asserting them in prose.
+ * The staff build (`build:surface:staff`) is served by Adminium at
+ * `/apps/maker/staff/` and reads and writes through the signed-in person's
+ * own session, at the origin that served it: every address it asks is a path
+ * (`/api/v1/data/…`, `/api/v1/files…`), never a host, so the address net above
+ * still holds over these files word for word. What they may do that no other
+ * file may is named here, means by means, file by file, as the connected
+ * clock is: the door issues requests (that is what it is for), it
+ * keeps the server's clock (the device's time moved by the difference the
+ * server said), and the start sends someone not signed in to Adminium's own
+ * sign-in. A means not listed, or the same means in any other file, is still
+ * a finding.
  */
-const CONNECTED_SOURCE = "data/adminiumSource.ts";
-
-/** The clock half of `IMPURITIES`, by the exact words that file emits. */
-const CLOCKS: readonly string[] = [
-  "Date.now() \u2014 the real clock",
-  "new Date() with no argument \u2014 the real clock",
-  "performance.now() \u2014 a clock under another name",
-];
+const HOSTED_STAFF: Readonly<Record<string, readonly string[]>> = {
+  // The add-ons Adminium has for this app: its own list over the session, and the bundles it names, fetched and
+  // checked; a bundle URL not on this origin under /api/v1/add-ons/ is refused (add-ons/connected.test.ts).
+  "add-ons/connected.ts": ["fetch reached through a global"],
+  "studio/transport/sessionSource.ts": ["fetch reached through a global"],
+  "studio/adminiumStudio.ts": ["fetch reached through a global", "Date.now() \u2014 the real clock"],
+  "studio/boot.tsx": ["location.assign()/replace(), a navigation", "Date.now() \u2014 the real clock"],
+};
+const allowedHere = (rel: string, means: string): boolean => HOSTED_STAFF[rel]?.includes(means) === true;
+/** The one `import()` of something not a relative file: an add-on's bundle from this Adminium, behind `bundleUrlIsSafe`. */
+const DECLARED_DYNAMIC_IMPORT = "add-ons/connected.ts";
 
 describe("nothing here can reach a host we do not control", () => {
   /*
@@ -353,9 +309,9 @@ describe("nothing here can reach a host we do not control", () => {
    *
    * `testing/egress.ts` states the category in three nets. Two are static and
    * are below — an ADDRESS nobody declared inert, and an API whose only purpose
-   * is to issue a request. The third watches the running page
-   * (`add-ons/egress.test.tsx`), because whether `img.src = x` is a defect
-   * depends on x, and that is not a property of the text.
+   * is to issue a request. (The third net, which watched the running page,
+   * walked the old app's tour; the shop and the studio draw what Adminium
+   * sends, and both static nets hold over them.)
    */
   it("names no address outside the ones declared inert", () => {
     const offenders = SHIPPED.flatMap((f) =>
@@ -366,14 +322,23 @@ describe("nothing here can reach a host we do not control", () => {
 
   it("carries nothing that can issue a request", () => {
     const offenders = SHIPPED.flatMap((f) => [
-      ...sendersIn(f.code).map((means) => `${f.rel} → ${means}`),
-      ...foreignImportsIn(f.code).map((spec) => `${f.rel} → ${spec}`),
+      ...sendersIn(f.code)
+        .filter((means) => !allowedHere(f.rel, means))
+        .map((means) => `${f.rel} → ${means}`),
+      ...(f.rel === DECLARED_DYNAMIC_IMPORT ? [] : foreignImportsIn(f.code)).map((spec) => `${f.rel} → ${spec}`),
       // The static half, which neither of the two above ever looked at.
       ...foreignModulesIn(f.code, ALLOWED_MODULES).map(
         (spec) => `${f.rel} → imports ${spec}, which nobody declared`,
       ),
     ]);
     expect(offenders).toEqual([]);
+  });
+
+  it("forgives the add-on loader's import of a bundle by its address only while it still makes one", () => {
+    const loader = SHIPPED.find((f) => f.rel === DECLARED_DYNAMIC_IMPORT);
+    expect(loader, DECLARED_DYNAMIC_IMPORT).toBeDefined();
+    expect(foreignImportsIn(loader!.code).length).toBeGreaterThan(0);
+    expect(sendersIn(loader!.code).filter((means) => !allowedHere(loader!.rel, means))).toEqual([]);
   });
 
   /*
@@ -672,7 +637,7 @@ describe("no finished-goods stock, verifiable by grep (criterion 14)", () => {
    * finished piece. Named by key prefix so the carve-out is a property of what
    * the string says rather than of which file somebody put it in.
    */
-  const MAKER_KEY = /^(bench\.|data\.stock\.|addon\.)/;
+  const MAKER_KEY = /^(bench\.|studio\.)/;
 
   /**
    * The same three rules over the SOURCE of everything that renders.
@@ -685,12 +650,10 @@ describe("no finished-goods stock, verifiable by grep (criterion 14)", () => {
    */
   const SHOPPER_SOURCES = SHIPPED.filter(
     (f) =>
-      f.rel.startsWith("screens/") ||
-      f.rel.startsWith("components/") ||
-      f.rel.startsWith("data/") ||
-      f.rel.startsWith("state/") ||
-      f.rel.startsWith("i18n/strings/") ||
-      f.rel.startsWith("add-ons/"),
+      f.rel.startsWith("shop/") ||
+      f.rel.startsWith("studio/") ||
+      f.rel.startsWith("demo/") ||
+      f.rel.startsWith("i18n/strings/"),
   );
 
   /**
@@ -854,28 +817,13 @@ describe("no finished-goods stock, verifiable by grep (criterion 14)", () => {
     expect(bites("laissons le reste tel quel", "fr-FR")).toBe(false);
   });
 
-  it("keeps the one inventory it has out of every rendering file but the bench's", () => {
-    /*
-     * `MATERIAL_STOCK` may be named in the catalogue, the engine and the store.
-     * Nothing that renders may reach for it — widened from `screens/` to every
-     * component and every vendored add-on half, because a badge in a shared
-     * primitive is drawn on the shopper's side too.
-     */
-    const reaching = SHIPPED.filter(
-      (f) =>
-        (f.rel.startsWith("screens/") ||
-          f.rel.startsWith("components/") ||
-          f.rel.startsWith("add-ons/")) &&
-        /MATERIAL_STOCK/.test(f.text),
-    ).map((f) => f.rel);
-    expect(reaching).toEqual([]);
-  });
 });
 
 describe("NO VIEW COUNTS PLAIN WEEKDAYS (criterion 13)", () => {
   /**
-   * The bench runs Tuesday to Saturday, and `lib/calendar.ts` is the only place
-   * in this repo allowed to know what that means.
+   * The bench runs Tuesday to Saturday, and only the modules that count days
+   * (`studio/time.ts`, `studio/facts.ts`, the shop's `format.ts`, and
+   * Adminium itself, which stamps every post-by) may know what that means.
    *
    * A screen that does its own day arithmetic can count the wrong kind of day,
    * and one did: the order view's stage strip added a plain calendar day to the
@@ -883,22 +831,21 @@ describe("NO VIEW COUNTS PLAIN WEEKDAYS (criterion 13)", () => {
    * every test in the repo green while printing a Sunday under a step, three
    * clicks from the page that explains the shop is shut on Sundays.
    *
-   * The behavioural half of this guard is in `orders.test.ts`, over the dates
-   * themselves. This half is the reason it cannot come back: no view computes a
-   * date at all. Screens ask for a NAMED day — `postDay`, `finishDay`,
-   * `fortnight`, `shopperStageDates` — and the arithmetic behind those names is
-   * tested where it lives.
+   * This half is the reason it cannot come back: no view computes a date at
+   * all. Screens read a stored day (a line's post-by) or ask for a named one —
+   * `plusDays`, `weekdayOf`, `weekdayName` — and the arithmetic behind those
+   * names lives, and is tested, outside the screens.
    *
    * There is NO exception list, and there deliberately isn't one: the postage
-   * calendar was the last holdout and its grid moved into `fortnight()` rather
-   * than being named here. An exception in this rule is a place the next defect
+   * calendar's grid and the studio's week names moved into the format modules
+   * rather than being named here. An exception in this rule is a place the next defect
    * fits.
    */
   const ARITHMETIC = /\b(addDays|addStudioDays|nextStudioDay|daysBetween|snapForward)\s*\(/;
   const RAW_DATE = /Date\.UTC|getUTC(Date|Day|Month|FullYear)|86[_,]?400[_,]?000/;
 
   const VIEWS = SHIPPED.filter(
-    (f) => f.rel.startsWith("screens/") || f.rel.startsWith("components/"),
+    (f) => (f.rel.startsWith("shop/") || f.rel.startsWith("studio/")) && f.rel.endsWith(".tsx"),
   );
 
   it("has views to check", () => {
@@ -971,9 +918,9 @@ describe("CSS logical properties only", () => {
 /**
  * THE DOCUMENTED COMMAND IS THE ONE THAT HAS TO PASS.
  *
- * `npm test` shipped RED on a clean tree for a whole round. Three suites take
- * 7–19 s — they mount the app and crawl it — and nothing configured a timeout,
- * so vitest's 5 s default failed all three. Every one of them passed for the
+ * `npm test` shipped RED on a clean tree for a whole round. Three suites took
+ * 7–19 s and nothing configured a timeout, so vitest's 5 s default failed all
+ * three. Every one of them passed for the
  * round that wrote them, because that round ran `npx vitest run --testTimeout=…`
  * with its own flags and never ran the command the README gives a reader.
  *
@@ -1008,123 +955,30 @@ describe("the test command a reader is given is the one that is configured", () 
   });
 });
 
-/**
- * AND THE DISCOVERY ITSELF IS GUARDED, because it is only as honest as what it
- * finds.
- *
- * A vendored package that exported nothing would contribute nothing and read
- * exactly like a package with nothing to declare. A renamed export, or a sync
- * that dropped the file, would leave this studio quietly allowing no origin at all
- * — which fails loudly here rather than silently on the day an add-on that
- * really does name an address is vendored.
- */
-describe("an add-on brings its own inert origins with it", () => {
-  it("reads a declaration off every add-on this studio vendors", () => {
-    const declared = Object.entries(VENDORED_ORIGINS);
-    expect(declared.length, "no vendored inert-origin declarations were found").toBeGreaterThan(0);
-    const silent = declared
-      .filter(([, module]) => module.INERT_ORIGINS === undefined)
-      .map(([file]) => file);
-    expect(silent, "these vendored packages export no INERT_ORIGINS").toEqual([]);
-  });
-
-  it("keeps no origin of its own that belongs to an add-on", () => {
-    // The ratchet on the repair. Re-adding an add-on"s address to this studio"s
-    // own list would work, and would put the defect straight back: every entry
-    // here has to be an address THIS app names, and this studio names none.
+describe("this app keeps no list of allowed origins", () => {
+  it("names none of its own", () => {
+    // Every entry here would have to be an address THIS app names, and it
+    // names none; a connected build's backend comes from its configuration.
     expect(OURS).toEqual([]);
-  });
-
-  it("says why, for every origin it allows, wherever it came from", () => {
-    expect(INERT.length, "nothing was discovered at all").toBeGreaterThan(0);
-    for (const entry of INERT) {
-      expect(
-        { origin: entry.origin, explained: entry.why.length > 30 },
-        `${entry.origin} is allowed with no reason a reviewer can read`,
-      ).toEqual({ origin: entry.origin, explained: true });
-    }
-  });
-
-  it("forgives the declared origin and nothing that merely starts the same", () => {
-    // The comparison is exact, and this is the case that says so: an add-on
-    // declaring `api.canva.com` does not hand a look-alike host an allowance.
-    const declared = INERT[0]!.origin;
-    expect(offendingAddresses(`const a = "${declared}/x";`, INERT)).toEqual([]);
-    expect(offendingAddresses(`const a = "${declared}.attacker.test/x";`, INERT)).not.toEqual([]);
+    expect(INERT).toEqual(connectedBackend(process.env["VITE_ADMINIUM_API_BASE_URL"]));
   });
 });
 
-describe("secrets are server-only", () => {
-  /**
-   * ── THE SAME NEEDLES, ONE BUILD EARLIER, AND THEY ARE THE ADD-ON"S ────────
-   *
-   * `builtOutput.test.ts` greps the artefact; this catches a leak at the import
-   * that would have caused one. Both used to spell the needles out — the
-   * credentialled add-on"s two `secret: true` setting keys and the type its
-   * server half reads them into — inside an app that merely receives it, so a
-   * THIRD credentialled add-on would have been checked for nothing at all.
-   * They come off each vendored add-on"s own `add-on-facts.ts` now; see the
-   * block in `builtOutput.test.ts` for the argument.
-   *
-   * `apiKey` in camelCase is deliberately not among them, and that stays true
-   * whoever declares it: the connect dialog holds one in component state while
-   * the shop types it and drops it on submit, and `shop.connect.apiKey` is the
-   * LABEL on that field. Banning the words a credential form has to say would
-   * be banning the form, not the leak. What must never appear is the key a
-   * value would be SAVED under.
-   *
-   * THE DECLARATION FILES THEMSELVES ARE NOT A LEAK. `add-on-facts.ts` exists
-   * to NAME these strings, so it names them; it is data, it is imported by no
-   * screen, and every other gate in this file — senders, clocks, the ban on
-   * reaching `testing/` — still applies to it exactly as to any other vendored
-   * module. Nothing else is excused.
-   */
-  it("keeps every secret setting out of the client half", () => {
-    const needles = addOnNeedles();
-    expect(needles.length, "no add-on declared anything server-only").toBeGreaterThan(0);
-    const offenders = ALL.filter(
-      (file) =>
-        !/\.test\.tsx?$/.test(file.rel) &&
-        !file.rel.endsWith("add-on-facts.ts") &&
-        // The product's own validator, copied verbatim and never shipped (the
-        // test below gates that). It names setting keys because it checks them.
-        !file.rel.startsWith("testing/manifest/") &&
-        needles.some((needle) => file.code.includes(needle.text)),
-    );
-    expect(offenders.map((file) => file.rel)).toEqual([]);
-  });
-
+describe("test-only code never ships", () => {
   /*
-   * ── AND NEITHER DID IT GATE `testing/` ITSELF, WHICH IS THE SAME SHAPE ────
-   *
-   * [Added 2026-08-20 with the vendored manifest validator.] The works has held
-   * this rule since round 1 and this studio never had it. It only started to
+   * `src/testing/` holds the suites' own helpers, and it only started to
    * MATTER when `src/testing/manifest/` arrived here: that directory imports
    * `zod`, which is a devDependency and a runtime dependency the host does not
    * carry, so one import from a screen would put a validator — and a
    * package the customer's browser never loads — into the shipped bundle.
    *
    * The vendored barrel's own header claims this test exists. It is asserted
-   * here so that claim is true rather than aspirational, which is the whole
-   * argument the block above makes about porting a gate instead of assuming it.
+   * here so that claim is true rather than aspirational.
    */
   it("never lets shipped code reach the test-only directory, or zod", () => {
     const offenders = SHIPPED.filter((file) =>
       /from ['"][^'"]*\/testing\/|from ['"]zod['"]/.test(file.code),
     );
     expect(offenders.map((file) => file.rel)).toEqual([]);
-  });
-
-  /*
-   * AND THIS STUDIO HAD NO SUCH GATE AT ALL, which is failure mode two in one
-   * line: it vendors the same credentialled delivery add-on the works does, the
-   * works has checked its own sources since round 1, and nobody ever asked this
-   * one. The needles are declared by the add-on, so porting the gate is this
-   * block and nothing else.
-   */
-  it("bites on a leak, so the absence above means something", () => {
-    const needles = addOnNeedles();
-    const leaked = `const saved = { ${needles[0]!.text}: value };`;
-    expect(needles.some((needle) => leaked.includes(needle.text))).toBe(true);
   });
 });

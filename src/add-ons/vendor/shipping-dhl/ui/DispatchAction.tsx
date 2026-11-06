@@ -38,8 +38,9 @@ import { CarrierError, type Address, type FileRef, type Shipment, type TrackEven
 import type { DispatchPayload } from "../../host/index.ts";
 import { parseNumber, useFormat, useT } from "../i18n/t.ts";
 import { parcelFor, type ParcelEstimate } from "../parcel.ts";
-import { cheapestCode, COLLECTION_WINDOW, type QuotedRate } from "../rates.ts";
-import { carrier, findShipment, isDemo, labels, rememberRoute, setHostClock } from "../runtime.ts";
+import { ADD_ON_KEY } from "../add-on-key.ts";
+import { cheapestCode, COLLECTION_WINDOW, preselectedCode, type QuotedRate } from "../rates.ts";
+import { carrier, carrierState, findShipment, isDemo, labels, rememberRoute, setHostClock, setHostCurrency } from "../runtime.ts";
 import {
   addressIsUsable,
   blankAddress,
@@ -62,6 +63,7 @@ import {
   Tag,
 } from "./atoms.tsx";
 import { contentsLine, eventText, serviceName } from "./labels.ts";
+import { DemoNotice, NotConnected } from "./account.tsx";
 
 /** `34 × 26 × 12` in any of the shapes a shop floor actually types it. */
 /*
@@ -202,9 +204,9 @@ export function UnresolvedDestination({
   );
 }
 
-export function DispatchAction({ order, now }: DispatchPayload) {
+export function DispatchAction({ order, now, chosen }: DispatchPayload) {
   const t = useT();
-  const { clock: clockOf, money, day, number, timeOfDay } = useFormat();
+  const { clock: clockOf, money, day, number, timeOfDay, list } = useFormat();
 
   /*
    * THE SHOP'S CLOCK, BEFORE ANYTHING IS DATED AGAINST IT.
@@ -229,11 +231,18 @@ export function DispatchAction({ order, now }: DispatchPayload) {
   useEffect(() => {
     setHostClock({ iso: nowIso, hour: nowHour, minute: nowMinute });
   }, [nowIso, nowHour, nowMinute]);
+  // The shop's currency, off the order's value, so the demo carrier quotes in it (as the clock, before any quote).
+  const currency = order.value?.currency;
+  useEffect(() => {
+    setHostCurrency(currency);
+  }, [currency]);
 
-  const estimate = useMemo(() => parcelFor(order.items), [order.items]);
+  // The shop's own packed weight, where it keeps one, is the parcel's weight: one number on the screen and to the carrier.
+  const packedGrams = order.parcelWeightGrams;
+  const estimate = useMemo(() => parcelFor(order.items, { packedGrams }), [order.items, packedGrams]);
   const from = useMemo(() => originOf(order), [order]);
   const [open, setOpen] = useState(false);
-  const [contents, setContents] = useState(() => contentsLine(t, estimate));
+  const [contents, setContents] = useState(() => contentsLine(t, estimate, list));
   const [weight, setWeight] = useState(() => number(estimate.weightKg));
   const [dims, setDims] = useState(() => formatDims(estimate, number));
 
@@ -334,7 +343,8 @@ export function DispatchAction({ order, now }: DispatchPayload) {
         to,
       )) as QuotedRate[];
       setRates(quoted);
-      setSelected(quoted[0]?.code ?? null);
+      // The service the shopper chose at checkout, kept on the order, comes first.
+      setSelected(preselectedCode(quoted, chosen, ADD_ON_KEY));
     } catch (err) {
       // A refusal is DATA. It renders; it does not go to the console and leave
       // the works watching a spinner.
@@ -346,7 +356,7 @@ export function DispatchAction({ order, now }: DispatchPayload) {
     } finally {
       setBusy(false);
     }
-  }, [contents, dims, estimate, from, to, weight]);
+  }, [chosen, contents, dims, estimate, from, to, weight]);
 
   const book = useCallback(async () => {
     const rate = rates?.find((r) => r.code === selected) ?? rates?.[0];
@@ -448,16 +458,24 @@ export function DispatchAction({ order, now }: DispatchPayload) {
                * in the field beside the sentence.
                */
               hint={
-                estimate.from.assumed.length > 0
+                estimate.from.weighed
+                  ? t("addon.shipping-dhl.parcel.weightShop", { kg: estimate.weightKg, ref: order.ref })
+                  : estimate.from.assumed.length > 0
                   ? t("addon.shipping-dhl.parcel.weightAssumed", {
                       kg: estimate.weightKg,
                       what: estimate.from.assumed.join(", "),
                     })
-                  : t("addon.shipping-dhl.parcel.weightFrom", {
-                      kg: estimate.weightKg,
-                      quantity: estimate.from.quantity,
-                      each: estimate.from.unitGrams,
-                    })
+                  : estimate.from.lines > 1
+                    ? t("addon.shipping-dhl.parcel.weightFromMany", {
+                        kg: estimate.weightKg,
+                        quantity: estimate.from.quantity,
+                        grams: estimate.from.goodsGrams,
+                      })
+                    : t("addon.shipping-dhl.parcel.weightFrom", {
+                        kg: estimate.weightKg,
+                        quantity: estimate.from.quantity,
+                        each: estimate.from.unitGrams,
+                      })
               }
             >
               <span style={{ display: "flex", alignItems: "center", ...inputStyle, padding: 0 }}>
@@ -907,7 +925,10 @@ export function DispatchAction({ order, now }: DispatchPayload) {
         </>
       )}
 
-      {rates === null && booked === null && failure === null && (
+      {/* No account and no demo: nothing to quote with, and the works is told so before it presses anything. */}
+      {rates === null && booked === null && failure === null && carrierState() === "not-connected" && <NotConnected />}
+
+      {rates === null && booked === null && failure === null && carrierState() !== "not-connected" && (
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12 }}>
           {/* An empty address cannot be quoted, so it cannot be booked or
               printed either — the button is the gate, not a warning. */}
@@ -924,6 +945,8 @@ export function DispatchAction({ order, now }: DispatchPayload) {
               {t("addon.shipping-dhl.dest.needAddress")}
             </span>
           )}
+          {/* Said BEFORE the rates, not only on them: the works knows nothing will reach DHL before it quotes. */}
+          {isDemo() && <DemoNotice />}
         </div>
       )}
 
