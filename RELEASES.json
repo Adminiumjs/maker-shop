@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "releases": [
+    {
+      "name": "@adminiumjs/app-maker",
+      "version": "0.2.0",
+      "integrity": "sha512-k9WVVZIeVIC0IXuUN1WED2/+qtggDbCiw/DHn3n5m62JBsusLLBYx48Izc0lAq3Gg0KHtZxfPzKADvoYhX1vZw==",
+      "publishedAt": "2026-11-06T09:41:28.000Z"
+    }
+  ]
+}
