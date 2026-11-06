@@ -270,6 +270,31 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         expect((await callers["maker"]!.post("/api/v1/privacy/find", { address: "iris.p@example.com" })).status).toBe(403);
       });
 
+      // The packer's screens read what the role reads, and ask for nothing Adminium would refuse it.
+      it("loads the packer's screens with no read Adminium refuses", async () => {
+        const refused: string[] = [];
+        const seen = callers["packer"]!.fetchAs();
+        const recording = (async (input: RequestInfo | URL, init?: RequestInit) => {
+          const res = await seen(input, init);
+          if (res.status === 403) refused.push(String(input));
+          return res;
+        }) as typeof fetch;
+        const cfg = (await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: recording }))!;
+        const transport = createSessionTransport({
+          tableOfRef: cfg.tables,
+          connectionId: cfg.connectionId ?? undefined,
+          staff: { csrfToken: cfg.csrfToken, timezone: cfg.timezone, timezoneSource: cfg.timezoneSource, serverTimezone: cfg.serverTimezone, currency: cfg.currency },
+          fetchImpl: recording,
+        });
+        const data = await new AdminiumStudio(transport, cfg, { fetchImpl: recording, origin: server.base }).load();
+        expect(data.lines.some((l) => l["design_id"] !== null && l["design_id"] !== undefined)).toBe(true);
+        expect(refused).toEqual([]);
+      });
+
+      it.fails("hands a packer's session the workspace's public name and logo (gap: a screens-only session is refused GET /branding)", async () => {
+        expect((await callers["packer"]!.get("/api/v1/branding")).status).toBe(200);
+      });
+
       it("signs the packer out from the studio's screens: the session ends", async () => {
         await doors["packer"]!.signOut();
         const cfg = await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: callers["packer"]!.fetchAs() });
