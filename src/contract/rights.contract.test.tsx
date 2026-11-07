@@ -292,7 +292,8 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         expect(refused).toEqual([]);
       });
 
-      it.fails("hands a packer's session the workspace's public name and logo (gap: a screens-only session is refused GET /branding)", async () => {
+      // Adminium 0.3.50: a screens-only session may read the workspace's branding and its logo.
+      it("hands a packer's session the workspace's public name and logo", async () => {
         expect((await callers["packer"]!.get("/api/v1/branding")).status).toBe(200);
       });
 
@@ -372,7 +373,8 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         expect(found.filter((s) => s.kind === "files").flatMap((s) => s.keys)).toContain(proofFiles["maker"]);
       });
 
-      it.fails("counts the same files in a person's data as erasing them takes (gap: the search counts a copy row's binned files, the erase does not)", async () => {
+      // Adminium 0.3.50: the search, the preview and the erase count a copy row's binned files alike.
+      it("counts the same files in a person's data as erasing them takes", async () => {
         const address = await shopperOf();
         type Counted = { kind: string; count: number };
         const found = ok(await callers["owner"]!.post<{ data: { sources: Counted[] } }>("/api/v1/privacy/find", { address })).data.sources.filter((s) => s.kind === "files");
@@ -391,7 +393,8 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         expect(await fileStatus(proofFiles["owner"]!)).toBe(404);
       }, 120_000);
 
-      it.fails("erases a proof picture made again with its customer: the one it replaced too (gap: the erase leaves a copy row's binned files)", async () => {
+      // Adminium 0.3.50: the erase takes a copy row's binned files, the proof picture a remade proof replaced.
+      it("erases a proof picture made again with its customer: the one it replaced too", async () => {
         expect(await fileStatus(proofFiles["maker"]!)).toBe(404);
       });
     });
