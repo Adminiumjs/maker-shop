@@ -179,8 +179,29 @@ const rel = (file: string) => file.slice(DIST.length + 1);
  * alters no words, is a gate people learn to wave through.
  */
 function readable(file: string): string {
-  const text = readFileSync(file, "utf8");
+  const text = textOf(file);
   return file.endsWith(".js") ? readableText(text) : text;
+}
+
+/**
+ * The text a file holds, as a browser could act on it. Every emitted file is
+ * read; a binary one by its text parts, not its bytes. The sample's photos
+ * and print models (JPEG, PNG, WebP, STL) hold no text a page can follow: read
+ * as UTF-8 their compressed bytes spell "//p" or "/mo" by chance, and a gate
+ * that fires on noise is one people learn to wave through. A 3D model (GLB)
+ * can name a file to load (a buffer's or an image's `uri`), so its JSON chunk
+ * is read in full.
+ */
+function textOf(file: string): string {
+  const bytes = readFileSync(file);
+  if (/\.(jpe?g|png|webp|stl)$/i.test(file)) return "";
+  if (file.endsWith(".glb")) {
+    // glTF binary: a 12-byte header, then the JSON chunk (its length, its type, its bytes).
+    const length = bytes.readUInt32LE(12);
+    expect(bytes.readUInt32LE(16), `${rel(file)} starts with its JSON chunk`).toBe(0x4e4f534a);
+    return bytes.subarray(20, 20 + length).toString("utf8");
+  }
+  return bytes.toString("utf8");
 }
 
 /**
@@ -567,7 +588,7 @@ describe("nothing in the artefact can reach a host we do not control", () => {
 
   it("names no address outside the ones declared inert", () => {
     const offences = built().flatMap((file) =>
-      offendingAddresses(readFileSync(file, "utf8"), INERT).map((url) => `${rel(file)} → ${url}`),
+      offendingAddresses(textOf(file), INERT).map((url) => `${rel(file)} → ${url}`),
     );
     expect(offences, `\n${offences.join("\n")}\n`).toEqual([]);
   });
