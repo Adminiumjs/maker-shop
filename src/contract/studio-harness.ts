@@ -131,6 +131,15 @@ export function addOnBundle(key: string): Bundle {
   return bundle(files, manifest.key, version);
 }
 
+/** Every file under a folder, at its path from `into`. */
+function seedFiles(root: string, into: string, files: Record<string, Buffer>): void {
+  for (const name of readdirSync(root)) {
+    const absolute = join(root, name);
+    if (statSync(absolute).isDirectory()) seedFiles(absolute, `${into}${name}/`, files);
+    else files[`${into}${name}`] = readFileSync(absolute);
+  }
+}
+
 /** This app's package: its manifest (or the text given: the same app written for another floor), its sample files, and a placeholder page for each side. */
 export function appBundle(options: { manifest?: string } = {}): Bundle {
   const text = options.manifest ?? read(join(REPO, "manifest.json"));
@@ -143,6 +152,8 @@ export function appBundle(options: { manifest?: string } = {}): Bundle {
   if (manifest.sampleData !== undefined) {
     files[manifest.sampleData.file] = readFileSync(join(REPO, manifest.sampleData.file));
     for (const section of Object.values(manifest.sampleData.addOns ?? {})) files[section.file] = readFileSync(join(REPO, section.file));
+    // …and the files its rows name (`seeds/showcase/`: photos, models, cut files), packed as the release packs all of `seeds/`.
+    seedFiles(join(REPO, "seeds"), "seeds/", files);
   }
   return bundle(files, manifest.key, manifest.version);
 }

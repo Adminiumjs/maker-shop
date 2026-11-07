@@ -188,6 +188,8 @@ export function appBundle(options: { built?: boolean; manifest?: string; sample?
   if (manifest.sampleData !== undefined) files[manifest.sampleData.file] = options.sample !== undefined ? Buffer.from(options.sample) : readFileSync(join(REPO, manifest.sampleData.file));
   // …and the rows it adds to an add-on's tables, one file for each add-on (this repo's, whichever floor its manifest is written for).
   if (options.sample === undefined) for (const section of Object.values(manifest.sampleData?.addOns ?? {})) files[section.file] = readFileSync(join(REPO, section.file));
+  // …and the files its rows name (`seeds/showcase/`: photos, models, cut files), packed as the release packs all of `seeds/`.
+  if (options.sample === undefined && manifest.sampleData !== undefined) filesUnder(join(REPO, "seeds"), "seeds/", files);
   return { ...bundle(files), key: manifest.key, version: manifest.version };
 }
 
