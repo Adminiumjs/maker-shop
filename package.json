@@ -19,7 +19,7 @@
     "typecheck": "tsc -b",
     "manifest": "vite-node scripts/write-manifest.ts",
     "manifest:check": "vite-node scripts/check-manifest.ts",
-    "sample": "vite-node scripts/write-sample.ts",
+    "sample": "vite-node scripts/hash-showcase.ts && vite-node scripts/write-sample.ts",
     "sync:customiser": "node scripts/sync-customiser.mjs"
   },
   "dependencies": {
