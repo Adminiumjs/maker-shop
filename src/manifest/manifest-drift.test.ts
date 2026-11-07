@@ -106,7 +106,7 @@ describe("every price, weight and date is Adminium's", () => {
 
 describe("the Customiser is bound as its README asks", () => {
   it("requires it at the release that carries it, and names the page its saved-design mail opens", () => {
-    expect(manifest.addOns.requires).toEqual([expect.objectContaining({ key: "customiser", range: "^1.0.19" })]);
+    expect(manifest.addOns.requires).toEqual([expect.objectContaining({ key: "customiser", range: "^1.0.22" })]);
     expect(CUSTOMER_ROUTES.customiserDesign).toBe("/design");
     expect(manifest.addOns.suggests.map((s) => s["key"])).toEqual(["shipping-dhl", "barcode-labels", "inventory", "invoices", "holiday-calendars"]);
   });

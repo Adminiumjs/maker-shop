@@ -35,9 +35,12 @@ export const VERSION = "0.2.1";
  * bundles, whose tables open to an app's roles (a proof made on the studio's
  * screens). 0.3.49 installs the app once per database
  * (`frontends[].instances`) and tells each install's screens which install
- * they are. 0.3.51 adds the files the sample's rows for the Customiser ship
+ * they are. 0.3.50 answers a line's proof still out when a new one is made,
+ * wherever it is made (`states.supersedes`), and erases a remade proof's
+ * earlier picture with its customer. 0.3.51 adds the files the sample's rows for the Customiser ship
  * (its photos, models and cut files); an older Adminium drops them, and the
- * sample cannot be added.
+ * sample cannot be added; it bundles the Customiser 1.0.22, whose set-up page
+ * opens to the app's owner.
  */
 export const MIN_ADMINIUM = "0.3.51";
 
