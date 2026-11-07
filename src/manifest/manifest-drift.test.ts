@@ -45,7 +45,7 @@ describe("manifest.json is what src/manifest/ writes", () => {
     expect(manifest.requiredSchema.prefixed).toBe(true);
     expect(manifest["key"]).toBe("maker");
     expect(manifest["version"]).toBe("0.2.1");
-    expect((manifest["compatibility"] as Json)["minAdminiumVersion"]).toBe("0.3.49");
+    expect((manifest["compatibility"] as Json)["minAdminiumVersion"]).toBe("0.3.51");
     // Both sides may be installed once per database.
     expect((manifest["frontends"] as Json[]).map((f) => [f["side"], f["instances"]])).toEqual([["staff", true], ["customer", true]]);
   });

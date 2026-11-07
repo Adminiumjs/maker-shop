@@ -35,9 +35,11 @@ export const VERSION = "0.2.1";
  * bundles, whose tables open to an app's roles (a proof made on the studio's
  * screens). 0.3.49 installs the app once per database
  * (`frontends[].instances`) and tells each install's screens which install
- * they are.
+ * they are. 0.3.51 adds the files the sample's rows for the Customiser ship
+ * (its photos, models and cut files); an older Adminium drops them, and the
+ * sample cannot be added.
  */
-export const MIN_ADMINIUM = "0.3.49";
+export const MIN_ADMINIUM = "0.3.51";
 
 const ENV = {
   VITE_ADMINIUM_API_BASE_URL: { required: false, example: "https://admin.example.com" },
