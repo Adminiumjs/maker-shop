@@ -20,7 +20,7 @@ import { ROLES } from "./roles.ts";
 import { SETTINGS } from "./settings.ts";
 import { TABLES } from "./tables.ts";
 
-export const VERSION = "0.2.0";
+export const VERSION = "0.2.1";
 
 /**
  * The Adminium release that first reads everything below: quantity breaks
@@ -33,9 +33,11 @@ export const VERSION = "0.2.0";
  * delete on the Customiser's tables, more than twelve of them, and the
  * owner's right to find and erase a customer; and the Customiser 1.0.19 it
  * bundles, whose tables open to an app's roles (a proof made on the studio's
- * screens).
+ * screens). 0.3.49 installs the app once per database
+ * (`frontends[].instances`) and tells each install's screens which install
+ * they are.
  */
-export const MIN_ADMINIUM = "0.3.48";
+export const MIN_ADMINIUM = "0.3.49";
 
 const ENV = {
   VITE_ADMINIUM_API_BASE_URL: { required: false, example: "https://admin.example.com" },
@@ -85,8 +87,8 @@ export function buildManifest(): Record<string, unknown> {
     },
     capabilities: ["email-delivery", "file-storage"],
     frontends: [
-      { side: "staff", kind: "spa", entry: "index.html", env: ENV, placement: "external", routes: STAFF_ROUTES },
-      { side: "customer", kind: "spa", entry: "index.html", env: ENV, routes: CUSTOMER_ROUTES },
+      { side: "staff", kind: "spa", entry: "index.html", env: ENV, placement: "external", routes: STAFF_ROUTES, instances: true },
+      { side: "customer", kind: "spa", entry: "index.html", env: ENV, routes: CUSTOMER_ROUTES, instances: true },
     ],
     settings: SETTINGS,
     addOns: ADD_ONS,
