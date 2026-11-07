@@ -73,7 +73,9 @@ batches, stock; never a price or a customer's details beyond the order) and
 **In the dashboard** (the Maker Shop section): orders, proofs, requests, problems,
 the catalogue (products, options, postage), the workshop (materials, stock,
 machines, bookings, batches, closures), customers, the e-mails sent, and the
-studio's settings.
+studio's settings. A proof added on the Proofs page answers the line's proof
+still out, as one sent from the studio's screens does: Adminium marks the
+earlier one "Sent again" in the same save, and an approved proof stays approved.
 
 **E-mails.** Order received, proof ready and the one proof reminder (each with
 the proof's picture, unless the proof is a PDF), order posted, and the copies of

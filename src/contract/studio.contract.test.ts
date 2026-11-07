@@ -10,8 +10,9 @@
  *
  *   - Adminium refuses to take the piece past "make" while its proof waits;
  *   - the maker sends a proof: the picture stored through the files route,
- *     the proof before it superseded, the new one numbered by Adminium and
- *     e-mailed (an outbox row);
+ *     the proof before it superseded by Adminium in the same write
+ *     (`states.supersedes`), the new one numbered by Adminium and e-mailed
+ *     (an outbox row);
  *   - the shopper approves it by their own write: the order's link from its
  *     e-mail opened by the shop's door, the proof answered through it;
  *   - the piece goes to making (its order with it), is made, is ready;
@@ -21,7 +22,8 @@
  * the e2e server's sink, to the shopper, under its template's subject
  * (`mail.ts`).
  *
- * Beside it: a reminder e-mailed; a design's proof sent as the Customiser's
+ * Beside it: a proof made on the dashboard by the app's owner, which answers
+ * the line's proof still out as the studio's does; a reminder e-mailed; a design's proof sent as the Customiser's
  * own picture of its version, copied by the maker's own session (a role that
  * opens only the app's screens); a spoil taking its share of a walnut sheet
  * off the shelf as Adminium works it out; the customers' totals from their
@@ -438,6 +440,37 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
           const total = theirs.reduce((sum, o) => sum + Math.round(Number(o["total"]) * 100), 0) / 100;
           expect(Number(customer["spent"] ?? 0), String(customer["email"])).toBeCloseTo(total, 2);
         }
+      });
+
+      // `states.supersedes` (Adminium 0.3.50): a proof made on the dashboard's Proofs page answers the line's proof still
+      // out in the same write, as one sent from the studio's screens does; an approved proof stays approved.
+      it("supersedes a line's proof still out when the owner makes one in the dashboard, and leaves an approved one", async () => {
+        const data = await maker.load();
+        const proofsTable = encodeURIComponent(tables["proofs"] ?? "maker_proofs");
+        const ofLine = async (line: Row) => (await rows("proofs")).filter((p) => String(p["line_id"]) === String(line.id)).sort((a, b) => Number(a["version"]) - Number(b["version"]));
+        const answers = async (line: Row) => (await ofLine(line)).map((p) => [Number(p["version"]), p["state"]]);
+        // One line's proof waiting; another's first proof with a change asked of it, its second approved.
+        const waiting = linesOf(data, orderOf(data, "BR-2276"))[0]!;
+        const answered = linesOf(data, orderOf(data, "BR-2262"))[0]!;
+        expect(await answers(waiting)).toEqual([[1, "sent"]]);
+        expect(await answers(answered)).toEqual([[1, "change_asked"], [2, "approved"]]);
+        // The dashboard's own write: a person with the app's Owner role, signed in to the dashboard, adds the row.
+        const roles = ok(await owner.get<{ roles: { id: string; slug?: string }[] }>("/api/v1/roles")).roles;
+        const email = `owner.dashboard.${engine}@birchrow.example`;
+        const invited = ok(await owner.post<{ invite: { token: string } }>("/api/v1/users", { email, name: "Nell Birch", roleIds: [roles.find((r) => r.slug === "maker-owner")!.id] }), 201);
+        const password = newPassword();
+        ok(await new Caller(server.base).post("/api/v1/auth/password/reset", { token: invited.invite.token, newPassword: password }));
+        const dashboard = new Caller(server.base);
+        await dashboard.signIn(email, password);
+        for (const line of [waiting, answered]) {
+          const made = await dashboard.post<{ data: Row }>(`/api/v1/data/${connectionId}/${proofsTable}`, { values: { line_id: line.id, kind: "lettering", note: "Made on the dashboard." } });
+          expect(made.status, JSON.stringify(made.body).slice(0, 600)).toBe(201);
+        }
+        expect(await answers(waiting)).toEqual([[1, "superseded"], [2, "sent"]]);
+        expect(await answers(answered)).toEqual([[1, "superseded"], [2, "approved"], [3, "sent"]]);
+        // The line reads its newest proof's answer: waiting again, so not ready for the bench until it is approved.
+        const after = (await maker.load()).lines.find((l) => String(l.id) === String(waiting.id))!;
+        expect([after["proof_state"], num(after["proof_ok"])]).toEqual(["sent", 0]);
       });
     });
   });

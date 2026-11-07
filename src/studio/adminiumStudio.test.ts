@@ -92,12 +92,6 @@ describe("the studio's writes, as Adminium receives them", () => {
     expect(sent).toEqual([{ path: "/api/v1/data/conn-1/maker_orders/14", method: "PATCH", body: { values: { status: "posted", tracking: "00 3400 1234 5678 9012" }, from: "ready" } }]);
   });
 
-  it("supersedes a proof it sent before, from the state the screen saw", async () => {
-    const { t, sent } = transport();
-    await new AdminiumStudio(t, config()).supersede({ id: 1001, state: "change_asked" });
-    expect(sent).toEqual([{ path: "/api/v1/data/conn-1/maker_proofs/1001", method: "PATCH", body: { values: { state: "superseded" }, from: "change_asked" } }]);
-  });
-
   it("stores a drawn picture through the files route for the proofs' picture column, then sends the proof naming it and its line, never an order", async () => {
     const { t, sent } = transport();
     const uploads: { url: string; init: RequestInit }[] = [];
@@ -161,22 +155,18 @@ describe("the studio's writes, as Adminium receives them", () => {
     expect(sent).toEqual([]);
   });
 
-  it("supersedes the proof it replaces only once its picture is stored and the new proof made", async () => {
+  // The proof still out moves in the new proof's own write (`states.supersedes`); a PATCH of it after would be stale.
+  it("sends a proof again with the picture and the proof only, never a move of the one before", async () => {
     const { t, sent } = transport();
-    await new AdminiumStudio(t, config()).sendProof({ order: { id: 16 }, line: { id: 161 }, kind: "design", picture: { copyOf: "file_01J8Z6Q3M4N5P6R7S8T9V0W1XA" }, designVersionId: 30, note: null, replaces: { id: 1001, state: "change_asked" } });
-    expect(sent.map((c) => `${c.method} ${c.path}`)).toEqual([
-      "POST /api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1XA/copy",
-      "POST /api/v1/data/conn-1/maker_proofs",
-      "PATCH /api/v1/data/conn-1/maker_proofs/1001",
-    ]);
-    expect(sent[2]!.body).toEqual({ values: { state: "superseded" }, from: "change_asked" });
+    await new AdminiumStudio(t, config()).sendProof({ order: { id: 16 }, line: { id: 161 }, kind: "design", picture: { copyOf: "file_01J8Z6Q3M4N5P6R7S8T9V0W1XA" }, designVersionId: 30, note: null });
+    expect(sent.map((c) => `${c.method} ${c.path}`)).toEqual(["POST /api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1XA/copy", "POST /api/v1/data/conn-1/maker_proofs"]);
   });
 
-  it("leaves the proof it would replace waiting when the picture is not stored", async () => {
+  it("writes no proof when the picture is not stored, so the one still out keeps waiting", async () => {
     const { t, sent } = transport();
     const fetchImpl = (async () => new Response(JSON.stringify({ error: { code: "FILE_TOO_LARGE", message: "Too large." } }), { status: 413 })) as unknown as typeof fetch;
     const blob = new Blob(["x"], { type: "image/png" });
-    await expect(new AdminiumStudio(t, config(), { fetchImpl }).sendProof({ order: { id: 11 }, line: { id: 111 }, kind: "lettering", picture: { blob, filename: "p.png" }, designVersionId: null, note: null, replaces: { id: 1001, state: "sent" } })).rejects.toMatchObject({ status: 413 });
+    await expect(new AdminiumStudio(t, config(), { fetchImpl }).sendProof({ order: { id: 11 }, line: { id: 111 }, kind: "lettering", picture: { blob, filename: "p.png" }, designVersionId: null, note: null })).rejects.toMatchObject({ status: 413 });
     expect(sent).toEqual([]);
   });
 

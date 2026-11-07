@@ -3,10 +3,12 @@
  *
  *   owner    everything: the dashboard section, the catalogue and its prices,
  *            the settings, the customers, the e-mails; the studio's own
- *            screens; Holiday calendars' closed days (its settings); and
+ *            screens; the Customiser's set-up page (what shoppers make their
+ *            own); Holiday calendars' closed days (its settings); and
  *            finding and erasing a customer (Studio → Privacy).
  *   maker    the studio's screens, never the dashboard: the board and the
- *            orders' lines, the proofs (send one, remind, send again),
+ *            orders' lines, the proofs (send one, remind, send again: the
+ *            one before is answered by Adminium),
  *            batches, machine bookings and the stock, and a product's
  *            lettering settings. Never a price, a customer or the settings.
  *   packer   the studio's screens: the orders ready to post, marking them
@@ -171,11 +173,11 @@ export const ROLES = [
       // The order moves along the bench; nothing of the shopper's or its money.
       orders: { writable: ["status"], writableValues: { status: ["making", "ready"] } },
       order_lines: { writable: ["stage", "batch_id", "spoiled"], writableValues: { stage: ["make", "making", "finishing", "ready"] } },
-      // A proof: the line (its order is the line's), its picture, the note and the design version it shows; sent again, or a reminder.
+      // A proof: the line (its order is the line's), its picture, the note and the design version it shows; a reminder.
+      // Sent again, the one before is answered by Adminium (`states.supersedes`): no role moves a proof's answer.
       proofs: {
         creatable: ["line_id", "kind", "picture", "design_version_id", "note"],
-        writable: ["state", "reminded_at"],
-        writableValues: { state: ["superseded"] },
+        writable: ["reminded_at"],
       },
       products: { writable: LETTERING },
       stock_movements: { creatable: ["material_id", "kind", "qty", "counted", "units", "batch_id", "line_id", "note"] },

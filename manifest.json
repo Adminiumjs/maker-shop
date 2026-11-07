@@ -5696,6 +5696,14 @@
             "change_asked": [
               "superseded"
             ]
+          },
+          "supersedes": {
+            "by": "line_id",
+            "from": [
+              "sent",
+              "change_asked"
+            ],
+            "to": "superseded"
           }
         },
         "columns": [
@@ -10482,14 +10490,8 @@
             "note"
           ],
           "writable": [
-            "state",
             "reminded_at"
-          ],
-          "writableValues": {
-            "state": [
-              "superseded"
-            ]
-          }
+          ]
         },
         "products": {
           "writable": [

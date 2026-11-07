@@ -12,7 +12,7 @@
  * "making" when one of its lines does.
  */
 import type { ProofPicture, StudioData, StudioDoor } from "./door.ts";
-import { dueForProof, isLive, lineMaterial, linesOf, lockOf, orderOf, pathOf, proofsOf, versionOf, fileIdOf, ORDER_MOVES } from "./facts.ts";
+import { dueForProof, isLive, lineMaterial, linesOf, lockOf, orderOf, pathOf, versionOf, fileIdOf, ORDER_MOVES } from "./facts.ts";
 import { ApiError, num, same, type Row } from "./wire.ts";
 
 /** Refused here, before any write: the line waits on its proof. */
@@ -117,9 +117,9 @@ export async function proofFor(data: StudioData, line: Row, draw: (line: Row) =>
 
 /**
  * Send a proof of every line of an order that waits for one: the new one goes
- * to the customer (Adminium numbers it per line and e-mails it), and the proof
- * each line had before is then answered by it (superseded). Lines whose
- * design has no proof made yet are left, and named.
+ * to the customer (Adminium numbers it per line and e-mails it), and in the
+ * same write Adminium answers the proof each line still had out with it
+ * (superseded). Lines whose design has no proof made yet are left, and named.
  */
 export async function sendProofs(door: StudioDoor, data: StudioData, order: Row, draw: (line: Row) => Promise<Blob | null>, note: string | null = null, own: OwnProof = () => null): Promise<{ sent: Row[]; missing: Row[] }> {
   const sent: Row[] = [];
@@ -130,10 +130,7 @@ export async function sendProofs(door: StudioDoor, data: StudioData, order: Row,
       missing.push(line);
       continue;
     }
-    const before = proofsOf(data, line)[0];
-    // The proof still out is answered by this one once it is sent, never before: a refusal leaves it waiting.
-    const replaces = before !== undefined && (before["state"] === "sent" || before["state"] === "change_asked") ? before : null;
-    sent.push(await door.sendProof({ order, line, kind: drawn.kind, picture: drawn.picture, designVersionId: drawn.designVersionId, note, replaces }));
+    sent.push(await door.sendProof({ order, line, kind: drawn.kind, picture: drawn.picture, designVersionId: drawn.designVersionId, note }));
   }
   return { sent, missing };
 }

@@ -93,7 +93,11 @@ export interface StudioFacts {
 /** A proof's picture: drawn in this browser, or a copy of a stored file (the Customiser's proof of a version). */
 export type ProofPicture = { blob: Blob; filename: string } | { copyOf: string };
 
-/** What sending a proof takes: the line, what it shows, and the proof of the line still out that it answers. */
+/**
+ * What sending a proof takes: the line and what it shows. The line's proof
+ * still out is answered by it in the same write: Adminium moves it to
+ * "superseded" (`states.supersedes`), never the screen.
+ */
 export interface SendProof {
   order: Row;
   line: Row;
@@ -101,7 +105,6 @@ export interface SendProof {
   picture: ProofPicture | null;
   designVersionId: Id | null;
   note: string | null;
-  replaces?: Row | null;
 }
 
 /** One of the Customiser's record panels, opened on a row of the app's: a line's design, a product's base. */
@@ -176,11 +179,10 @@ export interface StudioDoor {
   updateLine(line: Row, values: Record<string, unknown>): Promise<Row>;
   /** An order along its states, from the one the screen saw. */
   moveOrder(order: Row, to: string, values?: Record<string, unknown>): Promise<Row>;
-  /** A proof the studio sent before, answered by the one it sends now. */
-  supersede(proof: Row): Promise<Row>;
   /**
-   * A proof of a line: its picture stored first, then the row that sends it (Adminium numbers it and e-mails it),
-   * and only then the proof it `replaces` superseded, so a picture or a proof refused leaves that one waiting.
+   * A proof of a line: its picture stored first, then the row that sends it. Adminium numbers it, e-mails it, and
+   * moves the line's proof still out to "superseded" in the same write, so a picture or a proof refused leaves that
+   * one waiting.
    */
   sendProof(input: SendProof): Promise<Row>;
   /** A reminder of a proof still waiting: Adminium e-mails it when the moment is stamped. */

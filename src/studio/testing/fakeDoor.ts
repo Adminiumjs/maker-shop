@@ -91,19 +91,17 @@ export class FakeDoor implements StudioDoor {
     this.record("moveOrder", { id: order.id, from: order["status"], to, values });
     return this.update(this.data.orders, order.id, { status: to, ...values });
   }
-  async supersede(proof: Row): Promise<Row> {
-    this.record("supersede", { id: proof.id, from: proof["state"] });
-    return this.update(this.data.proofs, proof.id, { state: "superseded" });
-  }
   async sendProof(input: SendProof): Promise<Row> {
     const picture = input.picture === null ? null : "copyOf" in input.picture ? { copyOf: input.picture.copyOf } : { filename: input.picture.filename, type: input.picture.blob.type };
     this.record("sendProof", { order: input.order.id, line: input.line.id, kind: input.kind, picture, designVersionId: input.designVersionId, note: input.note });
     this.nextId += 1;
-    const version = this.data.proofs.filter((p) => same(p["line_id"], input.line.id)).length + 1;
+    const earlier = this.data.proofs.filter((p) => same(p["line_id"], input.line.id));
+    const version = earlier.length + 1;
     const row: Row = { id: this.nextId, order_id: input.order.id, line_id: input.line.id, version, kind: input.kind, picture: "/api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1XZ/content", state: "sent", sent_at: new Date(THURSDAY).toISOString() };
     this.data.proofs.push(row);
     this.update(this.data.lines, input.line.id, { proof_state: "sent", proof_ok: 0 });
-    if (input.replaces !== undefined && input.replaces !== null) await this.supersede(input.replaces);
+    // Adminium's own move in the same write (`states.supersedes`), never a call of the screen's.
+    for (const before of earlier) if (before["state"] === "sent" || before["state"] === "change_asked") this.update(this.data.proofs, before.id, { state: "superseded" });
     return row;
   }
   async remind(proof: Row): Promise<Row> {

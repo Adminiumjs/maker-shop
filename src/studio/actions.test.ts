@@ -78,11 +78,12 @@ describe("a proof sent", () => {
     expect(door.calls).toEqual([{ method: "sendProof", args: { order: 11, line: 111, kind: "lettering", picture: { filename: "proof-line-111.png", type: "image/png" }, designVersionId: null, note: null } }]);
   });
 
-  it("supersedes the proof still waiting once the next is sent, never before", async () => {
+  // Adminium answers the proof still out in the proof's own write (`states.supersedes`): the screen moves nothing.
+  it("sends the next proof and moves no proof itself: the one still waiting is Adminium's to answer", async () => {
     const door = new FakeDoor();
     await sendProofs(door, door.data, order(door, 10), png);
-    expect(door.trail()).toEqual(["sendProof 101", "supersede 1001"]);
-    expect(door.calls[1]!.args).toEqual({ id: 1001, from: "sent" });
+    expect(door.trail()).toEqual(["sendProof 101"]);
+    expect(door.data.proofs.find((p) => p.id === 1001)!["state"]).toBe("superseded");
   });
 
   it("leaves the proof still waiting as it was when the next is refused", async () => {

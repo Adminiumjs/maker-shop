@@ -390,10 +390,6 @@ export class AdminiumStudio implements StudioDoor {
     return this.run(() => this.change("orders", order.id, { status: to, ...values }, String(order["status"])));
   }
 
-  supersede(proof: Row): Promise<Row> {
-    return this.run(() => this.change("proofs", proof.id, { state: "superseded" }, String(proof["state"])));
-  }
-
   /** What the files route answers for a column: the value the row stores. */
   private async storePicture(picture: ProofPicture): Promise<string> {
     const conn = await this.conn();
@@ -423,18 +419,15 @@ export class AdminiumStudio implements StudioDoor {
     return this.run(async () => {
       // The picture first: one the files route refuses leaves the proof still out waiting, as it was.
       const picture = input.picture === null ? null : await this.storePicture(input.picture);
-      // The order is not sent: Adminium copies it from the line.
-      const made = await this.create("proofs", {
+      // The order is not sent: Adminium copies it from the line. Nor is the proof before it moved: the same write
+      // supersedes the line's proof still out (`states.supersedes`), and a move of it here would be refused as stale.
+      return this.create("proofs", {
         line_id: input.line.id,
         kind: input.kind,
         ...(picture === null ? {} : { picture }),
         ...(input.designVersionId === null ? {} : { design_version_id: input.designVersionId }),
         ...(input.note === null ? {} : { note: input.note }),
       });
-      // Only now is the one before answered by it.
-      const before = input.replaces ?? null;
-      if (before !== null) await this.change("proofs", before.id, { state: "superseded" }, String(before["state"]));
-      return made;
     });
   }
 

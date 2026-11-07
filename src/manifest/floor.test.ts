@@ -51,6 +51,15 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
     expect(tablesOf("packer")).toEqual({ designs: ["read"] });
   });
 
+  // Adminium 0.3.50: a proof made anywhere answers the line's proof still out, in the same write.
+  it("supersedes the line's proof still out with each new proof, an approved one never", () => {
+    const proofs = ((shipped["requiredSchema"] as { tables: Json[] }).tables).find((t) => t["ref"] === "proofs")!;
+    expect((proofs["states"] as Json)["supersedes"]).toEqual({ by: "line_id", from: ["sent", "change_asked"], to: "superseded" });
+    // No role moves a proof's answer itself: the maker sends and reminds.
+    const maker = (shipped["roles"] as { key: string; limits?: Record<string, Json> }[]).find((r) => r.key === "maker")!;
+    expect(maker.limits!["proofs"]!["writable"]).toEqual(["reminded_at"]);
+  });
+
   it("lets the owner find and erase a customer, and no screens-only role", () => {
     expect(roleOf(shipped, "owner").permissions).toContain("privacy:@:people");
     for (const key of ["maker", "packer"]) expect(roleOf(shipped, key).permissions.filter((p) => p.startsWith("privacy:"))).toEqual([]);

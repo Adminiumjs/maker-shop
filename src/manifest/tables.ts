@@ -735,6 +735,9 @@ export const TABLES: Table[] = [
         sent: ["approved", "change_asked", "superseded"],
         change_asked: ["superseded"],
       },
+      // A proof sent again answers the line's proof still out, in the same write, wherever it is made: the studio's
+      // screens, the dashboard's Proofs page, an add-on. An approved proof stays approved.
+      supersedes: { by: "line_id", from: ["sent", "change_asked"], to: "superseded" },
     },
     columns: [
       id,
