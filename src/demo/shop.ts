@@ -10,6 +10,7 @@
 import type { CustomiserApi, DesignData, DesignValues, HeldSession, SavedDesign } from "../../vendor/customiser/index.js";
 import type { AfterPort, CodeAnswer, Extras, OrderRead, ProofAnswer, Via } from "../shop/after-port.ts";
 import { catalogueFrom } from "../shop/door.ts";
+import { fileUrl } from "./files.ts";
 import { ShopError, type Catalogue, type Figures, type Id, type OrderBody, type Placed, type Refused, type ShopConfig, type ShopPort } from "../shop/port.ts";
 import { deriveLine, deriveOrder, postBy, closuresIn, CUTOFF, STUDIO_DAYS } from "./rules.ts";
 import type { Row } from "./sample.ts";
@@ -73,7 +74,7 @@ export class DemoShop implements ShopPort {
         services: w.all("postage_services").filter(live).map(copy),
         settings: [copy(w.settings())],
       },
-      () => null,
+      (row) => fileUrl(row["photo"]),
     );
   }
 
@@ -305,6 +306,9 @@ export function demoCustomiser(world: DemoWorld): CustomiserApi {
       };
     },
     fontUrl: async () => null,
+    outlineUrl: async (base) => fileUrl(base["outline_file"]),
+    modelUrl: async (base) => fileUrl(base["model_file"]),
+    pieceUrl: async (piece) => fileUrl(piece["file"]),
     async create(design: DesignData) {
       const row = world.insert("designs", { app: "maker", code: world.code("BRD"), format: 1, base_id: design.base_id, ready_design_id: design.ready_design_id, values: copy(design.values), state: "draft", session: world.code("S"), link: world.code("L"), updated_at: world.nowIso() });
       world.changed();

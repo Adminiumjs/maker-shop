@@ -15,6 +15,7 @@ import STUDIO_BUNDLE from "../../seeds/maker.sample.json" with { type: "json" };
 import CUSTOMISER_BUNDLE from "../../seeds/maker.customiser.sample.json" with { type: "json" };
 
 import { addDays, momentOf } from "../studio/time.ts";
+import { assetUrl } from "./files.ts";
 
 export type Row = Record<string, unknown> & { id: number };
 
@@ -57,6 +58,14 @@ function resolveValue(value: unknown, labels: ReadonlyMap<string, number>): unkn
     const id = labels.get(record["@ref"]);
     if (id === undefined) throw new Error(`the sample names "${record["@ref"]}" before any row is labelled so`);
     return id;
+  }
+  // A file the sample adds: its address in the demo build.
+  if (typeof record["@asset"] === "string") return assetUrl(record["@asset"]);
+  // So long before the demo's moment (`PT1H20M`).
+  if (typeof record["@ago"] === "string") {
+    const m = /^PT(?:(\d+)H)?(?:(\d+)M)?$/.exec(record["@ago"]);
+    if (m === null) throw new Error(`the sample's "@ago" ${record["@ago"]} is not hours and minutes`);
+    return new Date(DEMO_START - (Number(m[1] ?? 0) * 60 + Number(m[2] ?? 0)) * 60_000).toISOString();
   }
   if (typeof record["@day"] === "number") {
     const day = addDays(DEMO_DAY, record["@day"]);
