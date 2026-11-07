@@ -195,8 +195,8 @@ describe.skipIf(why !== null)(`the workshop against a built Adminium${why === nu
         expect(refused).toBeInstanceOf(ApiError);
         expect(refused).toMatchObject({ status: 409 });
         expect(JSON.stringify(refused)).toContain("BOOKING_TAKEN");
-        // On another machine the same time is taken.
-        const printer = data.machines.find((m) => m["code"] === "printer-b")!;
+        // On another machine the same time is taken: printer A, free from six, its desk tray done (printer B prints the keyrings till half six).
+        const printer = data.machines.find((m) => m["code"] === "printer-a")!;
         const booked = await maker.book({ machineId: printer.id, label: "A test print", startsAt: "2026-08-06T17:00:00.000Z", endsAt: "2026-08-06T17:30:00.000Z" });
         await maker.unbook(booked);
         expect((await rows("machine_bookings")).some((b) => String(b.id) === String(booked.id))).toBe(false);
