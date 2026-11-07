@@ -19,7 +19,7 @@
  * wall time with no zone, and 0 or 1); every row is read back here as the
  * screens expect it, an ISO instant and a boolean.
  */
-import type { StaffConfig } from "./transport/staffConnection.ts";
+import { withInstall, type StaffConfig } from "./transport/staffConnection.ts";
 import { SessionPortError, type SessionTransport } from "./transport/sessionSource.ts";
 import { momentOf } from "./time.ts";
 import type { Action, AddOnTable, PanelDoor, PanelList, PanelOpen, PanelUploaded, Person, ProofPicture, SendProof, StudioData, StudioDoor, StudioFacts, Table } from "./door.ts";
@@ -99,7 +99,8 @@ export class AdminiumStudio implements StudioDoor {
     this.t = transport;
     this.cfg = config;
     this.skew = options.skew ?? 0;
-    this.fetchImpl = options.fetchImpl ?? globalThis.fetch.bind(globalThis);
+    // Round the transport too (a picture's bytes, the add-ons' list and code), every call says which install it is from.
+    this.fetchImpl = withInstall(options.fetchImpl ?? globalThis.fetch.bind(globalThis), config.installId);
     this.options = options;
   }
 
@@ -109,6 +110,9 @@ export class AdminiumStudio implements StudioDoor {
       appKey: APP_KEY,
       origin: this.options.origin ?? window.location.origin,
       request: this.fetchImpl,
+      // Only this install's: the config's add-ons are those attached to it, switched on and installed.
+      installId: this.cfg.installId,
+      allowed: new Set(Object.keys(this.cfg.addOns)),
       ...(this.options.importBundle === undefined ? {} : { importBundle: this.options.importBundle }),
     }).then((loaded) => {
       this.addOnProblems = loaded.problems;

@@ -68,6 +68,7 @@ export async function bootStudio(mount: HTMLElement): Promise<void> {
   const transport = createSessionTransport({
     tableOfRef: cfg.tables,
     connectionId: cfg.connectionId ?? undefined,
+    installId: cfg.installId,
     staff: { csrfToken: cfg.csrfToken, timezone: cfg.timezone, timezoneSource: cfg.timezoneSource, serverTimezone: cfg.serverTimezone, currency: cfg.currency },
     refreshToken: async () => (await loadStaffConfig())?.csrfToken ?? null,
   });

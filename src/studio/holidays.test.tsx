@@ -154,6 +154,7 @@ describe("which country, and the closure written", () => {
 describe("the door, on the wire", () => {
   const config = (more: Partial<StaffConfig> = {}): StaffConfig => ({
     connectionId: "conn-1",
+    installId: null,
     appName: "Birch Row",
     tables: { closures: "maker_closures", "holiday-calendars:holidays": "holiday_calendars_holidays" },
     settings: {},

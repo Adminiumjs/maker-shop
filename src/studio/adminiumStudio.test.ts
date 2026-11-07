@@ -31,6 +31,7 @@ const TABLES: Record<string, string> = {
 function config(more: Partial<StaffConfig> = {}): StaffConfig {
   return {
     connectionId: "conn-1",
+    installId: null,
     appName: "Birch Row",
     tables: TABLES,
     settings: { studio_days: "tue,wed,thu,fri,sat", cutoff: "17:00" },
@@ -111,6 +112,8 @@ describe("the studio's writes, as Adminium receives them", () => {
     expect(uploads[0]!.init.method).toBe("POST");
     expect(uploads[0]!.init.body).toBe(blob);
     expect(uploads[0]!.init.headers).toMatchObject({ "content-type": "image/png", "x-adminium-csrf": "tok-1" });
+    // No install named (an older Adminium): nothing extra is said.
+    expect("x-adminium-install" in (uploads[0]!.init.headers as Record<string, string>)).toBe(false);
     expect(sent).toEqual([
       {
         path: "/api/v1/data/conn-1/maker_proofs",
@@ -118,6 +121,9 @@ describe("the studio's writes, as Adminium receives them", () => {
         body: { values: { line_id: 111, kind: "lettering", picture: "https://studio.example/api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1XC/content" } },
       },
     ]);
+    // A second install's door says which install it is on the bytes too.
+    await new AdminiumStudio(t, config({ installId: "inst-2" }), { fetchImpl }).sendProof({ order: { id: 11 }, line: { id: 111 }, kind: "lettering", picture: { blob, filename: "proof-line-111.png" }, designVersionId: null, note: null });
+    expect(uploads[1]!.init.headers).toMatchObject({ "x-adminium-csrf": "tok-1", "x-adminium-install": "inst-2" });
   });
 
   it("copies the Customiser's proof of a design's version into the proof's picture, and names the version", async () => {
@@ -349,10 +355,15 @@ describe("the add-ons' screens on a real install", () => {
   });
   const dhl = { key: "shipping-dhl", name: "DHL Shipping", shortName: "DHL", lineKey: "l", whatKey: "w", monogram: "DH", category: "delivery", connect: "api-key", permissions: [], settings: [], namesCompany: false, fills: [{ slot: "order.dispatch.actions", order: 0, render: () => "booked with DHL" }] };
 
-  function door(list: unknown) {
+  /** This install's config: DHL attached to it, switched on and installed. */
+  const withDhl = { addOns: { customiser: { version: "1.0.16", settings: {} }, "shipping-dhl": { version: "1.0.17", settings: {} } } };
+
+  function door(list: unknown, more: Partial<StaffConfig> = withDhl) {
     const asked: string[] = [];
-    const fetchImpl = (async (url: string) => {
+    const headers: Record<string, string>[] = [];
+    const fetchImpl = (async (url: string, init?: RequestInit) => {
       asked.push(url);
+      headers.push({ ...(init?.headers as Record<string, string> | undefined) });
       return url.endsWith("/api/v1/add-ons") ? new Response(JSON.stringify(list), { status: 200 }) : new Response(new Uint8Array(), { status: 200 });
     }) as unknown as typeof fetch;
     const imported: string[] = [];
@@ -360,7 +371,7 @@ describe("the add-ons' screens on a real install", () => {
       imported.push(url);
       return { register: () => dhl };
     };
-    return { asked, imported, studio: new AdminiumStudio(transport().t, config(), { fetchImpl, origin: "https://studio.example", importBundle }) };
+    return { asked, headers, imported, studio: new AdminiumStudio(transport().t, config(more), { fetchImpl, origin: "https://studio.example", importBundle }) };
   }
 
   it("draws DHL's dispatch flow as Adminium serves it for this app, never the demo's copy", async () => {
@@ -381,5 +392,24 @@ describe("the add-ons' screens on a real install", () => {
     expect(other.imported).toEqual([]);
     const none = door(null);
     expect((await none.studio.addOnRegistry()).all).toEqual([]);
+  });
+
+  describe("with the app and DHL installed on two databases, DHL switched off on the second", () => {
+    const copy = (hostInstall: string, enabled: boolean) => ({ key: "shipping-dhl", name: "DHL Shipping", version: "1.0.17", attachments: [{ attachedTo: "maker", enabled, hostInstall }], bundles: [{ path: "dist/client.js", url: BUNDLE, integrity: EMPTY }] });
+    const list = { addOns: [copy("inst-1", true), copy("inst-2", false)] };
+
+    it("draws DHL once on the first install, and every call says that install", async () => {
+      const { headers, imported, studio } = door(list, { ...withDhl, installId: "inst-1" });
+      expect((await studio.addOnRegistry()).all.map((a) => a.key)).toEqual(["shipping-dhl"]);
+      expect(imported).toHaveLength(1);
+      expect(headers).toHaveLength(2);
+      for (const h of headers) expect(h["x-adminium-install"]).toBe("inst-1");
+    });
+
+    it("draws nothing of DHL on the second, where it is off, though the first has it on", async () => {
+      const { asked, studio } = door(list, { addOns: { customiser: { version: "1.0.16", settings: {} } }, installId: "inst-2" });
+      expect((await studio.addOnRegistry()).all).toEqual([]);
+      expect(asked).toEqual(["https://studio.example/api/v1/add-ons"]);
+    });
   });
 });

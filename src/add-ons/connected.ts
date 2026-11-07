@@ -51,6 +51,7 @@ import * as JsxRuntime from "react/jsx-runtime";
 
 import type { AddOn } from "./host.ts";
 import { installAddOnRuntime, type AddOnRuntime } from "./vendor/host/runtime/index.ts";
+import { withInstall } from "../studio/transport/staffConnection.ts";
 
 /** The panels' host API, once a screen has asked for one: kept, so a later install never takes it away. */
 let panelHost: unknown;
@@ -88,8 +89,22 @@ export interface ConnectedAddOnDto {
   key: string;
   name: string;
   version: string;
-  attachments: readonly { attachedTo: string; enabled: boolean }[];
+  attachments: readonly ConnectedAttachment[];
   bundles: readonly ConnectedBundle[];
+  /** Installed by the meta store but its files are not on the server. Absent from older servers. */
+  missing?: boolean;
+}
+
+/**
+ * One host an add-on is mounted on. An add-on may be installed once per
+ * database, so two rows of the list can share a key; from 0.3.49 each
+ * attachment also says which install of the HOST it joins (`hostInstall`,
+ * `""` while the host is not installed). Absent from older servers.
+ */
+export interface ConnectedAttachment {
+  attachedTo: string;
+  enabled: boolean;
+  hostInstall?: string;
 }
 
 /** Why one add-on did not make it. A list, not a throw: one broken add-on leaves its slot empty, never the studio. */
@@ -141,6 +156,8 @@ function isConnectedDto(value: unknown): value is ConnectedAddOnDto {
   for (const a of dto["attachments"] as unknown[]) {
     if (typeof a !== "object" || a === null) return false;
     if (typeof (a as Record<string, unknown>)["attachedTo"] !== "string") return false;
+    const hostInstall = (a as Record<string, unknown>)["hostInstall"];
+    if (hostInstall !== undefined && typeof hostInstall !== "string") return false;
   }
   for (const b of dto["bundles"] as unknown[]) {
     if (typeof b !== "object" || b === null) return false;
@@ -178,11 +195,63 @@ async function sha256Integrity(bytes: ArrayBuffer): Promise<string> {
 
 const sameIntegrity = (a: string, b: string): boolean => a === b && a.startsWith("sha256-");
 
+/**
+ * THE ADD-ONS OF THIS INSTALL, one per key.
+ *
+ * One app may be installed once per database, and so may an add-on: the list
+ * then names the same key twice, one row per database, each with its own
+ * attachments and its own off switch. Another database's attachment, or its
+ * switch, is not this install's.
+ *
+ *   · The reply says which install each attachment joins (`hostInstall`, from
+ *     0.3.49): keep an add-on attached to this app, at this install, switched
+ *     on there, whose files are on the server — and, when the config listed
+ *     this install's add-ons, one of them (the list does not say whether an
+ *     add-on is still being installed; the config does).
+ *   · It does not: the config's own list is this install's (attached here, on
+ *     and installed), so keep those, attached to this app and switched on.
+ *   · Neither (no config list): attached to this app and on, as before.
+ *
+ * Duplicate keys collapse to the first kept row: two copies of one add-on are
+ * the same version and the same bundle, and two registrations of one key
+ * would fill each slot twice.
+ */
+export function ofThisInstall(
+  listed: readonly ConnectedAddOnDto[],
+  appKey: string,
+  installId: string | null,
+  allowed?: ReadonlySet<string>,
+): ConnectedAddOnDto[] {
+  const saysInstall = installId !== null && listed.some((dto) => dto.attachments.some((a) => typeof a.hostInstall === "string"));
+  const kept = new Map<string, ConnectedAddOnDto>();
+  for (const dto of listed) {
+    if (kept.has(dto.key)) continue;
+    if (allowed !== undefined && !allowed.has(dto.key)) continue;
+    const on = dto.attachments.some((a) => a.attachedTo === appKey && a.enabled === true && (!saysInstall || a.hostInstall === installId));
+    if (!on) continue;
+    if (saysInstall && dto.missing === true) continue;
+    kept.set(dto.key, dto);
+  }
+  return [...kept.values()];
+}
+
 export interface ConnectedOptions {
   /** This app's manifest key: only the add-ons attached to it, and on there, are loaded. */
   appKey: string;
   /** The origin serving this page. Injected so a suite can drive the fence. */
   origin: string;
+  /**
+   * This install of the app, from its staff config. Said on every call, and
+   * matched against each attachment's `hostInstall` when the reply carries it.
+   * Null from an Adminium older than installs per database.
+   */
+  installId?: string | null;
+  /**
+   * The add-ons the staff config lists for this install (`addOns`' keys):
+   * attached to it, switched on there and installed. What the list is
+   * narrowed to when its attachments do not say which install they join.
+   */
+  allowed?: ReadonlySet<string>;
   /** Injected for the suite; the default is why this file is declared in `sources.test.ts`. */
   request?: typeof fetch;
   /** Injected for the suite. Same. */
@@ -200,7 +269,7 @@ interface BundleModule {
  */
 export async function loadConnectedAddOns(options: ConnectedOptions): Promise<ConnectedLoad> {
   const { appKey, origin } = options;
-  const request = options.request ?? globalThis.fetch.bind(globalThis);
+  const request = withInstall(options.request ?? globalThis.fetch.bind(globalThis), options.installId);
   const importBundle = options.importBundle ?? ((url: string): Promise<unknown> => import(/* @vite-ignore */ url));
 
   // Before any import (see the header). Idempotent.
@@ -232,8 +301,8 @@ export async function loadConnectedAddOns(options: ConnectedOptions): Promise<Co
     problems.push({ key, code: "MALFORMED", detail: "the server described this add-on in a shape this build does not read" });
   }
 
-  // Attached to THIS app and switched on here: an add-on of another app, or one off here, is not this studio's.
-  const mine = wellFormed.filter((dto) => dto.attachments.some((a) => a.attachedTo === appKey && a.enabled === true));
+  // Attached to THIS install of this app and switched on there: an add-on of another app, another database's copy, or one off here, is not this studio's.
+  const mine = ofThisInstall(wellFormed, appKey, options.installId ?? null, options.allowed);
 
   const addOns: AddOn[] = [];
   for (const dto of mine) {
