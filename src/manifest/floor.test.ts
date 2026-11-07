@@ -39,9 +39,10 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
     type Grant = { addOn: string; table: string; actions: string[] };
     const tablesOf = (key: string) => Object.fromEntries(((roleOf(shipped, key) as unknown as { tables: Grant[] }).tables.filter((g) => g.addOn === "customiser")).map((g) => [g.table, g.actions]));
     const reads = ["bases", "ready_designs", "ready_parts", "base_areas", "base_pieces", "palettes", "palette_colours", "fonts", "features"];
+    for (const table of reads) expect(tablesOf("maker")[table], `maker reads ${table}`).toEqual(["read"]);
     for (const key of ["owner", "maker"]) {
       const held = tablesOf(key);
-      for (const table of reads) expect(held[table], `${key} reads ${table}`).toEqual(["read"]);
+      for (const table of reads) expect(held[table], `${key} reads ${table}`).toContain("read");
       // The shopper's words, logo and photo are personal columns: read in clear.
       expect(held["designs"], key).toEqual(["read", "read_pii"]);
       expect(held["design_versions"], key).toEqual(["read", "read_pii", "create", "update"]);
@@ -49,6 +50,29 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
       expect(held["version_files"], key).toEqual(["read", "create", "update", "delete"]);
     }
     expect(tablesOf("packer")).toEqual({ designs: ["read"] });
+  });
+
+  // Customiser 1.0.21: an app's role may hold what the set-up page reads and writes, so the owner needs no designer role.
+  it("gives the owner what the Customiser's set-up page reads and writes, and the maker none of its writes", () => {
+    type Grant = { addOn: string; table: string; actions: string[]; limit?: { creatable?: string[]; writable?: string[] } };
+    const grantsOf = (key: string) => (roleOf(shipped, key) as unknown as { tables: Grant[] }).tables;
+    const owner = Object.fromEntries(grantsOf("owner").filter((g) => g.addOn === "customiser").map((g) => [g.table, g]));
+    expect(owner["settings"]!.actions).toEqual(["read"]);
+    expect(owner["bases"]!.actions).toEqual(["read", "create", "update"]);
+    for (const table of ["base_pieces", "base_areas", "ready_designs", "ready_parts", "fonts", "palettes", "palette_colours", "features"]) {
+      expect(owner[table]!.actions, table).toEqual(["read", "create", "update", "delete"]);
+    }
+    // A new row names the add-on's app; no change moves a row to another.
+    for (const table of ["bases", "fonts", "features"]) {
+      expect(owner[table]!.limit!.creatable, table).toContain("app");
+      expect(owner[table]!.limit!.writable, table).not.toContain("app");
+    }
+    expect(grantsOf("maker").filter((g) => g.addOn === "customiser" && g.table !== "design_versions" && g.table !== "version_files").flatMap((g) => g.actions.filter((a) => a !== "read" && a !== "read_pii"))).toEqual([]);
+    expect(grantsOf("maker").some((g) => g.table === "settings")).toBe(false);
+  });
+
+  it("gives no role more than 24 of the add-ons' tables", () => {
+    for (const role of shipped["roles"] as { key: string; tables?: unknown[] }[]) expect((role.tables ?? []).length, role.key).toBeLessThanOrEqual(24);
   });
 
   // Adminium 0.3.50: a proof made anywhere answers the line's proof still out, in the same write.

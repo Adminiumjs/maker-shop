@@ -75,12 +75,47 @@ const CUSTOMISER_PANEL = [
  * The Customiser's set-up page (`/add-ons/customiser/customiser`): a starter
  * font nobody uploaded is read from the file the add-on ships beside that
  * page, so whoever makes the machine's files holds it, the maker on the
- * studio's screens included. Setting the shop's side up there is the
- * Customiser's own designer role's: its `appGrants` give no app role its
- * settings nor a write to the set-up's tables, so an owner who sets up holds
- * that role beside Owner (the README, "Installing it").
+ * studio's screens included.
  */
 const CUSTOMISER_SETUP_PAGE = view("customiser");
+
+/**
+ * The set-up's own tables, each with the columns its rows are given and
+ * changed by: every one the Customiser lets an app's role write there
+ * (`appGrants`), the add-on's `app` only on a new row. Named in full, so the
+ * install cuts nothing and says nothing was cut.
+ */
+const SET_UP_COLUMNS: Record<string, string[]> = {
+  bases: ["name", "kind", "width_mm", "height_mm", "depth_mm", "corner_mm", "bleed_mm", "safe_mm", "sides", "back_feature_id", "material", "thickness_mm", "outline_file", "model_file", "print_file", "faces", "offered", "state", "position"],
+  base_pieces: ["base_id", "code", "name", "width_mm", "height_mm", "layers", "left_out", "file", "position"],
+  base_areas: ["base_id", "code", "name", "side", "piece_id", "face", "shape", "x_mm", "y_mm", "w_mm", "h_mm", "takes", "required", "rules", "feature_id", "position"],
+  ready_designs: ["base_id", "name", "tags", "layouts", "state", "preview_file", "position"],
+  ready_parts: ["ready_design_id", "code", "name", "kind", "locked", "required", "side", "layout", "area_id", "piece_id", "x_mm", "y_mm", "w_mm", "h_mm", "rules", "value", "feature_id", "position"],
+  fonts: ["family", "name", "style", "weights", "licence", "starter", "smallest_mm", "file", "active"],
+  palettes: ["ready_design_id", "kind", "code", "name", "position"],
+  palette_colours: ["palette_id", "code", "role", "name", "hex", "position"],
+  features: ["code", "name", "active"],
+};
+
+/**
+ * What the owner sets the shop's side up with on that page (Customiser
+ * 1.0.21, its README's "The set-up page"): the Customiser's settings read,
+ * the bases added and changed (a base is never removed), and the pieces,
+ * areas, ready-made designs and their parts, fonts, palettes, colours and
+ * priced features added, changed and removed. With the line's panel (the
+ * designs read in clear, a version's proof and its files) it is thirteen of
+ * a role's 24 add-on tables. The Customiser's settings themselves stay its
+ * own designer's to change.
+ */
+const CUSTOMISER_SET_UP = [
+  ...CUSTOMISER_PANEL.map((entry) => {
+    const columns = SET_UP_COLUMNS[entry.table];
+    if (columns === undefined) return entry;
+    const actions = entry.table === "bases" ? ["read", "create", "update"] : ["read", "create", "update", "delete"];
+    return { ...entry, actions, limit: { creatable: ["app", ...columns], writable: columns } };
+  }),
+  { addOn: CUSTOMISER, table: "settings", actions: ["read"] },
+];
 
 /** Finding a customer and erasing what the studio keeps of them (Studio → Privacy): the owner's, never a screens-only role's. */
 const ERASE_PEOPLE = "privacy:@:people";
@@ -148,7 +183,7 @@ export const ROLES = [
       orders: { writable: typed("orders", ...SHOPPERS_OWN), creatable: typed("orders", ...SHOPPERS_OWN) },
     },
     // The public holidays Holiday calendars keeps, read to add one as a closure.
-    tables: [...CUSTOMISER_PANEL, { addOn: HOLIDAYS, table: "holidays", actions: ["read"] }],
+    tables: [...CUSTOMISER_SET_UP, { addOn: HOLIDAYS, table: "holidays", actions: ["read"] }],
   },
   {
     key: "maker",

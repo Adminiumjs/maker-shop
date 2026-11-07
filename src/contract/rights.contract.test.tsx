@@ -20,11 +20,12 @@
  *   - the product's panel is served to the owner;
  *   - the owner keeps Holiday calendars' closed days (its settings grant),
  *     and finds a customer to erase (`privacy:@:people`);
- *   - the Customiser's set-up page opens, reads and saves for the owner who
- *     also holds the Customiser's designer role;
+ *   - the Customiser's set-up page reads and saves for the app's owner alone
+ *     (Customiser 1.0.21: no designer role beside it);
+ *   - a packer's session is handed the workspace's name and logo;
  *   - the customer whose design was proofed is erased, the proof pictures
- *     with them. What only Adminium or the Customiser can close is held
- *     here as `it.fails`, named after the gap.
+ *     with them, the one a remade proof replaced included, and the search
+ *     counts what the erase takes.
  *
  * The panel is drawn in a page of jsdom's, made for the drawing only: the
  * suite itself runs in Node, as the other contracts do, so its harness reads
@@ -55,7 +56,7 @@ import { createSessionTransport } from "../studio/transport/sessionSource.ts";
 import { loadStaffConfig } from "../studio/transport/staffConnection.ts";
 import type { Row } from "../studio/wire.ts";
 import { MANIFEST_TEXT } from "./release.ts";
-import { boot, Caller, ENGINES, installStudio, missing, newPassword, ok, personWith, png, PORTS_PER_ENGINE, type Engine, type Server } from "./studio-harness.ts";
+import { boot, Caller, ENGINES, installStudio, missing, ok, personWith, png, PORTS_PER_ENGINE, type Engine, type Server } from "./studio-harness.ts";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -327,30 +328,35 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         return (await caller.get(`/api/v1/data/${doors["owner"]!.facts().connectionId ?? ""}/${real}?limit=1`)).status;
       };
 
-      // The set-up is the Customiser designer's: its appGrants give no app role its settings, nor any write to the set-up's
-      // tables. The owner works in the dashboard, so the owner is given that role beside the app's Owner (the README).
-      it("opens the Customiser's set-up page to the owner who also holds its designer role: every read, and a save", async () => {
-        const roles = ok(await owner.get<{ roles: { id: string; slug?: string }[] }>("/api/v1/roles")).roles;
-        const roleIds = ["maker-owner", "customiser-designer"].map((slug) => roles.find((r) => r.slug === slug)!.id);
-        const email = `owner.setup.${engine}@birchrow.example`;
-        const invited = ok(await owner.post<{ invite: { token: string } }>("/api/v1/users", { email, name: "Nell Birch", roleIds }), 201);
-        const password = newPassword();
-        ok(await new Caller(server.base).post("/api/v1/auth/password/reset", { token: invited.invite.token, newPassword: password }));
-        const setUp = new Caller(server.base);
-        await setUp.signIn(email, password);
+      // Customiser 1.0.21: its appGrants let an app's role hold what the set-up page reads and writes, so the app's
+      // owner sets the shop up with no Customiser role beside Owner (the README, "Installing it").
+      it("opens the Customiser's set-up page to the app's owner alone: every read, and its writes", async () => {
+        const setUp = callers["owner"]!;
         for (const table of SETUP_READS) expect(await setUpRead(setUp, table), table).toBe(200);
-        const cfg = (await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: callers["owner"]!.fetchAs() }))!;
-        const settingsTable = cfg.addOns["customiser"]?.tables?.["settings"] ?? "customiser_settings";
+        const cfg = (await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: setUp.fetchAs() }))!;
+        const real = (table: string) => cfg.addOns["customiser"]?.tables?.[table] ?? `customiser_${table}`;
         const connection = doors["owner"]!.facts().connectionId ?? "";
-        const row = ok(await setUp.get<{ data: Row[] }>(`/api/v1/data/${connection}/${settingsTable}?limit=1`)).data[0]!;
-        const saved = await setUp.patch(`/api/v1/data/${connection}/${settingsTable}/${String(row.id)}`, { values: { default_bleed_mm: 3 } });
-        expect(saved.status, JSON.stringify(saved.body).slice(0, 400)).toBe(200);
-        // …and still the app's owner: its own tables and the panel's.
-        expect(await setUpRead(setUp, "designs")).toBe(200);
+        // A priced feature added, renamed and taken away, as the set-up page does.
+        const added = await setUp.post<{ data: Row }>(`/api/v1/data/${connection}/${real("features")}`, { values: { app: "maker", code: `gilt-${engine}`, name: "Gilt edge", active: true } });
+        expect(added.status, JSON.stringify(added.body).slice(0, 400)).toBe(201);
+        const renamed = await setUp.patch(`/api/v1/data/${connection}/${real("features")}/${String(added.body.data.id)}`, { values: { name: "A gilt edge" } });
+        expect(renamed.status, JSON.stringify(renamed.body).slice(0, 400)).toBe(200);
+        expect([200, 204]).toContain((await setUp.send("DELETE", `/api/v1/data/${connection}/${real("features")}/${String(added.body.data.id)}`)).status);
+        // A base changed, never taken away.
+        const base = ok(await setUp.get<{ data: Row[] }>(`/api/v1/data/${connection}/${real("bases")}?limit=1`)).data[0]!;
+        const moved = await setUp.patch(`/api/v1/data/${connection}/${real("bases")}/${String(base.id)}`, { values: { position: Number(base["position"] ?? 0) } });
+        expect(moved.status, JSON.stringify(moved.body).slice(0, 400)).toBe(200);
+        expect((await setUp.send("DELETE", `/api/v1/data/${connection}/${real("bases")}/${String(base.id)}`)).status).toBe(403);
+        // The Customiser's own settings are read here and changed by its designer, never by an app's role.
+        const row = ok(await setUp.get<{ data: Row[] }>(`/api/v1/data/${connection}/${real("settings")}?limit=1`)).data[0]!;
+        expect((await setUp.patch(`/api/v1/data/${connection}/${real("settings")}/${String(row.id)}`, { values: { default_bleed_mm: 3 } })).status).toBe(403);
+        // The maker, who makes the files, writes none of the set-up.
+        expect((await callers["maker"]!.post(`/api/v1/data/${connection}/${real("features")}`, { values: { app: "maker", code: `foil-${engine}`, name: "Foil", active: true } })).status).toBe(403);
       }, 120_000);
 
-      it.fails("lets the owner alone read the set-up page's settings (gap: the Customiser's appGrants give an app's role nothing of customiser_settings)", async () => {
+      it("lets the owner alone read the set-up page's settings", async () => {
         expect(await setUpRead(callers["owner"]!, "settings")).toBe(200);
+        expect(await setUpRead(callers["maker"]!, "settings")).toBe(403);
       });
 
       // ── a customer erased: the design's proof pictures, the first one made again included ──

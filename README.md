@@ -64,8 +64,9 @@ batches and the cut list, machine time, materials and the stock count. The
 Customiser's own panel opens on these screens in a sheet: a line's design as it
 will be made, where the proof and the machine's files are made, and a product's
 base. A proof can also be a PDF or a picture made elsewhere, sent as it is. The
-name chip signs out. Roles: **owner** (everything, including finding and erasing
-a customer on Adminium's privacy page and choosing the studio's closed days in
+name chip signs out. Roles: **owner** (everything, including setting up what
+shoppers customise on the Customiser's set-up page, finding and erasing a
+customer on Adminium's privacy page and choosing the studio's closed days in
 Holiday calendars), **maker** (the bench, proofs and the Customiser's panel,
 batches, stock; never a price or a customer's details beyond the order) and
 **packer** (posting what is ready; no panel).
@@ -93,12 +94,11 @@ Customiser, and makes the dashboard pages, the three roles, the shop's browser
 keys and the e-mails. Tick sample data at the install step to start with Birch
 Row's Thursday, or add it later from the app's settings.
 
-Give the studio's people their roles under Staff. The owner who also sets up
-what shoppers customise (the bases, ready-made designs, fonts, finishes and
-priced features) holds the Customiser's own **Customiser designer** role beside
-**Owner**: the Customiser keeps its set-up page,
-`/add-ons/customiser/customiser`, for that role, and no role of an app may hold
-its settings or change its set-up.
+Give the studio's people their roles under Staff. **Owner** also sets up what
+shoppers customise (the bases, ready-made designs, fonts, finishes and priced
+features) on the Customiser's set-up page, `/add-ons/customiser/customiser`,
+with no Customiser role beside it. The Customiser's own settings are read
+there, and changed by its **Customiser designer** role.
 
 Once installed, the studio's screens are served at `/apps/maker/staff/` and the
 shop at `/apps/maker/customer/`. A studio can also give the shop a domain of its
