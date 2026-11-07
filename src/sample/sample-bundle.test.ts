@@ -12,11 +12,13 @@
  * engine's `maker-rework-install.test.ts`; the dates written here for history
  * are held to the same studio-day rule below.
  */
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
+import { hashText } from "../../scripts/hash-showcase.ts";
 import { sampleText, sectionText } from "../../scripts/write-sample.ts";
 import { sampleBundleIssues, sampleBundleSchema, sampleSectionIssues } from "../testing/manifest/sample.ts";
 import type { AppManifest, Manifest } from "../testing/manifest/schema.ts";
@@ -44,12 +46,32 @@ describe("the sample files are what their source writes", () => {
     expect(manifest.sampleData.addOns).toEqual({ customiser: { file: "seeds/maker.customiser.sample.json" } });
   });
 
-  it("carry the Customiser's own rows for Birch Row as it ships them, each design version labelled", () => {
+  it("carry the Customiser's own rows for Birch Row as it ships them, each design version labelled, the shop's own after them", () => {
+    // What the shop changes on the Customiser's rows (`showcase.ts`): the files it uploads, the faces it marks, where two areas sit.
+    const CHANGED = ["file", "model_file", "print_file", "faces", "face", "x_mm", "y_mm", "w_mm", "h_mm"];
+    const strip = (row: Record<string, unknown>) => Object.fromEntries(Object.entries(row).filter(([key]) => !CHANGED.includes(key)));
     for (const table of CUSTOMISER_ROWS.tables) {
       const ours = section.tables.find((t) => t.ref === table.ref)!.rows;
       const unlabelled = table.ref === "design_versions" ? ours.map(({ "@label": _label, ...rest }) => rest) : ours;
-      expect(unlabelled, table.ref).toEqual(table.rows);
+      expect(unlabelled.slice(0, table.rows.length).map(strip), table.ref).toEqual((table.rows as Record<string, unknown>[]).map(strip));
+      for (const row of ours.slice(table.rows.length)) expect(row["app"], table.ref).toBe("maker");
     }
+  });
+
+  it("ship every file the sample names, each one hashed, in a kind its column takes", () => {
+    const assets = (section as unknown as { assets: Record<string, { file: string; sha256: string }> }).assets;
+    expect(Object.keys((main as unknown as { assets?: object }).assets ?? {})).toEqual([]);
+    for (const { file, sha256 } of Object.values(assets)) {
+      const bytes = readFileSync(fileURLToPath(new URL(`../../${file}`, import.meta.url)));
+      expect(createHash("sha256").update(bytes).digest("hex"), file).toBe(sha256);
+      // The Customiser's cut files and outlines take 2 MB at most, its models 30 MB.
+      expect(bytes.length, file).toBeLessThan(file.endsWith(".svg") ? 2 * 1024 * 1024 : 30 * 1024 * 1024);
+    }
+    const named = new Set([...JSON.stringify(section).matchAll(/"@asset":"([^"]+)"/g)].map((m) => m[1]));
+    expect([...named].sort()).toEqual(Object.keys(assets).sort());
+    expect(read("../../src/sample/showcase/assets.json")).toBe(hashText());
+    // A photo on every piece in the shop.
+    for (const product of rowsOf(section, "products")) expect(product["photo"], String(product["code"])).toEqual({ "@asset": `photo:${String(product["code"])}` });
   });
 });
 

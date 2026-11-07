@@ -1038,7 +1038,7 @@
           "@label": "order:BR-2289",
           "number_seq": null,
           "number": "BR-2289",
-          "status": "placed",
+          "status": "making",
           "name": "Sam O.",
           "email": "sam.o@mail.example",
           "address_line1": "12 Station Road",
@@ -1083,6 +1083,26 @@
           },
           "posted_at": null,
           "may_email": false
+        }
+      ]
+    },
+    {
+      "ref": "batches",
+      "rows": [
+        {
+          "@label": "batch:printer-b-keyrings",
+          "label": "Printer B · two name keyrings",
+          "machine_id": {
+            "@ref": "machine:printer-b"
+          },
+          "material_id": {
+            "@ref": "material:pla-chalk"
+          },
+          "state": "running",
+          "note": "Amber, raised 1 mm. Both on one plate.",
+          "started_at": {
+            "@ago": "PT1H30M"
+          }
         }
       ]
     },
@@ -1205,6 +1225,26 @@
           "ends_at": {
             "@day": 0,
             "@time": "18:00",
+            "@week": true
+          }
+        },
+        {
+          "machine_id": {
+            "@ref": "machine:printer-b"
+          },
+          "batch_id": {
+            "@ref": "batch:printer-b-keyrings"
+          },
+          "kind": "run",
+          "label": "Printer B · two name keyrings",
+          "starts_at": {
+            "@day": 0,
+            "@time": "15:10",
+            "@week": true
+          },
+          "ends_at": {
+            "@day": 0,
+            "@time": "18:30",
             "@week": true
           }
         }
@@ -1444,6 +1484,112 @@
           "made_at": {
             "@day": -28,
             "@time": "09:00",
+            "@week": true
+          }
+        },
+        {
+          "material_id": {
+            "@ref": "material:pla-chalk"
+          },
+          "kind": "used",
+          "qty": 12,
+          "batch_id": {
+            "@ref": "batch:printer-b-keyrings"
+          },
+          "note": "Printer B · two name keyrings",
+          "made_at": {
+            "@ago": "PT1H30M"
+          }
+        }
+      ]
+    },
+    {
+      "ref": "commission_requests",
+      "rows": [
+        {
+          "ref_seq": null,
+          "ref": "ASK-S01",
+          "status": "new",
+          "name": "Grace Whitfield",
+          "email": "grace.w@mail.example",
+          "language": "en-US",
+          "idea": "Forty walnut place cards for a wedding, each guest's name engraved, with a little stand.",
+          "material": "walnut",
+          "quantity": 40,
+          "wanted_by": {
+            "@day": 37,
+            "@week": true
+          },
+          "budget": "About £200",
+          "staff_note": null,
+          "created_at": {
+            "@day": -1,
+            "@time": "20:14",
+            "@week": true
+          }
+        },
+        {
+          "ref_seq": null,
+          "ref": "ASK-S02",
+          "status": "replied",
+          "name": "Ollie Brennan",
+          "email": "ollie@brennan-coffee.example",
+          "language": "en-US",
+          "idea": "A café menu board in slate with our logo, and 12 matching slate coasters for the counter.",
+          "material": "slate",
+          "quantity": 13,
+          "wanted_by": {
+            "@day": 23,
+            "@week": true
+          },
+          "budget": "£250–300",
+          "staff_note": "Sent a sketch and a price on Tuesday. The logo is a vector, fine to engrave.",
+          "created_at": {
+            "@day": -3,
+            "@time": "11:02",
+            "@week": true
+          }
+        },
+        {
+          "ref_seq": null,
+          "ref": "ASK-S03",
+          "status": "closed",
+          "name": "Priya S.",
+          "email": "priya.s@mail.example",
+          "language": "en-US",
+          "idea": "Something for my mum's sixtieth that can sit on the cake and be kept after.",
+          "material": "acrylic",
+          "quantity": 1,
+          "wanted_by": null,
+          "budget": "Up to £40",
+          "staff_note": "Made as a two-layer cake topper — ordered as BR-2286.",
+          "created_at": {
+            "@day": -7,
+            "@time": "09:40",
+            "@week": true
+          }
+        }
+      ]
+    },
+    {
+      "ref": "problem_reports",
+      "rows": [
+        {
+          "ref_seq": null,
+          "ref": "FIX-S01",
+          "status": "new",
+          "order_ref": "BR-2260",
+          "order_id": {
+            "@ref": "order:BR-2260"
+          },
+          "name": "Erin M.",
+          "email": "erin.m@mail.example",
+          "language": "en-US",
+          "what": "damaged",
+          "details": "Back from a week away to find the parcel — one corner of the photo block is chipped.",
+          "created_at": {
+            "@day": -1,
+            "@time": "08:31",
             "@week": true
           }
         }

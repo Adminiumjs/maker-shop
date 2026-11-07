@@ -41,6 +41,7 @@
  * Adminium never mails.
  */
 import CUSTOMISER_ROWS from "./customiser-rows.json" with { type: "json" };
+import { showcaseAssets, withShowcase } from "./showcase.ts";
 
 type Value = unknown;
 type Row = Record<string, Value>;
@@ -55,6 +56,7 @@ export interface SampleBundle {
   app: "maker";
   addOn?: "customiser";
   weekAnchor: "thu";
+  assets?: Record<string, { file: string; sha256: string }>;
   tables: Table[];
 }
 
@@ -358,6 +360,32 @@ export const PRODUCTS: Product[] = [
     finishLabel: "Colour", finishes: [{ id: "amber", label: "Amber", sw: "#c98a2e" }, { id: "chalk", label: "Chalk", sw: "#e6e1d7" }, { id: "grey", label: "Warm grey", sw: "#8a8378" }, { id: "ink", label: "Ink", sw: "#2b3340" }],
     breaks: [1, 4, 8], lettering: { limit: 8, prompt: "A name, up to 8 letters", hint: "Printed in PLA with the letters raised 1 mm." },
     madeFrom: "Matte PLA, printed at 0.2 mm, with a split ring.", finishedWith: "Edges cleaned by hand, letters raised 1 mm.", care: "Keep it out of a hot car — PLA softens at about 60°C.", base: "base:keyring" },
+  // The shop's newer pieces (`showcase.ts` sets up their bases): a jointed kit, a layered sign, and three prints.
+  { id: "box-keep", name: "Keepsake box", cat: "desk", unit: "kit of 7 pieces", icon: "box", mat: "walnut", alts: [{ id: "walnut", delta: 0 }, { id: "ply", delta: -14 }], price: 58, lead: 4, machine: "laser", stock: "wal6", size: "160 × 110 × 70 mm", foot: { w: 160, h: 110, per: 5 }, grams: 84, pieces: 1,
+    sizes: [{ id: "kit", label: "Flat-packed kit", delta: 0 }, { id: "built", label: "Glued and finished", delta: 18 }],
+    finishLabel: "Finish", finishes: [{ id: "engraved", label: "Engraved", sw: "#4a2e17" }, { id: "oil", label: "Engraved and oiled", sw: "#6b4423" }],
+    breaks: [1, 4], lettering: { limit: 24, prompt: "The lid, up to 24 characters", hint: "A name, a date, what it is for. Add your logo and it goes beside the words. We send a picture before we cut." },
+    madeFrom: "American black walnut, 6 mm, seven finger-jointed pieces cut on the laser.", finishedWith: "Sanded to 240 grit and oiled. Sent flat with glue and a sheet of instructions, or glued and finished by us.", care: "Wipe it with a dry cloth. Keep it out of direct sun, which pales walnut over the years.", base: "base:box", features: [LOGO] },
+  { id: "sign-layer", name: "Layered name sign", cat: "signs", unit: "each", icon: "layers", mat: "ply", alts: [{ id: "ply", delta: 0 }], price: 46, lead: 4, machine: "laser", stock: "ply3", size: "300 × 140 × 9 mm", foot: { w: 300, h: 140, per: 3 }, pieces: 1,
+    sizes: [{ id: "s300", label: "300 × 140 mm", delta: 0 }, { id: "s450", label: "450 × 210 mm", delta: 16 }],
+    finishLabel: "Lettering", finishes: [{ id: "white", label: "White lettering", sw: "#f2f2f0" }, { id: "black", label: "Black lettering", sw: "#17140f" }, { id: "bare", label: "All bare ply", sw: "#e0c69e" }],
+    breaks: [1], lettering: { limit: 18, prompt: "The name, up to 18 characters", hint: "Big script lettering, cut as its own layer and raised 3 mm. A small line underneath is up to you." },
+    madeFrom: "Three layers of Baltic birch ply, 3 mm each: the back, the frame and the lettering, cut on the laser and glued up.", finishedWith: "The lettering painted before it is glued, so the edges stay crisp. A keyhole slot on the back for one screw.", care: "Indoors only. Dust it with a soft brush.", base: "base:layered" },
+  { id: "pot-hex", name: "Hexagonal name pot", cat: "pots", unit: "each", icon: "sprout", mat: "resin", alts: [{ id: "resin", delta: 0 }], price: 24, lead: 4, machine: "printer", stock: "pla-grey", size: "110 × 110 × 105 mm", foot: { w: 110, h: 110, per: 1 }, grams: 140, pieces: 1,
+    sizes: [{ id: "s110", label: "110 mm across", delta: 0 }, { id: "s140", label: "140 mm across", delta: 8 }],
+    finishLabel: "Colour", finishes: [{ id: "warm", label: "Warm grey", sw: "#8a8378" }, { id: "chalk", label: "Chalk", sw: "#e6e1d7" }, { id: "ink", label: "Ink", sw: "#2b3340" }],
+    breaks: [1, 4], lettering: { limit: 8, prompt: "A name, up to 8 letters", hint: "The herb, a name for it, or whose it is. Capitals print cleanest." },
+    madeFrom: "Matte PLA, printed at 0.2 mm, six flat sides and a drainage hole.", finishedWith: "The name raised 1 mm on the front panel, printed in the same pass.", care: "For the windowsill, not the garden. Empty the saucer.", base: "base:pot" },
+  { id: "stand-phone", name: "Phone stand", cat: "desk", unit: "each", icon: "square", mat: "resin", alts: [{ id: "resin", delta: 0 }], price: 18, lead: 4, machine: "printer", stock: "pla-chalk", size: "80 × 75 × 95 mm", foot: { w: 80, h: 75, per: 1 }, grams: 70, pieces: 1,
+    sizes: [{ id: "one", label: "One size", delta: 0 }],
+    finishLabel: "Colour", finishes: [{ id: "chalk", label: "Chalk", sw: "#e6e1d7" }, { id: "ink", label: "Ink", sw: "#2b3340" }, { id: "amber", label: "Amber", sw: "#c98a2e" }, { id: "grey", label: "Warm grey", sw: "#8a8378" }],
+    breaks: [1, 4], lettering: { limit: 12, prompt: "Along the front, up to 12 characters", hint: "A name, a desk, a business — it reads along the front lip." },
+    madeFrom: "Matte PLA, printed at 0.2 mm. Holds a phone or a small tablet at 65°.", finishedWith: "A name raised 1 mm along the front lip.", care: "Wipe it with a damp cloth. Keep it out of a hot car.", base: "base:stand" },
+  { id: "fox-flexi", name: "Print-in-place fox", cat: "desk", unit: "each", icon: "heart", mat: "resin", alts: [{ id: "resin", delta: 0 }], price: 16, lead: 4, machine: "printer", stock: "pla-grey", size: "140 × 60 × 12 mm", foot: { w: 140, h: 60, per: 1 }, grams: 45, pieces: 1,
+    sizes: [{ id: "one", label: "140 mm long", delta: 0 }],
+    finishLabel: "Colour", finishes: [{ id: "amber", label: "Amber", sw: "#c98a2e" }, { id: "warm", label: "Warm grey", sw: "#8a8378" }, { id: "chalk", label: "Chalk", sw: "#e8e4dc" }],
+    breaks: [1], lettering: null,
+    madeFrom: "Matte PLA, printed in one piece with every joint already moving — nothing to put together.", finishedWith: "Every joint worked loose by hand and checked one by one.", care: "Not for under-threes: the tail joints are small." },
 ];
 const productById = new Map(PRODUCTS.map((p) => [p.id, p]));
 
@@ -482,7 +510,7 @@ export const ORDERS: Order[] = [
     lines: [L("nook", 1, "ply", "kit", "engraved", "", "make", "waiting", "design:br-2288")],
     log: [sent("2026-08-05", "Proof 1 — the shop sign at 9 mm, engraved."), asked("2026-08-05", "Could the sign be a little bigger?"), sent("2026-08-06", "Proof 2 — the sign set at 10 mm.")] },
   { ref: "BR-2289", ship: "second", customer: "Sam O.", email: "sam.o@mail.example", placed: "2026-08-06", town: "Ashby",
-    lines: [L("key-name", 2, "resin", "s56", "amber", "", "make", "approved", "design:br-2289")],
+    lines: [L("key-name", 2, "resin", "s56", "amber", "", "making", "approved", "design:br-2289")],
     log: [sent("2026-08-06", "Proof 1 — raised 1 mm, amber."), yes("2026-08-06", "Queued for printer B.")] },
   { ref: "BR-2290", ship: "second", customer: "Tom H.", email: "tom.h@mail.example", placed: "2026-08-06", town: "Frome",
     lines: [L("coast-wal", 2, "walnut", "s95", "oil", "", "make", "none", "design:br-2290")],
@@ -534,6 +562,23 @@ const BOOKINGS: { machine: string; from: string; to: string; label: string; kind
   { machine: "printer-a", from: "13:00", to: "18:00", label: "Desk tray · second half", kind: "run" },
   { machine: "kiln", from: "09:00", to: "18:00", label: "Glaze firing · 2 mugs, holds overnight", kind: "run" },
 ];
+
+/** The batch running now: Sam's two keyrings on printer B, started this afternoon, its filament taken off the shelf. */
+const BATCH = { label: "batch:printer-b-keyrings", name: "Printer B · two name keyrings", machine: "printer-b", stock: "pla-chalk", from: "15:10", to: "18:30", grams: 12,
+  note: "Amber, raised 1 mm. Both on one plate.", lines: ["line:BR-2289:1"] };
+
+/** What people have asked the studio for, from the "Ask us for something" page. */
+const REQUESTS = [
+  { name: "Grace Whitfield", email: "grace.w@mail.example", status: "new", idea: "Forty walnut place cards for a wedding, each guest's name engraved, with a little stand.", material: "walnut", quantity: 40,
+    wanted_by: "2026-09-12", budget: "About £200", staff_note: null, at: ["2026-08-05", "20:14"] },
+  { name: "Ollie Brennan", email: "ollie@brennan-coffee.example", status: "replied", idea: "A café menu board in slate with our logo, and 12 matching slate coasters for the counter.", material: "slate", quantity: 13,
+    wanted_by: "2026-08-29", budget: "£250–300", staff_note: "Sent a sketch and a price on Tuesday. The logo is a vector, fine to engrave.", at: ["2026-08-03", "11:02"] },
+  { name: "Priya S.", email: "priya.s@mail.example", status: "closed", idea: "Something for my mum's sixtieth that can sit on the cake and be kept after.", material: "acrylic", quantity: 1,
+    wanted_by: null, budget: "Up to £40", staff_note: "Made as a two-layer cake topper — ordered as BR-2286.", at: ["2026-07-30", "09:40"] },
+];
+
+/** A problem reported from the "If something's wrong" page, not yet handled. */
+const PROBLEM = { order: "BR-2260", name: "Erin M.", email: "erin.m@mail.example", what: "damaged", details: "Back from a week away to find the parcel — one corner of the photo block is chipped.", at: ["2026-08-05", "08:31"] };
 
 // ── the bundles ─────────────────────────────────────────────────────────────
 
@@ -605,16 +650,33 @@ export function sampleBundle(): SampleBundle {
         })),
       },
       {
+        ref: "batches",
+        rows: [{ "@label": BATCH.label, label: BATCH.name, machine_id: { "@ref": `machine:${BATCH.machine}` }, material_id: { "@ref": `material:${BATCH.stock}` }, state: "running", note: BATCH.note, started_at: past(TODAY, BATCH.from) }],
+      },
+      {
         ref: "machine_bookings",
-        rows: BOOKINGS.map((b) => ({ machine_id: { "@ref": `machine:${b.machine}` }, kind: b.kind, label: b.label, starts_at: wall(TODAY, b.from), ends_at: wall(TODAY, b.to) })),
+        rows: [
+          ...BOOKINGS.map((b) => ({ machine_id: { "@ref": `machine:${b.machine}` }, kind: b.kind, label: b.label, starts_at: wall(TODAY, b.from), ends_at: wall(TODAY, b.to) })),
+          { machine_id: { "@ref": `machine:${BATCH.machine}` }, batch_id: { "@ref": BATCH.label }, kind: "run", label: BATCH.name, starts_at: wall(TODAY, BATCH.from), ends_at: wall(TODAY, BATCH.to) },
+        ],
       },
       // What is on the shelf: a delivery each, and what this week's batches have spoken for.
       {
         ref: "stock_movements",
-        rows: MATERIALS.flatMap((m) => [
+        rows: MATERIALS.flatMap((m): Row[] => [
           { material_id: { "@ref": `material:${m.code}` }, kind: "received", qty: m.onHand, note: "Opening stock", made_at: wall(addDays(TODAY, -28), "09:00") },
           ...(m.committed === 0 ? [] : [{ material_id: { "@ref": `material:${m.code}` }, kind: "committed", qty: m.committed, note: "This week's batches", made_at: wall(addDays(TODAY, -2), "09:00") }]),
-        ]),
+        ]).concat([{ material_id: { "@ref": `material:${BATCH.stock}` }, kind: "used", qty: BATCH.grams, batch_id: { "@ref": BATCH.label }, note: BATCH.name, made_at: past(TODAY, BATCH.from) }]),
+      },
+      {
+        ref: "commission_requests",
+        // Off the running series (always digits), so the studio's own first request is still ASK-0001.
+        rows: REQUESTS.map((r, i) => ({ ref_seq: null, ref: `ASK-S0${String(i + 1)}`, status: r.status, name: r.name, email: r.email, language: "en-US", idea: r.idea, material: r.material, quantity: r.quantity,
+          wanted_by: r.wanted_by === null ? null : day(r.wanted_by), budget: r.budget, staff_note: r.staff_note, created_at: past(r.at[0]!, r.at[1]!) })),
+      },
+      {
+        ref: "problem_reports",
+        rows: [{ ref_seq: null, ref: "FIX-S01", status: "new", order_ref: PROBLEM.order, order_id: { "@ref": orderLabel(PROBLEM.order) }, name: PROBLEM.name, email: PROBLEM.email, language: "en-US", what: PROBLEM.what, details: PROBLEM.details, created_at: past(PROBLEM.at[0]!, PROBLEM.at[1]!) }],
       },
     ],
   };
@@ -636,7 +698,7 @@ function customiserTables(): Table[] {
     const design = ((row["design_id"] as { "@ref": string })["@ref"]).replace("design:", "");
     row["@label"] = `version:${design}-${String(row["version"])}`;
   }
-  return tables;
+  return withShowcase(tables);
 }
 
 /** The studio's rows that link into the Customiser: the catalogue, and every order line with its features and proofs. */
@@ -674,6 +736,7 @@ export function customiserSection(): SampleBundle {
         design_id: design === null ? null : { "@ref": line.design },
         post_by: day(postBy(order.placed, PLACED_AT, p.lead)),
         stage: line.stage,
+        ...(BATCH.lines.includes(label) ? { batch_id: { "@ref": BATCH.label } } : {}),
         spoiled: 0,
       });
       // Tom's coasters carry his own logo: the feature his design takes, at its price a piece.
@@ -689,6 +752,7 @@ export function customiserSection(): SampleBundle {
     app: "maker",
     addOn: "customiser",
     weekAnchor: "thu",
+    assets: showcaseAssets(),
     tables: [
       ...customiserTables(),
       {
@@ -720,6 +784,7 @@ export function customiserSection(): SampleBundle {
           lettering_prompt: p.lettering?.prompt ?? null,
           lettering_hint: p.lettering?.hint ?? null,
           base_id: p.base === undefined ? null : { "@ref": p.base },
+          photo: { "@asset": `photo:${p.id}` },
           published: true,
           position: i + 1,
         })),

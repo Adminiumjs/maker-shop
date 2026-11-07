@@ -3,6 +3,212 @@
   "app": "maker",
   "addOn": "customiser",
   "weekAnchor": "thu",
+  "assets": {
+    "photo:coast-wal": {
+      "file": "seeds/showcase/photos/coast-wal.jpg",
+      "sha256": "b704b8a75682a4e19cd79f28481de893e99aa25df559cca6420cd71732973d6b"
+    },
+    "photo:coast-ply": {
+      "file": "seeds/showcase/photos/coast-ply.jpg",
+      "sha256": "4af2d48bb208775b7a6740821412cc9d550c79f95c1c24159cf09aa49df3bdd1"
+    },
+    "photo:sign-house": {
+      "file": "seeds/showcase/photos/sign-house.jpg",
+      "sha256": "b86f9dcdb157c2a493ca0c37b2f01c171fa0a52b057eccc713869a03c377b99b"
+    },
+    "photo:mark-slate": {
+      "file": "seeds/showcase/photos/mark-slate.jpg",
+      "sha256": "6c8474ab929c62d5a8905d9d3bb123f1a3c16f8d831e4c01aed6e6d0df2794ba"
+    },
+    "photo:key-acr": {
+      "file": "seeds/showcase/photos/key-acr.jpg",
+      "sha256": "ec17ee23d5004864f8b1382cbedf6e61a027adcd4eb8b8844506858e66eb577f"
+    },
+    "photo:tag-pet": {
+      "file": "seeds/showcase/photos/tag-pet.jpg",
+      "sha256": "8bf87537b7f974a2b5752183b47720c8ba6ed005e0992ade074772c5eceba639"
+    },
+    "photo:tray-3d": {
+      "file": "seeds/showcase/photos/tray-3d.jpg",
+      "sha256": "8b52aff199580a53c6b606aa94e9ad7520cc6cce846fb0f20971a53e5c109455"
+    },
+    "photo:pot-3d": {
+      "file": "seeds/showcase/photos/pot-3d.jpg",
+      "sha256": "085cd01c7d5bf130d8542e4fc1fd22fbc96ac0a13117753d7f5d59507761859b"
+    },
+    "photo:mug-stone": {
+      "file": "seeds/showcase/photos/mug-stone.jpg",
+      "sha256": "a779ecf054bfd3e65acea2d49dccef9e9f10c3290bc891f68d58ad9a5185ffa1"
+    },
+    "photo:cake-top": {
+      "file": "seeds/showcase/photos/cake-top.jpg",
+      "sha256": "2129133c78baa1f3b2a49c20584f9d53911d5ef2e85f5b971ec8220a1ba0bef7"
+    },
+    "photo:board-cut": {
+      "file": "seeds/showcase/photos/board-cut.jpg",
+      "sha256": "5614fe9815113c5c142d5ab98f11525488fdf062ebb04a5215b090a1c71d3bda"
+    },
+    "photo:sign-wed": {
+      "file": "seeds/showcase/photos/sign-wed.jpg",
+      "sha256": "4af7044195ce3cedbfea4b04c1d2732f321c0bfcdecd95600afc30122b4e8843"
+    },
+    "photo:book-wal": {
+      "file": "seeds/showcase/photos/book-wal.jpg",
+      "sha256": "cbfbef652d03b55dbfbf947d6e53952761827ed5dc358cd5fa31ca42b28988ec"
+    },
+    "photo:block-photo": {
+      "file": "seeds/showcase/photos/block-photo.jpg",
+      "sha256": "47d0c70adb1d3b811a41ca97e36e073287ddfa46977cbf4bd37e63fd55f1f7a3"
+    },
+    "photo:nook": {
+      "file": "seeds/showcase/photos/nook.jpg",
+      "sha256": "77f89b26be0ba2a0cee412316cb137662c0e75e850329244f449ad43f15f8ef9"
+    },
+    "photo:key-name": {
+      "file": "seeds/showcase/photos/key-name.jpg",
+      "sha256": "2d653f2a78f4f3d8d13ea2affc06d5de5030b6426357d8521787acca408c6e87"
+    },
+    "photo:box-keep": {
+      "file": "seeds/showcase/photos/box-keep.jpg",
+      "sha256": "0597c6ec4d1e42fba9893c369d493786fc36aafda5c063084801be63fe6d4f2b"
+    },
+    "photo:sign-layer": {
+      "file": "seeds/showcase/photos/sign-layer.jpg",
+      "sha256": "c250d12aa6deca148d233cc104ea41afe0b09d9277a258d268484b6301053a2a"
+    },
+    "photo:pot-hex": {
+      "file": "seeds/showcase/photos/pot-hex.jpg",
+      "sha256": "8523df2614c547abd561ecef821a8c610ef4ac829d6f4846743771288f15b7b8"
+    },
+    "photo:stand-phone": {
+      "file": "seeds/showcase/photos/stand-phone.jpg",
+      "sha256": "8cc1a7af6dcf12640226d13a72003bea8ae742ddc562c10d06075c7f2d3ba23b"
+    },
+    "photo:fox-flexi": {
+      "file": "seeds/showcase/photos/fox-flexi.jpg",
+      "sha256": "91f2890184366460b16625097c86a372652bfc43cbcced671ac1f847812d8467"
+    },
+    "model:nook": {
+      "file": "seeds/showcase/3d/nook.glb",
+      "sha256": "551df476d996a1f333c2d5b496e3e2076776401e7237c6314e8965f76e9cf671"
+    },
+    "model:box": {
+      "file": "seeds/showcase/3d/box.glb",
+      "sha256": "e4c93f3cf51ce0fff152af9c718dc424fed7170abb24d4112bc81f73b0a6162c"
+    },
+    "model:keyring": {
+      "file": "seeds/showcase/3d/keyring.glb",
+      "sha256": "f5b664b64eeb2fc6b8d696ccaff833c7d8f2375aa0f4e4df8af39982500b0001"
+    },
+    "print:keyring": {
+      "file": "seeds/showcase/3d/keyring.stl",
+      "sha256": "bd9f026fd07a0ef0955743373e480edfb9dfebe8d44073cde08a35d76341266a"
+    },
+    "model:pot": {
+      "file": "seeds/showcase/3d/pot.glb",
+      "sha256": "16b7d6ef980f094f2604d0b929e19b40d33f25079ff8a1f091fb26ff227c6014"
+    },
+    "print:pot": {
+      "file": "seeds/showcase/3d/pot.stl",
+      "sha256": "744f1705a7830057d85518788606d08a5ef9319e654d9f215cb47025a8280d0a"
+    },
+    "model:stand": {
+      "file": "seeds/showcase/3d/stand.glb",
+      "sha256": "90640e30b5489e75a695faa2b6834705f27b85fd979a6c5c680b1a154e05a1a8"
+    },
+    "print:stand": {
+      "file": "seeds/showcase/3d/stand.stl",
+      "sha256": "63523a27a70e8d7a8ba98ee1aadcfce6c319cd49ebe4963b4fc89583fb043ba0"
+    },
+    "outline:layered": {
+      "file": "seeds/showcase/3d/layered-sign.svg",
+      "sha256": "74e9f9aef4cb42eaf67e8481a9efdbaf30117c84f1e381bca34adc61777154b0"
+    },
+    "cut:nook-01": {
+      "file": "seeds/showcase/pieces/nook-01.svg",
+      "sha256": "66b62ab6df2c39b6fff2b1df0d2158d5eb0624f976a92bc21a8926b140a84f1e"
+    },
+    "cut:nook-02": {
+      "file": "seeds/showcase/pieces/nook-02.svg",
+      "sha256": "629f1f74a5ff7fbeaf77de8b0cdbd0105535b1a3584952003261e8223934b701"
+    },
+    "cut:nook-03": {
+      "file": "seeds/showcase/pieces/nook-03.svg",
+      "sha256": "469aa48723f412a3cd1d76aae29358fbe73535bdc38cff1498930bdc7f606c33"
+    },
+    "cut:nook-04": {
+      "file": "seeds/showcase/pieces/nook-04.svg",
+      "sha256": "469aa48723f412a3cd1d76aae29358fbe73535bdc38cff1498930bdc7f606c33"
+    },
+    "cut:nook-05": {
+      "file": "seeds/showcase/pieces/nook-05.svg",
+      "sha256": "2f288200d12f965824c8cf1f2e69f1e0b43625353ad5ad7fa6a757a1f87e7e56"
+    },
+    "cut:nook-06": {
+      "file": "seeds/showcase/pieces/nook-06.svg",
+      "sha256": "2fe52e3b0e779dd7f910f715787589d1781e81dc7001af70d2eb84f3d35aca6d"
+    },
+    "cut:nook-07": {
+      "file": "seeds/showcase/pieces/nook-07.svg",
+      "sha256": "cce772b5fb720baa0ec30a92698953dba69a7a1e3dc1210235b600c0195cde2d"
+    },
+    "cut:nook-08": {
+      "file": "seeds/showcase/pieces/nook-08.svg",
+      "sha256": "b3c0dca1d4268bb5929b9898fc637a02cf9bb467b905b4251be532d74bdb2c29"
+    },
+    "cut:nook-09": {
+      "file": "seeds/showcase/pieces/nook-09.svg",
+      "sha256": "0308307c4e84628d8b4404277715e8a21bb885c15fa7668f6e9e2ba703dea28c"
+    },
+    "cut:nook-10": {
+      "file": "seeds/showcase/pieces/nook-10.svg",
+      "sha256": "72936c50639eef8b5f632d3097133c7bfd1c4966bb1d66d94196d74b4f120cc3"
+    },
+    "cut:nook-11": {
+      "file": "seeds/showcase/pieces/nook-11.svg",
+      "sha256": "a4156256ee28e53cfe3fc8981b7b54435be22fcafec8f3db883b3d542d73ce71"
+    },
+    "cut:nook-12": {
+      "file": "seeds/showcase/pieces/nook-12.svg",
+      "sha256": "1c8fd67fba67ae2094f5a592940692c162f7330d6948349e562398c64e7241ce"
+    },
+    "cut:nook-13": {
+      "file": "seeds/showcase/pieces/nook-13.svg",
+      "sha256": "9a4b7ceb47f87af592f629c4490342a2f691c8e4744ee1957c79a9fba75c935c"
+    },
+    "cut:nook-14": {
+      "file": "seeds/showcase/pieces/nook-14.svg",
+      "sha256": "82a08f7e90524ffe34884f5f08430fbe354426caa267e6c70511afcd9fa72452"
+    },
+    "cut:box-01": {
+      "file": "seeds/showcase/pieces/box-01.svg",
+      "sha256": "5d080044ae9d8127cff45a82ad64cde01a390f7bb585eb256dfa67ffaae9c091"
+    },
+    "cut:box-02": {
+      "file": "seeds/showcase/pieces/box-02.svg",
+      "sha256": "819bf275060302e2f4d410b697e4f2b9089930cc3991132da14e847ebbd0fb63"
+    },
+    "cut:box-03": {
+      "file": "seeds/showcase/pieces/box-03.svg",
+      "sha256": "100c767564c63558cdf6d7eb11f7f5f03a8ec724c04fc28a3f629394dbc1993c"
+    },
+    "cut:box-04": {
+      "file": "seeds/showcase/pieces/box-04.svg",
+      "sha256": "d60f712bb569c253bb2718792e965bb1e6e170ea043eafca4383b961a006fcd1"
+    },
+    "cut:box-05": {
+      "file": "seeds/showcase/pieces/box-05.svg",
+      "sha256": "d60f712bb569c253bb2718792e965bb1e6e170ea043eafca4383b961a006fcd1"
+    },
+    "cut:box-06": {
+      "file": "seeds/showcase/pieces/box-06.svg",
+      "sha256": "9ab5cfba0566030d6fe58298b119d2e6b3f91bc9d53504a0c503f960ee7f4194"
+    },
+    "cut:box-07": {
+      "file": "seeds/showcase/pieces/box-07.svg",
+      "sha256": "9ab5cfba0566030d6fe58298b119d2e6b3f91bc9d53504a0c503f960ee7f4194"
+    }
+  },
   "tables": [
     {
       "ref": "features",
@@ -178,7 +384,86 @@
           "material": "Birch ply",
           "thickness_mm": 3,
           "state": "published",
-          "position": 2
+          "position": 2,
+          "model_file": {
+            "@asset": "model:nook"
+          },
+          "faces": [
+            {
+              "code": "sign",
+              "name": "Shop sign",
+              "piece": null,
+              "mesh": "13",
+              "meshName": "shop-sign",
+              "normal": [
+                0,
+                0,
+                1
+              ],
+              "point": [
+                -45.414215,
+                148.585785,
+                78
+              ],
+              "u": [
+                1,
+                0,
+                0
+              ],
+              "v": [
+                0,
+                -1,
+                0
+              ],
+              "bounds": {
+                "u0": -0.585785,
+                "u1": 91.414215,
+                "v0": -21.414215,
+                "v1": 0.585785
+              },
+              "size": {
+                "w": 92,
+                "h": 22
+              }
+            },
+            {
+              "code": "lwin",
+              "name": "Left window",
+              "piece": null,
+              "mesh": "14",
+              "meshName": "left-window",
+              "normal": [
+                0,
+                0,
+                1
+              ],
+              "point": [
+                -46.560661,
+                82.439339,
+                78
+              ],
+              "u": [
+                1,
+                0,
+                0
+              ],
+              "v": [
+                0,
+                -1,
+                0
+              ],
+              "bounds": {
+                "u0": -0.439339,
+                "u1": 41.560661,
+                "v0": -53.560661,
+                "v1": 0.439339
+              },
+              "size": {
+                "w": 42,
+                "h": 54
+              }
+            }
+          ]
         },
         {
           "@label": "base:keyring",
@@ -198,7 +483,86 @@
           "material": "PLA",
           "thickness_mm": 4,
           "state": "published",
-          "position": 3
+          "position": 3,
+          "model_file": {
+            "@asset": "model:keyring"
+          },
+          "print_file": {
+            "@asset": "print:keyring"
+          },
+          "faces": [
+            {
+              "code": "front",
+              "name": "Front",
+              "piece": null,
+              "mesh": "",
+              "meshName": "print",
+              "normal": [
+                0,
+                0,
+                1
+              ],
+              "point": [
+                27.884712,
+                -7.170542,
+                4
+              ],
+              "u": [
+                1,
+                0,
+                0
+              ],
+              "v": [
+                0,
+                -1,
+                0
+              ],
+              "bounds": {
+                "u0": -55.884712,
+                "u1": 0.115288,
+                "v0": -19.170542,
+                "v1": 4.829458
+              },
+              "size": {
+                "w": 56,
+                "h": 24
+              },
+              "relief": {
+                "mode": "raised",
+                "depth": 1,
+                "smallest": 4
+              },
+              "preview": {
+                "mesh": "preview",
+                "normal": [
+                  0,
+                  1,
+                  0
+                ],
+                "point": [
+                  27.884712,
+                  4,
+                  7.170542
+                ],
+                "u": [
+                  1,
+                  0,
+                  0
+                ],
+                "v": [
+                  0,
+                  0,
+                  1
+                ],
+                "bounds": {
+                  "u0": -55.884712,
+                  "u1": 0.115288,
+                  "v0": -19.170542,
+                  "v1": 4.829458
+                }
+              }
+            }
+          ]
         },
         {
           "@label": "base:board",
@@ -253,6 +617,340 @@
           "thickness_mm": 5,
           "state": "draft",
           "position": 5
+        },
+        {
+          "@label": "base:box",
+          "app": "maker",
+          "offered": {
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope",
+              "Caveat",
+              "Zilla Slab",
+              "Oswald"
+            ],
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ]
+          },
+          "name": "Keepsake box",
+          "kind": "kit",
+          "width_mm": 160,
+          "height_mm": 110,
+          "depth_mm": 70,
+          "material": "Walnut",
+          "thickness_mm": 6,
+          "model_file": {
+            "@asset": "model:box"
+          },
+          "faces": [
+            {
+              "code": "lid",
+              "name": "Lid",
+              "piece": null,
+              "mesh": "5",
+              "meshName": "lid",
+              "normal": [
+                0,
+                1,
+                0
+              ],
+              "point": [
+                160,
+                108,
+                80
+              ],
+              "u": [
+                1,
+                0,
+                0
+              ],
+              "v": [
+                0,
+                0,
+                1
+              ],
+              "bounds": {
+                "u0": -160,
+                "u1": 0,
+                "v0": -110,
+                "v1": 0
+              },
+              "size": {
+                "w": 160,
+                "h": 110
+              }
+            },
+            {
+              "code": "front",
+              "name": "Front",
+              "piece": null,
+              "mesh": "1",
+              "meshName": "front",
+              "normal": [
+                0,
+                0,
+                1
+              ],
+              "point": [
+                6,
+                17.6,
+                110
+              ],
+              "u": [
+                1,
+                0,
+                0
+              ],
+              "v": [
+                0,
+                -1,
+                0
+              ],
+              "bounds": {
+                "u0": -6,
+                "u1": 154,
+                "v0": -46.4,
+                "v1": 17.6
+              },
+              "size": {
+                "w": 160,
+                "h": 64
+              }
+            }
+          ],
+          "state": "published",
+          "position": 6
+        },
+        {
+          "@label": "base:pot",
+          "app": "maker",
+          "offered": {
+            "fonts": [
+              "Manrope",
+              "Oswald",
+              "Zilla Slab"
+            ],
+            "finishes": []
+          },
+          "name": "Hexagonal name pot",
+          "kind": "printed",
+          "width_mm": 110,
+          "height_mm": 110,
+          "material": "PLA",
+          "thickness_mm": 105,
+          "model_file": {
+            "@asset": "model:pot"
+          },
+          "print_file": {
+            "@asset": "print:pot"
+          },
+          "faces": [
+            {
+              "code": "front",
+              "name": "Front",
+              "piece": null,
+              "mesh": "",
+              "meshName": "print",
+              "normal": [
+                0,
+                -0.997785,
+                -0.066519
+              ],
+              "point": [
+                -27.712812,
+                -48,
+                0
+              ],
+              "u": [
+                1,
+                0,
+                0
+              ],
+              "v": [
+                0,
+                0.066519,
+                -0.997785
+              ],
+              "bounds": {
+                "u0": -4.041452,
+                "u1": 59.467077,
+                "v0": -105.233075,
+                "v1": 0
+              },
+              "size": {
+                "w": 63.5,
+                "h": 105.2
+              },
+              "relief": {
+                "mode": "raised",
+                "depth": 1,
+                "smallest": 4
+              },
+              "preview": {
+                "mesh": "preview",
+                "normal": [
+                  0,
+                  -0.066519,
+                  0.997785
+                ],
+                "point": [
+                  -27.712812,
+                  0,
+                  48
+                ],
+                "u": [
+                  1,
+                  0,
+                  0
+                ],
+                "v": [
+                  0,
+                  -0.997785,
+                  -0.066519
+                ],
+                "bounds": {
+                  "u0": -4.041452,
+                  "u1": 59.467077,
+                  "v0": -105.233075,
+                  "v1": 0
+                }
+              }
+            }
+          ],
+          "state": "published",
+          "position": 7
+        },
+        {
+          "@label": "base:stand",
+          "app": "maker",
+          "offered": {
+            "fonts": [
+              "Manrope",
+              "Oswald",
+              "Zilla Slab"
+            ],
+            "finishes": []
+          },
+          "name": "Phone stand",
+          "kind": "printed",
+          "width_mm": 80,
+          "height_mm": 75,
+          "material": "PLA",
+          "thickness_mm": 95,
+          "model_file": {
+            "@asset": "model:stand"
+          },
+          "print_file": {
+            "@asset": "print:stand"
+          },
+          "faces": [
+            {
+              "code": "front",
+              "name": "Front",
+              "piece": null,
+              "mesh": "",
+              "meshName": "print",
+              "normal": [
+                0,
+                -1,
+                0
+              ],
+              "point": [
+                -40,
+                -37.5,
+                16
+              ],
+              "u": [
+                1,
+                0,
+                0
+              ],
+              "v": [
+                0,
+                0,
+                -1
+              ],
+              "bounds": {
+                "u0": 0,
+                "u1": 80,
+                "v0": 0,
+                "v1": 16
+              },
+              "size": {
+                "w": 80,
+                "h": 16
+              },
+              "relief": {
+                "mode": "raised",
+                "depth": 1,
+                "smallest": 4
+              },
+              "preview": {
+                "mesh": "preview",
+                "normal": [
+                  0,
+                  0,
+                  1
+                ],
+                "point": [
+                  -40,
+                  16,
+                  37.5
+                ],
+                "u": [
+                  1,
+                  0,
+                  0
+                ],
+                "v": [
+                  0,
+                  -1,
+                  0
+                ],
+                "bounds": {
+                  "u0": 0,
+                  "u1": 80,
+                  "v0": 0,
+                  "v1": 16
+                }
+              }
+            }
+          ],
+          "state": "published",
+          "position": 8
+        },
+        {
+          "@label": "base:layered",
+          "app": "maker",
+          "offered": {
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope",
+              "Caveat",
+              "Zilla Slab",
+              "Oswald"
+            ],
+            "finishes": [
+              "engraved",
+              "paint-white",
+              "paint-black"
+            ]
+          },
+          "name": "Layered name sign",
+          "kind": "piece",
+          "width_mm": 300,
+          "height_mm": 140,
+          "corner_mm": 12,
+          "material": "Birch ply",
+          "thickness_mm": 9,
+          "outline_file": {
+            "@asset": "outline:layered"
+          },
+          "state": "published",
+          "position": 9
         }
       ]
     },
@@ -272,7 +970,10 @@
           "layers": [
             "CUT"
           ],
-          "position": 1
+          "position": 1,
+          "file": {
+            "@asset": "cut:nook-01"
+          }
         },
         {
           "@label": "piece:nook-02",
@@ -288,7 +989,10 @@
             "CUT",
             "SCORE"
           ],
-          "position": 2
+          "position": 2,
+          "file": {
+            "@asset": "cut:nook-02"
+          }
         },
         {
           "@label": "piece:nook-03",
@@ -304,7 +1008,10 @@
             "CUT",
             "SCORE"
           ],
-          "position": 3
+          "position": 3,
+          "file": {
+            "@asset": "cut:nook-03"
+          }
         },
         {
           "@label": "piece:nook-04",
@@ -320,7 +1027,10 @@
             "CUT",
             "SCORE"
           ],
-          "position": 4
+          "position": 4,
+          "file": {
+            "@asset": "cut:nook-04"
+          }
         },
         {
           "@label": "piece:nook-05",
@@ -336,7 +1046,10 @@
             "CUT",
             "SCORE"
           ],
-          "position": 5
+          "position": 5,
+          "file": {
+            "@asset": "cut:nook-05"
+          }
         },
         {
           "@label": "piece:nook-06",
@@ -352,7 +1065,10 @@
             "CUT",
             "ENGRAVE"
           ],
-          "position": 6
+          "position": 6,
+          "file": {
+            "@asset": "cut:nook-06"
+          }
         },
         {
           "@label": "piece:nook-07",
@@ -368,7 +1084,10 @@
             "CUT",
             "SCORE"
           ],
-          "position": 7
+          "position": 7,
+          "file": {
+            "@asset": "cut:nook-07"
+          }
         },
         {
           "@label": "piece:nook-08",
@@ -383,7 +1102,10 @@
           "layers": [
             "CUT"
           ],
-          "position": 8
+          "position": 8,
+          "file": {
+            "@asset": "cut:nook-08"
+          }
         },
         {
           "@label": "piece:nook-09",
@@ -399,7 +1121,10 @@
             "CUT",
             "ENGRAVE"
           ],
-          "position": 9
+          "position": 9,
+          "file": {
+            "@asset": "cut:nook-09"
+          }
         },
         {
           "@label": "piece:nook-10",
@@ -414,7 +1139,10 @@
           "layers": [
             "CUT"
           ],
-          "position": 10
+          "position": 10,
+          "file": {
+            "@asset": "cut:nook-10"
+          }
         },
         {
           "@label": "piece:nook-11",
@@ -430,7 +1158,10 @@
             "CUT",
             "ENGRAVE"
           ],
-          "position": 11
+          "position": 11,
+          "file": {
+            "@asset": "cut:nook-11"
+          }
         },
         {
           "@label": "piece:nook-12",
@@ -446,7 +1177,10 @@
             "CUT",
             "SCORE"
           ],
-          "position": 12
+          "position": 12,
+          "file": {
+            "@asset": "cut:nook-12"
+          }
         },
         {
           "@label": "piece:nook-13",
@@ -461,7 +1195,10 @@
           "layers": [
             "CUT"
           ],
-          "position": 13
+          "position": 13,
+          "file": {
+            "@asset": "cut:nook-13"
+          }
         },
         {
           "@label": "piece:nook-14",
@@ -476,7 +1213,137 @@
           "layers": [
             "CUT"
           ],
-          "position": 14
+          "position": 14,
+          "file": {
+            "@asset": "cut:nook-14"
+          }
+        },
+        {
+          "@label": "piece:box-01",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:box"
+          },
+          "code": "01",
+          "name": "Base",
+          "width_mm": 160,
+          "height_mm": 110,
+          "layers": [
+            "CUT"
+          ],
+          "file": {
+            "@asset": "cut:box-01"
+          },
+          "position": 1
+        },
+        {
+          "@label": "piece:box-02",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:box"
+          },
+          "code": "02",
+          "name": "Lid",
+          "width_mm": 160,
+          "height_mm": 110,
+          "layers": [
+            "CUT",
+            "ENGRAVE"
+          ],
+          "file": {
+            "@asset": "cut:box-02"
+          },
+          "position": 2
+        },
+        {
+          "@label": "piece:box-03",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:box"
+          },
+          "code": "03",
+          "name": "Lid liner",
+          "width_mm": 147,
+          "height_mm": 97,
+          "layers": [
+            "CUT"
+          ],
+          "file": {
+            "@asset": "cut:box-03"
+          },
+          "position": 3
+        },
+        {
+          "@label": "piece:box-04",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:box"
+          },
+          "code": "04",
+          "name": "Front",
+          "width_mm": 160,
+          "height_mm": 64,
+          "layers": [
+            "CUT"
+          ],
+          "file": {
+            "@asset": "cut:box-04"
+          },
+          "position": 4
+        },
+        {
+          "@label": "piece:box-05",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:box"
+          },
+          "code": "05",
+          "name": "Back",
+          "width_mm": 160,
+          "height_mm": 64,
+          "layers": [
+            "CUT"
+          ],
+          "file": {
+            "@asset": "cut:box-05"
+          },
+          "position": 5
+        },
+        {
+          "@label": "piece:box-06",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:box"
+          },
+          "code": "06",
+          "name": "Left end",
+          "width_mm": 110,
+          "height_mm": 64,
+          "layers": [
+            "CUT"
+          ],
+          "file": {
+            "@asset": "cut:box-06"
+          },
+          "position": 6
+        },
+        {
+          "@label": "piece:box-07",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:box"
+          },
+          "code": "07",
+          "name": "Right end",
+          "width_mm": 110,
+          "height_mm": 64,
+          "layers": [
+            "CUT"
+          ],
+          "file": {
+            "@asset": "cut:box-07"
+          },
+          "position": 7
         }
       ]
     },
@@ -557,12 +1424,12 @@
           "piece_id": {
             "@ref": "piece:nook-09"
           },
-          "face": "front",
+          "face": "sign",
           "shape": "rect",
-          "x_mm": 8.8,
-          "y_mm": 9,
-          "w_mm": 92.4,
-          "h_mm": 19.8,
+          "x_mm": 5,
+          "y_mm": 4,
+          "w_mm": 82,
+          "h_mm": 14,
           "takes": "words",
           "required": true,
           "rules": {
@@ -598,12 +1465,12 @@
           "piece_id": {
             "@ref": "piece:nook-10"
           },
-          "face": "front",
+          "face": "lwin",
           "shape": "rect",
-          "x_mm": 8.8,
-          "y_mm": 45,
-          "w_mm": 41.8,
-          "h_mm": 54,
+          "x_mm": 5,
+          "y_mm": 6,
+          "w_mm": 32,
+          "h_mm": 42,
           "takes": "both",
           "required": false,
           "rules": {
@@ -646,10 +1513,10 @@
           "name": "The front",
           "face": "front",
           "shape": "rect",
-          "x_mm": 0,
-          "y_mm": 0,
-          "w_mm": 56,
-          "h_mm": 24,
+          "x_mm": 14,
+          "y_mm": 4,
+          "w_mm": 38,
+          "h_mm": 16,
           "takes": "words",
           "required": true,
           "rules": {
@@ -707,6 +1574,241 @@
             "placeholder": "The Sharmas · 2019"
           },
           "position": 6
+        },
+        {
+          "@label": "area:box-lid",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:box"
+          },
+          "code": "lid",
+          "name": "The lid",
+          "piece_id": {
+            "@ref": "piece:box-02"
+          },
+          "face": "lid",
+          "shape": "rect",
+          "x_mm": 20,
+          "y_mm": 25,
+          "w_mm": 120,
+          "h_mm": 60,
+          "takes": "both",
+          "required": true,
+          "rules": {
+            "chars": 24,
+            "grows": true,
+            "unit": "mm",
+            "size": 12,
+            "min": 7,
+            "max": 16,
+            "fonts": [
+              "Cormorant Garamond",
+              "Caveat",
+              "Zilla Slab"
+            ],
+            "font": "Cormorant Garamond",
+            "finishes": [
+              "engraved"
+            ],
+            "placeholder": "Little Treasures",
+            "alsoLogo": {
+              "picture": "logo",
+              "fit": "inside",
+              "colour": "one",
+              "file": "logo_file"
+            }
+          },
+          "feature_id": {
+            "@ref": "feature:maker-logo"
+          },
+          "position": 7
+        },
+        {
+          "@label": "area:box-front",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:box"
+          },
+          "code": "front",
+          "name": "The front",
+          "piece_id": {
+            "@ref": "piece:box-04"
+          },
+          "face": "front",
+          "shape": "rect",
+          "x_mm": 20,
+          "y_mm": 17,
+          "w_mm": 120,
+          "h_mm": 30,
+          "takes": "words",
+          "required": false,
+          "rules": {
+            "chars": 20,
+            "grows": true,
+            "unit": "mm",
+            "size": 7,
+            "min": 5,
+            "max": 10,
+            "fonts": [
+              "Cormorant Garamond",
+              "Manrope",
+              "Caveat"
+            ],
+            "font": "Manrope",
+            "finishes": [
+              "engraved"
+            ],
+            "placeholder": "est. 2026"
+          },
+          "position": 8
+        },
+        {
+          "@label": "area:pot-front",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:pot"
+          },
+          "code": "front",
+          "name": "The front",
+          "face": "front",
+          "shape": "rect",
+          "x_mm": 7.8,
+          "y_mm": 25.1,
+          "w_mm": 48,
+          "h_mm": 55,
+          "takes": "words",
+          "required": true,
+          "rules": {
+            "chars": 8,
+            "grows": true,
+            "unit": "mm",
+            "size": 10,
+            "min": 6,
+            "max": 14,
+            "fonts": [
+              "Manrope",
+              "Oswald",
+              "Zilla Slab"
+            ],
+            "font": "Oswald",
+            "upper": true,
+            "raisedMm": 1,
+            "placeholder": "BASIL",
+            "mode": "raised",
+            "depthMm": 1,
+            "smallestLetterMm": 4
+          },
+          "position": 9
+        },
+        {
+          "@label": "area:stand-front",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:stand"
+          },
+          "code": "front",
+          "name": "The front",
+          "face": "front",
+          "shape": "rect",
+          "x_mm": 5,
+          "y_mm": 2.5,
+          "w_mm": 70,
+          "h_mm": 11,
+          "takes": "words",
+          "required": true,
+          "rules": {
+            "chars": 12,
+            "grows": true,
+            "unit": "mm",
+            "size": 8,
+            "min": 5,
+            "max": 11,
+            "fonts": [
+              "Manrope",
+              "Oswald",
+              "Zilla Slab"
+            ],
+            "font": "Manrope",
+            "upper": true,
+            "raisedMm": 1,
+            "placeholder": "SAM'S DESK",
+            "mode": "raised",
+            "depthMm": 1,
+            "smallestLetterMm": 4
+          },
+          "position": 10
+        },
+        {
+          "@label": "area:layered-name",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:layered"
+          },
+          "code": "name",
+          "name": "The name",
+          "shape": "rect",
+          "x_mm": 30,
+          "y_mm": 38,
+          "w_mm": 240,
+          "h_mm": 56,
+          "takes": "words",
+          "required": true,
+          "rules": {
+            "chars": 18,
+            "grows": true,
+            "unit": "mm",
+            "size": 40,
+            "min": 24,
+            "max": 52,
+            "fonts": [
+              "Caveat",
+              "Cormorant Garamond",
+              "Zilla Slab"
+            ],
+            "font": "Caveat",
+            "finishes": [
+              "paint-white",
+              "paint-black",
+              "engraved"
+            ],
+            "placeholder": "The Okafors"
+          },
+          "position": 11
+        },
+        {
+          "@label": "area:layered-line",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:layered"
+          },
+          "code": "line",
+          "name": "The small line",
+          "shape": "rect",
+          "x_mm": 60,
+          "y_mm": 100,
+          "w_mm": 180,
+          "h_mm": 18,
+          "takes": "words",
+          "required": false,
+          "rules": {
+            "chars": 30,
+            "grows": true,
+            "unit": "mm",
+            "size": 9,
+            "min": 6,
+            "max": 12,
+            "fonts": [
+              "Manrope",
+              "Cormorant Garamond"
+            ],
+            "font": "Manrope",
+            "finishes": [
+              "engraved",
+              "paint-white"
+            ],
+            "placeholder": "Home since 2021"
+          },
+          "position": 12
         }
       ]
     },
@@ -861,6 +1963,72 @@
           ],
           "state": "published",
           "position": 11
+        },
+        {
+          "@label": "ready:box-name-date",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:box"
+          },
+          "name": "Name and date",
+          "tags": [
+            "words"
+          ],
+          "state": "published",
+          "position": 12
+        },
+        {
+          "@label": "ready:box-initials",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:box"
+          },
+          "name": "Initials",
+          "tags": [
+            "words",
+            "logo"
+          ],
+          "state": "published",
+          "position": 13
+        },
+        {
+          "@label": "ready:pot-herb",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:pot"
+          },
+          "name": "Herb name",
+          "tags": [
+            "words"
+          ],
+          "state": "published",
+          "position": 14
+        },
+        {
+          "@label": "ready:stand-name",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:stand"
+          },
+          "name": "Name",
+          "tags": [
+            "words"
+          ],
+          "state": "published",
+          "position": 15
+        },
+        {
+          "@label": "ready:layered-family",
+          "app": "maker",
+          "base_id": {
+            "@ref": "base:layered"
+          },
+          "name": "Family name",
+          "tags": [
+            "words"
+          ],
+          "state": "published",
+          "position": 16
         }
       ]
     },
@@ -1319,10 +2487,10 @@
           "piece_id": {
             "@ref": "piece:nook-09"
           },
-          "x_mm": 8.8,
-          "y_mm": 9,
-          "w_mm": 92.4,
-          "h_mm": 19.8,
+          "x_mm": 5,
+          "y_mm": 4,
+          "w_mm": 82,
+          "h_mm": 14,
           "area_id": {
             "@ref": "area:nook-sign"
           },
@@ -1361,10 +2529,10 @@
           "piece_id": {
             "@ref": "piece:nook-10"
           },
-          "x_mm": 8.8,
-          "y_mm": 45,
-          "w_mm": 41.8,
-          "h_mm": 54,
+          "x_mm": 5,
+          "y_mm": 6,
+          "w_mm": 32,
+          "h_mm": 42,
           "area_id": {
             "@ref": "area:nook-lwin"
           },
@@ -1459,10 +2627,10 @@
           "piece_id": {
             "@ref": "piece:nook-09"
           },
-          "x_mm": 8.8,
-          "y_mm": 9,
-          "w_mm": 92.4,
-          "h_mm": 19.8,
+          "x_mm": 5,
+          "y_mm": 4,
+          "w_mm": 82,
+          "h_mm": 14,
           "area_id": {
             "@ref": "area:nook-sign"
           },
@@ -1502,10 +2670,10 @@
           "piece_id": {
             "@ref": "piece:nook-10"
           },
-          "x_mm": 8.8,
-          "y_mm": 45,
-          "w_mm": 41.8,
-          "h_mm": 54,
+          "x_mm": 5,
+          "y_mm": 6,
+          "w_mm": 32,
+          "h_mm": 42,
           "area_id": {
             "@ref": "area:nook-lwin"
           },
@@ -1606,10 +2774,10 @@
           "piece_id": {
             "@ref": "piece:nook-09"
           },
-          "x_mm": 8.8,
-          "y_mm": 9,
-          "w_mm": 92.4,
-          "h_mm": 19.8,
+          "x_mm": 5,
+          "y_mm": 4,
+          "w_mm": 82,
+          "h_mm": 14,
           "area_id": {
             "@ref": "area:nook-sign"
           },
@@ -1823,6 +2991,286 @@
             "choice": "chalk"
           },
           "position": 30
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:box-name-date"
+          },
+          "code": "lid",
+          "name": "The lid",
+          "kind": "text",
+          "locked": false,
+          "required": true,
+          "piece_id": {
+            "@ref": "piece:box-02"
+          },
+          "x_mm": 20,
+          "y_mm": 25,
+          "w_mm": 120,
+          "h_mm": 34,
+          "area_id": {
+            "@ref": "area:box-lid"
+          },
+          "rules": {
+            "chars": 24,
+            "grows": true,
+            "unit": "mm",
+            "size": 12,
+            "min": 7,
+            "max": 16,
+            "fonts": [
+              "Cormorant Garamond",
+              "Caveat",
+              "Zilla Slab"
+            ],
+            "font": "Cormorant Garamond",
+            "finishes": [
+              "engraved"
+            ],
+            "placeholder": "Little Treasures"
+          },
+          "position": 31
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:box-name-date"
+          },
+          "code": "date",
+          "name": "The date",
+          "kind": "text",
+          "locked": false,
+          "required": false,
+          "piece_id": {
+            "@ref": "piece:box-02"
+          },
+          "x_mm": 40,
+          "y_mm": 62,
+          "w_mm": 80,
+          "h_mm": 14,
+          "area_id": {
+            "@ref": "area:box-lid"
+          },
+          "rules": {
+            "chars": 16,
+            "grows": true,
+            "unit": "mm",
+            "size": 6,
+            "min": 4,
+            "max": 8,
+            "fonts": [
+              "Cormorant Garamond",
+              "Caveat",
+              "Zilla Slab"
+            ],
+            "font": "Manrope",
+            "finishes": [
+              "engraved"
+            ],
+            "placeholder": "est. 2026"
+          },
+          "position": 32
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:box-initials"
+          },
+          "code": "lid",
+          "name": "The initials",
+          "kind": "text",
+          "locked": false,
+          "required": true,
+          "piece_id": {
+            "@ref": "piece:box-02"
+          },
+          "x_mm": 40,
+          "y_mm": 30,
+          "w_mm": 80,
+          "h_mm": 50,
+          "area_id": {
+            "@ref": "area:box-lid"
+          },
+          "rules": {
+            "chars": 8,
+            "grows": true,
+            "unit": "mm",
+            "size": 22,
+            "min": 7,
+            "max": 30,
+            "fonts": [
+              "Cormorant Garamond",
+              "Caveat",
+              "Zilla Slab"
+            ],
+            "font": "Cormorant Garamond",
+            "finishes": [
+              "engraved"
+            ],
+            "placeholder": "A & J",
+            "alsoLogo": {
+              "picture": "logo",
+              "fit": "inside",
+              "colour": "one",
+              "file": "logo_file"
+            }
+          },
+          "position": 33
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:pot-herb"
+          },
+          "code": "name",
+          "name": "The name",
+          "kind": "text",
+          "locked": false,
+          "required": true,
+          "x_mm": 7.8,
+          "y_mm": 42,
+          "w_mm": 48,
+          "h_mm": 20,
+          "area_id": {
+            "@ref": "area:pot-front"
+          },
+          "rules": {
+            "chars": 8,
+            "grows": true,
+            "unit": "mm",
+            "size": 10,
+            "min": 6,
+            "max": 14,
+            "fonts": [
+              "Manrope",
+              "Oswald",
+              "Zilla Slab"
+            ],
+            "font": "Oswald",
+            "upper": true,
+            "raisedMm": 1,
+            "placeholder": "BASIL",
+            "mode": "raised",
+            "depthMm": 1,
+            "smallestLetterMm": 4
+          },
+          "position": 34
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:stand-name"
+          },
+          "code": "name",
+          "name": "The name",
+          "kind": "text",
+          "locked": false,
+          "required": true,
+          "x_mm": 5,
+          "y_mm": 2.5,
+          "w_mm": 70,
+          "h_mm": 11,
+          "area_id": {
+            "@ref": "area:stand-front"
+          },
+          "rules": {
+            "chars": 12,
+            "grows": true,
+            "unit": "mm",
+            "size": 8,
+            "min": 5,
+            "max": 11,
+            "fonts": [
+              "Manrope",
+              "Oswald",
+              "Zilla Slab"
+            ],
+            "font": "Manrope",
+            "upper": true,
+            "raisedMm": 1,
+            "placeholder": "SAM'S DESK",
+            "mode": "raised",
+            "depthMm": 1,
+            "smallestLetterMm": 4
+          },
+          "position": 35
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:layered-family"
+          },
+          "code": "name",
+          "name": "The name",
+          "kind": "text",
+          "locked": false,
+          "required": true,
+          "x_mm": 30,
+          "y_mm": 38,
+          "w_mm": 240,
+          "h_mm": 56,
+          "area_id": {
+            "@ref": "area:layered-name"
+          },
+          "rules": {
+            "chars": 18,
+            "grows": true,
+            "unit": "mm",
+            "size": 40,
+            "min": 24,
+            "max": 52,
+            "fonts": [
+              "Caveat",
+              "Cormorant Garamond",
+              "Zilla Slab"
+            ],
+            "font": "Caveat",
+            "finishes": [
+              "paint-white",
+              "paint-black",
+              "engraved"
+            ],
+            "placeholder": "The Okafors"
+          },
+          "position": 36
+        },
+        {
+          "app": "maker",
+          "ready_design_id": {
+            "@ref": "ready:layered-family"
+          },
+          "code": "line",
+          "name": "The small line",
+          "kind": "text",
+          "locked": false,
+          "required": false,
+          "x_mm": 60,
+          "y_mm": 100,
+          "w_mm": 180,
+          "h_mm": 18,
+          "area_id": {
+            "@ref": "area:layered-line"
+          },
+          "rules": {
+            "chars": 30,
+            "grows": true,
+            "unit": "mm",
+            "size": 9,
+            "min": 6,
+            "max": 12,
+            "fonts": [
+              "Manrope",
+              "Cormorant Garamond"
+            ],
+            "font": "Manrope",
+            "finishes": [
+              "engraved",
+              "paint-white"
+            ],
+            "placeholder": "Home since 2021"
+          },
+          "position": 37
         }
       ]
     },
@@ -1996,6 +3444,9 @@
           "base_id": {
             "@ref": "base:coasters"
           },
+          "photo": {
+            "@asset": "photo:coast-wal"
+          },
           "published": true,
           "position": 1
         },
@@ -2027,6 +3478,9 @@
           "lettering_prompt": "One line, up to 24 characters",
           "lettering_hint": "Tell us the name and the date. We set it in the font shown in the photos — if you want something else, say so and we'll reply before we cut.",
           "base_id": null,
+          "photo": {
+            "@asset": "photo:coast-ply"
+          },
           "published": true,
           "position": 2
         },
@@ -2060,6 +3514,9 @@
           "base_id": {
             "@ref": "base:sign"
           },
+          "photo": {
+            "@asset": "photo:sign-house"
+          },
           "published": true,
           "position": 3
         },
@@ -2091,6 +3548,9 @@
           "lettering_prompt": "One word per marker, up to 12 characters each",
           "lettering_hint": "List what you'd like on each of the six — basil, thyme, and so on. We'll set them all the same way.",
           "base_id": null,
+          "photo": {
+            "@asset": "photo:mark-slate"
+          },
           "published": true,
           "position": 4
         },
@@ -2122,6 +3582,9 @@
           "lettering_prompt": "One line, up to 16 characters",
           "lettering_hint": "A name, a nickname, a date. We set it in the font shown in the photos.",
           "base_id": null,
+          "photo": {
+            "@asset": "photo:key-acr"
+          },
           "published": true,
           "position": 5
         },
@@ -2153,6 +3616,9 @@
           "lettering_prompt": "Name on the front, number on the back — up to 20 characters each",
           "lettering_hint": "Give us the name and the number you want us to reach you on. We cut both sides in one pass.",
           "base_id": null,
+          "photo": {
+            "@asset": "photo:tag-pet"
+          },
           "published": true,
           "position": 6
         },
@@ -2184,6 +3650,9 @@
           "lettering_prompt": null,
           "lettering_hint": null,
           "base_id": null,
+          "photo": {
+            "@asset": "photo:tray-3d"
+          },
           "published": true,
           "position": 7
         },
@@ -2215,6 +3684,9 @@
           "lettering_prompt": null,
           "lettering_hint": null,
           "base_id": null,
+          "photo": {
+            "@asset": "photo:pot-3d"
+          },
           "published": true,
           "position": 8
         },
@@ -2246,6 +3718,9 @@
           "lettering_prompt": "One line, up to 18 characters",
           "lettering_hint": "We letter the mug by hand under the glaze, so the line stays soft at the edges. Tell us what it should say.",
           "base_id": null,
+          "photo": {
+            "@asset": "photo:mug-stone"
+          },
           "published": true,
           "position": 9
         },
@@ -2277,6 +3752,9 @@
           "lettering_prompt": "Two lines, up to 24 characters in total",
           "lettering_hint": "Give us both lines and we'll cut them as one piece with a spike on the back.",
           "base_id": null,
+          "photo": {
+            "@asset": "photo:cake-top"
+          },
           "published": true,
           "position": 10
         },
@@ -2310,6 +3788,9 @@
           "base_id": {
             "@ref": "base:board"
           },
+          "photo": {
+            "@asset": "photo:board-cut"
+          },
           "published": true,
           "position": 11
         },
@@ -2341,6 +3822,9 @@
           "lettering_prompt": "Up to 40 characters across two lines",
           "lettering_hint": "Names and the date, usually. Send us the wording exactly as you want it and we'll send a picture back before we cut.",
           "base_id": null,
+          "photo": {
+            "@asset": "photo:sign-wed"
+          },
           "published": true,
           "position": 12
         },
@@ -2372,6 +3856,9 @@
           "lettering_prompt": "One line, up to 24 characters",
           "lettering_hint": "A name or a short line. It runs down the length of the bookmark.",
           "base_id": null,
+          "photo": {
+            "@asset": "photo:book-wal"
+          },
           "published": true,
           "position": 13
         },
@@ -2403,6 +3890,9 @@
           "lettering_prompt": "One line under the picture, up to 30 characters",
           "lettering_hint": "Send the picture and the line you want under it. We engrave the picture in greyscale, so high contrast works best.",
           "base_id": null,
+          "photo": {
+            "@asset": "photo:block-photo"
+          },
           "published": true,
           "position": 14
         },
@@ -2435,6 +3925,9 @@
           "lettering_hint": "Name the shop. You can put your own words or logo in the left window too.",
           "base_id": {
             "@ref": "base:nook"
+          },
+          "photo": {
+            "@asset": "photo:nook"
           },
           "published": true,
           "position": 15
@@ -2469,8 +3962,189 @@
           "base_id": {
             "@ref": "base:keyring"
           },
+          "photo": {
+            "@asset": "photo:key-name"
+          },
           "published": true,
           "position": 16
+        },
+        {
+          "@label": "product:box-keep",
+          "code": "box-keep",
+          "name": "Keepsake box",
+          "category": "desk",
+          "unit": "kit of 7 pieces",
+          "pieces": 1,
+          "price": 58,
+          "lead_days": 4,
+          "machine_kind": "laser",
+          "material_id": {
+            "@ref": "material:wal6"
+          },
+          "grams": 420,
+          "stock_per_unit": 1.019,
+          "size_text": "160 × 110 × 70 mm",
+          "width_mm": 160,
+          "height_mm": 110,
+          "finish_label": "Finish",
+          "made_from": "American black walnut, 6 mm, seven finger-jointed pieces cut on the laser.",
+          "finished_with": "Sanded to 240 grit and oiled. Sent flat with glue and a sheet of instructions, or glued and finished by us.",
+          "care": "Wipe it with a dry cloth. Keep it out of direct sun, which pales walnut over the years.",
+          "icon": "box",
+          "takes_lettering": true,
+          "lettering_limit": 24,
+          "lettering_prompt": "The lid, up to 24 characters",
+          "lettering_hint": "A name, a date, what it is for. Add your logo and it goes beside the words. We send a picture before we cut.",
+          "base_id": {
+            "@ref": "base:box"
+          },
+          "photo": {
+            "@asset": "photo:box-keep"
+          },
+          "published": true,
+          "position": 17
+        },
+        {
+          "@label": "product:sign-layer",
+          "code": "sign-layer",
+          "name": "Layered name sign",
+          "category": "signs",
+          "unit": "each",
+          "pieces": 1,
+          "price": 46,
+          "lead_days": 4,
+          "machine_kind": "laser",
+          "material_id": {
+            "@ref": "material:ply3"
+          },
+          "grams": 141,
+          "stock_per_unit": 1.458,
+          "size_text": "300 × 140 × 9 mm",
+          "width_mm": 300,
+          "height_mm": 140,
+          "finish_label": "Lettering",
+          "made_from": "Three layers of Baltic birch ply, 3 mm each: the back, the frame and the lettering, cut on the laser and glued up.",
+          "finished_with": "The lettering painted before it is glued, so the edges stay crisp. A keyhole slot on the back for one screw.",
+          "care": "Indoors only. Dust it with a soft brush.",
+          "icon": "layers",
+          "takes_lettering": true,
+          "lettering_limit": 18,
+          "lettering_prompt": "The name, up to 18 characters",
+          "lettering_hint": "Big script lettering, cut as its own layer and raised 3 mm. A small line underneath is up to you.",
+          "base_id": {
+            "@ref": "base:layered"
+          },
+          "photo": {
+            "@asset": "photo:sign-layer"
+          },
+          "published": true,
+          "position": 18
+        },
+        {
+          "@label": "product:pot-hex",
+          "code": "pot-hex",
+          "name": "Hexagonal name pot",
+          "category": "pots",
+          "unit": "each",
+          "pieces": 1,
+          "price": 24,
+          "lead_days": 4,
+          "machine_kind": "printer",
+          "material_id": {
+            "@ref": "material:pla-grey"
+          },
+          "grams": 140,
+          "stock_per_unit": 140,
+          "size_text": "110 × 110 × 105 mm",
+          "width_mm": 110,
+          "height_mm": 110,
+          "finish_label": "Colour",
+          "made_from": "Matte PLA, printed at 0.2 mm, six flat sides and a drainage hole.",
+          "finished_with": "The name raised 1 mm on the front panel, printed in the same pass.",
+          "care": "For the windowsill, not the garden. Empty the saucer.",
+          "icon": "sprout",
+          "takes_lettering": true,
+          "lettering_limit": 8,
+          "lettering_prompt": "A name, up to 8 letters",
+          "lettering_hint": "The herb, a name for it, or whose it is. Capitals print cleanest.",
+          "base_id": {
+            "@ref": "base:pot"
+          },
+          "photo": {
+            "@asset": "photo:pot-hex"
+          },
+          "published": true,
+          "position": 19
+        },
+        {
+          "@label": "product:stand-phone",
+          "code": "stand-phone",
+          "name": "Phone stand",
+          "category": "desk",
+          "unit": "each",
+          "pieces": 1,
+          "price": 18,
+          "lead_days": 4,
+          "machine_kind": "printer",
+          "material_id": {
+            "@ref": "material:pla-chalk"
+          },
+          "grams": 70,
+          "stock_per_unit": 70,
+          "size_text": "80 × 75 × 95 mm",
+          "width_mm": 80,
+          "height_mm": 75,
+          "finish_label": "Colour",
+          "made_from": "Matte PLA, printed at 0.2 mm. Holds a phone or a small tablet at 65°.",
+          "finished_with": "A name raised 1 mm along the front lip.",
+          "care": "Wipe it with a damp cloth. Keep it out of a hot car.",
+          "icon": "square",
+          "takes_lettering": true,
+          "lettering_limit": 12,
+          "lettering_prompt": "Along the front, up to 12 characters",
+          "lettering_hint": "A name, a desk, a business — it reads along the front lip.",
+          "base_id": {
+            "@ref": "base:stand"
+          },
+          "photo": {
+            "@asset": "photo:stand-phone"
+          },
+          "published": true,
+          "position": 20
+        },
+        {
+          "@label": "product:fox-flexi",
+          "code": "fox-flexi",
+          "name": "Print-in-place fox",
+          "category": "desk",
+          "unit": "each",
+          "pieces": 1,
+          "price": 16,
+          "lead_days": 4,
+          "machine_kind": "printer",
+          "material_id": {
+            "@ref": "material:pla-grey"
+          },
+          "grams": 45,
+          "stock_per_unit": 45,
+          "size_text": "140 × 60 × 12 mm",
+          "width_mm": 140,
+          "height_mm": 60,
+          "finish_label": "Colour",
+          "made_from": "Matte PLA, printed in one piece with every joint already moving — nothing to put together.",
+          "finished_with": "Every joint worked loose by hand and checked one by one.",
+          "care": "Not for under-threes: the tail joints are small.",
+          "icon": "heart",
+          "takes_lettering": false,
+          "lettering_limit": null,
+          "lettering_prompt": null,
+          "lettering_hint": null,
+          "base_id": null,
+          "photo": {
+            "@asset": "photo:fox-flexi"
+          },
+          "published": true,
+          "position": 21
         }
       ]
     },
@@ -4152,6 +5826,507 @@
           "price": 0,
           "min_qty": 8,
           "percent_off": 14
+        },
+        {
+          "product_id": {
+            "@ref": "product:box-keep"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:box-keep:material:walnut",
+          "kind": "material",
+          "code": "walnut",
+          "name": "Walnut",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:wal6"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:box-keep"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:box-keep:material:ply",
+          "kind": "material",
+          "code": "ply",
+          "name": "Birch ply",
+          "price": -14,
+          "material_id": {
+            "@ref": "material:ply3"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:box-keep"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:box-keep:size:kit",
+          "kind": "size",
+          "code": "kit",
+          "name": "Flat-packed kit",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:box-keep"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:box-keep:size:built",
+          "kind": "size",
+          "code": "built",
+          "name": "Glued and finished",
+          "price": 18
+        },
+        {
+          "product_id": {
+            "@ref": "product:box-keep"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:box-keep:finish:engraved",
+          "kind": "finish",
+          "code": "engraved",
+          "name": "Engraved",
+          "price": 0,
+          "swatch": "#4a2e17"
+        },
+        {
+          "product_id": {
+            "@ref": "product:box-keep"
+          },
+          "active": true,
+          "position": 6,
+          "@label": "option:box-keep:finish:oil",
+          "kind": "finish",
+          "code": "oil",
+          "name": "Engraved and oiled",
+          "price": 0,
+          "swatch": "#6b4423"
+        },
+        {
+          "product_id": {
+            "@ref": "product:box-keep"
+          },
+          "active": true,
+          "position": 7,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:box-keep"
+          },
+          "active": true,
+          "position": 8,
+          "kind": "break",
+          "code": "from-4",
+          "name": "4 or more",
+          "price": 0,
+          "min_qty": 4,
+          "percent_off": 8
+        },
+        {
+          "product_id": {
+            "@ref": "product:box-keep"
+          },
+          "active": true,
+          "position": 9,
+          "@label": "option:box-keep:feature:logo",
+          "kind": "feature",
+          "code": "logo",
+          "name": "Your own logo",
+          "price": 1.5,
+          "feature_code": "logo",
+          "feature_id": {
+            "@ref": "feature:maker-logo"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-layer"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:sign-layer:material:ply",
+          "kind": "material",
+          "code": "ply",
+          "name": "Birch ply",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:ply3"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-layer"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:sign-layer:size:s300",
+          "kind": "size",
+          "code": "s300",
+          "name": "300 × 140 mm",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-layer"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:sign-layer:size:s450",
+          "kind": "size",
+          "code": "s450",
+          "name": "450 × 210 mm",
+          "price": 16
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-layer"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:sign-layer:finish:white",
+          "kind": "finish",
+          "code": "white",
+          "name": "White lettering",
+          "price": 0,
+          "swatch": "#f2f2f0"
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-layer"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:sign-layer:finish:black",
+          "kind": "finish",
+          "code": "black",
+          "name": "Black lettering",
+          "price": 0,
+          "swatch": "#17140f"
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-layer"
+          },
+          "active": true,
+          "position": 6,
+          "@label": "option:sign-layer:finish:bare",
+          "kind": "finish",
+          "code": "bare",
+          "name": "All bare ply",
+          "price": 0,
+          "swatch": "#e0c69e"
+        },
+        {
+          "product_id": {
+            "@ref": "product:sign-layer"
+          },
+          "active": true,
+          "position": 7,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:pot-hex"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:pot-hex:material:resin",
+          "kind": "material",
+          "code": "resin",
+          "name": "PLA",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:pla-grey"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:pot-hex"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:pot-hex:size:s110",
+          "kind": "size",
+          "code": "s110",
+          "name": "110 mm across",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:pot-hex"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:pot-hex:size:s140",
+          "kind": "size",
+          "code": "s140",
+          "name": "140 mm across",
+          "price": 8
+        },
+        {
+          "product_id": {
+            "@ref": "product:pot-hex"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:pot-hex:finish:warm",
+          "kind": "finish",
+          "code": "warm",
+          "name": "Warm grey",
+          "price": 0,
+          "swatch": "#8a8378"
+        },
+        {
+          "product_id": {
+            "@ref": "product:pot-hex"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:pot-hex:finish:chalk",
+          "kind": "finish",
+          "code": "chalk",
+          "name": "Chalk",
+          "price": 0,
+          "swatch": "#e6e1d7"
+        },
+        {
+          "product_id": {
+            "@ref": "product:pot-hex"
+          },
+          "active": true,
+          "position": 6,
+          "@label": "option:pot-hex:finish:ink",
+          "kind": "finish",
+          "code": "ink",
+          "name": "Ink",
+          "price": 0,
+          "swatch": "#2b3340"
+        },
+        {
+          "product_id": {
+            "@ref": "product:pot-hex"
+          },
+          "active": true,
+          "position": 7,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:pot-hex"
+          },
+          "active": true,
+          "position": 8,
+          "kind": "break",
+          "code": "from-4",
+          "name": "4 or more",
+          "price": 0,
+          "min_qty": 4,
+          "percent_off": 8
+        },
+        {
+          "product_id": {
+            "@ref": "product:stand-phone"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:stand-phone:material:resin",
+          "kind": "material",
+          "code": "resin",
+          "name": "PLA",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:pla-chalk"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:stand-phone"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:stand-phone:size:one",
+          "kind": "size",
+          "code": "one",
+          "name": "One size",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:stand-phone"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:stand-phone:finish:chalk",
+          "kind": "finish",
+          "code": "chalk",
+          "name": "Chalk",
+          "price": 0,
+          "swatch": "#e6e1d7"
+        },
+        {
+          "product_id": {
+            "@ref": "product:stand-phone"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:stand-phone:finish:ink",
+          "kind": "finish",
+          "code": "ink",
+          "name": "Ink",
+          "price": 0,
+          "swatch": "#2b3340"
+        },
+        {
+          "product_id": {
+            "@ref": "product:stand-phone"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:stand-phone:finish:amber",
+          "kind": "finish",
+          "code": "amber",
+          "name": "Amber",
+          "price": 0,
+          "swatch": "#c98a2e"
+        },
+        {
+          "product_id": {
+            "@ref": "product:stand-phone"
+          },
+          "active": true,
+          "position": 6,
+          "@label": "option:stand-phone:finish:grey",
+          "kind": "finish",
+          "code": "grey",
+          "name": "Warm grey",
+          "price": 0,
+          "swatch": "#8a8378"
+        },
+        {
+          "product_id": {
+            "@ref": "product:stand-phone"
+          },
+          "active": true,
+          "position": 7,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:stand-phone"
+          },
+          "active": true,
+          "position": 8,
+          "kind": "break",
+          "code": "from-4",
+          "name": "4 or more",
+          "price": 0,
+          "min_qty": 4,
+          "percent_off": 8
+        },
+        {
+          "product_id": {
+            "@ref": "product:fox-flexi"
+          },
+          "active": true,
+          "position": 1,
+          "@label": "option:fox-flexi:material:resin",
+          "kind": "material",
+          "code": "resin",
+          "name": "PLA",
+          "price": 0,
+          "material_id": {
+            "@ref": "material:pla-grey"
+          }
+        },
+        {
+          "product_id": {
+            "@ref": "product:fox-flexi"
+          },
+          "active": true,
+          "position": 2,
+          "@label": "option:fox-flexi:size:one",
+          "kind": "size",
+          "code": "one",
+          "name": "140 mm long",
+          "price": 0
+        },
+        {
+          "product_id": {
+            "@ref": "product:fox-flexi"
+          },
+          "active": true,
+          "position": 3,
+          "@label": "option:fox-flexi:finish:amber",
+          "kind": "finish",
+          "code": "amber",
+          "name": "Amber",
+          "price": 0,
+          "swatch": "#c98a2e"
+        },
+        {
+          "product_id": {
+            "@ref": "product:fox-flexi"
+          },
+          "active": true,
+          "position": 4,
+          "@label": "option:fox-flexi:finish:warm",
+          "kind": "finish",
+          "code": "warm",
+          "name": "Warm grey",
+          "price": 0,
+          "swatch": "#8a8378"
+        },
+        {
+          "product_id": {
+            "@ref": "product:fox-flexi"
+          },
+          "active": true,
+          "position": 5,
+          "@label": "option:fox-flexi:finish:chalk",
+          "kind": "finish",
+          "code": "chalk",
+          "name": "Chalk",
+          "price": 0,
+          "swatch": "#e8e4dc"
+        },
+        {
+          "product_id": {
+            "@ref": "product:fox-flexi"
+          },
+          "active": true,
+          "position": 6,
+          "kind": "break",
+          "code": "from-1",
+          "name": "One or more",
+          "price": 0,
+          "min_qty": 1,
+          "percent_off": 0
         }
       ]
     },
@@ -4885,7 +7060,10 @@
             "@day": 6,
             "@week": true
           },
-          "stage": "make",
+          "stage": "making",
+          "batch_id": {
+            "@ref": "batch:printer-b-keyrings"
+          },
           "spoiled": 0
         },
         {
