@@ -84,7 +84,10 @@ export const OUTBOX = {
   producers: [
     { kind: "order-received", link: "order_id", onCreate: { table: "orders" } },
     // About the proof itself, so each proof of an order is its own e-mail; the order and the shopper are found through it.
-    { kind: "proof-ready", link: "proof_id", onCreate: { table: "proofs" } },
+    // Only a proof with its picture: one added on the dashboard with none has nothing to look at, and is e-mailed once
+    // it is given its picture.
+    { kind: "proof-ready", link: "proof_id", onCreate: { table: "proofs", where: { column: "picture", isNull: false } } },
+    { kind: "proof-ready", link: "proof_id", onChange: { table: "proofs", columns: ["picture"], changed: true, where: { column: "picture", isNull: false } } },
     { kind: "proof-reminder", link: "proof_id", onChange: { table: "proofs", columns: ["reminded_at"], changed: true } },
     { kind: "order-posted", link: "order_id", onChange: { table: "orders", column: "status", to: "posted" } },
     { kind: "request-received", link: "request_id", onCreate: { table: "commission_requests" }, recipient: { column: "email", name: "name", language: "language" } },

@@ -9,10 +9,16 @@
   another shop app on the same Adminium, **Owner** no longer lists, changes or
   removes its bases and designs, and gives every new set-up row Birch Row's
   name. The Customiser's starter fonts stay the owner's to use and upload, never
-  to remove. With the Customiser 1.0.23, the owner also sets the shop's own
-  Customiser settings, the one-colour line among them.
-- The dashboard's Proofs form shows the customer's name under each order's
-  number.
+  to remove. With the Customiser 1.0.23, the owner also sets the Customiser's
+  settings, the one-colour line among them. They are one set for the whole
+  Adminium: with Print Shop installed too, both shops share them, and a change
+  by either owner applies to both.
+- The dashboard's Proofs form shows each order by its number, the customer's
+  name under it.
+- **A proof is e-mailed only once it has its picture.** A proof added on the
+  dashboard without one was e-mailed with nothing to look at; it is now
+  e-mailed when its picture is added, and until then the customer's order page
+  doesn't offer a design's proof for an answer.
 - **No sample date lands in the future.** Added early in the week, the sample
   said an order was placed "in 19h" and a proof sent on a day still to come.
   Orders, proofs, answers and stock now count back from the day the sample is

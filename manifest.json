@@ -8692,6 +8692,7 @@
                   "column": "order_id",
                   "control": "reference",
                   "reference": {
+                    "name": "number",
                     "detail": [
                       "name"
                     ]
@@ -12196,7 +12197,26 @@
         "kind": "proof-ready",
         "link": "proof_id",
         "onCreate": {
-          "table": "proofs"
+          "table": "proofs",
+          "where": {
+            "column": "picture",
+            "isNull": false
+          }
+        }
+      },
+      {
+        "kind": "proof-ready",
+        "link": "proof_id",
+        "onChange": {
+          "table": "proofs",
+          "columns": [
+            "picture"
+          ],
+          "changed": true,
+          "where": {
+            "column": "picture",
+            "isNull": false
+          }
         }
       },
       {

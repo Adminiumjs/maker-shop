@@ -276,6 +276,14 @@ describe("what Your order shows of an order", () => {
     // Its post-by gone by: overdue.
     expect(orderView(read(76), sampleCatalogue(), "2026-08-08").post).toBe("late");
 
+    // A design's proof added before its picture: nothing to look at, so neither waiting nor said to be sent.
+    const bare = { ...read(76), proofs: [...read(76).proofs, { id: 503, order_id: 76, line_id: 761, version: 3, kind: "design", picture: null, state: "sent", note: null, change_note: null, sent_at: "2026-08-06T11:00:00Z", answered_at: null }] };
+    expect(orderView(bare, sampleCatalogue(), "2026-08-06").waiting.map((p) => p.id)).toEqual(["502"]);
+    expect(orderView(bare, sampleCatalogue(), "2026-08-06").log.filter((e) => e.version === 3)).toEqual([]);
+    // …and once it is given its picture, it is.
+    const filed = { ...bare, proofs: bare.proofs.map((p) => (p["id"] === 503 ? { ...p, picture: "/api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1X9/content" } : p)) };
+    expect(orderView(filed, sampleCatalogue(), "2026-08-06").waiting.map((p) => p.id)).toEqual(["502", "503"]);
+
     const posted = orderView(read(47), sampleCatalogue(), "2026-08-06");
     expect(posted.stages.map((s) => [s.key, s.done, s.at])).toEqual([
       ["accepted", true, "2026-07-14T10:00:00Z"],

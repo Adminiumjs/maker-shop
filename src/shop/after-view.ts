@@ -114,7 +114,14 @@ export function orderView(read: OrderRead, catalogue: Catalogue, today: string |
   const post: OrderView["post"] = posted ? "posted" : status === "cancelled" ? "cancelled" : today !== null && postBy !== null && postBy.slice(0, 10) < today ? "late" : "due";
 
   const lineOf = (id: unknown) => lines.find((l) => String(l["id"]) === String(id)) ?? null;
-  const waiting: WaitingProof[] = read.proofs
+  /**
+   * A proof the customer can look at: its picture, or a piece's words drawn as they will be cut. A design's proof
+   * added (on the dashboard) before its picture has nothing to show: it is neither offered for an answer nor said
+   * to be sent, and its e-mail goes once the picture is added.
+   */
+  const shown = (p: Row): boolean => text(p["picture"]) !== null || (p["kind"] !== "design" && text(lineOf(p["line_id"])?.["lettering"]) !== null);
+  const proofs = read.proofs.filter(shown);
+  const waiting: WaitingProof[] = proofs
     .filter((p) => p["state"] === "sent")
     .sort((a, b) => Number(a["version"] ?? 0) - Number(b["version"] ?? 0))
     .map((p) => {
@@ -135,7 +142,7 @@ export function orderView(read: OrderRead, catalogue: Catalogue, today: string |
     });
 
   const log: LogEntry[] = [];
-  for (const p of read.proofs) {
+  for (const p of proofs) {
     const version = Number(p["version"] ?? 1);
     const sent = text(p["sent_at"]);
     if (sent !== null) log.push({ kind: "sent", at: sent, version, detail: text(p["note"]) });

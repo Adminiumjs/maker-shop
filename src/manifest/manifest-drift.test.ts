@@ -240,6 +240,17 @@ describe("the shop's pages call each entry by the ref Adminium gives it", () => 
   });
 });
 
+describe("the proof e-mail", () => {
+  it("goes about each proof once it has its picture: on its making when it has one, else when it is given one", () => {
+    const producers = (manifest.outbox as unknown as { producers: Record<string, unknown>[] }).producers.filter((p) => p["kind"] === "proof-ready");
+    expect(producers.map((p) => p["link"])).toEqual(["proof_id", "proof_id"]);
+    expect(producers.map((p) => p["onCreate"] ?? p["onChange"])).toEqual([
+      { table: "proofs", where: { column: "picture", isNull: false } },
+      { table: "proofs", columns: ["picture"], changed: true, where: { column: "picture", isNull: false } },
+    ]);
+  });
+});
+
 describe("the studio writes only what its work needs", () => {
   it("keeps the maker and the packer on the studio's screens", () => {
     expect(role("maker")["screensOnly"]).toBe(true);
