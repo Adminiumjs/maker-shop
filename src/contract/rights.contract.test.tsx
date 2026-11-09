@@ -21,7 +21,10 @@
  *   - the owner keeps Holiday calendars' closed days (its settings grant),
  *     and finds a customer to erase (`privacy:@:people`);
  *   - the Customiser's set-up page reads and saves for the app's owner alone
- *     (Customiser 1.0.21: no designer role beside it);
+ *     (Customiser 1.0.21: no designer role beside it), Birch Row's own rows
+ *     only: another shop app's set-up on the same Adminium is read, never
+ *     changed, and no new row is given its name; the maker reads the
+ *     Customiser's settings, so a proof uses the shop's one-colour line;
  *   - a packer's session is handed the workspace's name and logo;
  *   - the customer whose design was proofed is erased, the proof pictures
  *     with them, the one a remade proof replaced included, and the search
@@ -355,10 +358,40 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         expect((await callers["maker"]!.post(`/api/v1/data/${connection}/${real("features")}`, { values: { app: "maker", code: `foil-${engine}`, name: "Foil", active: true } })).status).toBe(403);
       }, 120_000);
 
-      it("lets the owner alone read the set-up page's settings", async () => {
+      // The panel draws a one-colour logo at the shop's own line (`one_colour_threshold`), as the shopper saw it.
+      it("lets the owner and the maker read the Customiser's settings", async () => {
         expect(await setUpRead(callers["owner"]!, "settings")).toBe(200);
-        expect(await setUpRead(callers["maker"]!, "settings")).toBe(403);
+        expect(await setUpRead(callers["maker"]!, "settings")).toBe(200);
+        expect(panelsOf("maker").access("customiser", "settings")).toEqual(["read"]);
       });
+
+      // Maker Shop and Print Shop on one Adminium share the Customiser's tables, each row named by its `app`.
+      it("lets the owner change Birch Row's own set-up rows and a starter font, and refuses another shop app's", async () => {
+        const setUp = callers["owner"]!;
+        const cfg = (await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: setUp.fetchAs() }))!;
+        const real = (table: string) => cfg.addOns["customiser"]?.tables?.[table] ?? `customiser_${table}`;
+        const connection = doors["owner"]!.facts().connectionId ?? "";
+        const api = (table: string) => `/api/v1/data/${connection}/${real(table)}`;
+        // Another shop's base and its priced feature, as its own set-up adds them (here the workspace's administrator).
+        const theirBase = ok(await owner.post<{ data: Row }>(api("bases"), { values: { app: "printing", name: `Business cards ${engine}`, kind: "page", width_mm: 85, height_mm: 55, state: "draft", position: 90 } }), 201).data;
+        const theirFeature = ok(await owner.post<{ data: Row }>(api("features"), { values: { app: "printing", code: `spot-uv-${engine}`, name: "Spot UV", active: true } }), 201).data;
+        // Read, as the panels read every row; never changed or removed.
+        expect((await setUp.get(`${api("bases")}/${String(theirBase.id)}`)).status).toBe(200);
+        const changed = await setUp.patch(`${api("bases")}/${String(theirBase.id)}`, { values: { name: "Ours now" } });
+        expect(changed.status, JSON.stringify(changed.body).slice(0, 400)).toBe(403);
+        expect((await setUp.patch(`${api("features")}/${String(theirFeature.id)}`, { values: { name: "Ours now" } })).status).toBe(403);
+        expect((await setUp.send("DELETE", `${api("features")}/${String(theirFeature.id)}`)).status).toBe(403);
+        // No new row named for another app.
+        const tagged = await setUp.post(api("features"), { values: { app: "printing", code: `foil-${engine}`, name: "Foil", active: true } });
+        expect(tagged.status, JSON.stringify(tagged.body).slice(0, 400)).toBe(403);
+        // Its own rows, and a starter font no app names, are still the owner's to change.
+        const ours = ok(await setUp.get<{ data: Row[] }>(`${api("bases")}?limit=200`)).data.find((b) => b["app"] === "maker")!;
+        expect((await setUp.patch(`${api("bases")}/${String(ours.id)}`, { values: { position: Number(ours["position"] ?? 0) } })).status).toBe(200);
+        const starter = ok(await setUp.get<{ data: Row[] }>(`${api("fonts")}?limit=200`)).data.find((f) => f["app"] === null && f["starter"] === true)!;
+        expect((await setUp.patch(`${api("fonts")}/${String(starter.id)}`, { values: { active: true } })).status).toBe(200);
+        // Nothing of the other shop's moved.
+        expect(ok(await owner.get<{ data: Row }>(`${api("bases")}/${String(theirBase.id)}`)).data["name"]).toBe(`Business cards ${engine}`);
+      }, 120_000);
 
       // ── a customer erased: the design's proof pictures, the first one made again included ──
 

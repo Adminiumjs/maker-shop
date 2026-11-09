@@ -2,6 +2,13 @@
 
 ## 0.2.3 (not released yet)
 
+- **The maker's proofs use the shop's own one-colour line.** The **Maker**
+  role now reads the Customiser's settings, so a one-colour logo on a proof is
+  cut at the line the shopper saw, not at 50 %.
+- **The owner changes only Birch Row's own Customiser set-up.** With another
+  shop app on the same Adminium, **Owner** reads its bases and designs but no
+  longer changes or removes them, and gives every new set-up row Birch Row's
+  name. The Customiser's starter fonts stay the owner's to use and upload.
 - **No sample date lands in the future.** Added early in the week, the sample
   said an order was placed "in 19h" and a proof sent on a day still to come.
   Orders, proofs, answers and stock now count back from the day the sample is

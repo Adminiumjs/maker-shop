@@ -69,6 +69,8 @@ const CUSTOMISER_PANEL = [
   { addOn: CUSTOMISER, table: "palette_colours", actions: ["read"] },
   { addOn: CUSTOMISER, table: "fonts", actions: ["read"] },
   { addOn: CUSTOMISER, table: "features", actions: ["read"] },
+  // The shop's one-colour line: the proof draws a one-colour logo at the line the shopper saw it at.
+  { addOn: CUSTOMISER, table: "settings", actions: ["read"] },
 ];
 
 /**
@@ -85,7 +87,7 @@ const CUSTOMISER_SETUP_PAGE = view("customiser");
  * (`appGrants`), the add-on's `app` only on a new row. Named in full, so the
  * install cuts nothing and says nothing was cut.
  */
-const SET_UP_COLUMNS: Record<string, string[]> = {
+export const SET_UP_COLUMNS: Record<string, string[]> = {
   bases: ["name", "kind", "width_mm", "height_mm", "depth_mm", "corner_mm", "bleed_mm", "safe_mm", "sides", "back_feature_id", "material", "thickness_mm", "outline_file", "model_file", "print_file", "faces", "offered", "state", "position"],
   base_pieces: ["base_id", "code", "name", "width_mm", "height_mm", "layers", "left_out", "file", "position"],
   base_areas: ["base_id", "code", "name", "side", "piece_id", "face", "shape", "x_mm", "y_mm", "w_mm", "h_mm", "takes", "required", "rules", "feature_id", "position"],
@@ -97,25 +99,41 @@ const SET_UP_COLUMNS: Record<string, string[]> = {
   features: ["code", "name", "active"],
 };
 
+/** The Customiser's name for this app's rows: its `app` column on every set-up row the shop makes. */
+const OWN_APP = "maker";
+
+/**
+ * Which of the set-up's rows the owner changes and removes: the shop's own.
+ * Another shop app on the same Adminium keeps its own bases and designs in
+ * the same tables; its rows are read (the panels draw from every row) and
+ * never changed from here. A new row is given this app's name and no other.
+ */
+const OWN_ROWS = { reach: "all", while: { column: "app", in: [OWN_APP] } } as const;
+/**
+ * The set-up rows no app names: the Customiser's starter fonts (`app` empty),
+ * whose files the set-up page uploads the first time it is opened, so the
+ * owner changes every font row. Kept apart, so the font grant follows the
+ * Customiser's own word on shared rows.
+ */
+const SHARED_ROWS = new Set(["fonts"]);
+
 /**
  * What the owner sets the shop's side up with on that page (Customiser
  * 1.0.21, its README's "The set-up page"): the Customiser's settings read,
  * the bases added and changed (a base is never removed), and the pieces,
  * areas, ready-made designs and their parts, fonts, palettes, colours and
- * priced features added, changed and removed. With the line's panel (the
- * designs read in clear, a version's proof and its files) it is thirteen of
- * a role's 24 add-on tables. The Customiser's settings themselves stay its
- * own designer's to change.
+ * priced features added, changed and removed, the shop's own rows only. With
+ * the line's panel (the designs read in clear, a version's proof and its
+ * files) it is thirteen of a role's 24 add-on tables. The Customiser's
+ * settings themselves stay its own designer's to change.
  */
-const CUSTOMISER_SET_UP = [
-  ...CUSTOMISER_PANEL.map((entry) => {
-    const columns = SET_UP_COLUMNS[entry.table];
-    if (columns === undefined) return entry;
-    const actions = entry.table === "bases" ? ["read", "create", "update"] : ["read", "create", "update", "delete"];
-    return { ...entry, actions, limit: { creatable: ["app", ...columns], writable: columns } };
-  }),
-  { addOn: CUSTOMISER, table: "settings", actions: ["read"] },
-];
+const CUSTOMISER_SET_UP = CUSTOMISER_PANEL.map((entry) => {
+  const columns = SET_UP_COLUMNS[entry.table];
+  if (columns === undefined) return entry;
+  const actions = entry.table === "bases" ? ["read", "create", "update"] : ["read", "create", "update", "delete"];
+  const rows = SHARED_ROWS.has(entry.table) ? {} : { rows: Object.fromEntries(actions.filter((a) => a === "update" || a === "delete").map((a) => [a, OWN_ROWS])) };
+  return { ...entry, actions, limit: { creatable: ["app", ...columns], creatableValues: { app: [OWN_APP] }, writable: columns, ...rows } };
+});
 
 /** Finding a customer and erasing what the studio keeps of them (Studio → Privacy): the owner's, never a screens-only role's. */
 const ERASE_PEOPLE = "privacy:@:people";

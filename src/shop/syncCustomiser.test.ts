@@ -6,9 +6,9 @@
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { gzipSync } from "node:zlib";
 
 import { afterAll, describe, expect, it } from "vitest";
@@ -47,8 +47,20 @@ function tarball(files: Record<string, string>): Buffer {
   return gzipSync(Buffer.concat(blocks));
 }
 
+/** The add-on's manifest: what an app's role may hold of each table, and a table it offers none of. */
+const MANIFEST = JSON.stringify({
+  requiredSchema: {
+    tables: [
+      { ref: "bases", appGrants: { actions: ["read", "update"], writable: ["name"] } },
+      { ref: "postings" },
+    ],
+  },
+});
+const GRANTS = { bases: { actions: ["read", "update"], writable: ["name"] } };
+
 const RELEASE = {
   "package.json": JSON.stringify({ name: "@adminiumjs/add-on-customiser", version: "1.0.16" }),
+  "manifest.json": MANIFEST,
   "dist/browser/index.js": "export const CustomiserEditor = () => null;\n",
   "dist/browser/stage3d.js": "export const stage = 1;\n",
   "dist/browser/editor.css": ".cz { color: red; }\n",
@@ -83,6 +95,8 @@ describe("taking the Customiser's editor into the shop", () => {
     expect(readFileSync(join(out, "index.js"), "utf8")).toBe(RELEASE["dist/browser/index.js"]);
     expect(readFileSync(join(out, "stage3d.js"), "utf8")).toBe(RELEASE["dist/browser/stage3d.js"]);
     expect(readFileSync(join(out, "editor.css"), "utf8")).toBe(RELEASE["dist/browser/editor.css"]);
+    // What an app's role may hold of each table, from the release's own manifest.
+    expect(JSON.parse(readFileSync(join(out, "app-grants.json"), "utf8"))).toEqual(GRANTS);
     const source = JSON.parse(readFileSync(join(out, "SOURCE.json"), "utf8")) as Record<string, unknown>;
     expect(source).toMatchObject({ from: "release", package: "@adminiumjs/add-on-customiser", version: "1.0.16", integrity });
     expect(run("--tarball", tgz, "--ledger", ledger, "--out", out, "--check").ok).toBe(true);
@@ -110,15 +124,31 @@ describe("taking the Customiser's editor into the shop", () => {
     expect(run("--tarball", tgz, "--ledger", standIn().ledger, "--version", "1.0.15", "--out", temp()).out).toMatch(/not 1\.0\.15/);
   });
 
+  it("refuses a release with no manifest to take the app grants from", () => {
+    const { "manifest.json": _manifest, ...rest } = RELEASE;
+    const bare = standIn(rest);
+    const out = temp();
+    expect(run("--tarball", bare.tgz, "--ledger", bare.ledger, "--out", out).out).toMatch(/no manifest\.json/);
+    expect(existsSync(join(out, "index.js"))).toBe(false);
+  });
+
   it("takes a built checkout's files, naming its version and never a path on this machine", () => {
-    const dist = temp();
+    // The add-on's own folder: its manifest two up from its dist/browser.
+    const dist = join(temp(), "customiser", "dist", "browser");
+    mkdirSync(dist, { recursive: true });
     for (const name of ["index.js", "stage3d.js", "editor.css"]) writeFileSync(join(dist, name), `/* ${name} */\n`);
     const out = temp();
+    expect(run(dist, "--out", out).ok).toBe(false);
+    writeFileSync(join(dirname(dirname(dist)), "manifest.json"), MANIFEST);
     expect(run(dist, "--out", out).ok).toBe(true);
+    expect(JSON.parse(readFileSync(join(out, "app-grants.json"), "utf8"))).toEqual(GRANTS);
     const source = readFileSync(join(out, "SOURCE.json"), "utf8");
     expect(source).not.toContain(dist);
     expect(JSON.parse(source)).toMatchObject({ from: "checkout", package: "@adminiumjs/add-on-customiser" });
     writeFileSync(join(out, "editor.css"), "/* changed */\n");
+    expect(run(dist, "--out", out, "--check").ok).toBe(false);
+    expect(run(dist, "--out", out).ok).toBe(true);
+    writeFileSync(join(out, "app-grants.json"), "{}\n");
     expect(run(dist, "--out", out, "--check").ok).toBe(false);
   });
 
