@@ -375,12 +375,14 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         // Another shop's base and its priced feature, as its own set-up adds them (here the workspace's administrator).
         const theirBase = ok(await owner.post<{ data: Row }>(api("bases"), { values: { app: "printing", name: `Business cards ${engine}`, kind: "page", width_mm: 85, height_mm: 55, state: "draft", position: 90 } }), 201).data;
         const theirFeature = ok(await owner.post<{ data: Row }>(api("features"), { values: { app: "printing", code: `spot-uv-${engine}`, name: "Spot UV", active: true } }), 201).data;
-        // Read, as the panels read every row; never changed or removed.
+        // Read, as the panels read every row; never changed or removed. A row out of the owner's reach for a change is
+        // one Adminium does not find for it (404), as with any row limit.
         expect((await setUp.get(`${api("bases")}/${String(theirBase.id)}`)).status).toBe(200);
         const changed = await setUp.patch(`${api("bases")}/${String(theirBase.id)}`, { values: { name: "Ours now" } });
-        expect(changed.status, JSON.stringify(changed.body).slice(0, 400)).toBe(403);
-        expect((await setUp.patch(`${api("features")}/${String(theirFeature.id)}`, { values: { name: "Ours now" } })).status).toBe(403);
-        expect((await setUp.send("DELETE", `${api("features")}/${String(theirFeature.id)}`)).status).toBe(403);
+        expect([403, 404], JSON.stringify(changed.body).slice(0, 400)).toContain(changed.status);
+        expect([403, 404]).toContain((await setUp.patch(`${api("features")}/${String(theirFeature.id)}`, { values: { name: "Ours now" } })).status);
+        expect([403, 404]).toContain((await setUp.send("DELETE", `${api("features")}/${String(theirFeature.id)}`)).status);
+        expect(ok(await owner.get<{ data: Row }>(`${api("features")}/${String(theirFeature.id)}`)).data["name"]).toBe("Spot UV");
         // No new row named for another app.
         const tagged = await setUp.post(api("features"), { values: { app: "printing", code: `foil-${engine}`, name: "Foil", active: true } });
         expect(tagged.status, JSON.stringify(tagged.body).slice(0, 400)).toBe(403);
