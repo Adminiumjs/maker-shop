@@ -40,9 +40,13 @@ export const VERSION = "0.2.2";
  * earlier picture with its customer. 0.3.51 adds the files the sample's rows for the Customiser ship
  * (its photos, models and cut files); an older Adminium drops them, and the
  * sample cannot be added; it bundles the Customiser 1.0.22, whose set-up page
- * opens to the app's owner.
+ * opens to the app's owner. 0.3.52 bundles the Customiser 1.0.23, whose
+ * tables let each shop app's roles reach only their own customers' designs
+ * and set-up rows, and the owner set the shop's settings; it names a proof's
+ * order by its number, and makes a related list's new proof with the
+ * Proofs page's own form (its picture field among them).
  */
-export const MIN_ADMINIUM = "0.3.51";
+export const MIN_ADMINIUM = "0.3.52";
 
 const ENV = {
   VITE_ADMINIUM_API_BASE_URL: { required: false, example: "https://admin.example.com" },
