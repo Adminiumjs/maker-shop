@@ -121,12 +121,9 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
     // Every table the Customiser lets an app's role add rows to but its own ledger's (a design's versions and files) is set up here.
     const setUp = Object.keys(offered).filter((table) => offered[table]!.actions.includes("create") && !["design_versions", "version_files"].includes(table));
     expect(Object.keys(SET_UP_COLUMNS).sort()).toEqual(setUp.sort());
-    // Until the Customiser 1.0.23 is vendored: its settings are an app role's to read alone (the test below lapses then).
-    const excused = (key: string, table: string) => key === "owner" && table === "settings" && !offered["settings"]!.actions.includes("update");
     for (const key of ["owner", "maker", "packer"]) {
       for (const grant of heldBy(key)) {
         const theirs = offered[grant.table]!;
-        if (excused(key, grant.table)) continue;
         expect(grant.actions.filter((a) => !theirs.actions.includes(a)), `${key} ${grant.table}`).toEqual([]);
         expect((grant.limit?.creatable ?? []).filter((c) => !(theirs.creatable ?? []).includes(c)), `${key} ${grant.table} creatable`).toEqual([]);
         expect((grant.limit?.writable ?? []).filter((c) => !(theirs.writable ?? []).includes(c)), `${key} ${grant.table} writable`).toEqual([]);
@@ -134,9 +131,8 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
     }
   });
 
-  // FAILS UNTIL vendor/customiser/ IS THE CUSTOMISER 1.0.23: 1.0.22 offers an app's role the settings' read alone and a
-  // font's `starter` to change. Once 1.0.23 is vendored this passes, and vitest says so: drop `.fails` then.
-  it.fails("holds the owner's set-up and settings to exactly what the Customiser lets an app's role write (vendored 1.0.23 or later)", () => {
+  // The Customiser 1.0.23 and later: the shop's settings an app's role changes, and no font's `starter`.
+  it("holds the owner's set-up and settings to exactly what the Customiser lets an app's role write (vendored 1.0.23 or later)", () => {
     const owner = Object.fromEntries(heldBy("owner").map((g) => [g.table, g]));
     for (const table of [...Object.keys(SET_UP_COLUMNS), "settings"]) {
       const theirs = offered[table]!;
