@@ -2,6 +2,10 @@
 
 ## 0.2.3 (not released yet)
 
+- **No sample date lands in the future.** Added early in the week, the sample
+  said an order was placed "in 19h" and a proof sent on a day still to come.
+  Orders, proofs, answers and stock now count back from the day the sample is
+  added; the post-by dates, bookings and the closure keep their weekdays.
 - **The sample holds one proof out per piece.** BR-2262's and BR-2288's first
   proofs, a change asked on each, now read "Sent again" by their second, as
   Adminium moves them when a proof is made; the change asked stays on them.

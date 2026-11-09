@@ -98,6 +98,29 @@ describe("every row is one the studio could have made", () => {
     expect([...new Set(ago)].sort()).toEqual(["PT1H40M", "PT5H40M"]);
   });
 
+  it("counts every moment that has passed back from the day it is added, so none lands after it, whatever the weekday", () => {
+    // Added on a Monday, the week's Thursday is three days ahead: a `@week` moment before it would still be to come.
+    const PASSED = ["placed_at", "posted_at", "created_at", "sent_at", "answered_at", "made_at", "started_at"];
+    const moments = [main, section].flatMap((bundle) =>
+      bundle.tables.flatMap((t) => t.rows.flatMap((row) => PASSED.filter((c) => row[c] !== undefined && row[c] !== null).map((c) => ({ at: `${t.ref}.${c}`, v: row[c] as Row })))),
+    );
+    expect(new Set(moments.map((m) => m.at.split(".")[0]))).toEqual(new Set(["customers", "orders", "batches", "stock_movements", "commission_requests", "problem_reports", "proofs"]));
+    for (const { at, v } of moments) {
+      if (typeof v["@ago"] === "string") continue;
+      expect(v["@week"], at).toBeUndefined();
+      expect(v["@day"], at).toBeLessThan(0);
+    }
+    // What the studio plans by keeps its weekday; a line's post-by is three days or more after its order came in,
+    // so it stays after it when the sample is added as late as three days after the week's Thursday.
+    const placed = new Map(rowsOf(main, "orders").map((o) => [o["@label"], (o["placed_at"] as Row)["@day"] ?? 0]));
+    for (const line of rowsOf(section, "order_lines")) {
+      const postBy = line["post_by"] as Row;
+      expect(postBy["@week"]).toBe(true);
+      const order = (line["order_id"] as { "@ref": string })["@ref"];
+      expect(Number(postBy["@day"]) - Number(placed.get(order)), String(line["@label"])).toBeGreaterThanOrEqual(3);
+    }
+  });
+
   it("holds no line with two proofs out: a proof sent again sends the one before it again, keeping the change asked on it", () => {
     const proofs = rowsOf(section, "proofs");
     const lineOf = (p: Row) => (p["line_id"] as { "@ref": string })["@ref"];

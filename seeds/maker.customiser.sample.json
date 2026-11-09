@@ -7134,13 +7134,11 @@
           "state": "approved",
           "sent_at": {
             "@day": -51,
-            "@time": "11:00",
-            "@week": true
+            "@time": "11:00"
           },
           "answered_at": {
             "@day": -51,
-            "@time": "15:00",
-            "@week": true
+            "@time": "15:00"
           }
         },
         {
@@ -7157,13 +7155,11 @@
           "state": "approved",
           "sent_at": {
             "@day": -37,
-            "@time": "11:00",
-            "@week": true
+            "@time": "11:00"
           },
           "answered_at": {
             "@day": -37,
-            "@time": "15:00",
-            "@week": true
+            "@time": "15:00"
           }
         },
         {
@@ -7180,13 +7176,11 @@
           "state": "approved",
           "sent_at": {
             "@day": -37,
-            "@time": "11:00",
-            "@week": true
+            "@time": "11:00"
           },
           "answered_at": {
             "@day": -37,
-            "@time": "15:00",
-            "@week": true
+            "@time": "15:00"
           }
         },
         {
@@ -7203,13 +7197,11 @@
           "state": "approved",
           "sent_at": {
             "@day": -23,
-            "@time": "11:00",
-            "@week": true
+            "@time": "11:00"
           },
           "answered_at": {
             "@day": -23,
-            "@time": "15:00",
-            "@week": true
+            "@time": "15:00"
           }
         },
         {
@@ -7226,13 +7218,11 @@
           "state": "approved",
           "sent_at": {
             "@day": -16,
-            "@time": "11:00",
-            "@week": true
+            "@time": "11:00"
           },
           "answered_at": {
             "@day": -16,
-            "@time": "15:00",
-            "@week": true
+            "@time": "15:00"
           }
         },
         {
@@ -7249,13 +7239,11 @@
           "state": "approved",
           "sent_at": {
             "@day": -14,
-            "@time": "11:00",
-            "@week": true
+            "@time": "11:00"
           },
           "answered_at": {
             "@day": -14,
-            "@time": "15:00",
-            "@week": true
+            "@time": "15:00"
           }
         },
         {
@@ -7272,14 +7260,12 @@
           "state": "superseded",
           "sent_at": {
             "@day": -8,
-            "@time": "11:00",
-            "@week": true
+            "@time": "11:00"
           },
           "change_note": "Could the est. line sit a bit lower, and slightly smaller than the name?",
           "answered_at": {
             "@day": -7,
-            "@time": "15:00",
-            "@week": true
+            "@time": "15:00"
           }
         },
         {
@@ -7296,13 +7282,11 @@
           "state": "approved",
           "sent_at": {
             "@day": -7,
-            "@time": "11:00",
-            "@week": true
+            "@time": "11:00"
           },
           "answered_at": {
             "@day": -6,
-            "@time": "15:00",
-            "@week": true
+            "@time": "15:00"
           }
         },
         {
@@ -7319,13 +7303,11 @@
           "state": "approved",
           "sent_at": {
             "@day": -13,
-            "@time": "11:00",
-            "@week": true
+            "@time": "11:00"
           },
           "answered_at": {
             "@day": -12,
-            "@time": "15:00",
-            "@week": true
+            "@time": "15:00"
           }
         },
         {
@@ -7342,13 +7324,11 @@
           "state": "approved",
           "sent_at": {
             "@day": -13,
-            "@time": "11:00",
-            "@week": true
+            "@time": "11:00"
           },
           "answered_at": {
             "@day": -13,
-            "@time": "15:00",
-            "@week": true
+            "@time": "15:00"
           }
         },
         {
@@ -7365,13 +7345,11 @@
           "state": "approved",
           "sent_at": {
             "@day": -2,
-            "@time": "11:00",
-            "@week": true
+            "@time": "11:00"
           },
           "answered_at": {
             "@day": -2,
-            "@time": "15:00",
-            "@week": true
+            "@time": "15:00"
           }
         },
         {
@@ -7388,13 +7366,11 @@
           "state": "approved",
           "sent_at": {
             "@day": -2,
-            "@time": "11:00",
-            "@week": true
+            "@time": "11:00"
           },
           "answered_at": {
             "@day": -2,
-            "@time": "15:00",
-            "@week": true
+            "@time": "15:00"
           }
         },
         {
@@ -7411,8 +7387,7 @@
           "state": "sent",
           "sent_at": {
             "@day": -1,
-            "@time": "11:00",
-            "@week": true
+            "@time": "11:00"
           }
         },
         {
@@ -7429,8 +7404,7 @@
           "state": "sent",
           "sent_at": {
             "@day": -1,
-            "@time": "11:00",
-            "@week": true
+            "@time": "11:00"
           }
         },
         {
@@ -7595,14 +7569,12 @@
           "state": "superseded",
           "sent_at": {
             "@day": -1,
-            "@time": "11:00",
-            "@week": true
+            "@time": "11:00"
           },
           "change_note": "Could the sign be a little bigger?",
           "answered_at": {
             "@day": -1,
-            "@time": "15:00",
-            "@week": true
+            "@time": "15:00"
           }
         },
         {

@@ -369,8 +369,7 @@
           "may_email": false,
           "created_at": {
             "@day": -51,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           }
         },
         {
@@ -381,8 +380,7 @@
           "may_email": false,
           "created_at": {
             "@day": -37,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           }
         },
         {
@@ -393,8 +391,7 @@
           "may_email": false,
           "created_at": {
             "@day": -28,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           }
         },
         {
@@ -405,8 +402,7 @@
           "may_email": false,
           "created_at": {
             "@day": -23,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           }
         },
         {
@@ -417,8 +413,7 @@
           "may_email": false,
           "created_at": {
             "@day": -16,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           }
         },
         {
@@ -429,8 +424,7 @@
           "may_email": false,
           "created_at": {
             "@day": -14,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           }
         },
         {
@@ -441,8 +435,7 @@
           "may_email": false,
           "created_at": {
             "@day": -1,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           }
         },
         {
@@ -452,9 +445,7 @@
           "language": "en-US",
           "may_email": false,
           "created_at": {
-            "@day": 0,
-            "@time": "10:00",
-            "@week": true
+            "@ago": "PT6H40M"
           }
         },
         {
@@ -464,9 +455,7 @@
           "language": "en-US",
           "may_email": false,
           "created_at": {
-            "@day": 0,
-            "@time": "10:00",
-            "@week": true
+            "@ago": "PT6H40M"
           }
         },
         {
@@ -476,9 +465,7 @@
           "language": "en-US",
           "may_email": false,
           "created_at": {
-            "@day": 0,
-            "@time": "10:00",
-            "@week": true
+            "@ago": "PT6H40M"
           }
         },
         {
@@ -488,9 +475,7 @@
           "language": "en-US",
           "may_email": false,
           "created_at": {
-            "@day": 0,
-            "@time": "10:00",
-            "@week": true
+            "@ago": "PT6H40M"
           }
         },
         {
@@ -500,9 +485,7 @@
           "language": "en-US",
           "may_email": false,
           "created_at": {
-            "@day": 0,
-            "@time": "10:00",
-            "@week": true
+            "@ago": "PT6H40M"
           }
         }
       ]
@@ -529,13 +512,11 @@
           },
           "placed_at": {
             "@day": -51,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           },
           "posted_at": {
             "@day": -47,
-            "@time": "16:00",
-            "@week": true
+            "@time": "16:00"
           },
           "may_email": false
         },
@@ -558,13 +539,11 @@
           },
           "placed_at": {
             "@day": -37,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           },
           "posted_at": {
             "@day": -33,
-            "@time": "16:00",
-            "@week": true
+            "@time": "16:00"
           },
           "may_email": false
         },
@@ -587,13 +566,11 @@
           },
           "placed_at": {
             "@day": -28,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           },
           "posted_at": {
             "@day": -23,
-            "@time": "16:00",
-            "@week": true
+            "@time": "16:00"
           },
           "may_email": false
         },
@@ -616,13 +593,11 @@
           },
           "placed_at": {
             "@day": -23,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           },
           "posted_at": {
             "@day": -19,
-            "@time": "16:00",
-            "@week": true
+            "@time": "16:00"
           },
           "may_email": false
         },
@@ -645,13 +620,11 @@
           },
           "placed_at": {
             "@day": -16,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           },
           "posted_at": {
             "@day": -12,
-            "@time": "16:00",
-            "@week": true
+            "@time": "16:00"
           },
           "may_email": false
         },
@@ -674,13 +647,11 @@
           },
           "placed_at": {
             "@day": -14,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           },
           "posted_at": {
             "@day": -9,
-            "@time": "16:00",
-            "@week": true
+            "@time": "16:00"
           },
           "may_email": false
         },
@@ -703,8 +674,7 @@
           },
           "placed_at": {
             "@day": -8,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           },
           "posted_at": null,
           "may_email": false
@@ -728,8 +698,7 @@
           },
           "placed_at": {
             "@day": -13,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           },
           "posted_at": null,
           "may_email": false
@@ -753,8 +722,7 @@
           },
           "placed_at": {
             "@day": -2,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           },
           "posted_at": null,
           "may_email": false
@@ -778,8 +746,7 @@
           },
           "placed_at": {
             "@day": -2,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           },
           "posted_at": null,
           "may_email": false
@@ -803,8 +770,7 @@
           },
           "placed_at": {
             "@day": -1,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           },
           "posted_at": null,
           "may_email": false
@@ -828,8 +794,7 @@
           },
           "placed_at": {
             "@day": -1,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           },
           "posted_at": null,
           "may_email": false
@@ -852,9 +817,7 @@
             "@ref": "service:second"
           },
           "placed_at": {
-            "@day": 0,
-            "@time": "10:00",
-            "@week": true
+            "@ago": "PT6H40M"
           },
           "posted_at": null,
           "may_email": false
@@ -877,9 +840,7 @@
             "@ref": "service:second"
           },
           "placed_at": {
-            "@day": 0,
-            "@time": "10:00",
-            "@week": true
+            "@ago": "PT6H40M"
           },
           "posted_at": null,
           "may_email": false
@@ -902,9 +863,7 @@
             "@ref": "service:tracked"
           },
           "placed_at": {
-            "@day": 0,
-            "@time": "10:00",
-            "@week": true
+            "@ago": "PT6H40M"
           },
           "posted_at": null,
           "may_email": false
@@ -927,9 +886,7 @@
             "@ref": "service:second"
           },
           "placed_at": {
-            "@day": 0,
-            "@time": "10:00",
-            "@week": true
+            "@ago": "PT6H40M"
           },
           "posted_at": null,
           "may_email": false
@@ -952,9 +909,7 @@
             "@ref": "service:second"
           },
           "placed_at": {
-            "@day": 0,
-            "@time": "10:00",
-            "@week": true
+            "@ago": "PT6H40M"
           },
           "posted_at": null,
           "may_email": false
@@ -977,9 +932,7 @@
             "@ref": "service:tracked"
           },
           "placed_at": {
-            "@day": 0,
-            "@time": "10:00",
-            "@week": true
+            "@ago": "PT6H40M"
           },
           "posted_at": null,
           "may_email": false
@@ -1002,9 +955,7 @@
             "@ref": "service:tracked"
           },
           "placed_at": {
-            "@day": 0,
-            "@time": "10:00",
-            "@week": true
+            "@ago": "PT6H40M"
           },
           "posted_at": null,
           "may_email": false
@@ -1028,8 +979,7 @@
           },
           "placed_at": {
             "@day": -1,
-            "@time": "10:00",
-            "@week": true
+            "@time": "10:00"
           },
           "posted_at": null,
           "may_email": false
@@ -1052,9 +1002,7 @@
             "@ref": "service:second"
           },
           "placed_at": {
-            "@day": 0,
-            "@time": "10:00",
-            "@week": true
+            "@ago": "PT6H40M"
           },
           "posted_at": null,
           "may_email": false
@@ -1077,9 +1025,7 @@
             "@ref": "service:second"
           },
           "placed_at": {
-            "@day": 0,
-            "@time": "10:00",
-            "@week": true
+            "@ago": "PT6H40M"
           },
           "posted_at": null,
           "may_email": false
@@ -1262,8 +1208,7 @@
           "note": "Opening stock",
           "made_at": {
             "@day": -28,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1275,8 +1220,7 @@
           "note": "This week's batches",
           "made_at": {
             "@day": -2,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1288,8 +1232,7 @@
           "note": "Opening stock",
           "made_at": {
             "@day": -28,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1301,8 +1244,7 @@
           "note": "This week's batches",
           "made_at": {
             "@day": -2,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1314,8 +1256,7 @@
           "note": "Opening stock",
           "made_at": {
             "@day": -28,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1327,8 +1268,7 @@
           "note": "This week's batches",
           "made_at": {
             "@day": -2,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1340,8 +1280,7 @@
           "note": "Opening stock",
           "made_at": {
             "@day": -28,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1353,8 +1292,7 @@
           "note": "Opening stock",
           "made_at": {
             "@day": -28,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1366,8 +1304,7 @@
           "note": "This week's batches",
           "made_at": {
             "@day": -2,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1379,8 +1316,7 @@
           "note": "Opening stock",
           "made_at": {
             "@day": -28,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1392,8 +1328,7 @@
           "note": "This week's batches",
           "made_at": {
             "@day": -2,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1405,8 +1340,7 @@
           "note": "Opening stock",
           "made_at": {
             "@day": -28,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1418,8 +1352,7 @@
           "note": "This week's batches",
           "made_at": {
             "@day": -2,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1431,8 +1364,7 @@
           "note": "Opening stock",
           "made_at": {
             "@day": -28,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1444,8 +1376,7 @@
           "note": "This week's batches",
           "made_at": {
             "@day": -2,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1457,8 +1388,7 @@
           "note": "Opening stock",
           "made_at": {
             "@day": -28,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1470,8 +1400,7 @@
           "note": "This week's batches",
           "made_at": {
             "@day": -2,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1483,8 +1412,7 @@
           "note": "Opening stock",
           "made_at": {
             "@day": -28,
-            "@time": "09:00",
-            "@week": true
+            "@time": "09:00"
           }
         },
         {
@@ -1524,8 +1452,7 @@
           "staff_note": null,
           "created_at": {
             "@day": -1,
-            "@time": "20:14",
-            "@week": true
+            "@time": "20:14"
           }
         },
         {
@@ -1546,8 +1473,7 @@
           "staff_note": "Sent a sketch and a price on Tuesday. The logo is a vector, fine to engrave.",
           "created_at": {
             "@day": -3,
-            "@time": "11:02",
-            "@week": true
+            "@time": "11:02"
           }
         },
         {
@@ -1565,8 +1491,7 @@
           "staff_note": "Made as a two-layer cake topper — ordered as BR-2286.",
           "created_at": {
             "@day": -7,
-            "@time": "09:40",
-            "@week": true
+            "@time": "09:40"
           }
         }
       ]
@@ -1589,8 +1514,7 @@
           "details": "Back from a week away to find the parcel — one corner of the photo block is chipped.",
           "created_at": {
             "@day": -1,
-            "@time": "08:31",
-            "@week": true
+            "@time": "08:31"
           }
         }
       ]

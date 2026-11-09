@@ -34,8 +34,10 @@
  * which sample data never fires), counted in studio days by the same rule.
  *
  * The studio's clock is pinned to Thursday 6 August 2026, 16:40, as the comps
- * draw it: every date is a `@week` day from the bundle's Thursday, so it
- * keeps its weekday whatever day the sample is added on. The orders carry
+ * draw it: every day the studio plans by is a `@week` day from the bundle's
+ * Thursday, so it keeps its weekday whatever day the sample is added on;
+ * every moment that has passed counts back from the adding day, so none
+ * lands after it. The orders carry
  * their own numbers (BR-2241 to BR-2290) and no running number, so the
  * studio's own next order is BR-2291. Addresses end in `.example`, which
  * Adminium never mails.
@@ -81,15 +83,19 @@ export const addDays = (iso: string, n: number): string => {
 };
 /** Days from the bundle's Thursday. */
 const offset = (iso: string): number => Math.round((parse(iso).getTime() - parse(TODAY).getTime()) / 86_400_000);
+/** A day the studio plans by (a post-by, a booking, a closure): on its weekday, in the week nearest the adding day. */
 const day = (iso: string): Row => ({ "@day": offset(iso), "@week": true });
 const wall = (iso: string, time: string): Row => ({ "@day": offset(iso), "@time": time, "@week": true });
 /**
- * A moment that has passed by the sample's 16:40: today's as so long ago
- * (`@ago`), so a sample added in the morning never stamps a proof sent at 11:00
- * that has not come yet; another day's as its wall time.
+ * A moment that has passed (an order placed, a proof sent or answered, stock
+ * received), counted back from the day the sample is added, never from its
+ * week's Thursday: added on a Monday, that Thursday is still to come, and a
+ * proof "sent" on the Wednesday before it would read as sent in two days.
+ * Today's is so long before the sample's 16:40 (`@ago`), so a sample added in
+ * the morning never stamps a proof sent at 11:00 that has not come yet.
  */
 const past = (iso: string, time: string): Row => {
-  if (offset(iso) !== 0) return wall(iso, time);
+  if (offset(iso) !== 0) return { "@day": offset(iso), "@time": time };
   const minutes = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
   const ago = Math.max(minutes(NOW_TIME) - minutes(time), 0);
   return { "@ago": `PT${String(Math.floor(ago / 60))}H${String(ago % 60)}M` };
@@ -627,7 +633,7 @@ export function sampleBundle(): SampleBundle {
       { ref: "closures", rows: CLOSURES.map((c) => ({ from_date: day(c.from), to_date: day(c.to), reason: c.reason, active: true })) },
       {
         ref: "customers",
-        rows: [...customers.values()].map((c) => ({ "@label": customerLabel(c.email), email: c.email, name: c.name, language: "en-US", may_email: false, created_at: wall(c.first, PLACED_AT) })),
+        rows: [...customers.values()].map((c) => ({ "@label": customerLabel(c.email), email: c.email, name: c.name, language: "en-US", may_email: false, created_at: past(c.first, PLACED_AT) })),
       },
       {
         ref: "orders",
@@ -644,8 +650,8 @@ export function sampleBundle(): SampleBundle {
           language: "en-US",
           customer_id: { "@ref": customerLabel(o.email) },
           service_id: { "@ref": `service:${o.ship}` },
-          placed_at: wall(o.placed, PLACED_AT),
-          posted_at: o.posted === undefined ? null : wall(o.posted, "16:00"),
+          placed_at: past(o.placed, PLACED_AT),
+          posted_at: o.posted === undefined ? null : past(o.posted, "16:00"),
           may_email: false,
         })),
       },
@@ -664,8 +670,8 @@ export function sampleBundle(): SampleBundle {
       {
         ref: "stock_movements",
         rows: MATERIALS.flatMap((m): Row[] => [
-          { material_id: { "@ref": `material:${m.code}` }, kind: "received", qty: m.onHand, note: "Opening stock", made_at: wall(addDays(TODAY, -28), "09:00") },
-          ...(m.committed === 0 ? [] : [{ material_id: { "@ref": `material:${m.code}` }, kind: "committed", qty: m.committed, note: "This week's batches", made_at: wall(addDays(TODAY, -2), "09:00") }]),
+          { material_id: { "@ref": `material:${m.code}` }, kind: "received", qty: m.onHand, note: "Opening stock", made_at: past(addDays(TODAY, -28), "09:00") },
+          ...(m.committed === 0 ? [] : [{ material_id: { "@ref": `material:${m.code}` }, kind: "committed", qty: m.committed, note: "This week's batches", made_at: past(addDays(TODAY, -2), "09:00") }]),
         ]).concat([{ material_id: { "@ref": `material:${BATCH.stock}` }, kind: "used", qty: BATCH.grams, batch_id: { "@ref": BATCH.label }, note: BATCH.name, made_at: past(TODAY, BATCH.from) }]),
       },
       {
