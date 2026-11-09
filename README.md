@@ -97,8 +97,11 @@ Row's Thursday, or add it later from the app's settings.
 Give the studio's people their roles under Staff. **Owner** also sets up what
 shoppers customise (the bases, ready-made designs, fonts, finishes and priced
 features) on the Customiser's set-up page, `/add-ons/customiser/customiser`,
-with no Customiser role beside it. The Customiser's own settings are read
-there, and changed by its **Customiser designer** role.
+with no Customiser role beside it: Birch Row's own set-up only, so with another
+shop app on the same Adminium its bases and designs are read there, never
+changed. The Customiser's own settings are read there (and by **Maker**, whose
+proofs cut a one-colour logo at the shop's own line), and changed by its
+**Customiser designer** role.
 
 Once installed, the studio's screens are served at `/apps/maker/staff/` and the
 shop at `/apps/maker/customer/`. A studio can also give the shop a domain of its
