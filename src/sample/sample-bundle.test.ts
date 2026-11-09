@@ -98,6 +98,24 @@ describe("every row is one the studio could have made", () => {
     expect([...new Set(ago)].sort()).toEqual(["PT1H40M", "PT5H40M"]);
   });
 
+  it("holds no line with two proofs out: a proof sent again sends the one before it again, keeping the change asked on it", () => {
+    const proofs = rowsOf(section, "proofs");
+    const lineOf = (p: Row) => (p["line_id"] as { "@ref": string })["@ref"];
+    for (const line of new Set(proofs.map(lineOf))) {
+      const out = proofs.filter((p) => lineOf(p) === line && (p["state"] === "sent" || p["state"] === "change_asked"));
+      expect(out.length, line).toBeLessThanOrEqual(1);
+    }
+    const versionsOf = (line: string) => proofs.filter((p) => lineOf(p) === line).map((p) => [p["version"], p["state"], p["change_note"] ?? null]);
+    expect(versionsOf("line:BR-2262:1")).toEqual([
+      [1, "superseded", "Could the est. line sit a bit lower, and slightly smaller than the name?"],
+      [2, "approved", null],
+    ]);
+    expect(versionsOf("line:BR-2288:1")).toEqual([
+      [1, "superseded", "Could the sign be a little bigger?"],
+      [2, "sent", null],
+    ]);
+  });
+
   it("mails nobody real: every address is on a reserved .example domain", () => {
     const addresses = [...JSON.stringify([main, section]).matchAll(/"email":\s*"([^"]+)"/g)].map((m) => m[1]!);
     expect(addresses.length).toBeGreaterThan(20);

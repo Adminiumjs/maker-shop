@@ -2,6 +2,9 @@
 
 ## 0.2.3 (not released yet)
 
+- **The sample holds one proof out per piece.** BR-2262's and BR-2288's first
+  proofs, a change asked on each, now read "Sent again" by their second, as
+  Adminium moves them when a proof is made; the change asked stays on them.
 - **A proof sent again reads as replaced on the studio's order page.** The
   order's Proofs card said an earlier proof was still "waiting on a reply"
   after the next one went; it now says which proof replaced it.

@@ -444,16 +444,21 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
 
       // `states.supersedes` (Adminium 0.3.50): a proof made on the dashboard's Proofs page answers the line's proof still
       // out in the same write, as one sent from the studio's screens does; an approved proof stays approved.
-      it("supersedes a line's proof still out when the owner makes one in the dashboard, and leaves an approved one", async () => {
+      it("supersedes a line's proof still out when the owner makes one in the dashboard, waiting or with a change asked, and leaves an approved one", async () => {
         const data = await maker.load();
         const proofsTable = encodeURIComponent(tables["proofs"] ?? "maker_proofs");
         const ofLine = async (line: Row) => (await rows("proofs")).filter((p) => String(p["line_id"]) === String(line.id)).sort((a, b) => Number(a["version"]) - Number(b["version"]));
         const answers = async (line: Row) => (await ofLine(line)).map((p) => [Number(p["version"]), p["state"]]);
-        // One line's proof waiting; another's first proof with a change asked of it, its second approved.
+        // One line's proof waiting; another's first proof, a change asked of it, sent again by its second, approved;
+        // a third's proof with a change asked of it (as the order's own link sends it).
         const waiting = linesOf(data, orderOf(data, "BR-2276"))[0]!;
         const answered = linesOf(data, orderOf(data, "BR-2262"))[0]!;
+        const asked = linesOf(data, orderOf(data, "BR-2287"))[0]!;
         expect(await answers(waiting)).toEqual([[1, "sent"]]);
-        expect(await answers(answered)).toEqual([[1, "change_asked"], [2, "approved"]]);
+        expect(await answers(answered)).toEqual([[1, "superseded"], [2, "approved"]]);
+        const first = (await ofLine(asked))[0]!;
+        ok(await owner.patch(`/api/v1/data/${connectionId}/${proofsTable}/${String(first.id)}`, { values: { state: "change_asked", change_note: "A little bigger, please." }, from: "sent" }));
+        expect(await answers(asked)).toEqual([[1, "change_asked"]]);
         // The dashboard's own write: a person with the app's Owner role, signed in to the dashboard, adds the row.
         const roles = ok(await owner.get<{ roles: { id: string; slug?: string }[] }>("/api/v1/roles")).roles;
         const email = `owner.dashboard.${engine}@birchrow.example`;
@@ -462,12 +467,15 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         ok(await new Caller(server.base).post("/api/v1/auth/password/reset", { token: invited.invite.token, newPassword: password }));
         const dashboard = new Caller(server.base);
         await dashboard.signIn(email, password);
-        for (const line of [waiting, answered]) {
+        for (const line of [waiting, answered, asked]) {
           const made = await dashboard.post<{ data: Row }>(`/api/v1/data/${connectionId}/${proofsTable}`, { values: { line_id: line.id, kind: "lettering", note: "Made on the dashboard." } });
           expect(made.status, JSON.stringify(made.body).slice(0, 600)).toBe(201);
         }
         expect(await answers(waiting)).toEqual([[1, "superseded"], [2, "sent"]]);
         expect(await answers(answered)).toEqual([[1, "superseded"], [2, "approved"], [3, "sent"]]);
+        expect(await answers(asked)).toEqual([[1, "superseded"], [2, "sent"]]);
+        // The change asked stays on the proof it was asked of.
+        expect((await ofLine(asked))[0]!["change_note"]).toBe("A little bigger, please.");
         // The line reads its newest proof's answer: waiting again, so not ready for the bench until it is approved.
         const after = (await maker.load()).lines.find((l) => String(l.id) === String(waiting.id))!;
         expect([after["proof_state"], num(after["proof_ok"])]).toEqual(["sent", 0]);

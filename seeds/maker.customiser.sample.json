@@ -7269,7 +7269,7 @@
           "kind": "lettering",
           "design_version_id": null,
           "note": "Laid out on the 300 mm blank, lettering filled white.",
-          "state": "change_asked",
+          "state": "superseded",
           "sent_at": {
             "@day": -8,
             "@time": "11:00",
@@ -7592,7 +7592,7 @@
             "@ref": "version:br-2288-1"
           },
           "note": "Proof 1 — the shop sign at 9 mm, engraved.",
-          "state": "change_asked",
+          "state": "superseded",
           "sent_at": {
             "@day": -1,
             "@time": "11:00",

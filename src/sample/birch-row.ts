@@ -808,8 +808,8 @@ function designOf(label: string): { code: string; logo: boolean } {
 
 /**
  * An order's proofs, from its log: each "Proof sent" a version of the first
- * line with words or a design; a change asked marks the version before it, an
- * approval the latest. A line approved with no proof sent ("go ahead") has one
+ * line with words or a design, which sends the version still out again; a
+ * change asked marks the version before it, an approval the latest. A line approved with no proof sent ("go ahead") has one
  * version, approved. Every other line with words takes one approved version
  * when the order's was approved.
  */
@@ -822,6 +822,10 @@ function proofRows(order: Order): Row[] {
   const versions: Row[] = [];
   for (const entry of order.log) {
     if (entry.what === "Proof sent") {
+      // Sent again: the version still out is answered by this one, as Adminium moves it when a proof is made
+      // (`states.supersedes`), keeping the change asked on it.
+      const before = versions[versions.length - 1];
+      if (before !== undefined && (before["state"] === "sent" || before["state"] === "change_asked")) before["state"] = "superseded";
       versions.push({
         order_id: { "@ref": orderLabel(order.ref) },
         line_id: lineRef(first.i),
