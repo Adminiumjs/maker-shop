@@ -6357,8 +6357,7 @@
           "design_code": null,
           "design_id": null,
           "post_by": {
-            "@day": -48,
-            "@week": true
+            "@day": -48
           },
           "stage": "posted",
           "spoiled": 0
@@ -6386,8 +6385,7 @@
           "design_code": null,
           "design_id": null,
           "post_by": {
-            "@day": -34,
-            "@week": true
+            "@day": -34
           },
           "stage": "posted",
           "spoiled": 0
@@ -6415,8 +6413,7 @@
           "design_code": null,
           "design_id": null,
           "post_by": {
-            "@day": -34,
-            "@week": true
+            "@day": -34
           },
           "stage": "posted",
           "spoiled": 0
@@ -6444,8 +6441,7 @@
           "design_code": null,
           "design_id": null,
           "post_by": {
-            "@day": -22,
-            "@week": true
+            "@day": -22
           },
           "stage": "posted",
           "spoiled": 0
@@ -6473,8 +6469,7 @@
           "design_code": null,
           "design_id": null,
           "post_by": {
-            "@day": -16,
-            "@week": true
+            "@day": -16
           },
           "stage": "posted",
           "spoiled": 0
@@ -6502,8 +6497,7 @@
           "design_code": null,
           "design_id": null,
           "post_by": {
-            "@day": -13,
-            "@week": true
+            "@day": -13
           },
           "stage": "posted",
           "spoiled": 0
@@ -6531,8 +6525,7 @@
           "design_code": null,
           "design_id": null,
           "post_by": {
-            "@day": -9,
-            "@week": true
+            "@day": -9
           },
           "stage": "posted",
           "spoiled": 0

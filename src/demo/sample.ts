@@ -62,10 +62,12 @@ function resolveValue(value: unknown, labels: ReadonlyMap<string, number>): unkn
   // A file the sample adds: its address in the demo build.
   if (typeof record["@asset"] === "string") return assetUrl(record["@asset"]);
   // So long before the demo's moment (`PT1H20M`).
-  if (typeof record["@ago"] === "string") {
-    const m = /^PT(?:(\d+)H)?(?:(\d+)M)?$/.exec(record["@ago"]);
-    if (m === null) throw new Error(`the sample's "@ago" ${record["@ago"]} is not hours and minutes`);
-    return new Date(DEMO_START - (Number(m[1] ?? 0) * 60 + Number(m[2] ?? 0)) * 60_000).toISOString();
+  // …or so long after it (`@in`).
+  for (const [key, sign] of [["@ago", -1], ["@in", 1]] as const) {
+    if (typeof record[key] !== "string") continue;
+    const m = /^PT(?:(\d+)H)?(?:(\d+)M)?$/.exec(record[key]);
+    if (m === null) throw new Error(`the sample's "${key}" ${record[key]} is not hours and minutes`);
+    return new Date(DEMO_START + sign * (Number(m[1] ?? 0) * 60 + Number(m[2] ?? 0)) * 60_000).toISOString();
   }
   if (typeof record["@day"] === "number") {
     const day = addDays(DEMO_DAY, record["@day"]);

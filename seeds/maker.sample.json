@@ -1184,14 +1184,10 @@
           "kind": "run",
           "label": "Printer B · two name keyrings",
           "starts_at": {
-            "@day": 0,
-            "@time": "15:10",
-            "@week": true
+            "@ago": "PT1H30M"
           },
           "ends_at": {
-            "@day": 0,
-            "@time": "18:30",
-            "@week": true
+            "@in": "PT1H50M"
           }
         }
       ]

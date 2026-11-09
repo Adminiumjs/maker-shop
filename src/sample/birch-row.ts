@@ -94,6 +94,15 @@ const wall = (iso: string, time: string): Row => ({ "@day": offset(iso), "@time"
  * Today's is so long before the sample's 16:40 (`@ago`), so a sample added in
  * the morning never stamps a proof sent at 11:00 that has not come yet.
  */
+/** A day that has passed, counted back from the adding day: a posted order's post-by, beside its posting. */
+const pastDay = (iso: string): Row => ({ "@day": offset(iso) });
+/** So long from the sample's 16:40, either way: the running batch's own booking, about its start. */
+const fromNow = (time: string): Row => {
+  const minutes = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
+  const gap = minutes(time) - minutes(NOW_TIME);
+  const span = `PT${String(Math.floor(Math.abs(gap) / 60))}H${String(Math.abs(gap) % 60)}M`;
+  return gap < 0 ? { "@ago": span } : { "@in": span };
+};
 const past = (iso: string, time: string): Row => {
   if (offset(iso) !== 0) return { "@day": offset(iso), "@time": time };
   const minutes = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
@@ -663,7 +672,8 @@ export function sampleBundle(): SampleBundle {
         ref: "machine_bookings",
         rows: [
           ...BOOKINGS.map((b) => ({ machine_id: { "@ref": `machine:${b.machine}` }, kind: b.kind, label: b.label, starts_at: wall(TODAY, b.from), ends_at: wall(TODAY, b.to) })),
-          { machine_id: { "@ref": `machine:${BATCH.machine}` }, batch_id: { "@ref": BATCH.label }, kind: "run", label: BATCH.name, starts_at: wall(TODAY, BATCH.from), ends_at: wall(TODAY, BATCH.to) },
+          // The batch running now: its booking about its start (`started_at`), whatever day the sample is added on.
+          { machine_id: { "@ref": `machine:${BATCH.machine}` }, batch_id: { "@ref": BATCH.label }, kind: "run", label: BATCH.name, starts_at: fromNow(BATCH.from), ends_at: fromNow(BATCH.to) },
         ],
       },
       // What is on the shelf: a delivery each, and what this week's batches have spoken for.
@@ -740,7 +750,9 @@ export function customiserSection(): SampleBundle {
         lettering: line.note === "" ? null : line.note,
         design_code: design === null ? null : design.code,
         design_id: design === null ? null : { "@ref": line.design },
-        post_by: day(postBy(order.placed, PLACED_AT, p.lead)),
+        // A posted order's post-by is history, counted back from the adding day as its posting is; one still on the bench
+        // is planned by, on its weekday.
+        post_by: (order.posted === undefined ? day : pastDay)(postBy(order.placed, PLACED_AT, p.lead)),
         stage: line.stage,
         ...(BATCH.lines.includes(label) ? { batch_id: { "@ref": BATCH.label } } : {}),
         spoiled: 0,

@@ -112,13 +112,24 @@ describe("every row is one the studio could have made", () => {
     }
     // What the studio plans by keeps its weekday; a line's post-by is three days or more after its order came in,
     // so it stays after it when the sample is added as late as three days after the week's Thursday.
-    const placed = new Map(rowsOf(main, "orders").map((o) => [o["@label"], (o["placed_at"] as Row)["@day"] ?? 0]));
+    const orders = new Map(rowsOf(main, "orders").map((o) => [o["@label"], o]));
     for (const line of rowsOf(section, "order_lines")) {
       const postBy = line["post_by"] as Row;
+      const order = orders.get((line["order_id"] as { "@ref": string })["@ref"])!;
+      if (order["posted_at"] !== null) {
+        // Posted: its post-by is history too, counted the same way as its posting, so the two never drift apart.
+        expect(postBy["@week"], String(line["@label"])).toBeUndefined();
+        expect(Number((order["posted_at"] as Row)["@day"]) - Number(postBy["@day"]), String(line["@label"])).toBeLessThanOrEqual(1);
+        continue;
+      }
       expect(postBy["@week"]).toBe(true);
-      const order = (line["order_id"] as { "@ref": string })["@ref"];
-      expect(Number(postBy["@day"]) - Number(placed.get(order)), String(line["@label"])).toBeGreaterThanOrEqual(3);
+      expect(Number(postBy["@day"]) - Number((order["placed_at"] as Row)["@day"] ?? 0), String(line["@label"])).toBeGreaterThanOrEqual(3);
     }
+    // The batch running now is booked about its own start, never on the week's Thursday while it started today.
+    const batch = rowsOf(main, "batches")[0]!;
+    const run = rowsOf(main, "machine_bookings").find((b) => b["batch_id"] !== undefined)!;
+    expect(run["starts_at"]).toEqual(batch["started_at"]);
+    expect(run["ends_at"]).toEqual({ "@in": "PT1H50M" });
   });
 
   it("holds no line with two proofs out: a proof sent again sends the one before it again, keeping the change asked on it", () => {
