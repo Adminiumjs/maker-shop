@@ -60,7 +60,7 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
     const owner = Object.fromEntries(grantsOf("owner").filter((g) => g.addOn === "customiser").map((g) => [g.table, g]));
     // The shop's settings, the one-colour line among them, set on the set-up page (Customiser 1.0.23).
     expect(owner["settings"]!.actions).toEqual(["read", "update"]);
-    expect(owner["settings"]!.limit!.writable).toEqual(["length_unit", "default_bleed_mm", "default_safe_mm", "one_colour_threshold", "smallest_line_mm", "min_dpi"]);
+    expect(owner["settings"]!.limit!.writable).toEqual(["default_bleed_mm", "default_safe_mm", "one_colour_threshold", "smallest_line_mm", "min_dpi"]);
     expect(owner["bases"]!.actions).toEqual(["read", "create", "update"]);
     for (const table of ["base_pieces", "base_areas", "ready_designs", "ready_parts", "fonts", "palettes", "palette_colours", "features"]) {
       expect(owner[table]!.actions, table).toEqual(["read", "create", "update", "delete"]);
@@ -83,47 +83,67 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
     const starter = { reach: "all", while: { column: "starter", in: [true] } };
     for (const table of Object.keys(SET_UP_COLUMNS)) {
       const limit = owner[table]!.limit!;
-      expect(limit.creatableValues, table).toEqual({ app: ["maker"] });
       if (table === "fonts") {
-        // A starter font names no app: read and given its file by the owner, never removed.
+        // A starter font names no app: read and given its file by the owner, never removed; no font is made one.
+        expect(limit.creatableValues, table).toEqual({ app: ["maker"], starter: [false] });
+        expect((limit as { writable?: string[] }).writable, table).not.toContain("starter");
         expect(limit.rows, table).toEqual({ read: [own, starter], update: [own, starter], delete: own });
         continue;
       }
+      expect(limit.creatableValues, table).toEqual({ app: ["maker"] });
       expect(limit.rows, table).toEqual(table === "bases" ? { read: own, update: own } : { read: own, update: own, delete: own });
     }
   });
 
-  it("holds the owner's set-up columns to what the Customiser lets an app's role write there (its vendored appGrants)", () => {
-    type Grant = { addOn: string; table: string; actions: string[]; limit?: { creatable?: string[]; writable?: string[] } };
-    const offered = APP_GRANTS as Record<string, { actions: string[]; creatable?: string[]; writable?: string[] }>;
-    const owner = Object.fromEntries((roleOf(shipped, "owner") as unknown as { tables: Grant[] }).tables.filter((g) => g.addOn === "customiser").map((g) => [g.table, g]));
+  // The customers' designs, their versions and files: Birch Row's own customers alone, for every role that reads them in
+  // clear (the Customiser's `ownPanel`); the packer reads only whether a line names a design.
+  it("keeps the owner and the maker to Birch Row's own customers' designs, versions and files", () => {
+    type Grant = { addOn: string; table: string; actions: string[]; limit?: { creatableValues?: Json; rows?: Json } };
+    const own = { reach: "all", while: { column: "app", in: ["maker"] } };
+    for (const key of ["owner", "maker"]) {
+      const held = Object.fromEntries((roleOf(shipped, key) as unknown as { tables: Grant[] }).tables.filter((g) => g.addOn === "customiser").map((g) => [g.table, g]));
+      expect(held["designs"]!.limit, key).toEqual({ rows: { read: own } });
+      expect(held["design_versions"]!.limit!.creatableValues, key).toEqual({ app: ["maker"] });
+      expect(held["design_versions"]!.limit!.rows, key).toEqual({ read: own, update: own });
+      expect(held["version_files"]!.limit!.creatableValues, key).toEqual({ app: ["maker"] });
+      expect(held["version_files"]!.limit!.rows, key).toEqual({ read: own, update: own, delete: own });
+    }
+    expect((roleOf(shipped, "packer") as unknown as { tables: Grant[] }).tables).toEqual([{ addOn: "customiser", table: "designs", actions: ["read"] }]);
+  });
+
+  type Offered = Record<string, { actions: string[]; creatable?: string[]; writable?: string[] }>;
+  type Held = { addOn: string; table: string; actions: string[]; limit?: { creatable?: string[]; writable?: string[] } };
+  const heldBy = (key: string) => (roleOf(shipped, key) as unknown as { tables: Held[] }).tables.filter((g) => g.addOn === "customiser");
+  const offered = APP_GRANTS as Offered;
+  const sorted = (list: readonly string[] | undefined) => [...(list ?? [])].sort();
+
+  it("asks no more of the Customiser's tables than it lets an app's role hold (its vendored appGrants), so the install cuts nothing", () => {
     // Every table the Customiser lets an app's role add rows to but its own ledger's (a design's versions and files) is set up here.
     const setUp = Object.keys(offered).filter((table) => offered[table]!.actions.includes("create") && !["design_versions", "version_files"].includes(table));
     expect(Object.keys(SET_UP_COLUMNS).sort()).toEqual(setUp.sort());
-    for (const table of setUp) {
-      const theirs = offered[table]!;
-      expect(owner[table]!.actions, table).toEqual(theirs.actions);
-      expect([...owner[table]!.limit!.creatable!].sort(), table).toEqual([...theirs.creatable!].sort());
-      expect([...owner[table]!.limit!.writable!].sort(), table).toEqual([...theirs.writable!].sort());
-    }
-    // And no role asks for an action the Customiser does not offer on a table, so the install cuts nothing: but the
-    // owner's change of the shop's settings, which the Customiser offers from 1.0.23 (the test below).
+    // Until the Customiser 1.0.23 is vendored: its settings are an app role's to read alone (the test below lapses then).
+    const excused = (key: string, table: string) => key === "owner" && table === "settings" && !offered["settings"]!.actions.includes("update");
     for (const key of ["owner", "maker", "packer"]) {
-      for (const grant of (roleOf(shipped, key) as unknown as { tables: Grant[] }).tables.filter((g) => g.addOn === "customiser")) {
-        const extra = grant.actions.filter((a) => !offered[grant.table]!.actions.includes(a));
-        expect(extra, `${key} ${grant.table}`).toEqual(key === "owner" && grant.table === "settings" && !offered["settings"]!.actions.includes("update") ? ["update"] : []);
+      for (const grant of heldBy(key)) {
+        const theirs = offered[grant.table]!;
+        if (excused(key, grant.table)) continue;
+        expect(grant.actions.filter((a) => !theirs.actions.includes(a)), `${key} ${grant.table}`).toEqual([]);
+        expect((grant.limit?.creatable ?? []).filter((c) => !(theirs.creatable ?? []).includes(c)), `${key} ${grant.table} creatable`).toEqual([]);
+        expect((grant.limit?.writable ?? []).filter((c) => !(theirs.writable ?? []).includes(c)), `${key} ${grant.table} writable`).toEqual([]);
       }
     }
   });
 
-  // FAILS UNTIL vendor/customiser/ IS THE CUSTOMISER 1.0.23: 1.0.22's appGrants offer an app's role the settings' read
-  // alone, so an install with it cuts the owner's change (and says so). Once 1.0.23 is vendored this passes: drop `.fails`.
-  it.fails("gives the owner the shop's settings the Customiser lets an app's role change (vendored 1.0.23 or later)", () => {
-    type Grant = { addOn: string; table: string; actions: string[]; limit?: { writable?: string[] } };
-    const offered = (APP_GRANTS as Record<string, { actions: string[]; writable?: string[] }>)["settings"]!;
-    const settings = (roleOf(shipped, "owner") as unknown as { tables: Grant[] }).tables.find((g) => g.addOn === "customiser" && g.table === "settings")!;
-    expect(settings.actions.filter((a) => !offered.actions.includes(a))).toEqual([]);
-    expect((settings.limit?.writable ?? []).filter((c) => !(offered.writable ?? []).includes(c))).toEqual([]);
+  // FAILS UNTIL vendor/customiser/ IS THE CUSTOMISER 1.0.23: 1.0.22 offers an app's role the settings' read alone and a
+  // font's `starter` to change. Once 1.0.23 is vendored this passes, and vitest says so: drop `.fails` then.
+  it.fails("holds the owner's set-up and settings to exactly what the Customiser lets an app's role write (vendored 1.0.23 or later)", () => {
+    const owner = Object.fromEntries(heldBy("owner").map((g) => [g.table, g]));
+    for (const table of [...Object.keys(SET_UP_COLUMNS), "settings"]) {
+      const theirs = offered[table]!;
+      expect(owner[table]!.actions, table).toEqual(theirs.actions);
+      expect(sorted(owner[table]!.limit?.creatable), `${table} creatable`).toEqual(sorted(theirs.creatable));
+      expect(sorted(owner[table]!.limit?.writable), `${table} writable`).toEqual(sorted(theirs.writable));
+    }
   });
 
   it("gives no role more than 24 of the add-ons' tables", () => {

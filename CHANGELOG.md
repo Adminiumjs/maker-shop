@@ -9,7 +9,9 @@
   another shop app on the same Adminium, **Owner** no longer lists, changes or
   removes its bases and designs, and gives every new set-up row Birch Row's
   name. The Customiser's starter fonts stay the owner's to use and upload, never
-  to remove. With the Customiser 1.0.23, the owner also sets the Customiser's
+  to remove, and no font of the shop's is made a starter. **Owner** and
+  **Maker** likewise read, proof and make files for Birch Row's own customers'
+  designs only. With the Customiser 1.0.23, the owner also sets the Customiser's
   settings, the one-colour line among them. They are one set for the whole
   Adminium: with Print Shop installed too, both shops share them, and a change
   by either owner applies to both.

@@ -35,42 +35,61 @@ const view = (page: string) => `page:@${page}:view`;
 /** Seeing a table's personal columns. */
 const pii = (table: string) => `table:@${table}:read_pii`;
 
+/** The Customiser's name for this app's rows: its `app` column on every row the shop makes there. */
+const OWN_APP = "maker";
+
+/**
+ * Birch Row's own rows of a Customiser table. Another shop app on the same
+ * Adminium keeps its own customers' designs and its own set-up in the same
+ * tables: none of it is read, changed or removed from here, and no new row is
+ * given another app's name.
+ */
+const OWN_ROWS = { reach: "all", while: { column: "app", in: [OWN_APP] } } as const;
+/** The Customiser's starter fonts name no app: read and given their files by the owner, never removed, never made. */
+const STARTER_FONTS = { reach: "all", while: { column: "starter", in: [true] } } as const;
+
 /**
  * What the Customiser's panel on an order line reads to draw the design as it
  * will be made (its ready-made design and parts, the base's areas and pieces,
- * the palettes, colours and fonts, the priced features), and what it writes
- * when the proof and the machine's files are made: a version of the design
- * where none was ordered yet, the proof file on it, and the files of the
- * version, the old ones taken away when they are made again. The shopper's
- * words, logo and photo are the design's personal columns, read in clear
- * (`read_pii`). The panel makes them in the browser and saves them as the
- * person signed in (the Customiser's README, "What an app's role needs").
+ * the palettes, colours and fonts, the priced features, the one-colour line),
+ * and what it writes when the proof and the machine's files are made: a
+ * version of the design where none was ordered yet, the proof file on it, and
+ * the files of the version, the old ones taken away when they are made again.
+ * The shopper's words, logo and photo are the design's personal columns, read
+ * in clear (`read_pii`), of Birch Row's own customers alone. The panel makes
+ * them in the browser and saves them as the person signed in (the
+ * Customiser's README, "What an app's role needs": `ownPanel`).
  */
 const CUSTOMISER_PANEL = [
-  { addOn: CUSTOMISER, table: "designs", actions: ["read", "read_pii"] },
+  { addOn: CUSTOMISER, table: "designs", actions: ["read", "read_pii"], limit: { rows: { read: OWN_ROWS } } },
   {
     addOn: CUSTOMISER,
     table: "design_versions",
     actions: ["read", "read_pii", "create", "update"],
-    limit: { creatable: ["app", "design_id", "version", "values"], writable: ["proof_file"] },
+    limit: { creatable: ["app", "design_id", "version", "values"], creatableValues: { app: [OWN_APP] }, writable: ["proof_file"], rows: { read: OWN_ROWS, update: OWN_ROWS } },
   },
   {
     addOn: CUSTOMISER,
     table: "version_files",
     actions: ["read", "create", "update", "delete"],
-    limit: { creatable: ["app", "version_id", "kind", "name", "about", "layers", "left_out", "position"], writable: ["file"] },
+    limit: {
+      creatable: ["app", "version_id", "kind", "name", "about", "layers", "left_out", "position"],
+      creatableValues: { app: [OWN_APP] },
+      writable: ["file"],
+      rows: { read: OWN_ROWS, update: OWN_ROWS, delete: OWN_ROWS },
+    },
   },
-  { addOn: CUSTOMISER, table: "bases", actions: ["read"] },
-  { addOn: CUSTOMISER, table: "ready_designs", actions: ["read"] },
-  { addOn: CUSTOMISER, table: "ready_parts", actions: ["read"] },
-  { addOn: CUSTOMISER, table: "base_areas", actions: ["read"] },
-  { addOn: CUSTOMISER, table: "base_pieces", actions: ["read"] },
-  { addOn: CUSTOMISER, table: "palettes", actions: ["read"] },
-  { addOn: CUSTOMISER, table: "palette_colours", actions: ["read"] },
-  { addOn: CUSTOMISER, table: "fonts", actions: ["read"] },
-  { addOn: CUSTOMISER, table: "features", actions: ["read"] },
   // The shop's one-colour line: the proof draws a one-colour logo at the line the shopper saw it at.
   { addOn: CUSTOMISER, table: "settings", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "bases", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "base_pieces", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "base_areas", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "ready_designs", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "ready_parts", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "fonts", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "palettes", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "palette_colours", actions: ["read"] },
+  { addOn: CUSTOMISER, table: "features", actions: ["read"] },
 ];
 
 /**
@@ -99,47 +118,42 @@ export const SET_UP_COLUMNS: Record<string, string[]> = {
   features: ["code", "name", "active"],
 };
 
-/** The Customiser's name for this app's rows: its `app` column on every set-up row the shop makes. */
-const OWN_APP = "maker";
-
-/**
- * Which of the set-up's rows the owner reads, changes and removes: the
- * shop's own. Another shop app on the same Adminium keeps its own bases and
- * designs in the same tables; the set-up page never lists them, and no new
- * row is given another app's name. (The line's panel still draws from every
- * row: the maker's grant and the panel's reads are not limited.)
- */
-const OWN_ROWS = { reach: "all", while: { column: "app", in: [OWN_APP] } } as const;
-/** The Customiser's starter fonts name no app (`app` empty): read and given their files by the owner, never removed. */
-const STARTER_FONTS = { reach: "all", while: { column: "starter", in: [true] } } as const;
-
-/** Which rows each set-up action reaches (the Customiser's `ownSetUp`). */
-const ownRows = (table: string, actions: readonly string[]) =>
-  Object.fromEntries(
-    actions
-      .filter((a) => a === "read" || a === "update" || a === "delete")
-      .map((a) => [a, table === "fonts" && a !== "delete" ? [OWN_ROWS, STARTER_FONTS] : OWN_ROWS]),
-  );
+/** Which rows each set-up action reaches (the Customiser's `ownSetUp`): the starter fonts are read and changed too. */
+const setUpRows = (table: string, actions: readonly string[]) => {
+  const mine = table === "fonts" ? [OWN_ROWS, STARTER_FONTS] : OWN_ROWS;
+  return { read: mine, update: mine, ...(actions.includes("delete") ? { delete: OWN_ROWS } : {}) };
+};
 
 /** The Customiser's settings the shop sets on the set-up page ("Shop settings"): the one-colour line among them. */
-const SHOP_SETTINGS = ["length_unit", "default_bleed_mm", "default_safe_mm", "one_colour_threshold", "smallest_line_mm", "min_dpi"];
+const SHOP_SETTINGS = ["default_bleed_mm", "default_safe_mm", "one_colour_threshold", "smallest_line_mm", "min_dpi"];
 
 /**
  * What the owner sets the shop's side up with on that page (Customiser
  * 1.0.21, its README's "The set-up page"): the bases added and changed (a
  * base is never removed), and the pieces, areas, ready-made designs and
  * their parts, fonts, palettes, colours and priced features added, changed
- * and removed, the shop's own rows only; and the shop's settings (Customiser
- * 1.0.23; an older Customiser leaves the owner their read). With the line's
- * panel (the designs read in clear, a version's proof and its files) it is
- * thirteen of a role's 24 add-on tables.
+ * and removed, the shop's own rows only (a new font never a starter, and no
+ * font made one); and the Customiser's settings (Customiser 1.0.23; an older
+ * Customiser leaves the owner their read). With the line's panel, which the
+ * owner draws proofs on too, it is thirteen of a role's 24 add-on tables.
  */
 const CUSTOMISER_SET_UP = CUSTOMISER_PANEL.map((entry) => {
   if (entry.table === "settings") return { ...entry, actions: ["read", "update"], limit: { writable: SHOP_SETTINGS } };
   const columns = SET_UP_COLUMNS[entry.table];
   if (columns === undefined) return entry;
   const actions = entry.table === "bases" ? ["read", "create", "update"] : ["read", "create", "update", "delete"];
-  return { ...entry, actions, limit: { creatable: ["app", ...columns], creatableValues: { app: [OWN_APP] }, writable: columns, rows: ownRows(entry.table, actions) } };
+  const fonts = entry.table === "fonts";
+  return {
+    ...entry,
+    actions,
+    limit: {
+      creatable: ["app", ...columns],
+      creatableValues: fonts ? { app: [OWN_APP], starter: [false] } : { app: [OWN_APP] },
+      // Whether a font is one of the install's starters is the Customiser's, never changed from an app.
+      writable: fonts ? columns.filter((c) => c !== "starter") : columns,
+      rows: setUpRows(entry.table, actions),
+    },
+  };
 });
 
 /** Finding a customer and erasing what the studio keeps of them (Studio → Privacy): the owner's, never a screens-only role's. */

@@ -23,7 +23,9 @@
  *   - the Customiser's set-up page reads and saves for the app's owner alone
  *     (Customiser 1.0.21: no designer role beside it), Birch Row's own rows
  *     only: another shop app's set-up on the same Adminium is read, never
- *     changed, and no new row is given its name; the maker reads the
+ *     changed, and no new row is given its name nor any font made a starter;
+ *     the owner and the maker reach Birch Row's own customers' designs,
+ *     versions and files alone; the maker reads the
  *     Customiser's settings, so a proof uses the shop's one-colour line;
  *   - a packer's session is handed the workspace's name and logo;
  *   - the customer whose design was proofed is erased, the proof pictures
@@ -373,6 +375,36 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         expect((await callers["maker"]!.post(`/api/v1/data/${connection}/${real("features")}`, { values: { app: "maker", code: `foil-${engine}`, name: "Foil", active: true } })).status).toBe(403);
       }, 120_000);
 
+      // Another shop app's customers on the same Adminium: their designs, versions and files are none of Birch Row's.
+      it("keeps the maker and the owner to Birch Row's own customers' designs, versions and files", async () => {
+        const cfg = (await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: callers["owner"]!.fetchAs() }))!;
+        const real = (table: string) => cfg.addOns["customiser"]?.tables?.[table] ?? `customiser_${table}`;
+        const connection = doors["owner"]!.facts().connectionId ?? "";
+        const api = (table: string) => `/api/v1/data/${connection}/${real(table)}`;
+        const values = JSON.stringify({ format: 1, parts: { name: { text: "Marta Kovac" } } });
+        // Another shop's customer's design, its version and a file of it (here the workspace's administrator writes them).
+        const design = ok(await owner.post<{ data: Row }>(api("designs"), { values: { app: "printing", code: `PRNT${engine.toUpperCase().padEnd(12, "X").slice(0, 12)}`, values } }), 201).data;
+        const version = ok(await owner.post<{ data: Row }>(api("design_versions"), { values: { app: "printing", design_id: design.id, version: 1, values } }), 201).data;
+        const file = ok(await owner.post<{ data: Row }>(api("version_files"), { values: { app: "printing", version_id: version.id, kind: "print", name: "design-v1-front.pdf", position: 1 } }), 201).data;
+        for (const who of ["maker", "owner"]) {
+          const caller = callers[who]!;
+          for (const [table, row] of [["designs", design], ["design_versions", version], ["version_files", file]] as const) {
+            expect((await caller.get(`${api(table)}/${String(row.id)}`)).status, `${who} reads ${table}`).toBe(404);
+            expect(ok(await caller.get<{ data: Row[] }>(`${api(table)}?limit=200`)).data.filter((r) => r["app"] === "printing"), `${who} lists ${table}`).toEqual([]);
+          }
+          expect((await caller.patch(`${api("design_versions")}/${String(version.id)}`, { values: { proof_file: null } })).status, `${who} changes the version`).toBe(404);
+          expect((await caller.patch(`${api("version_files")}/${String(file.id)}`, { values: { file: null } })).status, `${who} changes the file`).toBe(404);
+          expect((await caller.send("DELETE", `${api("version_files")}/${String(file.id)}`)).status, `${who} removes the file`).toBe(404);
+          // No version named for another app, of its design or of Birch Row's.
+          const tagged = await caller.post(api("design_versions"), { values: { app: "printing", design_id: design.id, version: 2, values } });
+          expect(tagged.status, `${who}: ${JSON.stringify(tagged.body).slice(0, 300)}`).toBe(403);
+        }
+        // Birch Row's own customer's design is still the maker's to read.
+        const ours = designedLine(await doors["maker"]!.load());
+        expect((await callers["maker"]!.get(`${api("designs")}/${String(ours["design_id"])}`)).status).toBe(200);
+        expect((await owner.get(`${api("version_files")}/${String(file.id)}`)).status).toBe(200);
+      }, 120_000);
+
       // The panel draws a one-colour logo at the shop's own line (`one_colour_threshold`), as the shopper saw it.
       it("lets the owner and the maker read the Customiser's settings", async () => {
         expect(await setUpRead(callers["owner"]!, "settings")).toBe(200);
@@ -413,6 +445,13 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         expect((await setUp.patch(`${api("fonts")}/${String(starter.id)}`, { values: { active: true } })).status).toBe(200);
         expect((await setUp.send("DELETE", `${api("fonts")}/${String(starter.id)}`)).status).toBe(404);
         expect((await owner.get(`${api("fonts")}/${String(starter.id)}`)).status).toBe(200);
+        // No font of the shop's is made a starter: neither a new one, nor one changed.
+        const sneaky = await setUp.post(api("fonts"), { values: { app: "maker", family: `Sneaky ${engine}`, name: "Sneaky", licence: "own", starter: true, active: true } });
+        expect(sneaky.status, JSON.stringify(sneaky.body).slice(0, 400)).toBe(403);
+        const mine = ok(await setUp.post<{ data: Row }>(api("fonts"), { values: { app: "maker", family: `Birch ${engine}`, name: "Birch", licence: "own", starter: false, active: true } }), 201).data;
+        expect((await setUp.patch(`${api("fonts")}/${String(mine.id)}`, { values: { starter: true } })).status).toBe(403);
+        expect((await setUp.patch(`${api("fonts")}/${String(starter.id)}`, { values: { starter: false } })).status).toBe(403);
+        expect(ok(await owner.get<{ data: Row }>(`${api("fonts")}/${String(mine.id)}`)).data["starter"]).toBe(false);
         // Nothing of the other shop's moved.
         expect(ok(await owner.get<{ data: Row }>(`${api("bases")}/${String(theirBase.id)}`)).data["name"]).toBe(`Business cards ${engine}`);
       }, 120_000);

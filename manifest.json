@@ -10301,7 +10301,20 @@
           "actions": [
             "read",
             "read_pii"
-          ]
+          ],
+          "limit": {
+            "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              }
+            }
+          }
         },
         {
           "addOn": "customiser",
@@ -10319,9 +10332,34 @@
               "version",
               "values"
             ],
+            "creatableValues": {
+              "app": [
+                "maker"
+              ]
+            },
             "writable": [
               "proof_file"
-            ]
+            ],
+            "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
+              "update": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              }
+            }
           }
         },
         {
@@ -10344,8 +10382,59 @@
               "left_out",
               "position"
             ],
+            "creatableValues": {
+              "app": [
+                "maker"
+              ]
+            },
             "writable": [
               "file"
+            ],
+            "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
+              "update": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
+              "delete": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "addOn": "customiser",
+          "table": "settings",
+          "actions": [
+            "read",
+            "update"
+          ],
+          "limit": {
+            "writable": [
+              "default_bleed_mm",
+              "default_safe_mm",
+              "one_colour_threshold",
+              "smallest_line_mm",
+              "min_dpi"
             ]
           }
         },
@@ -10417,6 +10506,158 @@
                 }
               },
               "update": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "addOn": "customiser",
+          "table": "base_pieces",
+          "actions": [
+            "read",
+            "create",
+            "update",
+            "delete"
+          ],
+          "limit": {
+            "creatable": [
+              "app",
+              "base_id",
+              "code",
+              "name",
+              "width_mm",
+              "height_mm",
+              "layers",
+              "left_out",
+              "file",
+              "position"
+            ],
+            "creatableValues": {
+              "app": [
+                "maker"
+              ]
+            },
+            "writable": [
+              "base_id",
+              "code",
+              "name",
+              "width_mm",
+              "height_mm",
+              "layers",
+              "left_out",
+              "file",
+              "position"
+            ],
+            "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
+              "update": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
+              "delete": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "addOn": "customiser",
+          "table": "base_areas",
+          "actions": [
+            "read",
+            "create",
+            "update",
+            "delete"
+          ],
+          "limit": {
+            "creatable": [
+              "app",
+              "base_id",
+              "code",
+              "name",
+              "side",
+              "piece_id",
+              "face",
+              "shape",
+              "x_mm",
+              "y_mm",
+              "w_mm",
+              "h_mm",
+              "takes",
+              "required",
+              "rules",
+              "feature_id",
+              "position"
+            ],
+            "creatableValues": {
+              "app": [
+                "maker"
+              ]
+            },
+            "writable": [
+              "base_id",
+              "code",
+              "name",
+              "side",
+              "piece_id",
+              "face",
+              "shape",
+              "x_mm",
+              "y_mm",
+              "w_mm",
+              "h_mm",
+              "takes",
+              "required",
+              "rules",
+              "feature_id",
+              "position"
+            ],
+            "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
+              "update": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
+              "delete": {
                 "reach": "all",
                 "while": {
                   "column": "app",
@@ -10582,7 +10823,7 @@
         },
         {
           "addOn": "customiser",
-          "table": "base_areas",
+          "table": "fonts",
           "actions": [
             "read",
             "create",
@@ -10592,134 +10833,75 @@
           "limit": {
             "creatable": [
               "app",
-              "base_id",
-              "code",
+              "family",
               "name",
-              "side",
-              "piece_id",
-              "face",
-              "shape",
-              "x_mm",
-              "y_mm",
-              "w_mm",
-              "h_mm",
-              "takes",
-              "required",
-              "rules",
-              "feature_id",
-              "position"
+              "style",
+              "weights",
+              "licence",
+              "starter",
+              "smallest_mm",
+              "file",
+              "active"
             ],
             "creatableValues": {
               "app": [
                 "maker"
+              ],
+              "starter": [
+                false
               ]
             },
             "writable": [
-              "base_id",
-              "code",
+              "family",
               "name",
-              "side",
-              "piece_id",
-              "face",
-              "shape",
-              "x_mm",
-              "y_mm",
-              "w_mm",
-              "h_mm",
-              "takes",
-              "required",
-              "rules",
-              "feature_id",
-              "position"
+              "style",
+              "weights",
+              "licence",
+              "smallest_mm",
+              "file",
+              "active"
             ],
             "rows": {
-              "read": {
-                "reach": "all",
-                "while": {
-                  "column": "app",
-                  "in": [
-                    "maker"
-                  ]
+              "read": [
+                {
+                  "reach": "all",
+                  "while": {
+                    "column": "app",
+                    "in": [
+                      "maker"
+                    ]
+                  }
+                },
+                {
+                  "reach": "all",
+                  "while": {
+                    "column": "starter",
+                    "in": [
+                      true
+                    ]
+                  }
                 }
-              },
-              "update": {
-                "reach": "all",
-                "while": {
-                  "column": "app",
-                  "in": [
-                    "maker"
-                  ]
+              ],
+              "update": [
+                {
+                  "reach": "all",
+                  "while": {
+                    "column": "app",
+                    "in": [
+                      "maker"
+                    ]
+                  }
+                },
+                {
+                  "reach": "all",
+                  "while": {
+                    "column": "starter",
+                    "in": [
+                      true
+                    ]
+                  }
                 }
-              },
-              "delete": {
-                "reach": "all",
-                "while": {
-                  "column": "app",
-                  "in": [
-                    "maker"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        {
-          "addOn": "customiser",
-          "table": "base_pieces",
-          "actions": [
-            "read",
-            "create",
-            "update",
-            "delete"
-          ],
-          "limit": {
-            "creatable": [
-              "app",
-              "base_id",
-              "code",
-              "name",
-              "width_mm",
-              "height_mm",
-              "layers",
-              "left_out",
-              "file",
-              "position"
-            ],
-            "creatableValues": {
-              "app": [
-                "maker"
-              ]
-            },
-            "writable": [
-              "base_id",
-              "code",
-              "name",
-              "width_mm",
-              "height_mm",
-              "layers",
-              "left_out",
-              "file",
-              "position"
-            ],
-            "rows": {
-              "read": {
-                "reach": "all",
-                "while": {
-                  "column": "app",
-                  "in": [
-                    "maker"
-                  ]
-                }
-              },
-              "update": {
-                "reach": "all",
-                "while": {
-                  "column": "app",
-                  "in": [
-                    "maker"
-                  ]
-                }
-              },
+              ],
               "delete": {
                 "reach": "all",
                 "while": {
@@ -10858,97 +11040,6 @@
         },
         {
           "addOn": "customiser",
-          "table": "fonts",
-          "actions": [
-            "read",
-            "create",
-            "update",
-            "delete"
-          ],
-          "limit": {
-            "creatable": [
-              "app",
-              "family",
-              "name",
-              "style",
-              "weights",
-              "licence",
-              "starter",
-              "smallest_mm",
-              "file",
-              "active"
-            ],
-            "creatableValues": {
-              "app": [
-                "maker"
-              ]
-            },
-            "writable": [
-              "family",
-              "name",
-              "style",
-              "weights",
-              "licence",
-              "starter",
-              "smallest_mm",
-              "file",
-              "active"
-            ],
-            "rows": {
-              "read": [
-                {
-                  "reach": "all",
-                  "while": {
-                    "column": "app",
-                    "in": [
-                      "maker"
-                    ]
-                  }
-                },
-                {
-                  "reach": "all",
-                  "while": {
-                    "column": "starter",
-                    "in": [
-                      true
-                    ]
-                  }
-                }
-              ],
-              "update": [
-                {
-                  "reach": "all",
-                  "while": {
-                    "column": "app",
-                    "in": [
-                      "maker"
-                    ]
-                  }
-                },
-                {
-                  "reach": "all",
-                  "while": {
-                    "column": "starter",
-                    "in": [
-                      true
-                    ]
-                  }
-                }
-              ],
-              "delete": {
-                "reach": "all",
-                "while": {
-                  "column": "app",
-                  "in": [
-                    "maker"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        {
-          "addOn": "customiser",
           "table": "features",
           "actions": [
             "read",
@@ -11002,24 +11093,6 @@
                 }
               }
             }
-          }
-        },
-        {
-          "addOn": "customiser",
-          "table": "settings",
-          "actions": [
-            "read",
-            "update"
-          ],
-          "limit": {
-            "writable": [
-              "length_unit",
-              "default_bleed_mm",
-              "default_safe_mm",
-              "one_colour_threshold",
-              "smallest_line_mm",
-              "min_dpi"
-            ]
           }
         },
         {
@@ -11137,7 +11210,20 @@
           "actions": [
             "read",
             "read_pii"
-          ]
+          ],
+          "limit": {
+            "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              }
+            }
+          }
         },
         {
           "addOn": "customiser",
@@ -11155,9 +11241,34 @@
               "version",
               "values"
             ],
+            "creatableValues": {
+              "app": [
+                "maker"
+              ]
+            },
             "writable": [
               "proof_file"
-            ]
+            ],
+            "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
+              "update": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              }
+            }
           }
         },
         {
@@ -11180,14 +11291,69 @@
               "left_out",
               "position"
             ],
+            "creatableValues": {
+              "app": [
+                "maker"
+              ]
+            },
             "writable": [
               "file"
-            ]
+            ],
+            "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
+              "update": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
+              "delete": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              }
+            }
           }
         },
         {
           "addOn": "customiser",
+          "table": "settings",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
           "table": "bases",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "base_pieces",
+          "actions": [
+            "read"
+          ]
+        },
+        {
+          "addOn": "customiser",
+          "table": "base_areas",
           "actions": [
             "read"
           ]
@@ -11208,14 +11374,7 @@
         },
         {
           "addOn": "customiser",
-          "table": "base_areas",
-          "actions": [
-            "read"
-          ]
-        },
-        {
-          "addOn": "customiser",
-          "table": "base_pieces",
+          "table": "fonts",
           "actions": [
             "read"
           ]
@@ -11236,21 +11395,7 @@
         },
         {
           "addOn": "customiser",
-          "table": "fonts",
-          "actions": [
-            "read"
-          ]
-        },
-        {
-          "addOn": "customiser",
           "table": "features",
-          "actions": [
-            "read"
-          ]
-        },
-        {
-          "addOn": "customiser",
-          "table": "settings",
           "actions": [
             "read"
           ]
