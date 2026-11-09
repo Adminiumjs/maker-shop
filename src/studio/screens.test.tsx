@@ -248,6 +248,16 @@ describe("the board", () => {
 });
 
 describe("the order", () => {
+  it("says a proof sent again was replaced by the next, and waits on a reply to that one alone", async () => {
+    const data = fixture();
+    const first = data.proofs.find((p) => p.id === 1001)!;
+    Object.assign(first, { state: "superseded" });
+    data.proofs.push({ ...first, id: 1004, version: 2, state: "sent", sent_at: "2026-08-05T10:00:00.000Z" });
+    await mount(new FakeDoor({ data }), "order", { orderId: 10 });
+    const log = [...document.querySelectorAll(".st-log-row")].map((row) => (row.textContent ?? "").replace(/^.*?Proof/, "Proof"));
+    expect(log).toEqual(["Proof 1 sentE-mailed to Iris P. — replaced by proof 2.", "Proof 2 sentE-mailed to Iris P. — waiting on a reply."]);
+  });
+
   it("sends the proof of a lettered piece: drawn, stored, sent", async () => {
     const door = new FakeDoor();
     await mount(door, "order", { orderId: 11 });

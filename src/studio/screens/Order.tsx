@@ -236,10 +236,13 @@ function ProofLog({ order, lines, customer }: { order: Row; lines: Row[]; custom
   const rows = lines.flatMap((line) => proofsOf(data, line).map((proof) => ({ line, proof })));
   type Entry = { at: string; what: string; tone: "pos" | "warn" | "plain"; detail: string | null; key: string };
   const entries: Entry[] = [];
-  for (const { proof } of rows) {
+  for (const { line, proof } of rows) {
     const version = num(proof["version"]) ?? 0;
     const sent = text(proof["sent_at"]);
-    if (sent !== null) entries.push({ at: sent, what: t("studio.log.sent", { version }), tone: "plain", detail: t("studio.log.sentDetail", { customer }), key: `${String(proof.id)}-sent` });
+    // Sent again: the piece's next proof replaced it, so nobody is waiting on a reply to this one.
+    const next = proof["state"] === "superseded" ? proofsOf(data, line).map((p) => num(p["version"]) ?? 0).filter((v) => v > version).sort((a, b) => a - b)[0] : undefined;
+    const detail = next === undefined ? t("studio.log.sentDetail", { customer }) : t("studio.log.replacedDetail", { customer, next });
+    if (sent !== null) entries.push({ at: sent, what: t("studio.log.sent", { version }), tone: "plain", detail, key: `${String(proof.id)}-sent` });
     const answered = text(proof["answered_at"]);
     if (proof["state"] === "approved" && answered !== null) entries.push({ at: answered, what: t("studio.log.approved"), tone: "pos", detail: t("studio.log.approvedDetail"), key: `${String(proof.id)}-ok` });
     if ((proof["state"] === "change_asked" || text(proof["change_note"]) !== null) && answered !== null)

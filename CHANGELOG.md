@@ -2,6 +2,10 @@
 
 ## 0.2.3 (not released yet)
 
+- **A proof sent again reads as replaced on the studio's order page.** The
+  order's Proofs card said an earlier proof was still "waiting on a reply"
+  after the next one went; it now says which proof replaced it.
+
 ## 0.2.2 (8 November 2026)
 
 Needs Adminium **0.3.51** and the add-ons **1.0.22**.
