@@ -1,36 +1,43 @@
 # Changelog
 
-## 0.2.3 (not released yet)
+## 0.2.3 (10 November 2026)
+
+Needs Adminium **0.3.52** and the add-ons **1.0.23**.
 
 - **The maker's proofs use the shop's own one-colour line.** The **Maker**
   role now reads the Customiser's settings, so a one-colour logo on a proof is
   cut at the line the shopper saw, not at 50 %.
-- **The owner sees and changes only Birch Row's own Customiser set-up.** With
-  another shop app on the same Adminium, **Owner** no longer lists, changes or
-  removes its bases and designs, and gives every new set-up row Birch Row's
-  name. The Customiser's starter fonts stay the owner's to use and upload, never
-  to remove, and no font of the shop's is made a starter. **Owner** and
-  **Maker** likewise read, proof and make files for Birch Row's own customers'
-  designs only. With the Customiser 1.0.23, the owner also sets the Customiser's
-  settings, the one-colour line among them. They are one set for the whole
-  Adminium: with Print Shop installed too, both shops share them, and a change
-  by either owner applies to both.
-- The dashboard's Proofs form shows each order by its number, the customer's
-  name under it.
+- **The owner sets the Customiser's settings.** The set-up page's new "Shop
+  settings" keeps the one-colour line, the bleed, the safe line, the smallest
+  line and the lowest picture quality, and **Owner** changes them there. They
+  are one set for the whole Adminium: with Print Shop installed too, both
+  shops share them, and a change by either owner applies to both.
+- **Each shop keeps to its own Customiser rows.** With another shop app on the
+  same Adminium, **Owner** no longer lists, changes or removes its bases and
+  designs, and gives every new set-up row Birch Row's name. The Customiser's
+  starter fonts stay the owner's to use and upload, never to remove, and no
+  font of the shop's is made a starter. **Owner** and **Maker** read, proof and
+  make files for Birch Row's own customers' designs only.
 - **A proof is e-mailed only once it has its picture.** A proof added on the
   dashboard without one was e-mailed with nothing to look at; it is now
   e-mailed when its picture is added, and until then the customer's order page
   doesn't offer a design's proof for an answer.
-- **No sample date lands in the future.** Added early in the week, the sample
-  said an order was placed "in 19h" and a proof sent on a day still to come.
-  Orders, proofs, answers and stock now count back from the day the sample is
-  added; the post-by dates, bookings and the closure keep their weekdays.
-- **The sample holds one proof out per piece.** BR-2262's and BR-2288's first
-  proofs, a change asked on each, now read "Sent again" by their second, as
-  Adminium moves them when a proof is made; the change asked stays on them.
 - **A proof sent again reads as replaced on the studio's order page.** The
   order's Proofs card said an earlier proof was still "waiting on a reply"
   after the next one went; it now says which proof replaced it.
+- The dashboard's Proofs form shows each order by its number, the customer's
+  name under it. A proof added from an order's own page uses the same form,
+  its picture field included (Adminium 0.3.52).
+- **No sample date lands in the future.** Added early in the week, the sample
+  said an order was placed "in 19h" and a proof sent on a day still to come.
+  Orders, proofs, answers and stock now count back from the day the sample is
+  added, and so do a posted order's post-by and the running batch's booking;
+  the other post-by dates, bookings and the closure keep their weekdays.
+- **The sample holds one proof out per piece.** BR-2262's and BR-2288's first
+  proofs, a change asked on each, now read "Sent again" by their second, as
+  Adminium moves them when a proof is made; the change asked stays on them.
+- The Customiser's "Make the proof" waits until the design has loaded, and
+  every card on "Choose a design" shows its own design (Customiser 1.0.23).
 
 ## 0.2.2 (8 November 2026)
 
