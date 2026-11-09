@@ -103,36 +103,43 @@ export const SET_UP_COLUMNS: Record<string, string[]> = {
 const OWN_APP = "maker";
 
 /**
- * Which of the set-up's rows the owner changes and removes: the shop's own.
- * Another shop app on the same Adminium keeps its own bases and designs in
- * the same tables; its rows are read (the panels draw from every row) and
- * never changed from here. A new row is given this app's name and no other.
+ * Which of the set-up's rows the owner reads, changes and removes: the
+ * shop's own. Another shop app on the same Adminium keeps its own bases and
+ * designs in the same tables; the set-up page never lists them, and no new
+ * row is given another app's name. (The line's panel still draws from every
+ * row: the maker's grant and the panel's reads are not limited.)
  */
 const OWN_ROWS = { reach: "all", while: { column: "app", in: [OWN_APP] } } as const;
-/**
- * The set-up rows no app names: the Customiser's starter fonts (`app` empty),
- * whose files the set-up page uploads the first time it is opened, so the
- * owner changes every font row. Kept apart, so the font grant follows the
- * Customiser's own word on shared rows.
- */
-const SHARED_ROWS = new Set(["fonts"]);
+/** The Customiser's starter fonts name no app (`app` empty): read and given their files by the owner, never removed. */
+const STARTER_FONTS = { reach: "all", while: { column: "starter", in: [true] } } as const;
+
+/** Which rows each set-up action reaches (the Customiser's `ownSetUp`). */
+const ownRows = (table: string, actions: readonly string[]) =>
+  Object.fromEntries(
+    actions
+      .filter((a) => a === "read" || a === "update" || a === "delete")
+      .map((a) => [a, table === "fonts" && a !== "delete" ? [OWN_ROWS, STARTER_FONTS] : OWN_ROWS]),
+  );
+
+/** The Customiser's settings the shop sets on the set-up page ("Shop settings"): the one-colour line among them. */
+const SHOP_SETTINGS = ["length_unit", "default_bleed_mm", "default_safe_mm", "one_colour_threshold", "smallest_line_mm", "min_dpi"];
 
 /**
  * What the owner sets the shop's side up with on that page (Customiser
- * 1.0.21, its README's "The set-up page"): the Customiser's settings read,
- * the bases added and changed (a base is never removed), and the pieces,
- * areas, ready-made designs and their parts, fonts, palettes, colours and
- * priced features added, changed and removed, the shop's own rows only. With
- * the line's panel (the designs read in clear, a version's proof and its
- * files) it is thirteen of a role's 24 add-on tables. The Customiser's
- * settings themselves stay its own designer's to change.
+ * 1.0.21, its README's "The set-up page"): the bases added and changed (a
+ * base is never removed), and the pieces, areas, ready-made designs and
+ * their parts, fonts, palettes, colours and priced features added, changed
+ * and removed, the shop's own rows only; and the shop's settings (Customiser
+ * 1.0.23; an older Customiser leaves the owner their read). With the line's
+ * panel (the designs read in clear, a version's proof and its files) it is
+ * thirteen of a role's 24 add-on tables.
  */
 const CUSTOMISER_SET_UP = CUSTOMISER_PANEL.map((entry) => {
+  if (entry.table === "settings") return { ...entry, actions: ["read", "update"], limit: { writable: SHOP_SETTINGS } };
   const columns = SET_UP_COLUMNS[entry.table];
   if (columns === undefined) return entry;
   const actions = entry.table === "bases" ? ["read", "create", "update"] : ["read", "create", "update", "delete"];
-  const rows = SHARED_ROWS.has(entry.table) ? {} : { rows: Object.fromEntries(actions.filter((a) => a === "update" || a === "delete").map((a) => [a, OWN_ROWS])) };
-  return { ...entry, actions, limit: { creatable: ["app", ...columns], creatableValues: { app: [OWN_APP] }, writable: columns, ...rows } };
+  return { ...entry, actions, limit: { creatable: ["app", ...columns], creatableValues: { app: [OWN_APP] }, writable: columns, rows: ownRows(entry.table, actions) } };
 });
 
 /** Finding a customer and erasing what the studio keeps of them (Studio → Privacy): the owner's, never a screens-only role's. */

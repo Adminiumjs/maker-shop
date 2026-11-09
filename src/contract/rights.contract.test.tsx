@@ -39,7 +39,7 @@
  * (`ADD_ONS_REPO`), and says why it skipped otherwise.
  */
 import { createHash } from "node:crypto";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -59,7 +59,7 @@ import { createSessionTransport } from "../studio/transport/sessionSource.ts";
 import { loadStaffConfig } from "../studio/transport/staffConnection.ts";
 import type { Row } from "../studio/wire.ts";
 import { MANIFEST_TEXT } from "./release.ts";
-import { boot, Caller, ENGINES, installStudio, missing, ok, personWith, png, PORTS_PER_ENGINE, type Engine, type Server } from "./studio-harness.ts";
+import { ADD_ONS_REPO, boot, Caller, ENGINES, installStudio, missing, ok, personWith, png, PORTS_PER_ENGINE, type Engine, type Server } from "./studio-harness.ts";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -80,6 +80,19 @@ async function inAPage<T>(base: string, work: (page: Document) => Promise<T>): P
       else Object.defineProperty(held, name, descriptor);
     }
     dom.window.close();
+  }
+}
+
+/**
+ * Whether the Customiser installed here lets an app's role change its settings (1.0.23 and later: the shop's
+ * settings on the set-up page). An older one cuts the owner's change at install, leaving the read.
+ */
+function settingsChangeOffered(): boolean {
+  try {
+    const manifest = JSON.parse(readFileSync(join(ADD_ONS_REPO, "packages", "customiser", "manifest.json"), "utf8")) as { requiredSchema: { tables: { ref: string; appGrants?: { actions: string[] } }[] } };
+    return manifest.requiredSchema.tables.find((t) => t.ref === "settings")?.appGrants?.actions.includes("update") === true;
+  } catch {
+    return false;
   }
 }
 
@@ -351,9 +364,11 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         const moved = await setUp.patch(`/api/v1/data/${connection}/${real("bases")}/${String(base.id)}`, { values: { position: Number(base["position"] ?? 0) } });
         expect(moved.status, JSON.stringify(moved.body).slice(0, 400)).toBe(200);
         expect((await setUp.send("DELETE", `/api/v1/data/${connection}/${real("bases")}/${String(base.id)}`)).status).toBe(403);
-        // The Customiser's own settings are read here and changed by its designer, never by an app's role.
+        // The shop's settings: changed on the set-up page from Customiser 1.0.23, the one-colour line among them; an
+        // older Customiser cuts that change at install and leaves the owner the read.
         const row = ok(await setUp.get<{ data: Row[] }>(`/api/v1/data/${connection}/${real("settings")}?limit=1`)).data[0]!;
-        expect((await setUp.patch(`/api/v1/data/${connection}/${real("settings")}/${String(row.id)}`, { values: { default_bleed_mm: 3 } })).status).toBe(403);
+        const line = await setUp.patch(`/api/v1/data/${connection}/${real("settings")}/${String(row.id)}`, { values: { one_colour_threshold: Number(row["one_colour_threshold"] ?? 50) } });
+        expect(line.status, JSON.stringify(line.body).slice(0, 400)).toBe(settingsChangeOffered() ? 200 : 403);
         // The maker, who makes the files, writes none of the set-up.
         expect((await callers["maker"]!.post(`/api/v1/data/${connection}/${real("features")}`, { values: { app: "maker", code: `foil-${engine}`, name: "Foil", active: true } })).status).toBe(403);
       }, 120_000);
@@ -366,7 +381,7 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
       });
 
       // Maker Shop and Print Shop on one Adminium share the Customiser's tables, each row named by its `app`.
-      it("lets the owner change Birch Row's own set-up rows and a starter font, and refuses another shop app's", async () => {
+      it("shows and lets the owner change Birch Row's own set-up rows and a starter font (never removed), and hides another shop app's", async () => {
         const setUp = callers["owner"]!;
         const cfg = (await loadStaffConfig({ hostedStaff: true, base: "/apps/maker/staff/", fetchImpl: setUp.fetchAs() }))!;
         const real = (table: string) => cfg.addOns["customiser"]?.tables?.[table] ?? `customiser_${table}`;
@@ -375,22 +390,29 @@ describe.skipIf(why !== null)(`the Customiser's panels on the studio's screens, 
         // Another shop's base and its priced feature, as its own set-up adds them (here the workspace's administrator).
         const theirBase = ok(await owner.post<{ data: Row }>(api("bases"), { values: { app: "printing", name: `Business cards ${engine}`, kind: "page", width_mm: 85, height_mm: 55, state: "draft", position: 90 } }), 201).data;
         const theirFeature = ok(await owner.post<{ data: Row }>(api("features"), { values: { app: "printing", code: `spot-uv-${engine}`, name: "Spot UV", active: true } }), 201).data;
-        // Read, as the panels read every row; never changed or removed. A row out of the owner's reach for a change is
-        // one Adminium does not find for it (404), as with any row limit.
-        expect((await setUp.get(`${api("bases")}/${String(theirBase.id)}`)).status).toBe(200);
+        // Out of the owner's sight: never listed, read, changed or removed (a row a limit hides is one Adminium does not find).
+        const bases = ok(await setUp.get<{ data: Row[] }>(`${api("bases")}?limit=200`)).data;
+        expect(bases.length).toBeGreaterThan(0);
+        expect(bases.filter((b) => b["app"] !== "maker")).toEqual([]);
+        expect((await setUp.get(`${api("bases")}/${String(theirBase.id)}`)).status).toBe(404);
         const changed = await setUp.patch(`${api("bases")}/${String(theirBase.id)}`, { values: { name: "Ours now" } });
-        expect([403, 404], JSON.stringify(changed.body).slice(0, 400)).toContain(changed.status);
-        expect([403, 404]).toContain((await setUp.patch(`${api("features")}/${String(theirFeature.id)}`, { values: { name: "Ours now" } })).status);
-        expect([403, 404]).toContain((await setUp.send("DELETE", `${api("features")}/${String(theirFeature.id)}`)).status);
+        expect(changed.status, JSON.stringify(changed.body).slice(0, 400)).toBe(404);
+        expect((await setUp.patch(`${api("features")}/${String(theirFeature.id)}`, { values: { name: "Ours now" } })).status).toBe(404);
+        expect((await setUp.send("DELETE", `${api("features")}/${String(theirFeature.id)}`)).status).toBe(404);
         expect(ok(await owner.get<{ data: Row }>(`${api("features")}/${String(theirFeature.id)}`)).data["name"]).toBe("Spot UV");
         // No new row named for another app.
         const tagged = await setUp.post(api("features"), { values: { app: "printing", code: `foil-${engine}`, name: "Foil", active: true } });
         expect(tagged.status, JSON.stringify(tagged.body).slice(0, 400)).toBe(403);
-        // Its own rows, and a starter font no app names, are still the owner's to change.
-        const ours = ok(await setUp.get<{ data: Row[] }>(`${api("bases")}?limit=200`)).data.find((b) => b["app"] === "maker")!;
+        // Its own rows are the owner's to change.
+        const ours = bases.find((b) => b["app"] === "maker")!;
         expect((await setUp.patch(`${api("bases")}/${String(ours.id)}`, { values: { position: Number(ours["position"] ?? 0) } })).status).toBe(200);
+        // A starter font no app names: read, given its file (changed), never removed.
         const starter = ok(await setUp.get<{ data: Row[] }>(`${api("fonts")}?limit=200`)).data.find((f) => f["app"] === null && f["starter"] === true)!;
+        expect(starter, "a starter font in the owner's list").toBeDefined();
+        expect((await setUp.get(`${api("fonts")}/${String(starter.id)}`)).status).toBe(200);
         expect((await setUp.patch(`${api("fonts")}/${String(starter.id)}`, { values: { active: true } })).status).toBe(200);
+        expect((await setUp.send("DELETE", `${api("fonts")}/${String(starter.id)}`)).status).toBe(404);
+        expect((await owner.get(`${api("fonts")}/${String(starter.id)}`)).status).toBe(200);
         // Nothing of the other shop's moved.
         expect(ok(await owner.get<{ data: Row }>(`${api("bases")}/${String(theirBase.id)}`)).data["name"]).toBe(`Business cards ${engine}`);
       }, 120_000);

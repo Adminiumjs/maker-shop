@@ -58,7 +58,9 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
     type Grant = { addOn: string; table: string; actions: string[]; limit?: { creatable?: string[]; writable?: string[] } };
     const grantsOf = (key: string) => (roleOf(shipped, key) as unknown as { tables: Grant[] }).tables;
     const owner = Object.fromEntries(grantsOf("owner").filter((g) => g.addOn === "customiser").map((g) => [g.table, g]));
-    expect(owner["settings"]!.actions).toEqual(["read"]);
+    // The shop's settings, the one-colour line among them, set on the set-up page (Customiser 1.0.23).
+    expect(owner["settings"]!.actions).toEqual(["read", "update"]);
+    expect(owner["settings"]!.limit!.writable).toEqual(["length_unit", "default_bleed_mm", "default_safe_mm", "one_colour_threshold", "smallest_line_mm", "min_dpi"]);
     expect(owner["bases"]!.actions).toEqual(["read", "create", "update"]);
     for (const table of ["base_pieces", "base_areas", "ready_designs", "ready_parts", "fonts", "palettes", "palette_colours", "features"]) {
       expect(owner[table]!.actions, table).toEqual(["read", "create", "update", "delete"]);
@@ -74,19 +76,20 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
   });
 
   // Two shop apps on one Adminium share the Customiser's tables: each owner changes only its own shop's set-up.
-  it("lets the owner add, change and remove Birch Row's own set-up rows only, and use the starter fonts no app names", () => {
+  it("lets the owner see, add, change and remove Birch Row's own set-up rows only, and use the starter fonts no app names", () => {
     type Grant = { addOn: string; table: string; actions: string[]; limit?: { creatableValues?: Json; rows?: Json } };
     const owner = Object.fromEntries((roleOf(shipped, "owner") as unknown as { tables: Grant[] }).tables.filter((g) => g.addOn === "customiser").map((g) => [g.table, g]));
     const own = { reach: "all", while: { column: "app", in: ["maker"] } };
+    const starter = { reach: "all", while: { column: "starter", in: [true] } };
     for (const table of Object.keys(SET_UP_COLUMNS)) {
       const limit = owner[table]!.limit!;
       expect(limit.creatableValues, table).toEqual({ app: ["maker"] });
       if (table === "fonts") {
-        // A starter font names no app: the set-up page gives it its file, so every font row is the owner's to change.
-        expect(limit.rows, table).toBeUndefined();
+        // A starter font names no app: read and given its file by the owner, never removed.
+        expect(limit.rows, table).toEqual({ read: [own, starter], update: [own, starter], delete: own });
         continue;
       }
-      expect(limit.rows, table).toEqual(table === "bases" ? { update: own } : { update: own, delete: own });
+      expect(limit.rows, table).toEqual(table === "bases" ? { read: own, update: own } : { read: own, update: own, delete: own });
     }
   });
 
@@ -103,12 +106,24 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
       expect([...owner[table]!.limit!.creatable!].sort(), table).toEqual([...theirs.creatable!].sort());
       expect([...owner[table]!.limit!.writable!].sort(), table).toEqual([...theirs.writable!].sort());
     }
-    // And no role asks for an action the Customiser does not offer on a table, so the install cuts nothing.
+    // And no role asks for an action the Customiser does not offer on a table, so the install cuts nothing: but the
+    // owner's change of the shop's settings, which the Customiser offers from 1.0.23 (the test below).
     for (const key of ["owner", "maker", "packer"]) {
       for (const grant of (roleOf(shipped, key) as unknown as { tables: Grant[] }).tables.filter((g) => g.addOn === "customiser")) {
-        expect(grant.actions.filter((a) => !offered[grant.table]!.actions.includes(a)), `${key} ${grant.table}`).toEqual([]);
+        const extra = grant.actions.filter((a) => !offered[grant.table]!.actions.includes(a));
+        expect(extra, `${key} ${grant.table}`).toEqual(key === "owner" && grant.table === "settings" && !offered["settings"]!.actions.includes("update") ? ["update"] : []);
       }
     }
+  });
+
+  // FAILS UNTIL vendor/customiser/ IS THE CUSTOMISER 1.0.23: 1.0.22's appGrants offer an app's role the settings' read
+  // alone, so an install with it cuts the owner's change (and says so). Once 1.0.23 is vendored this passes: drop `.fails`.
+  it.fails("gives the owner the shop's settings the Customiser lets an app's role change (vendored 1.0.23 or later)", () => {
+    type Grant = { addOn: string; table: string; actions: string[]; limit?: { writable?: string[] } };
+    const offered = (APP_GRANTS as Record<string, { actions: string[]; writable?: string[] }>)["settings"]!;
+    const settings = (roleOf(shipped, "owner") as unknown as { tables: Grant[] }).tables.find((g) => g.addOn === "customiser" && g.table === "settings")!;
+    expect(settings.actions.filter((a) => !offered.actions.includes(a))).toEqual([]);
+    expect((settings.limit?.writable ?? []).filter((c) => !(offered.writable ?? []).includes(c))).toEqual([]);
   });
 
   it("gives no role more than 24 of the add-ons' tables", () => {

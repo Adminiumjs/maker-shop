@@ -8690,7 +8690,12 @@
               "fields": [
                 {
                   "column": "order_id",
-                  "control": "reference"
+                  "control": "reference",
+                  "reference": {
+                    "detail": [
+                      "name"
+                    ]
+                  }
                 },
                 {
                   "column": "line_id",
@@ -10401,6 +10406,15 @@
               "position"
             ],
             "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
               "update": {
                 "reach": "all",
                 "while": {
@@ -10448,6 +10462,15 @@
               "position"
             ],
             "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
               "update": {
                 "reach": "all",
                 "while": {
@@ -10526,6 +10549,15 @@
               "position"
             ],
             "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
               "update": {
                 "reach": "all",
                 "while": {
@@ -10600,6 +10632,15 @@
               "position"
             ],
             "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
               "update": {
                 "reach": "all",
                 "while": {
@@ -10660,6 +10701,15 @@
               "position"
             ],
             "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
               "update": {
                 "reach": "all",
                 "while": {
@@ -10712,6 +10762,15 @@
               "position"
             ],
             "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
               "update": {
                 "reach": "all",
                 "while": {
@@ -10766,6 +10825,15 @@
               "position"
             ],
             "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
               "update": {
                 "reach": "all",
                 "while": {
@@ -10824,7 +10892,58 @@
               "smallest_mm",
               "file",
               "active"
-            ]
+            ],
+            "rows": {
+              "read": [
+                {
+                  "reach": "all",
+                  "while": {
+                    "column": "app",
+                    "in": [
+                      "maker"
+                    ]
+                  }
+                },
+                {
+                  "reach": "all",
+                  "while": {
+                    "column": "starter",
+                    "in": [
+                      true
+                    ]
+                  }
+                }
+              ],
+              "update": [
+                {
+                  "reach": "all",
+                  "while": {
+                    "column": "app",
+                    "in": [
+                      "maker"
+                    ]
+                  }
+                },
+                {
+                  "reach": "all",
+                  "while": {
+                    "column": "starter",
+                    "in": [
+                      true
+                    ]
+                  }
+                }
+              ],
+              "delete": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              }
+            }
           }
         },
         {
@@ -10854,6 +10973,15 @@
               "active"
             ],
             "rows": {
+              "read": {
+                "reach": "all",
+                "while": {
+                  "column": "app",
+                  "in": [
+                    "maker"
+                  ]
+                }
+              },
               "update": {
                 "reach": "all",
                 "while": {
@@ -10879,8 +11007,19 @@
           "addOn": "customiser",
           "table": "settings",
           "actions": [
-            "read"
-          ]
+            "read",
+            "update"
+          ],
+          "limit": {
+            "writable": [
+              "length_unit",
+              "default_bleed_mm",
+              "default_safe_mm",
+              "one_colour_threshold",
+              "smallest_line_mm",
+              "min_dpi"
+            ]
+          }
         },
         {
           "addOn": "holiday-calendars",
