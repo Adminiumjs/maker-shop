@@ -75,7 +75,8 @@ const SPECS: PageSpec[] = [
     order: 2,
     table: "proofs",
     config: form(
-      [f("order_id", { control: "reference" }), f("line_id", { control: "reference" }), f("version", { control: "number" }), f("state", { control: "segmented" })],
+      // The order by its number (its `keyField`), the customer's name under it: four of Iris's orders read apart.
+      [f("order_id", { control: "reference", reference: { detail: ["name"] } }), f("line_id", { control: "reference" }), f("version", { control: "number" }), f("state", { control: "segmented" })],
       [f("kind", { control: "segmented" }), f("picture"), wide("note", "text"), wide("change_note", "text")],
       [f("sent_at", { control: "datetime" }), f("sent_by"), f("answered_at", { control: "datetime" }), f("reminded_at", { control: "datetime" })],
     ),
