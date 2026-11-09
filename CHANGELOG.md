@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.2.2 (not released yet)
+## 0.2.3 (not released yet)
+
+## 0.2.2 (8 November 2026)
 
 Needs Adminium **0.3.51** and the add-ons **1.0.22**.
 
