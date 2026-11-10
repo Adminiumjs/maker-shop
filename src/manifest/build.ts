@@ -44,9 +44,12 @@ export const VERSION = "0.2.3";
  * tables let each shop app's roles reach only their own customers' designs
  * and set-up rows, and the owner set the shop's settings; it names a proof's
  * order by its number, and makes a related list's new proof with the
- * Proofs page's own form (its picture field among them).
+ * Proofs page's own form (its picture field among them). 0.3.53 bundles the
+ * Customiser 1.0.24, whose two designs in one order are labelled apart,
+ * and offers only the chosen order's lines in the proofs form's picker
+ * (`reference.scope`).
  */
-export const MIN_ADMINIUM = "0.3.52";
+export const MIN_ADMINIUM = "0.3.53";
 
 const ENV = {
   VITE_ADMINIUM_API_BASE_URL: { required: false, example: "https://admin.example.com" },
