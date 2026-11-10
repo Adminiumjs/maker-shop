@@ -109,6 +109,16 @@ Once installed, the studio's screens are served at `/apps/maker/staff/` and the
 shop at `/apps/maker/customer/`. A studio can also give the shop a domain of its
 own.
 
+**A second studio on the same Adminium.** Install Maker Shop again and pick
+another database. That copy has its own tables, roles, settings, keys and
+e-mails, and its own Customiser, installed with it in its database. Its
+screens are served too: the studio's at `/apps/maker/<slug>/staff/` and the
+shop at `/apps/maker/<slug>/customer/`, where `<slug>` is the short name
+Adminium made from the database's name. Its owner sets up its shop on its own
+Customiser's set-up page, `/add-ons/customiser~<slug>/customiser`; the
+dashboard's menu lists that page once for each copy you can open, with its
+database's name beside it. Every copy runs the same version of Maker Shop.
+
 **Coming from 0.1.x?** The 0.1 Maker Shop was an example with its own database,
 and the Live personalizer add-on in place of the Customiser. 0.2 is a different
 app on new tables:
