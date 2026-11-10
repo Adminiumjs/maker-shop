@@ -133,7 +133,7 @@ export class DemoStudio implements StudioDoor {
     const earlier = w.all("proofs").filter((p) => same(p["line_id"], input.line.id));
     const version = earlier.reduce((top, p) => Math.max(top, Number(p["version"] ?? 0)), 0) + 1;
     const row = w.insert("proofs", { order_id: input.order.id, line_id: input.line.id, version, kind: input.kind, design_version_id: input.designVersionId, note: input.note, picture: null, state: "sent", sent_at: w.nowIso(), answered_at: null, reminded_at: null, change_note: null });
-    if (input.picture !== null && "blob" in input.picture) {
+    if ("blob" in input.picture) {
       w.pictures.set(String(row.id), input.picture.blob);
       row["picture"] = typeof URL.createObjectURL === "function" ? URL.createObjectURL(input.picture.blob) : null;
     }

@@ -96,13 +96,14 @@ export type ProofPicture = { blob: Blob; filename: string } | { copyOf: string }
 /**
  * What sending a proof takes: the line and what it shows. The line's proof
  * still out is answered by it in the same write: Adminium moves it to
- * "superseded" (`states.supersedes`), never the screen.
+ * "superseded" (`states.supersedes`), never the screen. A proof always has its
+ * picture: Adminium makes none without one (`states.create`).
  */
 export interface SendProof {
   order: Row;
   line: Row;
   kind: "lettering" | "design";
-  picture: ProofPicture | null;
+  picture: ProofPicture;
   designVersionId: Id | null;
   note: string | null;
 }

@@ -92,7 +92,7 @@ export class FakeDoor implements StudioDoor {
     return this.update(this.data.orders, order.id, { status: to, ...values });
   }
   async sendProof(input: SendProof): Promise<Row> {
-    const picture = input.picture === null ? null : "copyOf" in input.picture ? { copyOf: input.picture.copyOf } : { filename: input.picture.filename, type: input.picture.blob.type };
+    const picture = "copyOf" in input.picture ? { copyOf: input.picture.copyOf } : { filename: input.picture.filename, type: input.picture.blob.type };
     this.record("sendProof", { order: input.order.id, line: input.line.id, kind: input.kind, picture, designVersionId: input.designVersionId, note: input.note });
     this.nextId += 1;
     const earlier = this.data.proofs.filter((p) => same(p["line_id"], input.line.id));

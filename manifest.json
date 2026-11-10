@@ -5704,6 +5704,16 @@
               "change_asked"
             ],
             "to": "superseded"
+          },
+          "create": {
+            "requires": {
+              "where": [
+                {
+                  "column": "picture",
+                  "isNull": false
+                }
+              ]
+            }
           }
         },
         "columns": [
@@ -8720,7 +8730,8 @@
                   "control": "segmented"
                 },
                 {
-                  "column": "picture"
+                  "column": "picture",
+                  "required": true
                 },
                 {
                   "column": "note",

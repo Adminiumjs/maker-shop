@@ -23,7 +23,8 @@
  * (`mail.ts`).
  *
  * Beside it: a proof made on the dashboard by the app's owner, which answers
- * the line's proof still out as the studio's does; a reminder e-mailed; a design's proof sent as the Customiser's
+ * the line's proof still out as the studio's does, and none made by the owner
+ * or the maker without its picture; a reminder e-mailed; a design's proof sent as the Customiser's
  * own picture of its version, copied by the maker's own session (a role that
  * opens only the app's screens); a spoil taking its share of a walnut sheet
  * off the shelf as Adminium works it out; the customers' totals from their
@@ -444,7 +445,7 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
 
       // `states.supersedes` (Adminium 0.3.50): a proof made on the dashboard's Proofs page answers the line's proof still
       // out in the same write, as one sent from the studio's screens does; an approved proof stays approved.
-      it("supersedes a line's proof still out when the owner makes one in the dashboard, waiting or with a change asked, and leaves an approved one", async () => {
+      it("supersedes a line's proof still out, never an approved one, when the owner makes one in the dashboard, and nobody makes one without its picture", async () => {
         const data = await maker.load();
         const proofsTable = encodeURIComponent(tables["proofs"] ?? "maker_proofs");
         const ofLine = async (line: Row) => (await rows("proofs")).filter((p) => String(p["line_id"]) === String(line.id)).sort((a, b) => Number(a["version"]) - Number(b["version"]));
@@ -467,8 +468,17 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         ok(await new Caller(server.base).post("/api/v1/auth/password/reset", { token: invited.invite.token, newPassword: password }));
         const dashboard = new Caller(server.base);
         await dashboard.signIn(email, password);
+        // A proof with no picture yet is made by nobody, the owner on the dashboard nor the maker: the proof the
+        // customer has stays theirs to answer.
+        for (const caller of [dashboard, makerCaller]) {
+          const bare = await caller.post<{ data: Row }>(`/api/v1/data/${connectionId}/${proofsTable}`, { values: { line_id: waiting.id, kind: "lettering", note: "Picture to follow." } });
+          expect(bare, JSON.stringify(bare.body).slice(0, 600)).toMatchObject({ status: 409, code: "STATE_MOVE_REFUSED", details: { create: true, requires: "picture" } });
+        }
+        expect(await answers(waiting)).toEqual([[1, "sent"]]);
         for (const line of [waiting, answered, asked]) {
-          const made = await dashboard.post<{ data: Row }>(`/api/v1/data/${connectionId}/${proofsTable}`, { values: { line_id: line.id, kind: "lettering", note: "Made on the dashboard." } });
+          // The picture first, as the form's upload stores it.
+          const stored = ok(await dashboard.send<{ ref: string }>("POST", `/api/v1/files?${new URLSearchParams({ filename: "proof.png", connectionId, table: tables["proofs"] ?? "maker_proofs", column: "picture" }).toString()}`, png(), { "content-type": "image/png" }), 201);
+          const made = await dashboard.post<{ data: Row }>(`/api/v1/data/${connectionId}/${proofsTable}`, { values: { line_id: line.id, kind: "lettering", picture: stored.ref, note: "Made on the dashboard." } });
           expect(made.status, JSON.stringify(made.body).slice(0, 600)).toBe(201);
         }
         expect(await answers(waiting)).toEqual([[1, "superseded"], [2, "sent"]]);

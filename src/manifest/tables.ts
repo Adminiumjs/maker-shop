@@ -738,6 +738,9 @@ export const TABLES: Table[] = [
       // A proof sent again answers the line's proof still out, in the same write, wherever it is made: the studio's
       // screens, the dashboard's Proofs page, an add-on. An approved proof stays approved.
       supersedes: { by: "line_id", from: ["sent", "change_asked"], to: "superseded" },
+      // So a proof is made with its picture, at every door but history (an import, the sample): a new one supersedes
+      // the proof the customer has, which only one they can look at and answer may do, and its "Sent" is when it went.
+      create: { requires: { where: [{ column: "picture", isNull: false }] } },
     },
     columns: [
       id,

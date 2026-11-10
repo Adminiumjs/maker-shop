@@ -297,26 +297,23 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         expect(made["picture"]).not.toBeNull();
       }, 60_000);
 
-      // A proof added on the dashboard before its picture has nothing to look at: its e-mail waits for the picture.
-      it("never e-mails a proof added with no picture, and e-mails it once it is given one", async () => {
+      // A proof with nothing to look at would answer the one the customer has: Adminium makes none without its picture.
+      it("refuses a proof with no picture: none made, the proof out still offered, nothing e-mailed", async () => {
         const line = (await rows("order_lines")).find((l) => String(l["order_id"]) === String(first1.order["id"]))!;
-        const bare = ok(await staff.post<{ data: Row }>(`/api/v1/data/${connectionId}/${table("proofs")}`, { values: { line_id: line["id"], kind: "design", note: "Picture to follow." } }), 201).data;
-        expect(bare["picture"] ?? null).toBeNull();
-        await new Promise((resolve) => setTimeout(resolve, 3_000));
-        expect(await messageOf("proof-ready", "proof_id", bare["id"])()).toBeUndefined();
-        // Nor does the customer's page offer it for an answer.
+        const before = (await rows("proofs")).filter((p) => String(p["line_id"]) === String(line["id"]));
+        const out = before.filter((p) => p["state"] === "sent");
+        expect(out).toHaveLength(1);
+        const mailed = (await rows("messages")).filter((m) => m["kind"] === "proof-ready").length;
+        const bare = await staff.post<{ data: Row }>(`/api/v1/data/${connectionId}/${table("proofs")}`, { values: { line_id: line["id"], kind: "design", note: "Picture to follow." } });
+        expect(bare, JSON.stringify(bare.body).slice(0, 600)).toMatchObject({ status: 409, code: "STATE_MOVE_REFUSED", details: { create: true, requires: "picture" } });
+        const after = (await rows("proofs")).filter((p) => String(p["line_id"]) === String(line["id"]));
+        expect(after.map((p) => [p["id"], p["state"]])).toEqual(before.map((p) => [p["id"], p["state"]]));
+        // The customer's page still offers the proof they had, for an answer.
         const door = browser().after();
         expect(await door.openShared(first1.link!.token)).toBe("opened");
-        const read = (await door.readShared())!;
-        expect(read.proofs.some((p) => String(p["id"]) === String(bare["id"]))).toBe(true);
-        expect(orderView(read, catalogue, null).waiting.map((p) => p.id)).not.toContain(String(bare["id"]));
-        // Given its picture: e-mailed, once.
-        const stored = ok(await staff.send<{ ref: string }>("POST", `/api/v1/files?${new URLSearchParams({ filename: "proof.png", connectionId, table: tables()["proofs"] ?? "maker_proofs", column: "picture" }).toString()}`, PNG, { "content-type": "image/png" }), 201);
-        ok(await staff.patch(`/api/v1/data/${connectionId}/${table("proofs")}/${String(bare["id"])}`, { values: { picture: stored.ref } }));
-        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-ready", to: SHOPPER.email, row: messageOf("proof-ready", "proof_id", bare["id"]) });
-        expect((await rows("messages")).filter((m) => m["kind"] === "proof-ready" && String(m["proof_id"]) === String(bare["id"]))).toHaveLength(1);
-        const shown = (await door.readShared())!;
-        expect(orderView(shown, catalogue, null).waiting.map((p) => p.id)).toContain(String(bare["id"]));
+        expect(orderView((await door.readShared())!, catalogue, null).waiting.map((p) => p.id)).toContain(String(out[0]!["id"]));
+        await new Promise((resolve) => setTimeout(resolve, 3_000));
+        expect((await rows("messages")).filter((m) => m["kind"] === "proof-ready")).toHaveLength(mailed);
       }, 180_000);
 
       it("takes a request behind the human check, every field it was sent kept", async () => {

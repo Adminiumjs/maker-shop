@@ -155,6 +155,15 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
     expect(maker.limits!["proofs"]!["writable"]).toEqual(["reminded_at"]);
   });
 
+  // A proof with nothing to look at would supersede the one the customer can answer: none is made without its picture.
+  it("makes no proof without its picture, and the dashboard's Proofs form asks for it", () => {
+    const proofs = ((shipped["requiredSchema"] as { tables: Json[] }).tables).find((t) => t["ref"] === "proofs")!;
+    expect((proofs["states"] as Json)["create"]).toEqual({ requires: { where: [{ column: "picture", isNull: false }] } });
+    const page = (shipped["pages"] as { ref: string; config: { form: { sections: { fields: Json[] }[] } } }[]).find((p) => p.ref === "maker-proofs")!;
+    const picture = page.config.form.sections.flatMap((s) => s.fields).find((f) => f["column"] === "picture");
+    expect(picture).toMatchObject({ required: true });
+  });
+
   it("lets the owner find and erase a customer, and no screens-only role", () => {
     expect(roleOf(shipped, "owner").permissions).toContain("privacy:@:people");
     for (const key of ["maker", "packer"]) expect(roleOf(shipped, key).permissions.filter((p) => p.startsWith("privacy:"))).toEqual([]);

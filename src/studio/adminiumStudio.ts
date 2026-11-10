@@ -418,13 +418,13 @@ export class AdminiumStudio implements StudioDoor {
   sendProof(input: SendProof): Promise<Row> {
     return this.run(async () => {
       // The picture first: one the files route refuses leaves the proof still out waiting, as it was.
-      const picture = input.picture === null ? null : await this.storePicture(input.picture);
+      const picture = await this.storePicture(input.picture);
       // The order is not sent: Adminium copies it from the line. Nor is the proof before it moved: the same write
       // supersedes the line's proof still out (`states.supersedes`), and a move of it here would be refused as stale.
       return this.create("proofs", {
         line_id: input.line.id,
         kind: input.kind,
-        ...(picture === null ? {} : { picture }),
+        picture,
         ...(input.designVersionId === null ? {} : { design_version_id: input.designVersionId }),
         ...(input.note === null ? {} : { note: input.note }),
       });
