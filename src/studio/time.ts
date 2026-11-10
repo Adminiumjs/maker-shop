@@ -40,11 +40,18 @@ export function dayIn(instant: number | string, zone: string): Day {
   return `${pad(p.y, 4)}-${pad(p.m)}-${pad(p.d)}`;
 }
 
-/** The instant a day of the studio's begins, in its zone: the midnight it starts at. */
+/**
+ * The instant a day of the studio's begins, in its zone: the midnight it starts at, or, where the clocks jump
+ * forward at midnight (Santiago, the first Sunday of September), the first moment the day has (01:00).
+ */
 export function dayStartIn(day: Day, zone: string): number {
   const wall = Date.UTC(Number(day.slice(0, 4)), Number(day.slice(5, 7)) - 1, Number(day.slice(8, 10)));
   const first = wall - zoneOffsetMs(zone, wall);
-  return wall - zoneOffsetMs(zone, first);
+  let at = wall - zoneOffsetMs(zone, first);
+  // A midnight the clocks skip reads as the day before: on to the first quarter hour that is the day (no zone jumps
+  // by more than a few hours, nor off the quarter hour).
+  for (let guard = 0; dayIn(at, zone) < day && guard < 24; guard += 1) at += 15 * 60_000;
+  return at;
 }
 
 /** A day so many calendar days on (or back). */

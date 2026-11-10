@@ -8,6 +8,7 @@ import { describe, expect, it } from "vitest";
 import { HeldByProof, moveLine, moveOrderLines, postOrders, sendProofs, spoil } from "./actions.ts";
 import { lockOf, pathOf, postRun, proofQueue, kpis, fileIdOf } from "./facts.ts";
 import { FakeDoor } from "./testing/fakeDoor.ts";
+import { dayStartIn } from "./time.ts";
 import { DESIGN_PROOF } from "./testing/fixture.ts";
 import { ApiError, dayOf, type Row } from "./wire.ts";
 
@@ -202,5 +203,13 @@ describe("what the screens read off the rows", () => {
     expect(kpis(door.data, "2026-08-05", "Europe/London").bookedMinutes).toBe(120);
     expect(kpis(door.data, "2026-08-06", "Europe/London").bookedMinutes).toBe(150 + 60);
     expect(kpis(door.data, "2026-08-07", "Europe/London").bookedMinutes).toBe(60);
+  });
+
+  it("starts a day at its first moment, where the clocks skip its midnight", () => {
+    expect(new Date(dayStartIn("2026-08-06", "Europe/London")).toISOString()).toBe("2026-08-05T23:00:00.000Z");
+    // Santiago springs forward at midnight on Sunday 6 September 2026: that day begins at 01:00 (-03), 04:00Z.
+    expect(new Date(dayStartIn("2026-09-06", "America/Santiago")).toISOString()).toBe("2026-09-06T04:00:00.000Z");
+    expect(new Date(dayStartIn("2026-09-05", "America/Santiago")).toISOString()).toBe("2026-09-05T04:00:00.000Z");
+    expect(new Date(dayStartIn("2026-09-07", "America/Santiago")).toISOString()).toBe("2026-09-07T03:00:00.000Z");
   });
 });
