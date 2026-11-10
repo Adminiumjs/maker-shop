@@ -65,6 +65,8 @@ export type EmailWords = Record<Kind, Words> & {
   sent: string;
   /** What a proof's picture says to a reader who sees no pictures. */
   proofPicture: string;
+  /** The row naming the piece a proof is of: its label code and what it is. */
+  piece: string;
   /** The footer of a shopper's e-mail, and of the studio's own. */
   foot: string;
   staffFoot: string;
@@ -91,6 +93,7 @@ export const EMAIL_EN: EmailWords = {
   proof: "Proof",
   sent: "Sent",
   proofPicture: "Your proof",
+  piece: "Piece",
   foot: "{{appName}} · {{practice.address|}}. Reply to this e-mail and it reaches the studio.",
   staffFoot: "Sent by the shop to the studio.",
   "order-received": {
@@ -102,7 +105,7 @@ export const EMAIL_EN: EmailWords = {
   },
   "proof-ready": {
     name: "Proof ready",
-    subject: "Proof {{proof.version}} for {{order.number}} is ready",
+    subject: "Proof {{proof.version}} for {{proof.line_code}} is ready",
     preheader: "Say yes, or tell us what to change.",
     heading: "{{recipient.first_name}}, your proof is ready",
     paras: ["Proof {{proof.version}} of your order {{order.number}} shows what we're about to make. Have a look on your order's page, then say yes or tell us what to change."],
@@ -110,7 +113,7 @@ export const EMAIL_EN: EmailWords = {
   },
   "proof-reminder": {
     name: "Proof reminder",
-    subject: "Your proof for {{order.number}} is still waiting",
+    subject: "Your proof for {{proof.line_code}} is still waiting",
     preheader: "We'll start as soon as you say yes.",
     heading: "Your proof is still waiting, {{recipient.first_name}}",
     paras: ["We sent proof {{proof.version}} for your order {{order.number}} on {{proof.sent_at.date}}."],
@@ -155,9 +158,9 @@ export const EMAIL_EN: EmailWords = {
   },
   "change-asked": {
     name: "Change asked to a proof",
-    subject: "A change asked to proof {{proof.version}} of {{order.number}}",
+    subject: "A change asked to proof {{proof.version}} of {{proof.line_code}}",
     preheader: "{{proof.change_note}}",
-    heading: "A change asked to proof {{proof.version}} of {{order.number}}",
+    heading: "A change asked to proof {{proof.version}} of {{proof.line_code}}",
     paras: ["The proof goes back to the bench: send a new one from the order in the studio."],
   },
 };
@@ -187,6 +190,9 @@ const LINES: Block = {
   },
 };
 
+/** The piece a proof is of: its label code ("BR-2291/1") and what it is, as the catalogue names it. */
+const PIECE = (all: EmailWords) => ({ label: all.piece, amount: "{{proof.line_code}} · {{proof.line.product_name}}" });
+
 function layout(kind: Kind, all: EmailWords) {
   const w = all[kind];
   const blocks: Block[] = [{ block: "email.heading", id: "heading", data: { text: w.heading } }, text("body", ...w.paras)];
@@ -202,6 +208,8 @@ function layout(kind: Kind, all: EmailWords) {
       break;
     case "proof-ready":
     case "proof-reminder":
+      // The piece it is of, by its label code and what it is: two lines of one order each have a proof 1.
+      blocks.push(facts("piece", [PIECE(all)]));
       // The proof's own picture; a proof sent as a PDF is no picture, and is left out: the buttons open it.
       blocks.push({ block: "email.image", id: "picture", data: { fileId: "{{proof.picture}}", alt: all.proofPicture } });
       blocks.push({ block: "email.quote", id: "note", data: { text: "{{proof.note}}", onlyWith: "proof.note" } });
@@ -231,7 +239,7 @@ function layout(kind: Kind, all: EmailWords) {
       break;
     case "change-asked":
       blocks.push({ block: "email.quote", id: "asked", data: { text: "{{proof.change_note}}", onlyWith: "proof.change_note" } });
-      blocks.push(facts("proof", [{ label: all.proof, amount: "{{proof.version}}" }, { label: all.sent, amount: "{{proof.sent_at}}" }]));
+      blocks.push(facts("proof", [PIECE(all), { label: all.proof, amount: "{{proof.version}}" }, { label: all.sent, amount: "{{proof.sent_at}}" }]));
       break;
   }
   if (w.after !== undefined) blocks.push(text("after", ...w.after));

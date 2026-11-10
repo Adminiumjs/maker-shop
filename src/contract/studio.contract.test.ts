@@ -234,9 +234,10 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         // Adminium e-mails each proof, the first and the second alike, to the shopper: each its own e-mail.
         const messageOf = (kind: string) => async () => (await rows("messages")).filter((m) => m["kind"] === kind && String(m["order_id"]) === String(made.id)).at(-1);
         const ofProof = (kind: string, proof: Row) => async () => (await rows("messages")).find((m) => m["kind"] === kind && String(m["proof_id"]) === String(proof.id));
-        const known = { "order.number": "BR-2291" };
+        const known = { "order.number": "BR-2291", "proof.line_code": "BR-2291/1" };
         for (const proof of proofs) {
-          await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-ready", to: SHOPPER, known: { ...known, "proof.version": String(proof["version"]) }, row: ofProof("proof-ready", proof) });
+          // Named by its piece: its label code and what it is.
+          await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-ready", to: SHOPPER, known: { ...known, "proof.version": String(proof["version"]) }, body: /BR-2291\/1 · Slate house sign/, row: ofProof("proof-ready", proof) });
         }
         // A reminder of the second, e-mailed once.
         await maker.remind(proofs[1]!);

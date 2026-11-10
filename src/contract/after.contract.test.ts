@@ -268,7 +268,7 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         // Its e-mail is sent, the order's own link in it; and the proof's, the proof's picture inside it (the sink's
         // parser turns the message's own `cid:` picture into a `data:` one).
         await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "order-received", to: SHOPPER.email, known: { "order.number": "BR-2292" }, body: new RegExp(`/order#${token}\\b`), row: messageOf("order-received", "order_id", made.order["id"]) });
-        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-ready", to: SHOPPER.email, known: { "order.number": "BR-2292", "proof.version": "1" }, body: /<img src="(?:cid:|data:image\/png;base64,)[^"]+" alt="Your proof"/, row: messageOf("proof-ready", "proof_id", proof["id"]) });
+        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "proof-ready", to: SHOPPER.email, known: { "order.number": "BR-2292", "proof.line_code": "BR-2292/1", "proof.version": "1" }, body: /BR-2292\/1 · Slate house sign[\s\S]*<img src="(?:cid:|data:image\/png;base64,)[^"]+" alt="Your proof"/, row: messageOf("proof-ready", "proof_id", proof["id"]) });
 
         const door: AfterPort = browser().after();
         expect(door.sharedHeld()).toBe(false);
@@ -285,7 +285,7 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
         const held = (await rows("order_lines")).find((l) => String(l["id"]) === String(line["id"]))!;
         expect([held["proof_state"], Number(held["proof_ok"])]).toEqual(["change_asked", 0]);
         // The studio hears of it, at its own address.
-        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "change-asked", to: STUDIO, known: { "order.number": "BR-2292", "proof.version": "1" }, row: messageOf("change-asked", "proof_id", proof["id"]) });
+        await delivered({ sink: server.sink, manifest: MANIFEST_TEXT, kind: "change-asked", to: STUDIO, known: { "order.number": "BR-2292", "proof.line_code": "BR-2292/1", "proof.version": "1" }, body: /BR-2292\/1 · Slate house sign/, row: messageOf("change-asked", "proof_id", proof["id"]) });
       }, 180_000);
 
       it("keeps a proof made as a PDF, as the Customiser's proof of a design's version may be", async () => {

@@ -33,6 +33,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     proof: "Probeabzug",
     sent: "Gesendet",
     proofPicture: "Ihr Probeabzug",
+    piece: "Stück",
     foot: "{{appName}} · {{practice.address|}}. Antworten Sie auf diese E-Mail, dann erreicht sie die Werkstatt.",
     staffFoot: "Vom Shop an die Werkstatt gesendet.",
     "order-received": {
@@ -44,7 +45,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "proof-ready": {
       name: "Probeabzug fertig",
-      subject: "Probeabzug {{proof.version}} für {{order.number}} ist fertig",
+      subject: "Probeabzug {{proof.version}} für {{proof.line_code}} ist fertig",
       preheader: "Stimmen Sie zu, oder sagen Sie uns, was wir ändern sollen.",
       heading: "{{recipient.first_name}}, Ihr Probeabzug ist fertig",
       paras: ["Probeabzug {{proof.version}} Ihrer Bestellung {{order.number}} zeigt, was wir gleich fertigen. Sehen Sie ihn sich auf der Seite Ihrer Bestellung an, und stimmen Sie dann zu oder sagen Sie uns, was wir ändern sollen."],
@@ -52,7 +53,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "proof-reminder": {
       name: "Erinnerung an den Probeabzug",
-      subject: "Ihr Probeabzug für {{order.number}} wartet noch",
+      subject: "Ihr Probeabzug für {{proof.line_code}} wartet noch",
       preheader: "Wir legen los, sobald Sie zustimmen.",
       heading: "Ihr Probeabzug wartet noch, {{recipient.first_name}}",
       paras: ["Wir haben Ihnen Probeabzug {{proof.version}} für Ihre Bestellung {{order.number}} am {{proof.sent_at.date}} geschickt."],
@@ -97,9 +98,9 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "change-asked": {
       name: "Änderung an einem Probeabzug erbeten",
-      subject: "Änderung an Probeabzug {{proof.version}} von {{order.number}} erbeten",
+      subject: "Änderung an Probeabzug {{proof.version}} von {{proof.line_code}} erbeten",
       preheader: "{{proof.change_note}}",
-      heading: "Änderung an Probeabzug {{proof.version}} von {{order.number}} erbeten",
+      heading: "Änderung an Probeabzug {{proof.version}} von {{proof.line_code}} erbeten",
       paras: ["Der Probeabzug geht zurück an die Werkbank: Einen neuen aus der Bestellung in der Werkstatt schicken."],
     },
   },
@@ -125,6 +126,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     proof: "Épreuve",
     sent: "Envoyée",
     proofPicture: "Votre épreuve",
+    piece: "Pièce",
     foot: "{{appName}} · {{practice.address|}}. Répondez à cet e-mail : votre réponse arrive à l’atelier.",
     staffFoot: "Envoyé par la boutique à l’atelier.",
     "order-received": {
@@ -136,7 +138,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "proof-ready": {
       name: "Épreuve prête",
-      subject: "L’épreuve {{proof.version}} de {{order.number}} est prête",
+      subject: "L’épreuve {{proof.version}} de {{proof.line_code}} est prête",
       preheader: "Validez-la, ou dites-nous ce qu’il faut changer.",
       heading: "{{recipient.first_name}}, votre épreuve est prête",
       paras: ["L’épreuve {{proof.version}} de votre commande {{order.number}} montre ce que nous allons fabriquer. Regardez-la sur la page de votre commande, puis validez-la ou dites-nous ce qu’il faut changer."],
@@ -144,7 +146,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "proof-reminder": {
       name: "Rappel d’épreuve",
-      subject: "Votre épreuve pour {{order.number}} attend toujours",
+      subject: "Votre épreuve pour {{proof.line_code}} attend toujours",
       preheader: "Nous commencerons dès votre accord.",
       heading: "Votre épreuve attend toujours, {{recipient.first_name}}",
       paras: ["Nous vous avons envoyé l’épreuve {{proof.version}} de votre commande {{order.number}} le {{proof.sent_at.date}}."],
@@ -189,9 +191,9 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "change-asked": {
       name: "Changement demandé sur une épreuve",
-      subject: "Changement demandé sur l’épreuve {{proof.version}} de {{order.number}}",
+      subject: "Changement demandé sur l’épreuve {{proof.version}} de {{proof.line_code}}",
       preheader: "{{proof.change_note}}",
-      heading: "Changement demandé sur l’épreuve {{proof.version}} de {{order.number}}",
+      heading: "Changement demandé sur l’épreuve {{proof.version}} de {{proof.line_code}}",
       paras: ["L’épreuve retourne à l’établi : en envoyer une nouvelle depuis la commande, dans l’atelier."],
     },
   },
@@ -217,6 +219,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     proof: "Prøve",
     sent: "Sendt",
     proofPicture: "Din prøve",
+    piece: "Stykke",
     foot: "{{appName}} · {{practice.address|}}. Svar på denne e-mail, så når den værkstedet.",
     staffFoot: "Sendt af butikken til værkstedet.",
     "order-received": {
@@ -228,7 +231,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "proof-ready": {
       name: "Prøve klar",
-      subject: "Prøve {{proof.version}} til {{order.number}} er klar",
+      subject: "Prøve {{proof.version}} til {{proof.line_code}} er klar",
       preheader: "Sig ja, eller fortæl os, hvad der skal ændres.",
       heading: "{{recipient.first_name}}, din prøve er klar",
       paras: ["Prøve {{proof.version}} af din bestilling {{order.number}} viser, hvad vi er ved at lave. Se den på din bestillings side, og sig så ja, eller fortæl os, hvad der skal ændres."],
@@ -236,7 +239,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "proof-reminder": {
       name: "Påmindelse om prøve",
-      subject: "Din prøve til {{order.number}} venter stadig",
+      subject: "Din prøve til {{proof.line_code}} venter stadig",
       preheader: "Vi går i gang, så snart du siger ja.",
       heading: "Din prøve venter stadig, {{recipient.first_name}}",
       paras: ["Vi sendte prøve {{proof.version}} til din bestilling {{order.number}} den {{proof.sent_at.date}}."],
@@ -281,9 +284,9 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "change-asked": {
       name: "Ændring ønsket til en prøve",
-      subject: "Ændring ønsket til prøve {{proof.version}} af {{order.number}}",
+      subject: "Ændring ønsket til prøve {{proof.version}} af {{proof.line_code}}",
       preheader: "{{proof.change_note}}",
-      heading: "Ændring ønsket til prøve {{proof.version}} af {{order.number}}",
+      heading: "Ændring ønsket til prøve {{proof.version}} af {{proof.line_code}}",
       paras: ["Prøven går tilbage til bænken: Send en ny fra bestillingen i værkstedet."],
     },
   },
@@ -309,6 +312,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     proof: "Náhled",
     sent: "Odesláno",
     proofPicture: "Váš náhled",
+    piece: "Kus",
     foot: "{{appName}} · {{practice.address|}}. Odpovězte na tento e-mail a odpověď dorazí přímo do dílny.",
     staffFoot: "Posláno z obchodu do dílny.",
     "order-received": {
@@ -320,7 +324,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "proof-ready": {
       name: "Náhled připraven",
-      subject: "Náhled č. {{proof.version}} k objednávce {{order.number}} je připraven",
+      subject: "Náhled č. {{proof.version}} ke kusu {{proof.line_code}} je připraven",
       preheader: "Schvalte ho, nebo nám napište, co změnit.",
       heading: "{{recipient.first_name}}, váš náhled je připraven",
       paras: ["Náhled č. {{proof.version}} vaší objednávky {{order.number}} ukazuje, co se chystáme vyrobit. Podívejte se na něj na stránce objednávky a pak ho schvalte, nebo nám napište, co změnit."],
@@ -328,7 +332,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "proof-reminder": {
       name: "Připomínka náhledu",
-      subject: "Váš náhled k objednávce {{order.number}} stále čeká",
+      subject: "Váš náhled ke kusu {{proof.line_code}} stále čeká",
       preheader: "Začneme, jakmile ho schválíte.",
       heading: "Váš náhled stále čeká, {{recipient.first_name}}",
       paras: ["Náhled č. {{proof.version}} k vaší objednávce {{order.number}} jsme poslali {{proof.sent_at.date}}."],
@@ -373,9 +377,9 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "change-asked": {
       name: "Vyžádána změna náhledu",
-      subject: "Vyžádána změna náhledu č. {{proof.version}} k objednávce {{order.number}}",
+      subject: "Vyžádána změna náhledu č. {{proof.version}} ke kusu {{proof.line_code}}",
       preheader: "{{proof.change_note}}",
-      heading: "Vyžádána změna náhledu č. {{proof.version}} k objednávce {{order.number}}",
+      heading: "Vyžádána změna náhledu č. {{proof.version}} ke kusu {{proof.line_code}}",
       paras: ["Náhled se vrací na ponk: pošlete nový z objednávky v dílně."],
     },
   },
@@ -401,6 +405,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     proof: "النموذج",
     sent: "أُرسل",
     proofPicture: "نموذجك",
+    piece: "القطعة",
     foot: "{{appName}} · {{practice.address|}}. ردّ على هذه الرسالة وسيصل ردّك إلى الورشة.",
     staffFoot: "أرسله المتجر إلى الورشة.",
     "order-received": {
@@ -412,7 +417,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "proof-ready": {
       name: "النموذج جاهز",
-      subject: "النموذج {{proof.version}} للطلب {{order.number}} جاهز",
+      subject: "النموذج {{proof.version}} للقطعة {{proof.line_code}} جاهز",
       preheader: "وافق عليه، أو أخبرنا بما نعدّله.",
       heading: "{{recipient.first_name}}، نموذجك جاهز",
       paras: ["يُظهر النموذج {{proof.version}} لطلبك {{order.number}} ما نحن على وشك صنعه. ألقِ نظرة عليه في صفحة طلبك، ثم وافق عليه أو أخبرنا بما نعدّله."],
@@ -420,7 +425,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "proof-reminder": {
       name: "تذكير بالنموذج",
-      subject: "نموذجك للطلب {{order.number}} ما زال في الانتظار",
+      subject: "نموذجك للقطعة {{proof.line_code}} ما زال في الانتظار",
       preheader: "سنبدأ فور موافقتك.",
       heading: "نموذجك ما زال في الانتظار يا {{recipient.first_name}}",
       paras: ["أرسلنا النموذج {{proof.version}} لطلبك {{order.number}} في {{proof.sent_at.date}}."],
@@ -465,9 +470,9 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "change-asked": {
       name: "طُلب تعديل على نموذج",
-      subject: "طُلب تعديل على النموذج {{proof.version}} للطلب {{order.number}}",
+      subject: "طُلب تعديل على النموذج {{proof.version}} للقطعة {{proof.line_code}}",
       preheader: "{{proof.change_note}}",
-      heading: "طُلب تعديل على النموذج {{proof.version}} للطلب {{order.number}}",
+      heading: "طُلب تعديل على النموذج {{proof.version}} للقطعة {{proof.line_code}}",
       paras: ["يعود النموذج إلى طاولة العمل: أرسل نموذجًا جديدًا من الطلب في الورشة."],
     },
   },
@@ -493,6 +498,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     proof: "校样",
     sent: "发送时间",
     proofPicture: "您的校样",
+    piece: "作品",
     foot: "{{appName}} · {{practice.address|}}。回复此邮件即可直接联系工作室。",
     staffFoot: "由网店发送给工作室。",
     "order-received": {
@@ -504,7 +510,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "proof-ready": {
       name: "校样已就绪",
-      subject: "{{order.number}} 的第 {{proof.version}} 版校样已就绪",
+      subject: "{{proof.line_code}} 的第 {{proof.version}} 版校样已就绪",
       preheader: "请确认，或告诉我们要修改哪里。",
       heading: "{{recipient.first_name}}，您的校样已就绪",
       paras: ["您的订单 {{order.number}} 的第 {{proof.version}} 版校样展示了我们即将制作的样子。请在订单页面查看，然后确认，或告诉我们要修改哪里。"],
@@ -512,7 +518,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "proof-reminder": {
       name: "校样提醒",
-      subject: "您 {{order.number}} 的校样还在等您确认",
+      subject: "您 {{proof.line_code}} 的校样还在等您确认",
       preheader: "您一确认，我们就开始。",
       heading: "{{recipient.first_name}}，您的校样还在等您确认",
       paras: ["我们已于 {{proof.sent_at.date}} 发送了您的订单 {{order.number}} 的第 {{proof.version}} 版校样。"],
@@ -557,9 +563,9 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "change-asked": {
       name: "校样被要求修改",
-      subject: "{{order.number}} 的第 {{proof.version}} 版校样被要求修改",
+      subject: "{{proof.line_code}} 的第 {{proof.version}} 版校样被要求修改",
       preheader: "{{proof.change_note}}",
-      heading: "{{order.number}} 的第 {{proof.version}} 版校样被要求修改",
+      heading: "{{proof.line_code}} 的第 {{proof.version}} 版校样被要求修改",
       paras: ["校样退回工作台：请在工作室里从该订单发送新的校样。"],
     },
   },
@@ -585,6 +591,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     proof: "校樣",
     sent: "寄出時間",
     proofPicture: "您的校樣",
+    piece: "作品",
     foot: "{{appName}} · {{practice.address|}}。回覆這封郵件即可直接聯絡工作室。",
     staffFoot: "由網路商店寄給工作室。",
     "order-received": {
@@ -596,7 +603,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "proof-ready": {
       name: "校樣已就緒",
-      subject: "{{order.number}} 的第 {{proof.version}} 版校樣已就緒",
+      subject: "{{proof.line_code}} 的第 {{proof.version}} 版校樣已就緒",
       preheader: "請確認，或告訴我們要修改哪裡。",
       heading: "{{recipient.first_name}}，您的校樣已就緒",
       paras: ["您的訂單 {{order.number}} 的第 {{proof.version}} 版校樣呈現了我們即將製作的樣子。請在訂單頁面查看，然後確認，或告訴我們要修改哪裡。"],
@@ -604,7 +611,7 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "proof-reminder": {
       name: "校樣提醒",
-      subject: "您 {{order.number}} 的校樣還在等您確認",
+      subject: "您 {{proof.line_code}} 的校樣還在等您確認",
       preheader: "您一確認，我們就開始。",
       heading: "{{recipient.first_name}}，您的校樣還在等您確認",
       paras: ["我們已於 {{proof.sent_at.date}} 寄出您的訂單 {{order.number}} 的第 {{proof.version}} 版校樣。"],
@@ -649,9 +656,9 @@ export const EMAIL_TRANSLATIONS: Record<Exclude<Tag, "en-US">, EmailWords> = {
     },
     "change-asked": {
       name: "校樣被要求修改",
-      subject: "{{order.number}} 的第 {{proof.version}} 版校樣被要求修改",
+      subject: "{{proof.line_code}} 的第 {{proof.version}} 版校樣被要求修改",
       preheader: "{{proof.change_note}}",
-      heading: "{{order.number}} 的第 {{proof.version}} 版校樣被要求修改",
+      heading: "{{proof.line_code}} 的第 {{proof.version}} 版校樣被要求修改",
       paras: ["校樣退回工作台：請在工作室裡從該訂單寄出新的校樣。"],
     },
   },

@@ -303,6 +303,21 @@ describe("the studio writes only what its work needs", () => {
     }
   });
 
+  it("names the piece in every proof e-mail, in every language: two lines' proof 1 read apart", () => {
+    const templates = (manifest["emailTemplates"] as { key: string; locales: Record<string, { subject: string; blocks: Json[] }> }[]).filter((t) => ["maker-proof-ready", "maker-proof-reminder", "maker-change-asked"].includes(t.key));
+    expect(templates).toHaveLength(3);
+    for (const template of templates) {
+      for (const [tag, { subject, blocks }] of Object.entries(template.locales)) {
+        // The subject by the line's label code ("BR-2291/1"), which the order's number alone is not.
+        expect(subject, `${template.key} ${tag}`).toContain("{{proof.line_code}}");
+        expect(subject, `${template.key} ${tag}`).not.toContain("{{order.number}}");
+        // The body by its label code and what it is.
+        const lines = blocks.flatMap((b) => ((b["data"] as { lines?: { amount: string }[] } | undefined)?.lines ?? []).map((l) => l.amount));
+        expect(lines, `${template.key} ${tag}`).toContain("{{proof.line_code}} · {{proof.line.product_name}}");
+      }
+    }
+  });
+
   it("ties a proof to its line's own order, which nobody sends", () => {
     expect(rules("proofs", "order_id")["copy"]).toEqual({ via: "line_id", from: "order_id", mode: "always" });
     expect((role("maker").limits!["proofs"] as Json)["creatable"]).not.toContain("order_id");
