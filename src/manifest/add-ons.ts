@@ -12,14 +12,15 @@
  * role), 1.0.22 shows a shop's 3D models from above, and 1.0.23 keeps
  * each shop app's roles to their own customers' designs and set-up rows,
  * and lets the owner set the shop's settings; 1.0.24 labels two designs in
- * one order apart and keeps each app's fonts to itself, and 1.0.25 draws its
- * line panel on the studio's screens.
+ * one order apart and keeps each app's fonts to itself, 1.0.25 draws its
+ * line panel on the studio's screens, and 1.0.26 lets a shopper order a
+ * ready-made design again.
  */
 import { l } from "./labels.ts";
 import { CUSTOMISER } from "./postings.ts";
 
 /** The add-ons' release whose orders take two designs, with the owner's own-rows set-up and shop settings. */
-export const ADD_ONS_RANGE = "^1.0.25";
+export const ADD_ONS_RANGE = "^1.0.26";
 
 export const ADD_ONS = {
   requires: [{ key: CUSTOMISER, range: ADD_ONS_RANGE, reason: l("Shoppers make a piece their own: their words, their logo, a ready-made design.") }],

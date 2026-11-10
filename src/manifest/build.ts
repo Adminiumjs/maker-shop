@@ -20,7 +20,7 @@ import { ROLES } from "./roles.ts";
 import { SETTINGS } from "./settings.ts";
 import { TABLES } from "./tables.ts";
 
-export const VERSION = "0.2.4";
+export const VERSION = "0.2.5";
 
 /**
  * The Adminium release that first reads everything below: quantity breaks
@@ -47,9 +47,11 @@ export const VERSION = "0.2.4";
  * Proofs page's own form (its picture field among them). 0.3.53 bundles the
  * Customiser 1.0.25, whose two designs in one order are labelled apart,
  * and offers only the chosen order's lines in the proofs form's picker
- * (`reference.scope`).
+ * (`reference.scope`). 0.3.54 bundles the Customiser 1.0.26, whose shop
+ * editor takes a ready-made design again, and numbers at every update the
+ * lines added by hand before their place was numbered.
  */
-export const MIN_ADMINIUM = "0.3.53";
+export const MIN_ADMINIUM = "0.3.54";
 
 const ENV = {
   VITE_ADMINIUM_API_BASE_URL: { required: false, example: "https://admin.example.com" },

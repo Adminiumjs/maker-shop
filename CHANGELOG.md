@@ -1,17 +1,20 @@
 # Changelog
 
-## 0.2.5 (not released yet)
+## 0.2.5 (11 November 2026)
 
+Needs Adminium **0.3.54** and asks for the add-ons at **1.0.26**.
+
+- **A shopper can order a ready-made design again.** With the Customiser 1.0.24
+  and 1.0.25 the shop's editor refused every ready-made design ("This design
+  can't be made as it is"); 1.0.26 takes them. Plain pieces were not affected.
 - **What 0.2.4 said about numbering order lines, put right.** 0.2.4 said its
   update numbers the order lines already there. It did not: a line added to an
   order on the dashboard before 0.2.4 kept no place on its order, so its label
   code read the order's number alone ("BR-2291") and its proof "BR-2291 #1".
-  Adminium **0.3.54** numbers them when an update starts numbering a line's
-  place: each order's lines with no number take the next numbers after the
-  ones it has, in the order they were added ("BR-2291/3"), the numbers already
-  there stay, and their proofs follow ("BR-2291/3 #1"). It does so when the
-  update from 0.2.3 is the one that starts it; a studio already on 0.2.4 keeps
-  those lines without a number.
+  Adminium **0.3.54** numbers them at every update: each order's lines with no
+  number take the next numbers after the ones it has, in the order they were
+  added ("BR-2291/3"), the numbers already there stay, and their proofs follow
+  ("BR-2291/3 #1"). This update does it for a studio already on 0.2.4 too.
 - **A line moved to another order keeps its number.** Its label code takes the
   new order's number with the line's old place ("BR-2287/4" on an order of
   one line), and a move into an order that already has a line in that place is
