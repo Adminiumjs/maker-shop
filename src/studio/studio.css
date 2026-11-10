@@ -140,7 +140,9 @@
 }
 .st-btn:disabled, .st-btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
 .st-btn--accent { border: 0; background: var(--accent); color: var(--accent-fg); font-weight: 800; }
-.st-btn--accent:hover:not(:disabled) { filter: brightness(1.12); }
+.st-btn--accent:hover:not(:disabled):not([aria-disabled="true"]) { filter: brightness(1.12); }
+/* A main button that cannot be pressed yet is drawn plain, not in the accent: dimmed, the accent still read as ready. */
+.st-btn--accent:disabled, .st-btn--accent[aria-disabled="true"] { background: var(--surface-3); color: var(--fg-muted); }
 .st-btn--dark { border: 0; background: var(--fg); color: var(--bg); font-weight: 800; }
 .st-btn--small { border-radius: 9px; padding: 8px 12px; font-size: 12px; }
 .st-btn--warn { color: var(--warn); }
