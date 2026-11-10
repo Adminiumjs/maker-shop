@@ -2,9 +2,11 @@
 
 ## 0.2.4 (10 November 2026)
 
-Needs Adminium **0.3.53** and asks for the add-ons at **1.0.24**. The update
+Needs Adminium **0.3.53** and asks for the add-ons at **1.0.25**. The update
 numbers the order lines already there.
 
+- **The Customiser's panel draws on the studio's screens again.** With the
+  Customiser 1.0.24 a line's panel stayed on "Loading"; 1.0.25 draws it.
 - **Two customised pieces in one order.** With the Customiser 1.0.24, an order
   that holds two pieces a shopper made their own is taken: each design's
   version is labelled by its design, where two were refused as the same.

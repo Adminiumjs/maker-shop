@@ -21,7 +21,7 @@ the five o'clock cut-off — and the studio works Tuesday to Saturday.
 ## What it needs
 
 - Adminium **0.3.53** or later, on SQLite, Postgres or MySQL.
-- The **Customiser** add-on (1.0.24 or later): it is where a shopper makes a piece
+- The **Customiser** add-on (1.0.25 or later): it is where a shopper makes a piece
   their own, and the order line names the design they made. Adminium installs it
   with the app.
 - Nothing else. Five add-ons are offered at install, and the app is whole without
