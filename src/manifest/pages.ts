@@ -80,7 +80,8 @@ const SPECS: PageSpec[] = [
       [
         title("title"),
         f("order_id", { control: "reference", reference: { name: "number", detail: ["name"] } }),
-        f("line_id", { control: "reference", reference: { name: "label_code", detail: ["summary"] } }),
+        // Only the chosen order's lines are offered (Adminium 0.3.53, `form.referenceScope`).
+        f("line_id", { control: "reference", reference: { name: "label_code", detail: ["summary"], scope: { field: "order_id", column: "order_id" } } }),
         f("version", { control: "number" }),
         f("state", { control: "segmented" }),
       ],

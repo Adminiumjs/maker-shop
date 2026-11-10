@@ -535,6 +535,15 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         const renamed = (await rows("proofs")).find((p) => String(p.id) === String(proof.id))!;
         expect([renamed["line_code"], renamed["title"]]).toEqual([moved["label_code"], `${String(moved["label_code"])} #1`]);
       });
+
+      // Adminium 0.3.53: the Proofs form's line picker offers only the lines of the order chosen beside it.
+      it("installs the Proofs form with its line picker scoped to the chosen order", async () => {
+        const listed = ok(await owner.get<{ data: { id: string }[] }>("/api/v1/pages")).data;
+        const page = listed.find((p) => JSON.stringify(p).includes("maker-proofs"));
+        expect(page, JSON.stringify(listed.map((p) => p)).slice(0, 800)).toBeDefined();
+        const stored = ok(await owner.get<unknown>(`/api/v1/pages/${encodeURIComponent(page!.id)}`));
+        expect(JSON.stringify(stored)).toContain('"scope":{"field":"order_id","column":"order_id"}');
+      });
     });
   });
 });

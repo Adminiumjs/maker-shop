@@ -178,6 +178,8 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
     for (const page of ["maker-proofs", "maker-stock"]) {
       expect(fields(page).find((f) => f["column"] === "line_id"), page).toMatchObject({ reference: { name: "label_code", detail: ["summary"] } });
     }
+    // On the Proofs form, only the chosen order's lines.
+    expect(fields("maker-proofs").find((f) => f["column"] === "line_id")).toMatchObject({ reference: { scope: { field: "order_id", column: "order_id" } } });
     expect(fields("maker-messages").find((f) => f["column"] === "proof_id")).toMatchObject({ reference: { name: "title" } });
   });
 
