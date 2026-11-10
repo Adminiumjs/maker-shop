@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.2.4 (not released yet)
+
+- **A proof is made with its picture.** A proof added on the dashboard without
+  a picture replaced the one the customer had at once, so their order page lost
+  its answer buttons until the picture came. Adminium now makes no proof
+  without its picture, from the dashboard, the studio or anywhere else, and the
+  Proofs form marks the picture as needed. A proof's "Sent" is now when it
+  really went.
+- **A piece made but not yet posted counts as late.** Studio Today said
+  "0 pieces late" beside a card marked late in Ready to post; a piece counts as
+  late until it is posted.
+- **Machine time booked counts a run past midnight.** A batch or a firing that
+  runs on past midnight now counts its hours on each day it runs, so Today and
+  Machines no longer say "0h 0m" while it runs.
+- **Order lines are named by their label code.** Pickers and links name a line
+  "BR-2291/1", with what it is under it in the Proofs and stock forms, so two
+  orders' coasters read apart. A proof is named by its line and number,
+  "BR-2291/1 #3", not by how it was drawn.
+- **The sample posts every order by its post-by.** BR-2241, BR-2247 and BR-2258
+  came in after the five o'clock cut-off, so they are posted on their post-by
+  day, not a day after it.
+
 ## 0.2.3 (10 November 2026)
 
 Needs Adminium **0.3.52** and the add-ons **1.0.23**.
