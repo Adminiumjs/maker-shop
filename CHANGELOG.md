@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.2.5 (not released yet)
+
+- **What 0.2.4 said about numbering order lines, put right.** 0.2.4 said its
+  update numbers the order lines already there. It did not: a line added to an
+  order on the dashboard before 0.2.4 kept no place on its order, so its label
+  code read the order's number alone ("BR-2291") and its proof "BR-2291 #1".
+  Adminium **0.3.54** numbers them when an update starts numbering a line's
+  place: each order's lines with no number take the next numbers after the
+  ones it has, in the order they were added ("BR-2291/3"), the numbers already
+  there stay, and their proofs follow ("BR-2291/3 #1"). It does so when the
+  update from 0.2.3 is the one that starts it; a studio already on 0.2.4 keeps
+  those lines without a number.
+- **A line moved to another order keeps its number.** Its label code takes the
+  new order's number with the line's old place ("BR-2287/4" on an order of
+  one line), and a move into an order that already has a line in that place is
+  refused. 0.2.4 said only that a proof follows its line when the line moves.
+- **Each proof e-mail names its piece.** Two pieces of one order proofed
+  together gave two identical "Proof 1 for BR-2291 is ready" e-mails. The
+  proof, reminder and change e-mails now name the piece by its label code in
+  the subject ("Proof 1 for BR-2291/1 is ready") and by its code and what it is
+  in the e-mail, in all eight languages. The studio's Proofs page and an
+  order's proofs name each piece the same way.
+- **The sample's parcels go on days the studio is open.** Posted orders were
+  dated back from the day the sample was added, so BR-2252 and BR-2260 could
+  be posted on a Sunday. A posted order's dates now keep their weekdays, as
+  the planned days do, and stay in the past whatever day the sample is added.
+- **"Send a proof" looks unavailable while it is.** With no proof made yet its
+  button was drawn in the accent colour, dimmed; it is now drawn plain.
+- The demo's "A proof waiting for you" sends its proof with a picture, as the
+  studio does.
+
 ## 0.2.4 (10 November 2026)
 
 Needs Adminium **0.3.53** and asks for the add-ons at **1.0.25**. The update
