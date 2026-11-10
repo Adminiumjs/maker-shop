@@ -486,6 +486,13 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect(await answers(asked)).toEqual([[1, "superseded"], [2, "sent"]]);
         // The change asked stays on the proof it was asked of.
         expect((await ofLine(asked))[0]!["change_note"]).toBe("A little bigger, please.");
+        // Each proof, the sample's and the dashboard's, is named by its line's label code and its number on the line.
+        const lines = await rows("order_lines");
+        for (const line of [waiting, answered, asked]) {
+          const code = lines.find((l) => String(l.id) === String(line.id))!["label_code"];
+          expect(code).toMatch(/^BR-\d{4}\/\d+$/);
+          expect((await ofLine(line)).map((p) => p["title"])).toEqual((await ofLine(line)).map((p) => `${String(code)} #${String(p["version"])}`));
+        }
         // The line reads its newest proof's answer: waiting again, so not ready for the bench until it is approved.
         const after = (await maker.load()).lines.find((l) => String(l.id) === String(waiting.id))!;
         expect([after["proof_state"], num(after["proof_ok"])]).toEqual(["sent", 0]);

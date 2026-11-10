@@ -4002,7 +4002,7 @@
           "zh-CN": "订单明细",
           "zh-TW": "訂單明細"
         },
-        "keyField": "product_name",
+        "keyField": "label_code",
         "states": {
           "column": "stage",
           "initial": "make",
@@ -5683,7 +5683,7 @@
           "zh-CN": "校样",
           "zh-TW": "校樣"
         },
-        "keyField": "version",
+        "keyField": "title",
         "states": {
           "column": "state",
           "initial": "sent",
@@ -5803,6 +5803,54 @@
                 "gapless": true,
                 "scope": "line_id",
                 "sample": true
+              }
+            }
+          },
+          {
+            "ref": "line_code",
+            "type": "text",
+            "maxLength": 24,
+            "label": {
+              "en-US": "Label code",
+              "de-DE": "Etikettencode",
+              "fr-FR": "Code d’étiquette",
+              "da-DK": "Etiketkode",
+              "cs-CZ": "Kód štítku",
+              "ar-EG": "رمز الملصق",
+              "zh-CN": "标签代码",
+              "zh-TW": "標籤代碼"
+            },
+            "nullable": true,
+            "rules": {
+              "copy": {
+                "via": "line_id",
+                "from": "label_code",
+                "mode": "always"
+              }
+            }
+          },
+          {
+            "ref": "title",
+            "type": "text",
+            "maxLength": 40,
+            "label": {
+              "en-US": "Reference",
+              "de-DE": "Referenz",
+              "fr-FR": "Référence",
+              "da-DK": "Reference",
+              "cs-CZ": "Referenční číslo",
+              "ar-EG": "المرجع",
+              "zh-CN": "参考号",
+              "zh-TW": "參考編號"
+            },
+            "nullable": true,
+            "rules": {
+              "formula": {
+                "join": [
+                  "line_code",
+                  " #",
+                  "version"
+                ]
               }
             }
           },
@@ -8699,6 +8747,11 @@
               "id": "s1",
               "fields": [
                 {
+                  "column": "title",
+                  "control": "title",
+                  "span": 2
+                },
+                {
                   "column": "order_id",
                   "control": "reference",
                   "reference": {
@@ -8710,7 +8763,13 @@
                 },
                 {
                   "column": "line_id",
-                  "control": "reference"
+                  "control": "reference",
+                  "reference": {
+                    "name": "label_code",
+                    "detail": [
+                      "summary"
+                    ]
+                  }
                 },
                 {
                   "column": "version",
@@ -9608,7 +9667,13 @@
                 },
                 {
                   "column": "line_id",
-                  "control": "reference"
+                  "control": "reference",
+                  "reference": {
+                    "name": "label_code",
+                    "detail": [
+                      "summary"
+                    ]
+                  }
                 },
                 {
                   "column": "note",
@@ -10017,7 +10082,10 @@
                 },
                 {
                   "column": "proof_id",
-                  "control": "reference"
+                  "control": "reference",
+                  "reference": {
+                    "name": "title"
+                  }
                 },
                 {
                   "column": "request_id",

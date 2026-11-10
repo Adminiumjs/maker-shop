@@ -76,7 +76,14 @@ const SPECS: PageSpec[] = [
     table: "proofs",
     config: form(
       // The order by its number, the customer's name under it: four of Iris's orders read apart, on any Adminium.
-      [f("order_id", { control: "reference", reference: { name: "number", detail: ["name"] } }), f("line_id", { control: "reference" }), f("version", { control: "number" }), f("state", { control: "segmented" })],
+      // A line by its label code with what it is under it: two orders' coasters read apart.
+      [
+        title("title"),
+        f("order_id", { control: "reference", reference: { name: "number", detail: ["name"] } }),
+        f("line_id", { control: "reference", reference: { name: "label_code", detail: ["summary"] } }),
+        f("version", { control: "number" }),
+        f("state", { control: "segmented" }),
+      ],
       // A proof is made with its picture (the table's `create.requires`): the form asks for it.
       [f("kind", { control: "segmented" }), f("picture", { required: true }), wide("note", "text"), wide("change_note", "text")],
       [f("sent_at", { control: "datetime" }), f("sent_by"), f("answered_at", { control: "datetime" }), f("reminded_at", { control: "datetime" })],
@@ -195,7 +202,7 @@ const SPECS: PageSpec[] = [
     config: form(
       [f("material_id", { control: "reference" }), f("kind", { control: "select" }), f("qty", { control: "number" }), f("counted", { control: "number" }), f("units", { control: "number" })],
       [f("on_hand_before", { control: "number" }), f("on_hand_change", { control: "number" }), f("committed_change", { control: "number" })],
-      [f("batch_id", { control: "reference" }), f("line_id", { control: "reference" }), wide("note", "text"), f("made_at", { control: "datetime" }), f("made_by")],
+      [f("batch_id", { control: "reference" }), f("line_id", { control: "reference", reference: { name: "label_code", detail: ["summary"] } }), wide("note", "text"), f("made_at", { control: "datetime" }), f("made_by")],
     ),
   },
   {
@@ -264,7 +271,7 @@ const SPECS: PageSpec[] = [
       f("to_address", { control: "email" }),
       f("language"),
       f("order_id", { control: "reference" }),
-      f("proof_id", { control: "reference" }),
+      f("proof_id", { control: "reference", reference: { name: "title" } }),
       f("request_id", { control: "reference" }),
       f("problem_id", { control: "reference" }),
       f("customer_id", { control: "reference" }),

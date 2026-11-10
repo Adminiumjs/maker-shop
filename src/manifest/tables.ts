@@ -598,7 +598,9 @@ export const TABLES: Table[] = [
     keep: KEPT_FOR_TAX,
     label: l("Order line"),
     labelPlural: l("Order lines"),
-    keyField: "product_name",
+    // A line is named by the code on its label, its order's number and its place on it ("BR-2291/1"): two orders'
+    // lines of the same product read apart.
+    keyField: "label_code",
     states: {
       column: "stage",
       initial: "make",
@@ -727,7 +729,8 @@ export const TABLES: Table[] = [
     ref: "proofs",
     label: l("Proof"),
     labelPlural: l("Proofs"),
-    keyField: "version",
+    // A proof is named by its line's label code and its number on the line ("BR-2291/1 #3"), never by how it was drawn.
+    keyField: "title",
     states: {
       column: "state",
       initial: "sent",
@@ -750,6 +753,8 @@ export const TABLES: Table[] = [
       // The line's customer, so the picture of their words and what they asked to change go with them (people.ts).
       fk("customer_id", "customers", "Customer", { ...opt, rules: { copy: { via: "line_id", from: "customer_id", mode: "always" } } }),
       int("version", "Proof", { ...opt, rules: { sequence: { gapless: true, scope: "line_id", sample: true } } }),
+      text("line_code", 24, "Label code", { ...opt, rules: { copy: { via: "line_id", from: "label_code", mode: "always" } } }),
+      text("title", 40, "Reference", { ...opt, rules: { formula: { join: ["line_code", " #", "version"] } } }),
       choice("kind", "Drawn from", { lettering: "The lettering", design: "The Customiser design" }, { default: "lettering" }),
       // What the customer is shown: the lettering drawn here, or the Customiser's proof of the design's version copied
       // as it is, of the kinds and size that proof may be (a PDF among them, so this is a file, not a picture).

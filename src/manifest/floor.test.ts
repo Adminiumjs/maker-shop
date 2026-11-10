@@ -164,6 +164,21 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
     expect(picture).toMatchObject({ required: true });
   });
 
+  // Two orders' coasters read apart: a line by its label code, a proof by its line and number, never "lettering".
+  it("names a line by its label code and a proof by its line and number, and the pickers show them", () => {
+    const tables = (shipped["requiredSchema"] as { tables: Json[] }).tables;
+    const of = (ref: string) => tables.find((t) => t["ref"] === ref)!;
+    const column = (table: string, ref: string) => (of(table)["columns"] as Json[]).find((c) => c["ref"] === ref)!;
+    expect([of("order_lines")["keyField"], of("proofs")["keyField"]]).toEqual(["label_code", "title"]);
+    expect((column("proofs", "line_code")["rules"] as Json)["copy"]).toEqual({ via: "line_id", from: "label_code", mode: "always" });
+    expect((column("proofs", "title")["rules"] as Json)["formula"]).toEqual({ join: ["line_code", " #", "version"] });
+    const fields = (ref: string) => (shipped["pages"] as { ref: string; config: { form: { sections: { fields: Json[] }[] } } }[]).find((p) => p.ref === ref)!.config.form.sections.flatMap((s) => s.fields);
+    for (const page of ["maker-proofs", "maker-stock"]) {
+      expect(fields(page).find((f) => f["column"] === "line_id"), page).toMatchObject({ reference: { name: "label_code", detail: ["summary"] } });
+    }
+    expect(fields("maker-messages").find((f) => f["column"] === "proof_id")).toMatchObject({ reference: { name: "title" } });
+  });
+
   it("lets the owner find and erase a customer, and no screens-only role", () => {
     expect(roleOf(shipped, "owner").permissions).toContain("privacy:@:people");
     for (const key of ["maker", "packer"]) expect(roleOf(shipped, key).permissions.filter((p) => p.startsWith("privacy:"))).toEqual([]);
