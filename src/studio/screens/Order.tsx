@@ -14,7 +14,7 @@ import { ArrowLeft, Check, FileCog, Image as ImageIcon, PackageCheck, Send, Truc
 
 import { moveOrderLines } from "../actions.ts";
 import { useData, useEnv, useRun } from "../env.tsx";
-import { closuresOf, isLive, lineMaterial, linesOf, lockOf, optionOf, productOf, proofsOf, serviceOf, takesProof } from "../facts.ts";
+import { closuresOf, isLive, lineCode, lineMaterial, linesOf, lockOf, optionOf, productOf, proofsOf, serviceOf, takesProof } from "../facts.ts";
 import { useFmt } from "../format.ts";
 import { go, useStudio } from "../store.ts";
 import { postTone } from "../facts.ts";
@@ -234,24 +234,25 @@ function ProofLog({ order, lines, customer }: { order: Row; lines: Row[]; custom
   const fmt = useFmt();
   const data = useData();
   const rows = lines.flatMap((line) => proofsOf(data, line).map((proof) => ({ line, proof })));
-  type Entry = { at: string; what: string; tone: "pos" | "warn" | "plain"; detail: string | null; key: string };
+  // Each entry names its piece, by its label code and what it is: two lines of one order each have a proof 1.
+  type Entry = { at: string; piece: string; what: string; tone: "pos" | "warn" | "plain"; detail: string | null; key: string };
   const entries: Entry[] = [];
   for (const { line, proof } of rows) {
+    const piece = [lineCode(order, line), text(line["product_name"])].filter((part) => part !== null && part !== "").join(" · ");
     const version = num(proof["version"]) ?? 0;
     const sent = text(proof["sent_at"]);
     // Sent again: the piece's next proof replaced it, so nobody is waiting on a reply to this one.
     const next = proof["state"] === "superseded" ? proofsOf(data, line).map((p) => num(p["version"]) ?? 0).filter((v) => v > version).sort((a, b) => a - b)[0] : undefined;
     const detail = next === undefined ? t("studio.log.sentDetail", { customer }) : t("studio.log.replacedDetail", { customer, next });
-    if (sent !== null) entries.push({ at: sent, what: t("studio.log.sent", { version }), tone: "plain", detail, key: `${String(proof.id)}-sent` });
+    if (sent !== null) entries.push({ at: sent, piece, what: t("studio.log.sent", { version }), tone: "plain", detail, key: `${String(proof.id)}-sent` });
     const answered = text(proof["answered_at"]);
-    if (proof["state"] === "approved" && answered !== null) entries.push({ at: answered, what: t("studio.log.approved"), tone: "pos", detail: t("studio.log.approvedDetail"), key: `${String(proof.id)}-ok` });
+    if (proof["state"] === "approved" && answered !== null) entries.push({ at: answered, piece, what: t("studio.log.approved"), tone: "pos", detail: t("studio.log.approvedDetail"), key: `${String(proof.id)}-ok` });
     if ((proof["state"] === "change_asked" || text(proof["change_note"]) !== null) && answered !== null)
-      entries.push({ at: answered, what: t("studio.log.changeAsked"), tone: "warn", detail: text(proof["change_note"]) === null ? null : `“${text(proof["change_note"]) ?? ""}”`, key: `${String(proof.id)}-change` });
+      entries.push({ at: answered, piece, what: t("studio.log.changeAsked"), tone: "warn", detail: text(proof["change_note"]) === null ? null : `“${text(proof["change_note"]) ?? ""}”`, key: `${String(proof.id)}-change` });
     const reminded = text(proof["reminded_at"]);
-    if (reminded !== null) entries.push({ at: reminded, what: t("studio.log.reminded", { day: fmt.moment(reminded) }), tone: "plain", detail: null, key: `${String(proof.id)}-reminded` });
+    if (reminded !== null) entries.push({ at: reminded, piece, what: t("studio.log.reminded", { day: fmt.moment(reminded) }), tone: "plain", detail: null, key: `${String(proof.id)}-reminded` });
   }
   entries.sort((a, b) => a.at.localeCompare(b.at));
-  void order;
   return (
     <div className="st-panel st-panel--pad">
       <h2 className="st-panel-title">{t("bench.proofs.title")}</h2>
@@ -263,6 +264,7 @@ function ProofLog({ order, lines, customer }: { order: Row; lines: Row[]; custom
             <li key={e.key} className="st-log-row">
               <span className="st-log-when">{fmt.moment(e.at)}</span>
               <span className="st-log-text">
+                <span className="st-log-piece">{e.piece}</span>
                 <span className="st-log-what" data-tone={e.tone}>
                   {e.what}
                 </span>

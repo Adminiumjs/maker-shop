@@ -258,6 +258,21 @@ describe("the order", () => {
     expect(log).toEqual(["Proof 1 sentE-mailed to Iris P. — replaced by proof 2.", "Proof 2 sentE-mailed to Iris P. — waiting on a reply."]);
   });
 
+  it("names the piece each proof is of, so two lines' first proofs read apart", async () => {
+    // BR-2268's mug and coasters, each with its proof 1 out: Adminium numbers proofs per line.
+    const data = fixture();
+    data.proofs.push(
+      { id: 1311, order_id: 13, line_id: 131, version: 1, kind: "lettering", picture: null, state: "sent", sent_at: "2026-08-05T10:00:00.000Z", answered_at: null, reminded_at: null, change_note: null },
+      { id: 1321, order_id: 13, line_id: 132, version: 1, kind: "lettering", picture: null, state: "sent", sent_at: "2026-08-05T10:01:00.000Z", answered_at: null, reminded_at: null, change_note: null },
+    );
+    await mount(new FakeDoor({ data }), "order", { orderId: 13 });
+    const log = [...document.querySelectorAll(".st-log-row")].map((row) => [row.querySelector(".st-log-piece")?.textContent, row.querySelector(".st-log-what")?.textContent]);
+    expect(log).toEqual([
+      ["BR-2268/1 · Stoneware mug", "Proof 1 sent"],
+      ["BR-2268/2 · Engraved walnut coasters", "Proof 1 sent"],
+    ]);
+  });
+
   it("sends the proof of a lettered piece: drawn, stored, sent", async () => {
     const door = new FakeDoor();
     await mount(door, "order", { orderId: 11 });
@@ -420,6 +435,14 @@ describe("the proofs", () => {
     expect(document.querySelector(".st-proof-pic img")).toBeNull();
     const link = document.querySelector<HTMLAnchorElement>(".st-proof-pic a.st-proof-open")!;
     expect([link.textContent, link.getAttribute("href"), link.getAttribute("target")]).toEqual(["Open the proof of Wedding sign", "/api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1X2/content", "_blank"]);
+  });
+
+  it("names each piece by its label code, so two lines of one order read apart", async () => {
+    const data = fixture();
+    data.lines.push({ ...data.lines.find((l) => l.id === 101)!, id: 102, position: 2, label_code: "BR-2276/2" });
+    data.proofs.push({ ...data.proofs.find((p) => p.id === 1001)!, id: 1005, line_id: 102 });
+    await mount(new FakeDoor({ data }), "proofs");
+    expect([...document.querySelectorAll(".st-proof .st-proof-ids .st-mono")].map((code) => code.textContent)).toEqual(["BR-2276/1", "BR-2276/2"]);
   });
 
   it("sends a reminder of a proof that has waited as long as the settings say", async () => {

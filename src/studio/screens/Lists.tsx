@@ -8,7 +8,7 @@ import { Check, MailCheck } from "lucide-react";
 
 import { postOrders } from "../actions.ts";
 import { useData, useEnv, useRun } from "../env.tsx";
-import { closuresOf, fileSrc, isLive, linesOf, postRun, productOf, proofQueue, reminderDays, serviceOf, type ProofItem } from "../facts.ts";
+import { closuresOf, fileSrc, isLive, lineCode, linesOf, postRun, productOf, proofQueue, reminderDays, serviceOf, type ProofItem } from "../facts.ts";
 import { useFmt } from "../format.ts";
 import { go, toast, useStudio, type OrderFilter } from "../store.ts";
 import { studioDaysBetween } from "../time.ts";
@@ -148,7 +148,7 @@ export function ProofsScreen() {
                   <LineTile data={data} line={line} product={productOf(data, line)} size={38} iconSize={15} />
                   <span className="st-unsent-text">
                     <span className="st-proof-ids">
-                      <span className="st-mono st-small">{text(order["number"])}</span>
+                      <span className="st-mono st-small">{lineCode(order, line)}</span>
                       <strong>{text(line["product_name"])}</strong>
                     </span>
                     {words !== "" && (
@@ -206,7 +206,7 @@ function Waiting({ item }: { item: ProofItem }) {
       </div>
       <div className="st-proof-text">
         <div className="st-proof-ids">
-          <span className="st-mono st-small">{text(order["number"])}</span>
+          <span className="st-mono st-small">{lineCode(order, line)}</span>
           <strong>{name}</strong>
           <span className="st-small">
             {t("studio.proofs.for", { customer })}

@@ -231,6 +231,7 @@
 .st-log-row { display: grid; grid-template-columns: 82px 1fr; gap: 12px; align-items: start; }
 .st-log-when { font-family: var(--font-mono); font-size: 11px; color: var(--fg-subtle); padding-block-start: 2px; }
 .st-log-text { display: flex; flex-direction: column; gap: 2px; }
+.st-log-piece { font-family: var(--font-mono); font-size: 11px; color: var(--fg-subtle); }
 .st-log-what { font-size: 13px; font-weight: 700; }
 .st-log-what[data-tone="pos"] { color: var(--pos); }
 .st-log-what[data-tone="warn"] { color: var(--warn); }

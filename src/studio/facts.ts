@@ -81,6 +81,11 @@ export function proofsOf(data: StudioData, line: Row): Row[] {
 /** The order a row belongs to. */
 export const orderOf = (data: StudioData, orderId: unknown): Row | undefined => data.orders.find((o) => same(o.id, orderId));
 export const linesOf = (data: StudioData, order: Row): Row[] => data.lines.filter((l) => same(l["order_id"], order.id)).sort((a, b) => (num(a["position"]) ?? 0) - (num(b["position"]) ?? 0) || Number(a.id) - Number(b.id));
+/**
+ * The code on a line's label, "BR-2291/1", as Adminium works it out from the order's number and the line's place on
+ * it: what tells two lines of one order apart. The order's number where Adminium has given the line none.
+ */
+export const lineCode = (order: Row, line: Row): string => text(line["label_code"]) ?? text(order["number"]) ?? "";
 export const productOf = (data: StudioData, line: Row): Row | undefined => data.products.find((p) => same(p.id, line["product_id"]));
 export const optionOf = (data: StudioData, id: unknown): Row | undefined => data.options.find((o) => same(o.id, id));
 export const materialOf = (data: StudioData, id: unknown): Row | undefined => data.materials.find((m) => same(m.id, id));
