@@ -170,7 +170,9 @@ describe(`the manifest at its floor, ${MIN_ADMINIUM}`, () => {
     const of = (ref: string) => tables.find((t) => t["ref"] === ref)!;
     const column = (table: string, ref: string) => (of(table)["columns"] as Json[]).find((c) => c["ref"] === ref)!;
     expect([of("order_lines")["keyField"], of("proofs")["keyField"]]).toEqual(["label_code", "title"]);
-    expect((column("proofs", "line_code")["rules"] as Json)["copy"]).toEqual({ via: "line_id", from: "label_code", mode: "always" });
+    expect((column("proofs", "line_code")["rules"] as Json)["copy"]).toEqual({ via: "line_id", from: "label_code", mode: "always", follow: true });
+    // Every line has its place on its order, however it is made: the code never reads "BR-2291" for two lines.
+    expect((column("order_lines", "position")["rules"] as Json)["sequence"]).toEqual({ gapless: true, scope: "order_id", sample: true });
     expect((column("proofs", "title")["rules"] as Json)["formula"]).toEqual({ join: ["line_code", " #", "version"] });
     const fields = (ref: string) => (shipped["pages"] as { ref: string; config: { form: { sections: { fields: Json[] }[] } } }[]).find((p) => p.ref === ref)!.config.form.sections.flatMap((s) => s.fields);
     for (const page of ["maker-proofs", "maker-stock"]) {

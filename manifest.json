@@ -4146,7 +4146,14 @@
               "zh-CN": "排序",
               "zh-TW": "排序"
             },
-            "nullable": true
+            "nullable": true,
+            "rules": {
+              "sequence": {
+                "gapless": true,
+                "scope": "order_id",
+                "sample": true
+              }
+            }
           },
           {
             "ref": "product_id",
@@ -5825,7 +5832,8 @@
               "copy": {
                 "via": "line_id",
                 "from": "label_code",
-                "mode": "always"
+                "mode": "always",
+                "follow": true
               }
             }
           },

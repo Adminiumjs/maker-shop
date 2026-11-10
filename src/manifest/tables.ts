@@ -619,7 +619,9 @@ export const TABLES: Table[] = [
       fk("order_id", "orders", "Order", { index: true }),
       // The order's customer, so the words on the line are found with them (people.ts).
       fk("customer_id", "customers", "Customer", { ...opt, rules: { copy: { via: "order_id", from: "customer_id", mode: "always" } } }),
-      int("position", "Position", opt),
+      // Its place on the order, numbered by Adminium per order however the line is made (the shop's order, the
+      // dashboard): the label code reads "BR-2291/2", never "BR-2291" for every line added by hand.
+      int("position", "Position", { ...opt, rules: { sequence: { gapless: true, scope: "order_id", sample: true } } }),
       fk("product_id", "products", "Product", { rules: { linkable: { where: [{ column: "published", eq: true }] } } }),
       text("product_name", 80, "Product name", { ...opt, rules: { copy: { via: "product_id", from: "name", mode: "always" } } }),
       int("qty", "Quantity", { default: 1, rules: { validation: { min: 1, max: 50 } } }),
@@ -753,7 +755,8 @@ export const TABLES: Table[] = [
       // The line's customer, so the picture of their words and what they asked to change go with them (people.ts).
       fk("customer_id", "customers", "Customer", { ...opt, rules: { copy: { via: "line_id", from: "customer_id", mode: "always" } } }),
       int("version", "Proof", { ...opt, rules: { sequence: { gapless: true, scope: "line_id", sample: true } } }),
-      text("line_code", 24, "Label code", { ...opt, rules: { copy: { via: "line_id", from: "label_code", mode: "always" } } }),
+      // Kept in step with the line's: a line moved to another order renames its proofs.
+      text("line_code", 24, "Label code", { ...opt, rules: { copy: { via: "line_id", from: "label_code", mode: "always", follow: true } } }),
       text("title", 40, "Reference", { ...opt, rules: { formula: { join: ["line_code", " #", "version"] } } }),
       choice("kind", "Drawn from", { lettering: "The lettering", design: "The Customiser design" }, { default: "lettering" }),
       // What the customer is shown: the lettering drawn here, or the Customiser's proof of the design's version copied

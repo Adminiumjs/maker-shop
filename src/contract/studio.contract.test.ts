@@ -497,6 +497,44 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         const after = (await maker.load()).lines.find((l) => String(l.id) === String(waiting.id))!;
         expect([after["proof_state"], num(after["proof_ok"])]).toEqual(["sent", 0]);
       });
+
+      // A line added on the dashboard sends no place on its order: Adminium numbers it, so two such lines read apart.
+      it("numbers the lines the owner adds on the dashboard, and renames a moved line's proofs", async () => {
+        const roles = ok(await owner.get<{ roles: { id: string; slug?: string }[] }>("/api/v1/roles")).roles;
+        const email = `owner.lines.${engine}@birchrow.example`;
+        const invited = ok(await owner.post<{ invite: { token: string } }>("/api/v1/users", { email, name: "Ada Birch", roleIds: [roles.find((r) => r.slug === "maker-owner")!.id] }), 201);
+        const password = newPassword();
+        ok(await new Caller(server.base).post("/api/v1/auth/password/reset", { token: invited.invite.token, newPassword: password }));
+        const dashboard = new Caller(server.base);
+        await dashboard.signIn(email, password);
+        const linesTable = encodeURIComponent(tables["order_lines"] ?? "maker_order_lines");
+        const proofsTable = encodeURIComponent(tables["proofs"] ?? "maker_proofs");
+        const data = await maker.load();
+        const order = orderOf(data, "BR-2290");
+        const like = linesOf(data, order)[0]!;
+        const before = linesOf(data, order).length;
+        const made: Row[] = [];
+        for (let i = 0; i < 2; i += 1) {
+          const line = await dashboard.post<{ data: Row }>(`/api/v1/data/${connectionId}/${linesTable}`, {
+            values: { order_id: order.id, product_id: like["product_id"], qty: 1, material_id: like["material_id"], size_id: like["size_id"], finish_id: like["finish_id"], lettering: `Hand-made ${String(i + 1)}` },
+          });
+          expect(line.status, JSON.stringify(line.body).slice(0, 600)).toBe(201);
+          made.push(line.body.data);
+        }
+        expect(made.map((l) => [Number(l["position"]), l["label_code"]])).toEqual([
+          [before + 1, `BR-2290/${String(before + 1)}`],
+          [before + 2, `BR-2290/${String(before + 2)}`],
+        ]);
+        // A proof of the second, then the line moved to another order: the proof's name follows the line's.
+        const stored = ok(await dashboard.send<{ ref: string }>("POST", `/api/v1/files?${new URLSearchParams({ filename: "proof.png", connectionId, table: tables["proofs"] ?? "maker_proofs", column: "picture" }).toString()}`, png(), { "content-type": "image/png" }), 201);
+        const proof = ok(await dashboard.post<{ data: Row }>(`/api/v1/data/${connectionId}/${proofsTable}`, { values: { line_id: made[1]!.id, kind: "lettering", picture: stored.ref } }), 201).data;
+        expect(proof["title"]).toBe(`BR-2290/${String(before + 2)} #1`);
+        const other = orderOf(data, "BR-2287");
+        const moved = ok(await dashboard.patch<{ data: Row }>(`/api/v1/data/${connectionId}/${linesTable}/${String(made[1]!.id)}`, { values: { order_id: other.id } })).data;
+        expect(String(moved["label_code"])).toMatch(/^BR-2287\//);
+        const renamed = (await rows("proofs")).find((p) => String(p.id) === String(proof.id))!;
+        expect([renamed["line_code"], renamed["title"]]).toEqual([moved["label_code"], `${String(moved["label_code"])} #1`]);
+      });
     });
   });
 });
