@@ -463,6 +463,8 @@ interface Order {
   lines: Line[];
   log: LogEntry[];
   posted?: string;
+  /** When on its day it came in, when not the studio's mid-morning (`PLACED_AT`). */
+  at?: string;
 }
 
 const L = (pid: string, qty: number, mat: string, size: string, finish: string, note: string, stage: Stage, proof: ProofKind, design?: string): Line => ({
@@ -534,22 +536,26 @@ export const ORDERS: Order[] = [
 
 /** Posted orders: the history the customers and Order again pages read (`birch-row-data.js` 389–420). */
 export const ARCHIVE: Order[] = [
-  { ref: "BR-2241", ship: "second", customer: "Hana W.", email: "hana.w@mail.example", placed: "2026-06-16", posted: "2026-06-20", town: "Bramley", log: [],
+  { ref: "BR-2241", ship: "second", customer: "Hana W.", email: "hana.w@mail.example", placed: "2026-06-16", posted: "2026-06-20", town: "Bramley", at: "19:40", log: [],
     lines: [L("coast-wal", 1, "walnut", "s95", "oil", "Wren Cottage", "posted", "approved")] },
-  { ref: "BR-2247", ship: "tracked", customer: "Iris P.", email: "iris.p@mail.example", placed: "2026-06-30", posted: "2026-07-04", town: "Colne", log: [],
+  { ref: "BR-2247", ship: "tracked", customer: "Iris P.", email: "iris.p@mail.example", placed: "2026-06-30", posted: "2026-07-04", town: "Colne", at: "19:40", log: [],
     lines: [L("book-wal", 2, "walnut", "s150", "oil", "Iris", "posted", "approved"), L("key-acr", 4, "acrylic", "s50", "frost", "Colne 2026", "posted", "approved")] },
   { ref: "BR-2252", ship: "second", customer: "Sam O.", email: "sam.o@mail.example", placed: "2026-07-09", posted: "2026-07-14", town: "Ashby", log: [],
     lines: [L("pot-3d", 2, "resin", "s110", "warm", "", "posted", "none")] },
   { ref: "BR-2255", ship: "tracked", customer: "Bex T.", email: "bex.t@mail.example", placed: "2026-07-14", posted: "2026-07-18", town: "Kendal", log: [],
     lines: [L("mark-slate", 1, "slate", "s150", "etch", "basil · thyme · mint", "posted", "approved")] },
-  { ref: "BR-2258", ship: "second", customer: "Priya S.", email: "priya.s@mail.example", placed: "2026-07-21", posted: "2026-07-25", town: "Hove", log: [],
+  { ref: "BR-2258", ship: "second", customer: "Priya S.", email: "priya.s@mail.example", placed: "2026-07-21", posted: "2026-07-25", town: "Hove", at: "19:40", log: [],
     lines: [L("board-cut", 1, "walnut", "s380", "oil", "The Sharmas · 2019", "posted", "approved")] },
   { ref: "BR-2260", ship: "tracked", customer: "Erin M.", email: "erin.m@mail.example", placed: "2026-07-23", posted: "2026-07-28", town: "Rye", log: [],
     lines: [L("block-photo", 1, "ply", "s120", "bare", "The allotment, 2015", "posted", "approved")] },
 ];
 
-/** The studio's order wall clock: the comps keep dates only, so an order came in mid-morning. */
+/**
+ * The studio's order wall clock: the comps keep dates only, so an order came in mid-morning. A few came in after the
+ * five o'clock cut-off, counted from the next studio day: posted on the comp's day, they went on their post-by.
+ */
 const PLACED_AT = "10:00";
+const placedAt = (order: Order): string => order.at ?? PLACED_AT;
 
 /** A postcode and a street that are nobody's: the sample's own fiction. */
 const ADDRESSES: Record<string, { line1: string; postcode: string }> = {
@@ -604,9 +610,9 @@ const customerLabel = (email: string): string => `customer:${email.split("@")[0]
 /** The studio's own sample: everything that does not point at a product. */
 export function sampleBundle(): SampleBundle {
   const all = [...ARCHIVE, ...ORDERS];
-  const customers = new Map<string, { name: string; email: string; first: string }>();
+  const customers = new Map<string, { name: string; email: string; first: Order }>();
   for (const order of [...all].sort((a, b) => a.placed.localeCompare(b.placed))) {
-    if (!customers.has(order.email)) customers.set(order.email, { name: order.customer, email: order.email, first: order.placed });
+    if (!customers.has(order.email)) customers.set(order.email, { name: order.customer, email: order.email, first: order });
   }
   return {
     format: "adminium.sample/1",
@@ -642,7 +648,7 @@ export function sampleBundle(): SampleBundle {
       { ref: "closures", rows: CLOSURES.map((c) => ({ from_date: day(c.from), to_date: day(c.to), reason: c.reason, active: true })) },
       {
         ref: "customers",
-        rows: [...customers.values()].map((c) => ({ "@label": customerLabel(c.email), email: c.email, name: c.name, language: "en-US", may_email: false, created_at: past(c.first, PLACED_AT) })),
+        rows: [...customers.values()].map((c) => ({ "@label": customerLabel(c.email), email: c.email, name: c.name, language: "en-US", may_email: false, created_at: past(c.first.placed, placedAt(c.first)) })),
       },
       {
         ref: "orders",
@@ -659,7 +665,7 @@ export function sampleBundle(): SampleBundle {
           language: "en-US",
           customer_id: { "@ref": customerLabel(o.email) },
           service_id: { "@ref": `service:${o.ship}` },
-          placed_at: past(o.placed, PLACED_AT),
+          placed_at: past(o.placed, placedAt(o)),
           posted_at: o.posted === undefined ? null : past(o.posted, "16:00"),
           may_email: false,
         })),
@@ -752,7 +758,7 @@ export function customiserSection(): SampleBundle {
         design_id: design === null ? null : { "@ref": line.design },
         // A posted order's post-by is history, counted back from the adding day as its posting is; one still on the bench
         // is planned by, on its weekday.
-        post_by: (order.posted === undefined ? day : pastDay)(postBy(order.placed, PLACED_AT, p.lead)),
+        post_by: (order.posted === undefined ? day : pastDay)(postBy(order.placed, placedAt(order), p.lead)),
         stage: line.stage,
         ...(BATCH.lines.includes(label) ? { batch_id: { "@ref": BATCH.label } } : {}),
         spoiled: 0,
@@ -868,7 +874,9 @@ function proofRows(order: Order): Row[] {
   const approved = versions.some((v) => v["state"] === "approved") || order.posted !== undefined;
   for (const { line, i } of lettered.slice(versions.length === 0 ? 0 : 1)) {
     if (!approved || line.proof !== "approved") continue;
-    rows.push({ order_id: { "@ref": orderLabel(order.ref) }, line_id: lineRef(i), version: 1, kind: "lettering", design_version_id: null, note: null, state: "approved", sent_at: past(order.placed, "11:00"), answered_at: past(order.placed, "15:00") });
+    // On the day it came in, or the next morning for one that came in after the cut-off.
+    const proofDay = order.at === undefined ? order.placed : addDays(order.placed, 1);
+    rows.push({ order_id: { "@ref": orderLabel(order.ref) }, line_id: lineRef(i), version: 1, kind: "lettering", design_version_id: null, note: null, state: "approved", sent_at: past(proofDay, "11:00"), answered_at: past(proofDay, "15:00") });
   }
   return rows;
 }

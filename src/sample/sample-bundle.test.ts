@@ -117,9 +117,10 @@ describe("every row is one the studio could have made", () => {
       const postBy = line["post_by"] as Row;
       const order = orders.get((line["order_id"] as { "@ref": string })["@ref"])!;
       if (order["posted_at"] !== null) {
-        // Posted: its post-by is history too, counted the same way as its posting, so the two never drift apart.
+        // Posted: its post-by is history too, counted the same way as its posting, so the two never drift apart; and
+        // it went on its post-by or before, never late.
         expect(postBy["@week"], String(line["@label"])).toBeUndefined();
-        expect(Number((order["posted_at"] as Row)["@day"]) - Number(postBy["@day"]), String(line["@label"])).toBeLessThanOrEqual(1);
+        expect(Number((order["posted_at"] as Row)["@day"]) - Number(postBy["@day"]), String(line["@label"])).toBeLessThanOrEqual(0);
         continue;
       }
       expect(postBy["@week"]).toBe(true);
