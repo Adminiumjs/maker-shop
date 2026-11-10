@@ -77,11 +77,17 @@ export function installRuntime(host?: unknown): void {
   } as AddOnRuntime);
 }
 
-/** One add-on's client bundle, as `GET /api/v1/add-ons` describes it. */
+/**
+ * One add-on's client bundle, as `GET /api/v1/add-ons` describes it. From Adminium 0.3.53 the list also names the
+ * add-on's page bundles (`ref`) and record panel bundles (`panel`) beside its slot bundle, in no promised order, and a
+ * bundle whose pin cannot be read comes with an integrity of `null`.
+ */
 export interface ConnectedBundle {
   path: string;
   url: string;
-  integrity: string;
+  integrity: string | null;
+  ref?: string;
+  panel?: string;
 }
 
 /** One installed add-on, as the server describes it. Narrowed to what is read. */
@@ -162,7 +168,9 @@ function isConnectedDto(value: unknown): value is ConnectedAddOnDto {
   for (const b of dto["bundles"] as unknown[]) {
     if (typeof b !== "object" || b === null) return false;
     const bundle = b as Record<string, unknown>;
-    if (typeof bundle["url"] !== "string" || typeof bundle["integrity"] !== "string" || typeof bundle["path"] !== "string") return false;
+    if (typeof bundle["url"] !== "string" || typeof bundle["path"] !== "string") return false;
+    if (typeof bundle["integrity"] !== "string" && bundle["integrity"] !== null) return false;
+    for (const named of ["ref", "panel"]) if (bundle[named] !== undefined && typeof bundle[named] !== "string") return false;
   }
   return true;
 }
@@ -306,9 +314,15 @@ export async function loadConnectedAddOns(options: ConnectedOptions): Promise<Co
 
   const addOns: AddOn[] = [];
   for (const dto of mine) {
-    const bundle = dto.bundles[0];
+    // The slot bundle: the one that is no page's (`ref`) and no record panel's (`panel`). A page or a panel is the
+    // dashboard's to draw, never a slot this studio registers.
+    const bundle = dto.bundles.find((b) => b.ref === undefined && b.panel === undefined);
     // A data pack fills no slot and ships no client half: nothing to mount, and no failure.
     if (bundle === undefined) continue;
+    if (bundle.integrity === null) {
+      problems.push({ key: dto.key, code: "INTEGRITY_MISMATCH", detail: `${bundle.path}: the server could not say what its bytes are` });
+      continue;
+    }
     if (!bundleUrlIsSafe(bundle.url, origin)) {
       problems.push({ key: dto.key, code: "UNSAFE_URL", detail: bundle.url });
       continue;

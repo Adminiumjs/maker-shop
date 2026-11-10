@@ -202,6 +202,40 @@ describe('loading what this host hosts', () => {
     expect((await s.load()).addOns).toEqual([]);
   });
 
+  // Adminium 0.3.53 lists an add-on's page and panel bundles beside its slot bundle, the owner's page first.
+  it('imports the slot bundle, never a page or a panel bundle listed before it', async () => {
+    const slot = dto().bundles[0]!;
+    const s = stub({
+      listed: [
+        dto({
+          bundles: [
+            { path: 'dist/page.js', url: '/api/v1/add-ons/holiday-calendars/pages/setup/bundle', integrity: 'sha256-page', ref: 'setup' },
+            { path: 'dist/panel.js', url: '/api/v1/add-ons/holiday-calendars/panels/day/bundle', integrity: null, panel: 'day' },
+            { ...slot, url: `${slot.url}?v=abc` },
+          ],
+        }),
+      ],
+    });
+    const { addOns, problems } = await s.load();
+    expect(problems).toEqual([]);
+    expect(addOns.map((a) => a.key)).toEqual(['holiday-calendars']);
+    expect(s.imported).toEqual([`${ORIGIN}${slot.url}?v=abc`]);
+  });
+
+  it('passes over an add-on that lists only page bundles, as it does a data pack', async () => {
+    const s = stub({ listed: [dto({ bundles: [{ path: 'dist/page.js', url: '/api/v1/add-ons/holiday-calendars/pages/setup/bundle', integrity: 'sha256-page', ref: 'setup' }] })] });
+    expect(await s.load()).toEqual({ addOns: [], problems: [] });
+    expect(s.imported).toEqual([]);
+  });
+
+  it('refuses a slot bundle whose integrity the server could not read', async () => {
+    const s = stub({ listed: [dto({ bundles: [{ ...dto().bundles[0]!, integrity: null }] })] });
+    const { addOns, problems } = await s.load();
+    expect(addOns).toEqual([]);
+    expect(problems.map((p) => p.code)).toEqual(['INTEGRITY_MISMATCH']);
+    expect(s.imported).toEqual([]);
+  });
+
   it('passes over a data pack, which ships no client half at all', async () => {
     // Not a failure: an add-on the host reads through a typed surface fills no
     // slot, so there is nothing here to mount and nothing to report.
