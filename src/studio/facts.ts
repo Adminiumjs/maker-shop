@@ -7,7 +7,7 @@
  */
 import type { StudioData } from "./door.ts";
 import { dayOf, num, same, text, type Id, type Row } from "./wire.ts";
-import { studioDaysBetween, type Closure, type Day } from "./time.ts";
+import { addDays, dayStartIn, studioDaysBetween, type Closure, type Day } from "./time.ts";
 
 /** The bench's four columns, in order. */
 export const BENCH = ["make", "making", "finishing", "ready"] as const;
@@ -140,26 +140,33 @@ export function bench(data: StudioData): Record<BenchStage, Row[]> {
   return out;
 }
 
-/** Today's four counts: pieces due, orders waiting on a customer, pieces late, machine time booked (minutes). */
-export function kpis(data: StudioData, today: Day, dayOfInstant: (iso: string) => Day): { due: number; waiting: number; late: number; bookedMinutes: number } {
+/**
+ * Today's four counts: pieces due, orders waiting on a customer, pieces late, machine time booked (minutes).
+ * A piece is late while it is not posted by its post-by, made and waiting by the door too, as its card says. The
+ * machine time is what of each run falls in today, in the studio's zone: a firing that runs on past midnight counts
+ * on both days.
+ */
+export function kpis(data: StudioData, today: Day, zone: string): { due: number; waiting: number; late: number; bookedMinutes: number } {
   let due = 0;
   let late = 0;
   for (const line of data.lines) {
-    if (!isLive(line) || line["stage"] === "ready") continue;
+    if (!isLive(line)) continue;
     const postBy = dayOf(line["post_by"]);
     if (postBy === null) continue;
     const qty = num(line["qty"]) ?? 0;
     if (postBy < today) late += qty;
-    else if (postBy === today) due += qty;
+    else if (postBy === today && line["stage"] !== "ready") due += qty;
   }
   const waiting = new Set(data.lines.filter((l) => isLive(l) && l["proof_state"] === "sent").map((l) => String(l["order_id"]))).size;
+  const opens = dayStartIn(today, zone);
+  const closes = dayStartIn(addDays(today, 1), zone);
   let bookedMinutes = 0;
   for (const b of data.bookings) {
     if (b["kind"] !== undefined && b["kind"] !== "run") continue;
-    const from = text(b["starts_at"]);
-    const to = text(b["ends_at"]);
-    if (from === null || to === null || dayOfInstant(from) !== today) continue;
-    bookedMinutes += Math.max(0, Math.round((Date.parse(to) - Date.parse(from)) / 60_000));
+    const from = Date.parse(text(b["starts_at"]) ?? "");
+    const to = Date.parse(text(b["ends_at"]) ?? "");
+    if (Number.isNaN(from) || Number.isNaN(to)) continue;
+    bookedMinutes += Math.max(0, Math.round((Math.min(to, closes) - Math.max(from, opens)) / 60_000));
   }
   return { due, waiting, late, bookedMinutes };
 }

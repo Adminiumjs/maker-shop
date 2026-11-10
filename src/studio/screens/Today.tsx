@@ -40,7 +40,7 @@ export function TodayScreen() {
   const today = fmt.today(door.now());
   const closures = closuresOf(data);
   const open = isStudioDay(today, facts.studioDays, closures);
-  const counts = kpis(data, today, (iso) => fmt.today(Date.parse(iso)));
+  const counts = kpis(data, today, facts.zone);
   const columns = bench(data);
   const mayMove = door.who().can("order_lines", "update");
 

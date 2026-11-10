@@ -41,7 +41,7 @@ export function MachinesScreen() {
   const zone = door.facts().zone;
   const now = door.now();
   const today = fmt.today(now);
-  const total = kpis(data, today, (iso) => fmt.today(Date.parse(iso))).bookedMinutes;
+  const total = kpis(data, today, zone).bookedMinutes;
   const hm = (minutes: number) => t("studio.kpi.hm", { hours: Math.floor(minutes / 60), minutes: minutes % 60 });
   const nowMinute = minuteOfDay(now, zone);
   const nowStep = nowMinute >= DAY_FROM * 60 && nowMinute <= DAY_TO * 60 ? Math.min(STEPS - 1, Math.round((nowMinute - DAY_FROM * 60) / 5)) : null;

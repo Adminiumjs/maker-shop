@@ -40,6 +40,13 @@ export function dayIn(instant: number | string, zone: string): Day {
   return `${pad(p.y, 4)}-${pad(p.m)}-${pad(p.d)}`;
 }
 
+/** The instant a day of the studio's begins, in its zone: the midnight it starts at. */
+export function dayStartIn(day: Day, zone: string): number {
+  const wall = Date.UTC(Number(day.slice(0, 4)), Number(day.slice(5, 7)) - 1, Number(day.slice(8, 10)));
+  const first = wall - zoneOffsetMs(zone, wall);
+  return wall - zoneOffsetMs(zone, first);
+}
+
 /** A day so many calendar days on (or back). */
 export function addDays(day: Day, n: number): Day {
   const at = Date.UTC(Number(day.slice(0, 4)), Number(day.slice(5, 7)) - 1, Number(day.slice(8, 10))) + n * 86_400_000;

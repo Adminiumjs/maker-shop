@@ -9,8 +9,7 @@ import { HeldByProof, moveLine, moveOrderLines, postOrders, sendProofs, spoil } 
 import { lockOf, pathOf, postRun, proofQueue, kpis, fileIdOf } from "./facts.ts";
 import { FakeDoor } from "./testing/fakeDoor.ts";
 import { DESIGN_PROOF } from "./testing/fixture.ts";
-import { dayIn } from "./time.ts";
-import { ApiError, type Row } from "./wire.ts";
+import { ApiError, dayOf, type Row } from "./wire.ts";
 
 const png = async () => new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47])], { type: "image/png" });
 const line = (door: FakeDoor, id: number): Row => door.data.lines.find((l) => l.id === id)!;
@@ -178,6 +177,30 @@ describe("what the screens read off the rows", () => {
 
   it("counts today's pieces due and late, orders waiting, and today's machine time", () => {
     const door = new FakeDoor();
-    expect(kpis(door.data, "2026-08-06", (iso) => dayIn(iso, "Europe/London"))).toEqual({ due: 1, waiting: 1, late: 2, bookedMinutes: 1000 });
+    // Late: the two mugs still finishing and the coasters made and waiting by the door, all past Wednesday's post-by.
+    expect(kpis(door.data, "2026-08-06", "Europe/London")).toEqual({ due: 1, waiting: 1, late: 3, bookedMinutes: 1000 });
+  });
+
+  it("counts a piece made but not posted by its post-by as late, as its card says", () => {
+    const door = new FakeDoor();
+    const ready = line(door, 132);
+    expect([ready["stage"], dayOf(ready["post_by"])]).toEqual(["ready", "2026-08-05"]);
+    expect(kpis(door.data, "2026-08-06", "Europe/London").late).toBe(3);
+    // Posted, it is late no more.
+    door.data.lines = door.data.lines.map((l) => (l.id === 132 ? { ...l, stage: "posted" } : l));
+    expect(kpis(door.data, "2026-08-06", "Europe/London").late).toBe(2);
+  });
+
+  it("books today the part of a run that falls in it, a firing past midnight on both days", () => {
+    const door = new FakeDoor();
+    door.data.bookings = [
+      // 22:00 on Wednesday to 02:30 on Thursday, in Settle (British Summer Time).
+      { id: 9, machine_id: 3, kind: "run", label: "Overnight firing", batch_id: null, starts_at: "2026-08-05T21:00:00.000Z", ends_at: "2026-08-06T01:30:00.000Z" },
+      // 23:00 on Thursday to 01:00 on Friday.
+      { id: 10, machine_id: 3, kind: "run", label: "Late firing", batch_id: null, starts_at: "2026-08-06T22:00:00.000Z", ends_at: "2026-08-07T00:00:00.000Z" },
+    ];
+    expect(kpis(door.data, "2026-08-05", "Europe/London").bookedMinutes).toBe(120);
+    expect(kpis(door.data, "2026-08-06", "Europe/London").bookedMinutes).toBe(150 + 60);
+    expect(kpis(door.data, "2026-08-07", "Europe/London").bookedMinutes).toBe(60);
   });
 });
