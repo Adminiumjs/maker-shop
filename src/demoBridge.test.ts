@@ -126,12 +126,19 @@ describe("the demo bridge", () => {
     expect(useShop.getState().confirmed?.order["total"]).toBe("29.95");
   });
 
-  it("opens Iris's order, signed in, with a proof waiting for her", async () => {
+  it("opens Iris's order, signed in, with a proof waiting for her, sent with its picture", async () => {
+    // Iris asked for a change, so the shortcut sends her a new proof, as the studio would.
+    const w = demoAdminium().world;
+    const order = w.all("orders").find((o) => o["number"] === "BR-2276")!;
+    for (const p of w.all("proofs").filter((one) => one["order_id"] === order.id && one["state"] === "sent")) w.update("proofs", p.id, { state: "change_asked", change_note: "Could it be a little bigger?" });
     await send({ type: "adminium:demo:go", screen: "order" });
     await send({ type: "adminium:demo:do", shortcut: "proof-waiting" });
     const opened = useAfter.getState().opened;
     expect(opened?.state).toBe("ok");
     expect(opened?.read?.order["number"]).toBe("BR-2276");
+    const waiting = w.all("proofs").filter((p) => p["order_id"] === order.id && p["state"] === "sent");
+    expect(waiting).toHaveLength(1);
+    expect(w.pictures.get(String(waiting[0]!.id))).toBeInstanceOf(Blob);
     expect(opened?.read?.proofs.some((p) => p["state"] === "sent")).toBe(true);
   });
 

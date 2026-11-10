@@ -14,6 +14,7 @@ import { backToFind, findOrder, openMine, resetAfter, searchFor, typeAsk, typeLo
 import { addChoiceToBasket, addLinesToBasket, choose, goView, loadShop, openProduct, optionsOf, placeOrder, productOf, requoteBasket, requoteProduct, resetShop, setDetails, useShop, type ShopView } from "../shop/store.ts";
 import { reload } from "../studio/env.tsx";
 import { batchGroups } from "../studio/making.ts";
+import { drawLettering } from "../studio/picture.ts";
 import { go, toast as studioToast, useStudio, type View } from "../studio/store.ts";
 import { cardWord } from "./card.ts";
 import { demoAdminium, renewDemo, useDemo, type Persona } from "./adminium.ts";
@@ -150,6 +151,10 @@ async function fillCode(key: LookupKey, ref: string): Promise<void> {
   if (code !== null) typeLookup(key, { digits: code });
 }
 
+/** A picture of a line's words where the browser has no canvas to draw the studio's on. */
+const wordsPicture = (line: Record<string, unknown>): Blob =>
+  new Blob([`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><rect width="1200" height="800" fill="#e8d9bd"/><text x="600" y="400" text-anchor="middle" font-family="sans-serif" font-size="64">${String(line["lettering"] ?? "").replace(/[<>&]/g, "")}</text></svg>`], { type: "image/svg+xml" });
+
 /** Iris's sign on BR-2276 has a proof waiting; she opens her order, signed in. */
 async function proofWaiting(): Promise<void> {
   const w = demo().world;
@@ -159,7 +164,9 @@ async function proofWaiting(): Promise<void> {
     const proofs = w.all("proofs").filter((p) => p["line_id"] === line.id);
     const latest = proofs.reduce((top, p) => Math.max(top, Number(p["version"])), 0);
     if (proofs.some((p) => Number(p["version"]) === latest && p["state"] === "sent")) continue;
-    w.insert("proofs", { order_id: order.id, line_id: line.id, version: latest + 1, kind: "lettering", design_version_id: null, note: "A new layout on the 420 mm sign.", state: "sent", sent_at: w.nowIso(), answered_at: null, reminded_at: null, change_note: null, picture: null });
+    // Sent as the studio sends one, with its picture: Adminium makes no proof without one.
+    const blob = (await drawLettering(line, await demo().studio.load())) ?? wordsPicture(line);
+    await demo().studio.sendProof({ order, line, kind: "lettering", designVersionId: null, note: "A new layout on the 420 mm sign.", picture: { blob, filename: `proof-line-${String(line.id)}.png` } });
   }
   w.changed();
   demo().after.signInAs(IRIS);
