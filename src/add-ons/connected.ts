@@ -79,8 +79,10 @@ export function installRuntime(host?: unknown): void {
 
 /**
  * One add-on's client bundle, as `GET /api/v1/add-ons` describes it. From Adminium 0.3.53 the list also names the
- * add-on's page bundles (`ref`) and record panel bundles (`panel`) beside its slot bundle, in no promised order, and a
- * bundle whose pin cannot be read comes with an integrity of `null`.
+ * add-on's page bundles (`ref`) and record panel bundles (`panel`) beside its slot bundle, in no promised order. Each
+ * comes with its integrity: a bundle whose pin the server cannot read is left out of the list, so an add-on whose slot
+ * bundle's pin is unreadable reaches this studio with no slot bundle and is passed over as a data pack is. No Adminium
+ * sends a `null` integrity; one that did is refused, never imported unchecked.
  */
 export interface ConnectedBundle {
   path: string;
@@ -319,6 +321,7 @@ export async function loadConnectedAddOns(options: ConnectedOptions): Promise<Co
     const bundle = dto.bundles.find((b) => b.ref === undefined && b.panel === undefined);
     // A data pack fills no slot and ships no client half: nothing to mount, and no failure.
     if (bundle === undefined) continue;
+    // Never sent (see `ConnectedBundle`); refused rather than imported unchecked should a server send it.
     if (bundle.integrity === null) {
       problems.push({ key: dto.key, code: "INTEGRITY_MISMATCH", detail: `${bundle.path}: the server could not say what its bytes are` });
       continue;

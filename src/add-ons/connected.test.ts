@@ -210,7 +210,7 @@ describe('loading what this host hosts', () => {
         dto({
           bundles: [
             { path: 'dist/page.js', url: '/api/v1/add-ons/holiday-calendars/pages/setup/bundle', integrity: 'sha256-page', ref: 'setup' },
-            { path: 'dist/panel.js', url: '/api/v1/add-ons/holiday-calendars/panels/day/bundle', integrity: null, panel: 'day' },
+            { path: 'dist/panel.js', url: '/api/v1/add-ons/holiday-calendars/panels/day/bundle', integrity: 'sha256-panel', panel: 'day' },
             { ...slot, url: `${slot.url}?v=abc` },
           ],
         }),
@@ -228,7 +228,8 @@ describe('loading what this host hosts', () => {
     expect(s.imported).toEqual([]);
   });
 
-  it('refuses a slot bundle whose integrity the server could not read', async () => {
+  // Adminium 0.3.53 leaves out a bundle whose pin it cannot read, so this shape never comes: should it, it is refused.
+  it('refuses a slot bundle listed with no integrity, never importing it unchecked', async () => {
     const s = stub({ listed: [dto({ bundles: [{ ...dto().bundles[0]!, integrity: null }] })] });
     const { addOns, problems } = await s.load();
     expect(addOns).toEqual([]);
