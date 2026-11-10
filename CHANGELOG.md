@@ -1,7 +1,13 @@
 # Changelog
 
-## 0.2.4 (not released yet)
+## 0.2.4 (10 November 2026)
 
+Needs Adminium **0.3.53** and asks for the add-ons at **1.0.24**. The update
+numbers the order lines already there.
+
+- **Two customised pieces in one order.** With the Customiser 1.0.24, an order
+  that holds two pieces a shopper made their own is taken: each design's
+  version is labelled by its design, where two were refused as the same.
 - **A proof is made with its picture.** A proof added on the dashboard without
   a picture replaced the one the customer had at once, so their order page lost
   its answer buttons until the picture came. A proof made on the dashboard or
@@ -23,6 +29,11 @@
 - **The sample posts every order by its post-by.** BR-2241, BR-2247 and BR-2258
   came in after the five o'clock cut-off, so they are posted on their post-by
   day, not a day after it.
+- **The New Proof form offers only the chosen order's lines** in its line
+  picker (Adminium 0.3.53).
+- **The pages import only the add-on code that fills a slot.** From Adminium
+  0.3.53 the add-ons list also names add-on pages and record panels, and their
+  code is never taken for a slot's.
 
 ## 0.2.3 (10 November 2026)
 
