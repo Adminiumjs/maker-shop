@@ -45,5 +45,8 @@ if (asked && ENGINE_VERSION !== null && !atLeast(BECOMES ?? ENGINE_VERSION, MIN_
   throw new Error(`the contract needs Adminium ${MIN_ADMINIUM} or later, the app's floor; ADMINIUM_REPO has ${ENGINE_VERSION}`);
 }
 
+/** Whether the Adminium under test is release `release` or later (as `CONTRACT_ENGINE_RELEASE` names it, when given). */
+export const engineAtLeast = (release: string): boolean => ENGINE_VERSION !== null && atLeast(BECOMES ?? ENGINE_VERSION, release);
+
 /** The manifest that ships. */
 export const MANIFEST_TEXT: string = readFileSync(join(REPO, "manifest.json"), "utf8");
