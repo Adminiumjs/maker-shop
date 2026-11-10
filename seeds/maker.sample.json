@@ -369,7 +369,8 @@
           "may_email": false,
           "created_at": {
             "@day": -51,
-            "@time": "19:40"
+            "@time": "19:40",
+            "@week": true
           }
         },
         {
@@ -380,7 +381,8 @@
           "may_email": false,
           "created_at": {
             "@day": -37,
-            "@time": "19:40"
+            "@time": "19:40",
+            "@week": true
           }
         },
         {
@@ -391,7 +393,8 @@
           "may_email": false,
           "created_at": {
             "@day": -28,
-            "@time": "10:00"
+            "@time": "10:00",
+            "@week": true
           }
         },
         {
@@ -402,7 +405,8 @@
           "may_email": false,
           "created_at": {
             "@day": -23,
-            "@time": "10:00"
+            "@time": "10:00",
+            "@week": true
           }
         },
         {
@@ -413,7 +417,8 @@
           "may_email": false,
           "created_at": {
             "@day": -16,
-            "@time": "19:40"
+            "@time": "19:40",
+            "@week": true
           }
         },
         {
@@ -424,7 +429,8 @@
           "may_email": false,
           "created_at": {
             "@day": -14,
-            "@time": "10:00"
+            "@time": "10:00",
+            "@week": true
           }
         },
         {
@@ -512,11 +518,13 @@
           },
           "placed_at": {
             "@day": -51,
-            "@time": "19:40"
+            "@time": "19:40",
+            "@week": true
           },
           "posted_at": {
             "@day": -47,
-            "@time": "16:00"
+            "@time": "16:00",
+            "@week": true
           },
           "may_email": false
         },
@@ -539,11 +547,13 @@
           },
           "placed_at": {
             "@day": -37,
-            "@time": "19:40"
+            "@time": "19:40",
+            "@week": true
           },
           "posted_at": {
             "@day": -33,
-            "@time": "16:00"
+            "@time": "16:00",
+            "@week": true
           },
           "may_email": false
         },
@@ -566,11 +576,13 @@
           },
           "placed_at": {
             "@day": -28,
-            "@time": "10:00"
+            "@time": "10:00",
+            "@week": true
           },
           "posted_at": {
             "@day": -23,
-            "@time": "16:00"
+            "@time": "16:00",
+            "@week": true
           },
           "may_email": false
         },
@@ -593,11 +605,13 @@
           },
           "placed_at": {
             "@day": -23,
-            "@time": "10:00"
+            "@time": "10:00",
+            "@week": true
           },
           "posted_at": {
             "@day": -19,
-            "@time": "16:00"
+            "@time": "16:00",
+            "@week": true
           },
           "may_email": false
         },
@@ -620,11 +634,13 @@
           },
           "placed_at": {
             "@day": -16,
-            "@time": "19:40"
+            "@time": "19:40",
+            "@week": true
           },
           "posted_at": {
             "@day": -12,
-            "@time": "16:00"
+            "@time": "16:00",
+            "@week": true
           },
           "may_email": false
         },
@@ -647,11 +663,13 @@
           },
           "placed_at": {
             "@day": -14,
-            "@time": "10:00"
+            "@time": "10:00",
+            "@week": true
           },
           "posted_at": {
             "@day": -9,
-            "@time": "16:00"
+            "@time": "16:00",
+            "@week": true
           },
           "may_email": false
         },

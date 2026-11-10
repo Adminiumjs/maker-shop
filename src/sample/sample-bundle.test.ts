@@ -23,7 +23,7 @@ import { sampleText, sectionText } from "../../scripts/write-sample.ts";
 import { sampleBundleIssues, sampleBundleSchema, sampleSectionIssues } from "../testing/manifest/sample.ts";
 import type { AppManifest, Manifest } from "../testing/manifest/schema.ts";
 import CUSTOMISER_ROWS from "./customiser-rows.json" with { type: "json" };
-import { postBy } from "./birch-row.ts";
+import { postBy, STUDIO_DAYS } from "./birch-row.ts";
 
 type Row = Record<string, unknown>;
 interface Bundle {
@@ -107,8 +107,10 @@ describe("every row is one the studio could have made", () => {
     expect(new Set(moments.map((m) => m.at.split(".")[0]))).toEqual(new Set(["customers", "orders", "batches", "stock_movements", "commission_requests", "problem_reports", "proofs"]));
     for (const { at, v } of moments) {
       if (typeof v["@ago"] === "string") continue;
-      expect(v["@week"], at).toBeUndefined();
-      expect(v["@day"], at).toBeLessThan(0);
+      // A posted order's moments keep their weekday (below): far enough before the week's Thursday that a sample added
+      // three days before it still has them behind it.
+      if (v["@week"] === true) expect(Number(v["@day"]), at).toBeLessThanOrEqual(-4);
+      else expect(v["@day"], at).toBeLessThan(0);
     }
     // What the studio plans by keeps its weekday; a line's post-by is three days or more after its order came in,
     // so it stays after it when the sample is added as late as three days after the week's Thursday.
@@ -117,9 +119,9 @@ describe("every row is one the studio could have made", () => {
       const postBy = line["post_by"] as Row;
       const order = orders.get((line["order_id"] as { "@ref": string })["@ref"])!;
       if (order["posted_at"] !== null) {
-        // Posted: its post-by is history too, counted the same way as its posting, so the two never drift apart; and
-        // it went on its post-by or before, never late.
-        expect(postBy["@week"], String(line["@label"])).toBeUndefined();
+        // Posted: its post-by is counted the same way as its posting, so the two never drift apart; and it went on its
+        // post-by or before, never late.
+        expect([postBy["@week"], (order["posted_at"] as Row)["@week"]], String(line["@label"])).toEqual([true, true]);
         expect(Number((order["posted_at"] as Row)["@day"]) - Number(postBy["@day"]), String(line["@label"])).toBeLessThanOrEqual(0);
         continue;
       }
@@ -131,6 +133,22 @@ describe("every row is one the studio could have made", () => {
     const run = rowsOf(main, "machine_bookings").find((b) => b["batch_id"] !== undefined)!;
     expect(run["starts_at"]).toEqual(batch["started_at"]);
     expect(run["ends_at"]).toEqual({ "@in": "PT1H50M" });
+  });
+
+  it("posts every parcel on a day the studio is open, by a post-by the studio is open on, whatever day it is added", () => {
+    // On its weekday (`@week`): the day the comp dates it, in the week nearest the adding day.
+    const weekday = (v: Row) => new Date(Date.UTC(2026, 7, 6 + Number(v["@day"]))).getUTCDay();
+    const orders = rowsOf(main, "orders").filter((o) => o["posted_at"] !== null);
+    expect(orders.map((o) => o["number"])).toEqual(["BR-2241", "BR-2247", "BR-2252", "BR-2255", "BR-2258", "BR-2260"]);
+    for (const order of orders) {
+      const posted = order["posted_at"] as Row;
+      expect(posted["@week"], String(order["number"])).toBe(true);
+      expect(STUDIO_DAYS, String(order["number"])).toContain(weekday(posted));
+    }
+    const postedLabels = new Set(orders.map((o) => o["@label"]));
+    const lines = rowsOf(section, "order_lines").filter((l) => postedLabels.has((l["order_id"] as { "@ref": string })["@ref"]));
+    expect(lines.length).toBeGreaterThan(0);
+    for (const line of lines) expect(STUDIO_DAYS, String(line["@label"])).toContain(weekday(line["post_by"] as Row));
   });
 
   it("holds no line with two proofs out: a proof sent again sends the one before it again, keeping the change asked on it", () => {

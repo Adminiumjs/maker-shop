@@ -37,7 +37,8 @@
  * draw it: every day the studio plans by is a `@week` day from the bundle's
  * Thursday, so it keeps its weekday whatever day the sample is added on;
  * every moment that has passed counts back from the adding day, so none
- * lands after it. The orders carry
+ * lands after it, but a posted order's: weeks old, it keeps its weekday too,
+ * so no parcel goes on a day the studio is closed. The orders carry
  * their own numbers (BR-2241 to BR-2290) and no running number, so the
  * studio's own next order is BR-2291. Addresses end in `.example`, which
  * Adminium never mails.
@@ -94,8 +95,19 @@ const wall = (iso: string, time: string): Row => ({ "@day": offset(iso), "@time"
  * Today's is so long before the sample's 16:40 (`@ago`), so a sample added in
  * the morning never stamps a proof sent at 11:00 that has not come yet.
  */
-/** A day that has passed, counted back from the adding day: a posted order's post-by, beside its posting. */
-const pastDay = (iso: string): Row => ({ "@day": offset(iso) });
+/**
+ * A moment of a posted order's (it came in, its proofs, it went in the post), on its weekday in the week the
+ * planned days are in, as `wall`: counted back from the adding day, a parcel the comp posts on a Tuesday is posted on
+ * whatever weekday that day falls, a Sunday the studio is closed among them. Each is four days or more before the
+ * week's Thursday (the newest, a posting, nine), and the adding day is at most three days before that Thursday, so
+ * none lands after it.
+ */
+const history = (iso: string, time: string): Row => {
+  if (offset(iso) > -4) throw new Error(`${iso} is too near the sample's Thursday to stand on its weekday and have passed`);
+  return wall(iso, time);
+};
+/** When an order's own moments are: on their weekday for one posted (`history`), counted back from the adding day for one still open. */
+const momentOf = (order: Order): ((iso: string, time: string) => Row) => (order.posted === undefined ? past : history);
 /** So long from the sample's 16:40, either way: the running batch's own booking, about its start. */
 const fromNow = (time: string): Row => {
   const minutes = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
@@ -648,7 +660,7 @@ export function sampleBundle(): SampleBundle {
       { ref: "closures", rows: CLOSURES.map((c) => ({ from_date: day(c.from), to_date: day(c.to), reason: c.reason, active: true })) },
       {
         ref: "customers",
-        rows: [...customers.values()].map((c) => ({ "@label": customerLabel(c.email), email: c.email, name: c.name, language: "en-US", may_email: false, created_at: past(c.first.placed, placedAt(c.first)) })),
+        rows: [...customers.values()].map((c) => ({ "@label": customerLabel(c.email), email: c.email, name: c.name, language: "en-US", may_email: false, created_at: momentOf(c.first)(c.first.placed, placedAt(c.first)) })),
       },
       {
         ref: "orders",
@@ -665,8 +677,8 @@ export function sampleBundle(): SampleBundle {
           language: "en-US",
           customer_id: { "@ref": customerLabel(o.email) },
           service_id: { "@ref": `service:${o.ship}` },
-          placed_at: past(o.placed, placedAt(o)),
-          posted_at: o.posted === undefined ? null : past(o.posted, "16:00"),
+          placed_at: momentOf(o)(o.placed, placedAt(o)),
+          posted_at: o.posted === undefined ? null : history(o.posted, "16:00"),
           may_email: false,
         })),
       },
@@ -756,9 +768,9 @@ export function customiserSection(): SampleBundle {
         lettering: line.note === "" ? null : line.note,
         design_code: design === null ? null : design.code,
         design_id: design === null ? null : { "@ref": line.design },
-        // A posted order's post-by is history, counted back from the adding day as its posting is; one still on the bench
-        // is planned by, on its weekday.
-        post_by: (order.posted === undefined ? day : pastDay)(postBy(order.placed, placedAt(order), p.lead)),
+        // On its weekday, a studio day: planned by for a piece on the bench; for a posted one, in the same week as its
+        // posting, so the two never drift apart.
+        post_by: day(postBy(order.placed, placedAt(order), p.lead)),
         stage: line.stage,
         ...(BATCH.lines.includes(label) ? { batch_id: { "@ref": BATCH.label } } : {}),
         spoiled: 0,
@@ -840,6 +852,7 @@ function designOf(label: string): { code: string; logo: boolean } {
 function proofRows(order: Order): Row[] {
   const lettered = order.lines.map((line, i) => ({ line, i })).filter(({ line }) => line.note !== "" || line.design !== undefined);
   if (lettered.length === 0) return [];
+  const at = momentOf(order);
   const rows: Row[] = [];
   const first = lettered[0]!;
   const lineRef = (i: number) => ({ "@ref": `line:${order.ref}:${String(i + 1)}` });
@@ -858,15 +871,15 @@ function proofRows(order: Order): Row[] {
         design_version_id: first.line.design === undefined ? null : { "@ref": `version:${first.line.design.replace("design:", "")}-${String(versions.length + 1)}` },
         note: entry.detail,
         state: "sent",
-        sent_at: past(entry.when, "11:00"),
+        sent_at: at(entry.when, "11:00"),
       });
     } else if (entry.what === "Change asked") {
-      Object.assign(versions[versions.length - 1]!, { state: "change_asked", change_note: entry.detail, answered_at: past(entry.when, "15:00") });
+      Object.assign(versions[versions.length - 1]!, { state: "change_asked", change_note: entry.detail, answered_at: at(entry.when, "15:00") });
     } else {
       if (versions.length === 0) {
-        versions.push({ order_id: { "@ref": orderLabel(order.ref) }, line_id: lineRef(first.i), version: 1, kind: "lettering", design_version_id: null, note: entry.detail, state: "sent", sent_at: past(entry.when, "11:00") });
+        versions.push({ order_id: { "@ref": orderLabel(order.ref) }, line_id: lineRef(first.i), version: 1, kind: "lettering", design_version_id: null, note: entry.detail, state: "sent", sent_at: at(entry.when, "11:00") });
       }
-      Object.assign(versions[versions.length - 1]!, { state: "approved", answered_at: past(entry.when, "15:00") });
+      Object.assign(versions[versions.length - 1]!, { state: "approved", answered_at: at(entry.when, "15:00") });
     }
   }
   rows.push(...versions);
@@ -876,7 +889,7 @@ function proofRows(order: Order): Row[] {
     if (!approved || line.proof !== "approved") continue;
     // On the day it came in, or the next morning for one that came in after the cut-off.
     const proofDay = order.at === undefined ? order.placed : addDays(order.placed, 1);
-    rows.push({ order_id: { "@ref": orderLabel(order.ref) }, line_id: lineRef(i), version: 1, kind: "lettering", design_version_id: null, note: null, state: "approved", sent_at: past(proofDay, "11:00"), answered_at: past(proofDay, "15:00") });
+    rows.push({ order_id: { "@ref": orderLabel(order.ref) }, line_id: lineRef(i), version: 1, kind: "lettering", design_version_id: null, note: null, state: "approved", sent_at: at(proofDay, "11:00"), answered_at: at(proofDay, "15:00") });
   }
   return rows;
 }

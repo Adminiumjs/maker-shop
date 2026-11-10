@@ -6357,7 +6357,8 @@
           "design_code": null,
           "design_id": null,
           "post_by": {
-            "@day": -47
+            "@day": -47,
+            "@week": true
           },
           "stage": "posted",
           "spoiled": 0
@@ -6385,7 +6386,8 @@
           "design_code": null,
           "design_id": null,
           "post_by": {
-            "@day": -33
+            "@day": -33,
+            "@week": true
           },
           "stage": "posted",
           "spoiled": 0
@@ -6413,7 +6415,8 @@
           "design_code": null,
           "design_id": null,
           "post_by": {
-            "@day": -33
+            "@day": -33,
+            "@week": true
           },
           "stage": "posted",
           "spoiled": 0
@@ -6441,7 +6444,8 @@
           "design_code": null,
           "design_id": null,
           "post_by": {
-            "@day": -22
+            "@day": -22,
+            "@week": true
           },
           "stage": "posted",
           "spoiled": 0
@@ -6469,7 +6473,8 @@
           "design_code": null,
           "design_id": null,
           "post_by": {
-            "@day": -16
+            "@day": -16,
+            "@week": true
           },
           "stage": "posted",
           "spoiled": 0
@@ -6497,7 +6502,8 @@
           "design_code": null,
           "design_id": null,
           "post_by": {
-            "@day": -12
+            "@day": -12,
+            "@week": true
           },
           "stage": "posted",
           "spoiled": 0
@@ -6525,7 +6531,8 @@
           "design_code": null,
           "design_id": null,
           "post_by": {
-            "@day": -9
+            "@day": -9,
+            "@week": true
           },
           "stage": "posted",
           "spoiled": 0
@@ -7127,11 +7134,13 @@
           "state": "approved",
           "sent_at": {
             "@day": -50,
-            "@time": "11:00"
+            "@time": "11:00",
+            "@week": true
           },
           "answered_at": {
             "@day": -50,
-            "@time": "15:00"
+            "@time": "15:00",
+            "@week": true
           }
         },
         {
@@ -7148,11 +7157,13 @@
           "state": "approved",
           "sent_at": {
             "@day": -36,
-            "@time": "11:00"
+            "@time": "11:00",
+            "@week": true
           },
           "answered_at": {
             "@day": -36,
-            "@time": "15:00"
+            "@time": "15:00",
+            "@week": true
           }
         },
         {
@@ -7169,11 +7180,13 @@
           "state": "approved",
           "sent_at": {
             "@day": -36,
-            "@time": "11:00"
+            "@time": "11:00",
+            "@week": true
           },
           "answered_at": {
             "@day": -36,
-            "@time": "15:00"
+            "@time": "15:00",
+            "@week": true
           }
         },
         {
@@ -7190,11 +7203,13 @@
           "state": "approved",
           "sent_at": {
             "@day": -23,
-            "@time": "11:00"
+            "@time": "11:00",
+            "@week": true
           },
           "answered_at": {
             "@day": -23,
-            "@time": "15:00"
+            "@time": "15:00",
+            "@week": true
           }
         },
         {
@@ -7211,11 +7226,13 @@
           "state": "approved",
           "sent_at": {
             "@day": -15,
-            "@time": "11:00"
+            "@time": "11:00",
+            "@week": true
           },
           "answered_at": {
             "@day": -15,
-            "@time": "15:00"
+            "@time": "15:00",
+            "@week": true
           }
         },
         {
@@ -7232,11 +7249,13 @@
           "state": "approved",
           "sent_at": {
             "@day": -14,
-            "@time": "11:00"
+            "@time": "11:00",
+            "@week": true
           },
           "answered_at": {
             "@day": -14,
-            "@time": "15:00"
+            "@time": "15:00",
+            "@week": true
           }
         },
         {
