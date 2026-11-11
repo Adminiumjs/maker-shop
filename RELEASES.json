@@ -30,6 +30,12 @@
       "version": "0.2.4",
       "integrity": "sha512-J9Rw1Ry0VMDvtmfda5imjEG1xsyvtamgx1TYdgpdDhctGJVmBDXmScpCN0MEAPHWReJ032lkuhUzmmRn9drLqw==",
       "publishedAt": "2026-11-10T21:12:01.000Z"
+    },
+    {
+      "name": "@adminiumjs/app-maker",
+      "version": "0.2.5",
+      "integrity": "sha512-V/YTWhkCXnU07m/bVIAzsLlnBeIudgGrdzE3TCY4BLIswUHClalKb6HuHDP1+7bAU47oRMAnno7P3XSWkGS8uw==",
+      "publishedAt": "2026-11-11T00:43:24.000Z"
     }
   ]
 }
