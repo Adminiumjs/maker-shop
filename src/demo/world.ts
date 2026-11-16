@@ -17,7 +17,7 @@ import { closuresIn, deriveAll, nextStudioDay, type Tables } from "./rules.ts";
 import { DEMO_START, DEMO_ZONE, sampleTables, type Row } from "./sample.ts";
 
 /** Tables the sample adds no rows to, which the screens still read or write. */
-const EMPTY = ["batches", "commission_requests", "problem_reports", "version_files", "order_line_features", "proofs", "postage_rates", "closures"];
+const EMPTY = ["batches", "commission_requests", "problem_reports", "version_files", "order_line_features", "proofs", "postage_rates", "closures", "payments"];
 
 /** The add-ons a new demo starts with: the Customiser the app requires, and Invoices, which the install ticks. */
 export const START_ADD_ONS = ["customiser", "invoices"] as const;
@@ -123,6 +123,32 @@ export class DemoWorld {
     const given = this.all("orders").map((o) => Number(o["number_seq"])).filter((n) => Number.isFinite(n) && n > 0);
     const seq = given.length === 0 ? first : Math.max(...given) + 1;
     return { seq, number: `${String(this.settings()["ref_prefix"] ?? "")}${String(seq)}` };
+  }
+
+  /**
+   * An order paid online, as a payment service would pay it: the demo has no
+   * money and no service, so the order is simply paid what it still owes,
+   * now, and the payment written down as Adminium writes one.
+   */
+  pay(orderId: unknown): Row | null {
+    const order = this.get("orders", orderId);
+    if (order === undefined || Number(order["pay_due"] ?? 0) <= 0) return null;
+    const payment = this.insert("payments", {
+      order_id: order.id,
+      amount: order["pay_due"],
+      paid_at: this.nowIso(),
+      method: "online",
+      payment_ref: this.code("pay_demo_", 24),
+      provider: "payments-stripe",
+      currency: this.currency,
+      refunded: "0.00",
+      note: null,
+      // The studio's day and time it came in, which the demo's rules count an order made once paid from.
+      day: this.today(),
+      time: this.wallTime(),
+    });
+    this.changed();
+    return payment;
   }
 
   // ── the clock and the add-ons ─────────────────────────────────────────────

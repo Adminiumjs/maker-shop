@@ -11,6 +11,8 @@
  * DEMO BUILD ONLY — nothing in a real build imports it.
  */
 import { backToFind, findOrder, openMine, resetAfter, searchFor, typeAsk, typeLookup, typeProblem, useAfter, type LookupKey } from "../shop/after.ts";
+import { payInDemo } from "./pay.ts";
+import { setLeave, usePay } from "../shop/pay.ts";
 import { addChoiceToBasket, addLinesToBasket, choose, goView, loadShop, openProduct, optionsOf, placeOrder, productOf, requoteBasket, requoteProduct, resetShop, setDetails, useShop, type ShopView } from "../shop/store.ts";
 import { reload } from "../studio/env.tsx";
 import { batchGroups } from "../studio/making.ts";
@@ -102,7 +104,14 @@ async function placeForConfirmation(): Promise<void> {
   goView("checkout");
   requoteBasket();
   await until(quoted);
-  await placeOrder();
+  // The demo's pay step at once: the card asked for the confirmation, not the moment of handing over.
+  setLeave((url) => payInDemo(url, 0));
+  try {
+    await placeOrder();
+    if (usePay.getState().going) await until(() => usePay.getState().back === "paid" || usePay.getState().back === "unpaid");
+  } finally {
+    setLeave(payInDemo);
+  }
 }
 
 export async function goScreen(screen: string): Promise<void> {

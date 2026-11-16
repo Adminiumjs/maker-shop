@@ -120,6 +120,17 @@ export function deriveOrder(order: Row, tables: Tables): void {
   const piecesTotal = lines.reduce((sum, l) => sum + pence(l["line_total"]), 0);
   const postage = pence(rate?.["price"]);
   const postBys = lines.map((l) => l["post_by"]).filter((d): d is string => typeof d === "string").sort();
+  // Paying online: what was paid and given back, what is left, and an order made once paid counted from its payment.
+  const payments = (tables["payments"] ?? []).filter((p) => same(p["order_id"], order.id));
+  const paid = payments.reduce((sum, p) => sum + pence(p["amount"]), 0);
+  const total = piecesTotal + postage;
+  const due = Math.max(0, total - paid);
+  const online = order["pay_online"] === true;
+  const mode = online ? (order["waits_pay"] === true ? 2 : 1) : 0;
+  const last = [...payments].filter((p) => p["paid_at"] != null).sort((a, b) => String(a["paid_at"]).localeCompare(String(b["paid_at"]))).pop();
+  const paidAt = last === undefined ? null : String(last["paid_at"]);
+  const leadMax = lines.reduce((most, l) => Math.max(most, n(l["lead_days"])), 0);
+  const closures = closuresIn(tables);
   Object.assign(order, {
     item_count: lines.reduce((sum, l) => sum + n(l["qty"]), 0),
     pieces_weight_g: piecesWeight,
@@ -130,6 +141,17 @@ export function deriveOrder(order: Row, tables: Tables): void {
     pieces_total: money(piecesTotal),
     total: money(piecesTotal + postage),
     post_by: postBys[postBys.length - 1] ?? null,
+    paid: money(paid),
+    refunded: money(payments.reduce((sum, p) => sum + pence(p["refunded"]), 0)),
+    pay_due: money(due),
+    pay_mode: mode,
+    pay_hold: mode === 2 && due > 0 ? 1 : 0,
+    mode_free: mode === 1 ? 1 : null,
+    mode_hold: mode === 2 ? 1 : null,
+    paid_at: paidAt,
+    lead_max: lines.length === 0 ? null : leadMax,
+    // The studio's day and time it came in (the demo's clock keeps both on the payment it records).
+    paid_post_by: last === undefined || last["day"] == null ? null : postBy(String(last["day"]), String(last["time"] ?? "00:00"), leadMax, closures),
   });
 }
 
