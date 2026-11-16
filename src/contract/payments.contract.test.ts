@@ -133,6 +133,8 @@ describe.skipIf(why !== null)(`paying online on a built Adminium${why === null ?
           .start("link", order["id"] as string)
           .catch((error: unknown) => error);
         expect(isShopError(refused)).toBe(true);
+        // Coming back, the shop asks how the order's payment stands: none was started.
+        expect(await door.payments()!.state!("link", order["id"] as string)).toBe("none");
       });
 
       it("reads an order placed to pay online, what it comes to and what is left, and asks nothing of the bench", async () => {
