@@ -20,7 +20,7 @@ the five o'clock cut-off — and the studio works Tuesday to Saturday.
 
 ## What it needs
 
-- Adminium **0.3.54** or later, on SQLite, Postgres or MySQL.
+- Adminium **0.3.60** or later, on SQLite, Postgres or MySQL.
 - The **Customiser** add-on (1.0.26 or later): it is where a shopper makes a piece
   their own, and the order line names the design they made. Adminium installs it
   with the app.
@@ -55,6 +55,11 @@ the five o'clock cut-off — and the studio works Tuesday to Saturday.
   again.
 - Asking for something made, and telling the studio something went wrong with an
   order — each copied back to the shopper by e-mail.
+- Paying online, once the studio takes payments (see "Paying online" below):
+  the checkout places the order and takes the shopper to pay on the Stripe or
+  PayPal page; back on the shop, the order says it is paid, or offers "Pay now"
+  again. Until then the checkout says, as it always has, "We'll send an invoice
+  with your order. Nothing is charged now."
 - Postage and the studio's calendar, looking after a piece, About us, search.
 
 **For the studio** (the app's staff side): Today's board with the proof gate (a
@@ -78,7 +83,33 @@ studio's settings. A proof added on the Proofs page answers the line's proof
 still out, as one sent from the studio's screens does: Adminium marks the
 earlier one "Sent again" in the same save, and an approved proof stays approved.
 
-**E-mails.** Order received, proof ready and the one proof reminder (each with
+**Paying online.** Adminium installs the app with its payments switched off:
+the shop and the studio read as they always did. Someone who manages payments
+connects the studio's own Stripe or PayPal account and switches Maker Shop on
+in Studio → Payments. Then:
+
+- the checkout's main button places the order and pays it ("Place the order and
+  pay £71.50"); the shopper pays on the Stripe or PayPal page, through
+  Adminium's pay page, and comes back to the shop's order page. Adminium decides
+  the amount, records the payment once in the app's `maker_payments` table, and
+  never sees a card number. The order is placed whether or not it is paid;
+- the order's e-mail goes when the shopper comes back paid, and is the receipt.
+  Still unpaid an hour after it was placed, it goes with a "Pay online" button
+  instead, and the one reminder follows the next studio day;
+- in the studio, an order shows Paid · Online · Stripe (or Not paid), its
+  Payment card, "Copy pay link" for an unpaid one, and "Refund" for the owner,
+  who may give back money paid online for the studio's orders (shown when the
+  app is installed). The owner may cancel an order nobody paid. The Orders list
+  says each order's total, with Paid or Not paid;
+- **Settings** in the studio (for the owner, once payments are on) holds "Take
+  payment before making": when it is on, nothing of an order is cut until it is
+  paid. Such an order's post-by counts from its payment, and it is never late
+  while it waits for it. An order keeps the setting as it was when it was
+  placed; the owner may untick "Payment before making" on one order in the
+  dashboard.
+
+**E-mails.** Order received (or, paying online, its paid and unpaid
+versions and the one payment reminder), proof ready and the one proof reminder (each with
 the proof's picture, unless the proof is a PDF), order posted, and the copies of
 a request or a problem go to the shopper, in the language the order was placed
 in (eight languages); a request, a problem and a change asked to a proof are
