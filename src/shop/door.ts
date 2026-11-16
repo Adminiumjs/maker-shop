@@ -285,6 +285,13 @@ export class AdminiumShop implements ShopPort {
           if (client === null) throw new Error("This shop has no key for an order's own link.");
           return (await client.payments.start(refs[via], String(orderId))).payUrl;
         }),
+      // How the newest online payment stands, read through the same session (Adminium 0.3.61).
+      state: (via, orderId) =>
+        answer(async () => {
+          const client = via === "link" ? this.orderClient : this.client;
+          if (client === null) throw new Error("This shop has no key for an order's own link.");
+          return (await client.payments.state(refs[via], String(orderId))).state;
+        }),
     };
   }
 

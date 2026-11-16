@@ -106,7 +106,7 @@ export interface FakePort extends ShopPort {
   /** Refuse the next "Pay now" with this code (paid meanwhile, payments off). */
   refuseStart: (code: string, status?: number) => void;
   /** Answer a payment's own state (Adminium 0.3.61); none while it is null. */
-  paymentState: "processing" | "expired" | "failed" | null | undefined;
+  paymentState: "none" | "open" | "confirming" | "paid" | "failed" | "expired" | undefined;
 }
 
 export function fakePort(catalogue: Catalogue = sampleCatalogue()): FakePort {
@@ -178,7 +178,7 @@ export function fakePort(catalogue: Catalogue = sampleCatalogue()): FakePort {
         }
         return `pay-link:${String(orderId)}`;
       },
-      ...(port.paymentState === undefined ? {} : { state: async () => port.paymentState ?? null }),
+      ...(port.paymentState === undefined ? {} : { state: async () => port.paymentState! }),
     }),
     calls,
     customiserApi: api,

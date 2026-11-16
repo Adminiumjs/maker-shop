@@ -102,3 +102,12 @@ describe("placing an order through the door", () => {
     expect(isShopError(error) && error.refused.changed).toEqual({ order: { total: "39.95" }, lines: [{ each: "36.00" }] });
   });
 });
+
+describe("paying online through the door", () => {
+  it("asks how an order's payment stands through the order's own link, by its entry and id", async () => {
+    const { fetch, sent } = wire({ "GET /api/v1/public/payments/state": { body: { data: { state: "confirming" } } } });
+    const shop = new AdminiumShop({ baseUrl: "https://shop.example.test", publishableKey: "adm_pub_shop", publicKeys: { order: "adm_pub_order" } }, { fetch, humanCheck: false });
+    expect(await shop.payments()!.state!("link", 2291)).toBe("confirming");
+    expect(sent.map((s) => `${s.method} ${s.path}`)).toEqual(["GET /api/v1/public/payments/state"]);
+  });
+});

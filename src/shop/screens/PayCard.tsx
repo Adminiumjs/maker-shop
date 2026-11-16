@@ -7,7 +7,7 @@
  * counts from the payment, so it is said "if it's paid today", as a dry run
  * of its slowest piece placed now dates it.
  */
-import { CircleAlert, Clock, Lock } from "lucide-react";
+import { CircleAlert, Clock, Landmark, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { useI18n } from "../../i18n/index.tsx";
@@ -65,6 +65,44 @@ export function PayCard({ order, via, confirmed, reread, later = false, bare = f
       </h2>
       {body}
     </section>
+  );
+}
+
+/**
+ * How an unpaid order's newest online payment stands, asked once of
+ * Adminium through the session that reads the order; null until it answers,
+ * where it does not, and for an order that owes nothing.
+ */
+export function usePaymentState(order: Row | null, via: "link" | "mine", owing: boolean): "none" | "open" | "confirming" | "paid" | "failed" | "expired" | null {
+  const port = useShop((s) => s.port);
+  const [state, setState] = useState<ReturnType<typeof usePaymentState>>(null);
+  const id = order === null || !owing ? null : String(order["id"]);
+  useEffect(() => {
+    const pays = port?.payments() ?? null;
+    if (id === null || pays?.state === undefined) return;
+    let live = true;
+    pays
+      .state(via, id)
+      .then((said) => live && setState(said))
+      .catch(() => live && setState(null));
+    return () => {
+      live = false;
+    };
+  }, [id, via, port]);
+  return id === null ? null : state;
+}
+
+/** "Your bank is confirming the payment": an order not to be paid again while the bank confirms it. */
+export function BankConfirming() {
+  const { t } = useI18n();
+  return (
+    <div className="sh-pay-bank" role="status">
+      <Landmark size={18} aria-hidden="true" />
+      <span className="sh-pay-text">
+        <strong>{t("pay.bank.title")}</strong>
+        <span>{t("pay.bank.body")}</span>
+      </span>
+    </div>
   );
 }
 

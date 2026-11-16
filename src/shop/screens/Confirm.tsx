@@ -7,16 +7,17 @@
  * pay page: it checks the order with Adminium, then says it is paid ("Paid"
  * where it said "Total"), or offers "Pay now" again. Where Adminium tells the
  * payment's own state, it also says the bank is confirming it, or that the
- * payment did not finish or its page ran out of time.
+ * payment did not finish or its page ran out of time (Adminium 0.3.61's
+ * `payments.state`).
  */
-import { Check, Landmark, TriangleAlert } from "lucide-react";
+import { Check, TriangleAlert } from "lucide-react";
 
 import { useI18n } from "../../i18n/index.tsx";
 import { dayShort, money } from "../format.ts";
 import { Mono } from "../parts.tsx";
 import { isPaid, madeOncePaid, owes, paysOnline, postByOf, usePay } from "../pay.ts";
 import { goView, useShop, waitsForProof } from "../store.ts";
-import { PayCard, PostByToday, usePostByToday } from "./PayCard.tsx";
+import { BankConfirming, PayCard, PostByToday, usePostByToday } from "./PayCard.tsx";
 
 /** The order's own page, opened by the link the save answered (its code after the `#`). */
 export function lookAtOrder(token: string | null): void {
@@ -87,15 +88,7 @@ export function ConfirmScreen() {
             <p className="sh-lede">{t("shop.confirm.emailed")}</p>
           </>
         )}
-        {back === "bank" && (
-          <div className="sh-pay-bank" role="status">
-            <Landmark size={18} aria-hidden="true" />
-            <span className="sh-pay-text">
-              <strong>{t("pay.bank.title")}</strong>
-              <span>{t("pay.bank.body")}</span>
-            </span>
-          </div>
-        )}
+        {back === "bank" && <BankConfirming />}
         {offer && <PayCard order={order} via="link" confirmed={confirmed} reread={reread} later={back !== null} bare={failedPay} />}
         {!checking && (
           <dl className="sh-confirm-rows">

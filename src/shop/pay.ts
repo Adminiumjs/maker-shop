@@ -23,8 +23,12 @@ import { create } from "zustand";
 import { isShopError, type Id, type PayOffer, type Row, type ShopPort } from "./port.ts";
 import type { Confirmed } from "./store.ts";
 
-/** A payment's own state, as Adminium answers it a shop from 0.3.61: still with the bank, its page ran out, or it did not finish. */
-export type PaymentState = "processing" | "expired" | "failed";
+/**
+ * How an order's newest online payment stands, as Adminium answers it
+ * (`payments.state`): none started, a checkout open at the service, the bank
+ * confirming it, paid, did not finish, or its page ran out of time.
+ */
+export type PaymentState = "none" | "open" | "confirming" | "paid" | "failed" | "expired";
 
 /** Where the confirmation stands after the pay page: checking, paid, or (with a payment's own state to read) the others. */
 export type PayBack = "checking" | "paid" | "bank" | "unfinished" | "expired" | "unpaid";
@@ -173,15 +177,14 @@ export const CHECKS = 8;
 export const CHECK_MS = 1_500;
 
 /**
- * Back from the pay page: the confirmation again, checking the order with
- * Adminium until it reads paid. Adminium records the payment when the
- * shopper comes back from Stripe or PayPal, or when the service tells it, so
- * the order is usually paid by the first read. Still unpaid after the last,
- * the confirmation offers "Pay now" again.
- *
- * Whether the payment is still with the bank, or its page ran out of time,
- * is the payment's own state, which Adminium answers a shop from 0.3.61: till
- * then an order still unpaid reads "Not paid yet", never "Nothing was taken".
+ * Back from the pay page: the confirmation again, checking with Adminium how
+ * the order's payment stands. Paid (the order reads paid), it says so. With
+ * the bank, it says the bank is confirming it and not to pay again. Did not
+ * finish, or its page ran out of time, it says nothing was taken and offers
+ * "Pay now" again. While the service has not said yet, it asks again, a few
+ * times; still nothing by then, the order reads "Not paid yet" with "Pay now".
+ * An Adminium that does not answer a payment's state (before 0.3.61) is asked
+ * only for the order.
  */
 export async function checkBack(
   read: () => Promise<Row | null>,
@@ -190,6 +193,12 @@ export async function checkBack(
   stateOf?: () => Promise<PaymentState | null>,
 ): Promise<PayBack> {
   set({ back: "checking", going: false });
+  const settle = (back: PayBack, order: Row | null): PayBack => {
+    if (order !== null) show(order);
+    forget();
+    set({ back });
+    return back;
+  };
   let last: Row | null = null;
   for (let i = 0; i < CHECKS; i += 1) {
     if (i > 0) await wait(CHECK_MS);
@@ -198,18 +207,15 @@ export async function checkBack(
     } catch {
       last = null;
     }
-    if (last !== null && isPaid(last)) {
-      show(last);
-      forget();
-      set({ back: "paid" });
-      return "paid";
-    }
+    if (last !== null && isPaid(last)) return settle("paid", last);
+    const state = stateOf === undefined ? null : await stateOf().catch(() => null);
+    // The money arrived: the order is read again until it says so (Adminium writes it down as it answers).
+    if (state === "paid" || state === "open" || state === null) continue;
+    if (state === "confirming") return settle("bank", last);
+    if (state === "failed") return settle("unfinished", last);
+    if (state === "expired") return settle("expired", last);
+    // None started (the shopper never reached the service): not paid yet.
+    return settle("unpaid", last);
   }
-  if (last !== null) show(last);
-  forget();
-  // The payment's own state, where Adminium answers it: with the bank, its page ran out, or it did not finish.
-  const state = stateOf === undefined ? null : await stateOf().catch(() => null);
-  const back: PayBack = state === "processing" ? "bank" : state === "expired" ? "expired" : state === "failed" ? "unfinished" : "unpaid";
-  set({ back });
-  return back;
+  return settle("unpaid", last);
 }

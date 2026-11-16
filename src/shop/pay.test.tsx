@@ -15,7 +15,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { I18nProvider } from "../i18n/index.tsx";
-import { CHECKS, CHECK_MS, isPaid, keptConfirmation, owes, payNow, postByOf, resetPay, setLeave, usePay } from "./pay.ts";
+import { CHECKS, CHECK_MS, checkBack, isPaid, keptConfirmation, owes, payNow, postByOf, resetPay, setLeave, usePay } from "./pay.ts";
 import ShopApp from "./ShopApp.tsx";
 import { resetAfter } from "./after.ts";
 import { backFromPaying, goView, resetShop, useShop } from "./store.ts";
@@ -232,7 +232,7 @@ describe("with payments on", () => {
 
   it("says the bank is confirming, or that the payment did not finish, where Adminium tells the payment's state", async () => {
     for (const [state, back, words] of [
-      ["processing", "bank", "Your bank is confirming the payment"],
+      ["confirming", "bank", "Your bank is confirming the payment"],
       ["failed", "unfinished", "the payment didn't finish. Nothing was taken."],
       ["expired", "expired", "the payment page ran out of time. Nothing was taken."],
     ] as const) {
@@ -265,6 +265,36 @@ describe("with payments on", () => {
       await act(async () => root?.unmount());
       root = null;
       host.remove();
+    }
+  });
+});
+
+describe("back from the pay page, as Adminium tells the payment's state", () => {
+  const unpaid: Row = { id: 91, number: "BR-2291", status: "placed", pay_online: true, total: "37.95", paid: "0.00", pay_due: "37.95" };
+  const paid: Row = { ...unpaid, paid: "37.95", pay_due: "0.00" };
+  const noWait = async () => {};
+
+  it("asks again while the service has not said, and says paid once the order reads paid", async () => {
+    const reads = [unpaid, unpaid, paid];
+    const states: ("open" | "paid")[] = ["open", "paid"];
+    const shown: Row[] = [];
+    const back = await checkBack(async () => reads.shift() ?? paid, (o) => shown.push(o), noWait, async () => states.shift() ?? "paid");
+    expect(back).toBe("paid");
+    expect(shown.pop()).toEqual(paid);
+  });
+
+  it("says not paid yet when no payment was started, and after the last check while the service is still silent", async () => {
+    expect(await checkBack(async () => unpaid, () => {}, noWait, async () => "none")).toBe("unpaid");
+    let asked = 0;
+    expect(await checkBack(async () => unpaid, () => {}, noWait, async () => ((asked += 1), "open"))).toBe("unpaid");
+    expect(asked).toBe(CHECKS);
+  });
+
+  it("stops at the first word of the bank, a payment that did not finish, or one whose page ran out", async () => {
+    for (const [state, back] of [["confirming", "bank"], ["failed", "unfinished"], ["expired", "expired"]] as const) {
+      let reads = 0;
+      expect(await checkBack(async () => ((reads += 1), unpaid), () => {}, noWait, async () => state)).toBe(back);
+      expect(reads).toBe(1);
     }
   });
 });
@@ -327,6 +357,19 @@ describe("Your order", () => {
     // Made once it is paid: no post-by of its own until then, only the day it would be if paid today.
     expect(text()).toMatch(/Post by .+ if it's paid today/);
     await sweep("en-US · your order, not paid yet");
+  });
+
+  it("says the bank is confirming an order's payment, and offers no second Pay now", async () => {
+    port.offer = { online: true, test: false };
+    port.paymentState = "confirming";
+    port.afterFake.linkOpen = true;
+    Object.assign(port.afterFake.rows.orders[0]!, { pay_online: true, waits_pay: false, paid: "0.00", pay_due: "65.50" });
+    await mount();
+    await act(async () => goView("order"));
+    await settle();
+    expect(text()).toContain("Your bank is confirming the payment");
+    expect(document.querySelector(".sh-pay-card")).toBeNull();
+    await sweep("en-US · your order, the bank confirming");
   });
 
   it("reads as it always did for an order placed with payments off", async () => {

@@ -147,12 +147,12 @@ export interface ShopPayments {
   /** The order's pay link. A refusal (paid meanwhile, payments off) is a thrown `ShopError`. */
   start(via: "link" | "mine", orderId: Id): Promise<string>;
   /**
-   * The state of the order's latest payment, where Adminium answers it (0.3.61
-   * and later): still with the bank, its page ran out of time, or it did not
-   * finish; null when there is none to tell. Absent from an Adminium that does
-   * not answer it: an unpaid order then reads "Not paid yet".
+   * How the order's newest online payment stands (Adminium 0.3.61): none
+   * started, a checkout open at the service, the bank confirming it, paid, did
+   * not finish, or its page ran out of time. Absent from an Adminium that does
+   * not answer it: then only the order is read.
    */
-  state?(via: "link" | "mine", orderId: Id): Promise<"processing" | "expired" | "failed" | null>;
+  state?(via: "link" | "mine", orderId: Id): Promise<"none" | "open" | "confirming" | "paid" | "failed" | "expired">;
 }
 
 /** A refusal, as the pages read it. */

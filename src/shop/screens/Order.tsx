@@ -19,7 +19,7 @@ import { goView, useShop } from "../store.ts";
 import { owes, paysOnline, usePay } from "../pay.ts";
 import { rich } from "../words.tsx";
 import { LookupForm } from "./Lookup.tsx";
-import { PayCard, PostByToday, usePostByToday } from "./PayCard.tsx";
+import { BankConfirming, PayCard, PostByToday, usePaymentState, usePostByToday } from "./PayCard.tsx";
 
 const STAGE_KEYS: Record<StageKey, MessageKey> = {
   accepted: "after.stage.accepted",
@@ -142,6 +142,8 @@ function OrderCard({ view, order, lines, via }: { view: OrderView; order: Row; l
   const answered = useAfter((s) => s.answered);
   const online = usePay((s) => paysOnline(s));
   const ifPaidToday = usePostByToday(view.post === "paying" ? order : null, lines);
+  // A payment the bank is still confirming: said, and no second "Pay now".
+  const payState = usePaymentState(order, via, owes(order));
   const day = useDay();
   const codes = view.lines.map((l) => l.designCode).filter((c): c is string => c !== null);
   // Read again after "Pay now" was refused (paid meanwhile): the order as Adminium has it now.
@@ -184,7 +186,7 @@ function OrderCard({ view, order, lines, via }: { view: OrderView; order: Row; l
         </ol>
       </div>
 
-      {online && owes(order) && <PayCard order={order} via={via} confirmed={null} reread={reread} />}
+      {owes(order) && payState === "confirming" ? <BankConfirming /> : online && owes(order) && <PayCard order={order} via={via} confirmed={null} reread={reread} />}
 
       {view.waiting.map((proof) => (
         <ProofCard key={proof.id} proof={proof} />
