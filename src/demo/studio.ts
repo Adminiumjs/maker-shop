@@ -112,7 +112,7 @@ export class DemoStudio implements StudioDoor {
   async payLink(order: Row): Promise<{ url: string; expiresAt: number }> {
     const held = this.world.get("orders", order.id);
     if (held === undefined || Number(held["pay_due"] ?? 0) <= 0) throw new ApiError(409, "NOTHING_DUE", "Nothing is left to pay.");
-    return { url: `https://adminium.dev/demo/pay/${String(held["link_token"] ?? held.id)}`, expiresAt: this.world.now + 30 * 86_400_000 };
+    return { url: `demo-pay:${String(held.id)}`, expiresAt: this.world.now + 30 * 86_400_000 };
   }
 
   async saveSettings(_settings: Row, values: Record<string, unknown>): Promise<Row> {

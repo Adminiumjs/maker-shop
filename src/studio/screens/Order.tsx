@@ -14,7 +14,7 @@ import { ArrowLeft, Check, FileCog, Image as ImageIcon, Lock, PackageCheck, Send
 
 import { moveOrderLines } from "../actions.ts";
 import { useData, useEnv, useRun } from "../env.tsx";
-import { benchLockOf, closuresOf, isLive, lineCode, lineMaterial, linesOf, lockOf, optionOf, orderPostBy, payHeld, productOf, proofsOf, serviceOf, takesProof } from "../facts.ts";
+import { benchLockOf, closuresOf, isLive, lineCode, lineMaterial, linesOf, lockOf, optionOf, orderPostBy, payHeld, paymentOf, productOf, proofsOf, serviceOf, takesProof } from "../facts.ts";
 import { PayActions, PayChips, PaymentCard, paymentsOn } from "./Payments.tsx";
 import { useFmt } from "../format.ts";
 import { go, toast, useStudio } from "../store.ts";
@@ -135,6 +135,13 @@ export function OrderScreen() {
               </button>
             </>
           )}
+          <PayActions order={order} />
+        </div>
+      )}
+
+      {/* A posted order may still be given money back. */}
+      {posted && paying && paymentOf(data, order).rows.length > 0 && (
+        <div className="st-actions">
           <PayActions order={order} />
         </div>
       )}

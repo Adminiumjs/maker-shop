@@ -294,6 +294,11 @@ const HOSTED_STAFF: Readonly<Record<string, readonly string[]>> = {
 const allowedHere = (rel: string, means: string): boolean => HOSTED_STAFF[rel]?.includes(means) === true;
 /** The one `import()` of something not a relative file: an add-on's bundle from this Adminium, behind `bundleUrlIsSafe`. */
 const DECLARED_DYNAMIC_IMPORT = "add-ons/connected.ts";
+/**
+ * The other one: Adminium's kit, for a refund's own two steps, from the path the staff config names — taken only when
+ * it is a same-origin script path (`kitOf` in `studio/transport/staffConnection.ts`), and only on the hosted studio.
+ */
+const DECLARED_KIT_IMPORT = "studio/screens/Payments.tsx";
 
 describe("nothing here can reach a host we do not control", () => {
   /*
@@ -328,13 +333,20 @@ describe("nothing here can reach a host we do not control", () => {
       ...sendersIn(f.code)
         .filter((means) => !allowedHere(f.rel, means))
         .map((means) => `${f.rel} → ${means}`),
-      ...(f.rel === DECLARED_DYNAMIC_IMPORT ? [] : foreignImportsIn(f.code)).map((spec) => `${f.rel} → ${spec}`),
+      ...(f.rel === DECLARED_DYNAMIC_IMPORT || f.rel === DECLARED_KIT_IMPORT ? [] : foreignImportsIn(f.code)).map((spec) => `${f.rel} → ${spec}`),
       // The static half, which neither of the two above ever looked at.
       ...foreignModulesIn(f.code, ALLOWED_MODULES).map(
         (spec) => `${f.rel} → imports ${spec}, which nobody declared`,
       ),
     ]);
     expect(offenders).toEqual([]);
+  });
+
+  it("forgives the studio's import of Adminium's kit only while it still makes one, and nothing else of that file", () => {
+    const kit = SHIPPED.find((f) => f.rel === DECLARED_KIT_IMPORT);
+    expect(kit, DECLARED_KIT_IMPORT).toBeDefined();
+    expect(foreignImportsIn(kit!.code)).toEqual(["import(kit.entry)"]);
+    expect(sendersIn(kit!.code)).toEqual([]);
   });
 
   it("forgives the add-on loader's import of a bundle by its address only while it still makes one", () => {
