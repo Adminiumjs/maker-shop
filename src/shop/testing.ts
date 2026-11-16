@@ -8,7 +8,7 @@
  */
 import type { CustomiserApi } from "../../vendor/customiser/index.js";
 import { fakeAfter, type FakeAfter } from "./after-testing.ts";
-import { ShopError, type Catalogue, type Figures, type Id, type Option, type OrderBody, type Placed, type Product, type Refused, type Row, type ShopConfig, type ShopPort } from "./port.ts";
+import { ShopError, type Catalogue, type Figures, type Id, type Option, type OrderBody, type PayOffer, type Placed, type Product, type Refused, type Row, type ShopConfig, type ShopPayments, type ShopPort } from "./port.ts";
 
 const product = (p: Partial<Product> & Pick<Product, "id" | "code" | "name" | "category" | "unit" | "price" | "leadDays">): Product => ({
   materialId: null,
@@ -99,6 +99,14 @@ export interface FakePort extends ShopPort {
   customiserApi: CustomiserApi;
   /** The after-order door's stand-in. */
   afterFake: FakeAfter;
+  /** What Adminium says of payments; set before the shop loads. Off unless a test turns it on. */
+  offer: PayOffer;
+  /** The pay links asked for ("Pay now"), by the session and the order. */
+  starts: { via: "link" | "mine"; orderId: Id }[];
+  /** Refuse the next "Pay now" with this code (paid meanwhile, payments off). */
+  refuseStart: (code: string, status?: number) => void;
+  /** Answer a payment's own state (Adminium 0.3.61); none while it is null. */
+  paymentState: "processing" | "expired" | "failed" | null | undefined;
 }
 
 export function fakePort(catalogue: Catalogue = sampleCatalogue()): FakePort {
@@ -151,7 +159,27 @@ export function fakePort(catalogue: Catalogue = sampleCatalogue()): FakePort {
 
   const api = {} as CustomiserApi;
   const afterFake = fakeAfter();
-  return {
+  let startRefusal: { code: string; status: number } | null = null;
+  const port = {
+    offer: { online: false, test: false } as PayOffer,
+    starts: [] as { via: "link" | "mine"; orderId: Id }[],
+    paymentState: undefined as FakePort["paymentState"],
+    refuseStart: (code: string, status = 409) => {
+      startRefusal = { code, status };
+    },
+    payments: (): ShopPayments => ({
+      available: async () => ({ ...port.offer }),
+      start: async (via: "link" | "mine", orderId: Id) => {
+        port.starts.push({ via, orderId });
+        if (startRefusal !== null) {
+          const r = startRefusal;
+          startRefusal = null;
+          throw new ShopError({ code: r.code, status: r.status, column: null, child: null, index: null, reason: null, changed: null, raw: null }, r.code);
+        }
+        return `pay-link:${String(orderId)}`;
+      },
+      ...(port.paymentState === undefined ? {} : { state: async () => port.paymentState ?? null }),
+    }),
     calls,
     customiserApi: api,
     afterFake,
@@ -183,11 +211,13 @@ export function fakePort(catalogue: Catalogue = sampleCatalogue()): FakePort {
         if (made.order["total"] !== expect) {
           throw new ShopError({ code: "PUBLIC_PRICE_CHANGED", status: 409, column: null, child: null, index: null, reason: null, changed: made, raw: null }, "changed");
         }
-        const order: Row = { ...made.order, number: `BR-${number}` };
+        const online = body.values["pay_online"] === true;
+        const order: Row = { ...made.order, id: number, number: `BR-${number}`, status: "placed", pay_online: online, paid: "0.00", pay_due: made.order["total"] };
         number += 1;
-        return { order, lines: made.lines, replayed: false, link: { token: "LINKCODE0000000A" } };
+        return { order, lines: made.lines, replayed: false, link: { token: "LINKCODE0000000A" }, payUrl: online && port.offer.online ? `pay-link:${String(order["id"])}` : null };
       });
     },
     customiser: () => api,
-  };
+  } as FakePort;
+  return port;
 }

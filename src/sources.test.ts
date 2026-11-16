@@ -287,6 +287,9 @@ const HOSTED_STAFF: Readonly<Record<string, readonly string[]>> = {
   "studio/transport/sessionSource.ts": ["fetch reached through a global"],
   "studio/adminiumStudio.ts": ["fetch reached through a global", "Date.now() \u2014 the real clock"],
   "studio/boot.tsx": ["location.assign()/replace(), a navigation", "Date.now() \u2014 the real clock"],
+  // The shop's one way out of itself: to the pay link Adminium answered for the order (its own pay page, on the
+  // address Adminium chose), as a link would. No address is written here; the demo takes the step over in the page.
+  "shop/pay.ts": ["location.assign()/replace(), a navigation"],
 };
 const allowedHere = (rel: string, means: string): boolean => HOSTED_STAFF[rel]?.includes(means) === true;
 /** The one `import()` of something not a relative file: an add-on's bundle from this Adminium, behind `bundleUrlIsSafe`. */

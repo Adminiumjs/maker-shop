@@ -7,7 +7,7 @@
  * is what the runtime looks keys up in.
  *
  * Keys must be unique across areas — a later area silently wins a collision —
- * so they are namespaced (`shop.*`, `studio.*`, `bench.*`, `after.*`).
+ * so they are namespaced (`shop.*`, `studio.*`, `bench.*`, `after.*`, `pay.*`).
  *
  * PARITY IS A COMPILE ERROR, NOT A RUNTIME FALLBACK. The `Area<>` type below
  * takes English as the source of truth and requires all seven other locales to
@@ -24,6 +24,7 @@ import { chrome } from "../strings/chrome.ts";
 import { shop } from "../strings/shop.ts";
 import { studio } from "../strings/studio.ts";
 import { making } from "../strings/making.ts";
+import { pay } from "../strings/pay.ts";
 
 type Area<EN extends Record<string, string>> = { "en-US": EN } & Record<
   Exclude<LocaleTag, "en-US">,
@@ -37,7 +38,8 @@ const AREAS: [
   Area<(typeof studio)["en-US"]>,
   Area<(typeof making)["en-US"]>,
   Area<(typeof after)["en-US"]>,
-] = [chrome, bench, shop, studio, making, after];
+  Area<(typeof pay)["en-US"]>,
+] = [chrome, bench, shop, studio, making, after, pay];
 
 export const MESSAGES = Object.fromEntries(
   LOCALE_TAGS.map((t) => [t, Object.assign({}, ...AREAS.map((a) => a[t] ?? {}))]),
@@ -50,4 +52,5 @@ export type MessageKey =
   | keyof (typeof shop)["en-US"]
   | keyof (typeof studio)["en-US"]
   | keyof (typeof making)["en-US"]
-  | keyof (typeof after)["en-US"];
+  | keyof (typeof after)["en-US"]
+  | keyof (typeof pay)["en-US"];

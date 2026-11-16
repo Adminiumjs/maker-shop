@@ -12,14 +12,19 @@ import { useEffect, useRef } from "react";
 import { useI18n, type MessageKey } from "../../i18n/index.tsx";
 import { answerProof, dayIn, loadAgain, loadToday, openChange, openMine, openOrderLink, readLinked, typeChange, useAfter } from "../after.ts";
 import { orderView, type OrderView, type StageKey } from "../after-view.ts";
+import type { Row } from "../port.ts";
 import { dayShort, money } from "../format.ts";
 import { Mono, PieceIcon, Tile } from "../parts.tsx";
 import { goView, useShop } from "../store.ts";
+import { owes, paysOnline, usePay } from "../pay.ts";
 import { rich } from "../words.tsx";
 import { LookupForm } from "./Lookup.tsx";
+import { PayCard, PostByToday, usePostByToday } from "./PayCard.tsx";
 
 const STAGE_KEYS: Record<StageKey, MessageKey> = {
   accepted: "after.stage.accepted",
+  paid: "pay.paid",
+  unpaid: "pay.notPaid",
   proof: "after.stage.proof",
   making: "after.stage.making",
   finishing: "after.stage.finishing",
@@ -128,15 +133,22 @@ function Opened() {
         {t(opened.state === "gone" ? "after.order.gone" : "after.order.failed")}
       </div>
     );
-  return <OrderCard view={orderView(opened.read, catalogue, today)} />;
+  return <OrderCard view={orderView(opened.read, catalogue, today)} order={opened.read.order} lines={opened.read.lines} via={opened.via} />;
 }
 
-function OrderCard({ view }: { view: OrderView }) {
+function OrderCard({ view, order, lines, via }: { view: OrderView; order: Row; lines: Row[]; via: "link" | "mine" }) {
   const { t, locale } = useI18n();
   const currency = useShop((s) => s.config.currency);
   const answered = useAfter((s) => s.answered);
+  const online = usePay((s) => paysOnline(s));
+  const ifPaidToday = usePostByToday(view.post === "paying" ? order : null, lines);
   const day = useDay();
   const codes = view.lines.map((l) => l.designCode).filter((c): c is string => c !== null);
+  // Read again after "Pay now" was refused (paid meanwhile): the order as Adminium has it now.
+  const reread = async () => {
+    if (via === "link") await readLinked();
+    else await openMine(order, true);
+  };
 
   const postLabel =
     view.post === "posted"
@@ -145,7 +157,9 @@ function OrderCard({ view }: { view: OrderView }) {
         ? t("after.post.cancelled")
         : view.post === "late"
           ? t("after.post.late")
-          : rich(t, "after.post.due", { date: day(view.postBy) });
+          : view.post === "paying"
+            ? null
+            : rich(t, "after.post.due", { date: day(view.postBy) });
   return (
     <div className="sa-order">
       <div className="sh-card sa-head-card">
@@ -154,21 +168,23 @@ function OrderCard({ view }: { view: OrderView }) {
             <Mono className="sa-number">{view.number}</Mono>
             <span className="sa-subtle">{rich(t, "after.order.ordered", { date: <Mono>{day(view.placedAt)}</Mono>, name: view.name })}</span>
           </div>
-          <span className={view.post === "late" || view.post === "cancelled" ? "sa-post sa-post--late sh-mono" : "sa-post sh-mono"}>{postLabel}</span>
+          {postLabel !== null ? <span className={view.post === "late" || view.post === "cancelled" ? "sa-post sa-post--late sh-mono" : "sa-post sh-mono"}>{postLabel}</span> : <PostByToday day={ifPaidToday} />}
         </div>
         <ol className="sa-stages">
           {view.stages.map((stage) => (
-            <li key={stage.key} className={stage.done ? "sa-stage sa-stage--done" : "sa-stage"}>
+            <li key={stage.key} className={stage.done ? "sa-stage sa-stage--done" : stage.key === "unpaid" ? "sa-stage sa-stage--warn" : "sa-stage"}>
               <span className="sa-stage-bar" aria-hidden="true" />
               <span className="sa-stage-label">
                 {t(STAGE_KEYS[stage.key])}
                 <span className="sh-sr">{stage.done ? ` · ${t("after.stage.done")}` : ""}</span>
               </span>
-              <Mono className="sa-stage-date">{stage.at === null ? "" : stage.due ? t("after.stage.by", { date: day(stage.at) }) : day(stage.at)}</Mono>
+              <Mono className="sa-stage-date">{stage.key === "unpaid" ? "—" : stage.at === null ? "" : stage.due ? t("after.stage.by", { date: day(stage.at) }) : day(stage.at)}</Mono>
             </li>
           ))}
         </ol>
       </div>
+
+      {online && owes(order) && <PayCard order={order} via={via} confirmed={null} reread={reread} />}
 
       {view.waiting.map((proof) => (
         <ProofCard key={proof.id} proof={proof} />
@@ -204,6 +220,7 @@ function OrderCard({ view }: { view: OrderView }) {
         </ul>
         <div className="sa-total">
           <span className="sa-subtle">{t("after.total")}</span>
+          {view.paid !== null && <span className={view.paid ? "sa-paychip sa-paychip--pos" : "sa-paychip sa-paychip--warn"}>{t(view.paid ? "pay.paid" : "pay.notPaid")}</span>}
           <Mono className="sa-strong">{money(view.total, currency, locale)}</Mono>
         </div>
         <div className="sa-log">

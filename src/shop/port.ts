@@ -124,6 +124,35 @@ export interface Figures {
 export interface Placed extends Figures {
   replayed: boolean;
   link: { token: string } | null;
+  /** Where the shopper pays for it, when the studio takes payments online right now; null otherwise and on a replay. */
+  payUrl: string | null;
+}
+
+/** Whether the studio takes payments online right now; `test` while someone who manages payments rehearses here. */
+export interface PayOffer {
+  online: boolean;
+  test: boolean;
+  /** The website's demo, where no money moves and nothing leaves the page. */
+  demo?: true;
+}
+
+/**
+ * Paying for an order online: whether the shop may offer it, and an order's
+ * pay link, asked of Adminium through the session that reads the order (its
+ * own link's, or the shopper's sign-in). The amount is always the order's.
+ */
+export interface ShopPayments {
+  /** Never throws: no answer is "not now". */
+  available(): Promise<PayOffer>;
+  /** The order's pay link. A refusal (paid meanwhile, payments off) is a thrown `ShopError`. */
+  start(via: "link" | "mine", orderId: Id): Promise<string>;
+  /**
+   * The state of the order's latest payment, where Adminium answers it (0.3.61
+   * and later): still with the bank, its page ran out of time, or it did not
+   * finish; null when there is none to tell. Absent from an Adminium that does
+   * not answer it: an unpaid order then reads "Not paid yet".
+   */
+  state?(via: "link" | "mine", orderId: Id): Promise<"processing" | "expired" | "failed" | null>;
 }
 
 /** A refusal, as the pages read it. */
@@ -152,6 +181,8 @@ export interface ShopPort {
   customiser(): CustomiserApi;
   /** The pages after an order: signing in, an order and its proofs, the two requests, the footer's pages. */
   after(): AfterPort;
+  /** Paying online; null where the shop's Adminium has no payments to ask (an older one). */
+  payments(): ShopPayments | null;
 }
 
 /** A refusal is a thrown `ShopError`; anything else is a failure to reach Adminium. */

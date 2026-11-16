@@ -14,7 +14,7 @@ import { createPublicClient, newClientKey, pictureUrl, PublicApiError, type Held
 import { customiserApi, REFS as CUSTOMISER_REFS, type ClientLike, type CustomiserApi } from "../../vendor/customiser/index.js";
 import { AdminiumAfter, afterRefs, type AfterPort } from "./after-port.ts";
 import { KEYS, shopRefs, type ShopRefs } from "./refs.ts";
-import { ShopError, type Catalogue, type Figures, type Id, type Material, type Option, type OptionKind, type OrderBody, type Placed, type Product, type Refused, type Row, type Service, type ShopConfig, type ShopPort } from "./port.ts";
+import { ShopError, type Catalogue, type Figures, type Id, type Material, type Option, type OptionKind, type OrderBody, type PayOffer, type Placed, type Product, type Refused, type Row, type Service, type ShopConfig, type ShopPayments, type ShopPort } from "./port.ts";
 
 export interface ShopServed {
   baseUrl: string;
@@ -23,6 +23,12 @@ export interface ShopServed {
   publicKeys?: Record<string, string>;
   /** The app's own settings, as `surface-config.json` serves them (its studio days, its cut-off). */
   settings?: Record<string, unknown>;
+  /**
+   * The write token of someone who manages payments rehearsing the checkout
+   * on this address (`rehearsal.csrfToken` of the config): their writes go as
+   * theirs, their order is sample data and no money moves. Absent for anyone else.
+   */
+  rehearsalToken?: string;
 }
 
 export interface ShopDoorOptions {
@@ -182,8 +188,9 @@ export class AdminiumShop implements ShopPort {
         ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
         ...(humanCheck === undefined ? {} : { humanCheck }),
         ...(held === undefined ? {} : { session: held }),
+        ...(served.rehearsalToken === undefined ? {} : { csrfToken: served.rehearsalToken }),
         onSessionChange: (session) => keepSession(purpose, session),
-      });
+      } as Parameters<typeof createPublicClient>[0]);
     };
     const after = afterRefs(served.tables);
     // Placing an order, saving a design, signing in and the two requests all ask the human check: solved before they are sent.
@@ -253,8 +260,32 @@ export class AdminiumShop implements ShopPort {
         lines: (made.children["order_lines"] ?? []).map((line) => line.data),
         replayed: made.replayed,
         link: made.link === null ? null : { token: made.link.token },
+        payUrl: made.payUrl ?? null,
       };
     });
+  }
+
+  payments(): ShopPayments | null {
+    const pays = (this.client as Partial<PublicClient>).payments;
+    if (pays === undefined) return null;
+    const refs = { link: afterRefs(this.served.tables).linkOrder, mine: afterRefs(this.served.tables).myOrders };
+    return {
+      available: async (): Promise<PayOffer> => {
+        try {
+          const said = await pays.available();
+          return { online: said.online === true, test: said.test === true };
+        } catch {
+          return { online: false, test: false };
+        }
+      },
+      // Through the client whose session reads the order: its own link's, or the shopper's sign-in.
+      start: (via, orderId) =>
+        answer(async () => {
+          const client = via === "link" ? this.orderClient : this.client;
+          if (client === null) throw new Error("This shop has no key for an order's own link.");
+          return (await client.payments.start(refs[via], String(orderId))).payUrl;
+        }),
+    };
   }
 
   after(): AfterPort {

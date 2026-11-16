@@ -17,7 +17,7 @@ import "./after.css";
 import { useI18n, type MessageKey } from "../i18n/index.tsx";
 import { count } from "./format.ts";
 import { attachShopUrl, type Place } from "./route.ts";
-import { goView, loadShop, onShopNavigate, openProduct, useShop, type ShopView } from "./store.ts";
+import { backFromPaying, goView, loadShop, onShopNavigate, openProduct, useShop, type ShopView } from "./store.ts";
 import { BasketScreen } from "./screens/Basket.tsx";
 import { CheckoutScreen } from "./screens/Checkout.tsx";
 import { ConfirmScreen } from "./screens/Confirm.tsx";
@@ -58,6 +58,8 @@ function initialTheme(): "light" | "dark" {
 
 /** Open the screen a place names. */
 export function openPlace(place: Place): void {
+  // Back from the pay page, on the order's page with nothing in its address: the confirmation this tab kept.
+  if (place.view === "order" && window.location.hash === "" && backFromPaying()) return;
   if (place.view === "product" || place.view === "customise") openProduct(place.code, place.view);
   else if (place.view === "confirm") goView("checkout");
   else goView(place.view);

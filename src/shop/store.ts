@@ -21,6 +21,7 @@ import { heldDesign, type DesignForBasket, type HeldDesign, type SavedDesign } f
 import { freshClientKey } from "./door.ts";
 import type { Elsewhere } from "./route.ts";
 import { isShopError, type Catalogue, type Figures, type Id, type LineValues, type Option, type OrderBody, type Placed, type Product, type Refused, type Row, type ShopConfig, type ShopPort } from "./port.ts";
+import { checkBack, goPay, keptConfirmation, loadOffer, paysOnline } from "./pay.ts";
 
 export type ShopView = "shop" | "product" | "customise" | "basket" | "checkout" | "confirm" | "missing" | Elsewhere;
 
@@ -255,6 +256,8 @@ export async function loadShop(): Promise<void> {
   if (port === null) return;
   set({ loading: "loading" });
   try {
+    // Whether the studio takes payments online right now is asked beside the catalogue, and never holds the shop up.
+    void loadOffer(port);
     const [config, catalogue] = await Promise.all([port.config(), port.catalogue()]);
     const serviceId = get().serviceId;
     const known = serviceId !== null && catalogue.services.some((s) => String(s.id) === String(serviceId));
@@ -650,7 +653,9 @@ export async function placeOrder(): Promise<"placed" | "fix" | "moved" | "failed
   set({ tried: true, refusedLine: null, failure: null });
   if (Object.keys(formErrors(s.details)).length > 0 || Object.keys(s.refusedFields).length > 0) return "fix";
   set({ checking: true });
-  const body = orderBody({ ...detailValues(s.details), ...(s.serviceId === null ? {} : { service_id: s.serviceId }), language: language() }, s.basket);
+  // While the studio takes payments online the order asks to be paid online: its pay link comes back with it.
+  const online = paysOnline();
+  const body = orderBody({ ...detailValues(s.details), ...(s.serviceId === null ? {} : { service_id: s.serviceId }), language: language(), ...(online ? { pay_online: true } : {}) }, s.basket);
   try {
     const quoted = await s.port.quote(body);
     const total = String(quoted.order["total"] ?? "");
@@ -661,7 +666,7 @@ export async function placeOrder(): Promise<"placed" | "fix" | "moved" | "failed
       return "moved";
     }
     const placed = await s.port.place(body, s.clientKey, shown);
-    confirm(placed);
+    confirm(placed, placed.payUrl);
     return "placed";
   } catch (error) {
     set({ checking: false });
@@ -680,12 +685,18 @@ export async function placeOrder(): Promise<"placed" | "fix" | "moved" | "failed
   }
 }
 
-function confirm(placed: Placed): void {
+/**
+ * The order is placed: the confirmation, or, with its pay link, the pay page
+ * (the confirmation kept for the way back). The basket empties either way:
+ * the order is placed whether or not it is paid.
+ */
+function confirm(placed: Placed, payUrl: string | null = null): void {
   const s = get();
   const service = s.catalogue?.services.find((one) => String(one.id) === String(placed.order["service_id"] ?? s.serviceId));
+  const confirmed: Confirmed = { order: placed.order, lines: placed.lines, serviceName: service?.name ?? "", token: placed.link?.token ?? null };
   set({
     checking: false,
-    confirmed: { order: placed.order, lines: placed.lines, serviceName: service?.name ?? "", token: placed.link?.token ?? null },
+    confirmed,
     basket: [],
     basketQuote: null,
     priceMoves: null,
@@ -695,7 +706,36 @@ function confirm(placed: Placed): void {
     clientKey: freshClientKey(),
   });
   keepBasket();
+  if (payUrl !== null && !placed.replayed) {
+    goPay(payUrl, confirmed);
+    return;
+  }
   goView("confirm");
+}
+
+/**
+ * Back from the pay page (the shop's order page, nothing in its address):
+ * the confirmation this tab kept, checked with Adminium until the order reads
+ * paid. False when this tab left for no pay page.
+ */
+export function backFromPaying(): boolean {
+  const kept = keptConfirmation();
+  if (kept === null) return false;
+  set({ confirmed: kept });
+  goView("confirm");
+  const port = get().port;
+  const pays = port?.payments() ?? null;
+  const id = kept.order["id"] as Id | undefined;
+  void checkBack(
+    async () => (await port?.after().readShared())?.order ?? null,
+    (order) => {
+      const now = get().confirmed;
+      if (now !== null) set({ confirmed: { ...now, order: { ...now.order, ...order } } });
+    },
+    undefined,
+    pays?.state === undefined || id === undefined ? undefined : () => pays.state!("link", id),
+  );
+  return true;
 }
 
 /** Whether any line of a placed order waits for a proof: words on it, or a design. */

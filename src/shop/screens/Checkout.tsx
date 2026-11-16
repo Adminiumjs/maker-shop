@@ -4,9 +4,11 @@
  * designs, and the shopper found or made by their e-mail. Adminium prices it
  * (a dry run first, then the save held to the total shown), asks the human
  * check, and keeps a retry from making a second order. Nothing is charged:
- * the studio sends an invoice.
+ * the studio sends an invoice — unless the studio takes payments online, and
+ * then the same press places the order and takes the shopper to pay it on the
+ * Stripe or PayPal page (through Adminium's pay page).
  */
-import { CircleAlert, ReceiptText, TrendingUp, TriangleAlert } from "lucide-react";
+import { CircleAlert, FlaskConical, Lock, ReceiptText, TrendingUp, TriangleAlert } from "lucide-react";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 
 import { NEWS_TICK } from "../../manifest/people.ts";
@@ -14,6 +16,7 @@ import { useI18n } from "../../i18n/index.tsx";
 import { count, dayShort, money } from "../format.ts";
 import { Mono } from "../parts.tsx";
 import { chooseService, firstBadField, formErrors, placeOrder, setDetails, useShop, type Details, type Field } from "../store.ts";
+import { paysOnline, usePay } from "../pay.ts";
 import { EmptyBasket } from "./Basket.tsx";
 
 const FIELD_IDS: Record<Field, string> = { name: "sh-ck-name", email: "sh-ck-email", line1: "sh-ck-line1", town: "sh-ck-town", postcode: "sh-ck-postcode" };
@@ -27,6 +30,8 @@ function tickWords(locale: string): string {
 export function CheckoutScreen() {
   const { t, locale } = useI18n();
   const s = useShop();
+  const pay = usePay();
+  const online = paysOnline(pay);
   const [pressed, setPressed] = useState(0);
   const button = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -78,10 +83,22 @@ export function CheckoutScreen() {
 
   return (
     <section className="sh-screen sh-narrower" aria-labelledby="sh-checkout-title">
+      {online && (pay.offer?.test === true || pay.offer?.demo === true) && (
+        <p className="sh-test-band">
+          <FlaskConical size={16} aria-hidden="true" />
+          <span>{t(pay.offer?.demo === true ? "pay.demo" : "pay.test")}</span>
+        </p>
+      )}
       <h1 id="sh-checkout-title" className="sh-h1 sh-h1--page">
         {t("shop.checkout.title")}
       </h1>
-      {s.basket.length === 0 ? (
+      {pay.going && s.basket.length === 0 ? (
+        // The order is placed and the shopper is on their way to pay it: the moment of handing over.
+        <div className="sh-card sh-summary sh-handoff" role="status">
+          <span className="sh-spinner" aria-hidden="true" />
+          <span>{t("pay.taking")}</span>
+        </div>
+      ) : s.basket.length === 0 ? (
         <EmptyBasket />
       ) : (
         <div className="sh-stack">
@@ -138,10 +155,20 @@ export function CheckoutScreen() {
             <div className="sh-hint">{t("shop.checkout.onePostage")}</div>
           </div>
 
-          <p className="sh-invoice">
-            <ReceiptText size={16} aria-hidden="true" />
-            {t("shop.checkout.invoice")}
-          </p>
+          {online ? (
+            <div className="sh-invoice sh-pay-line">
+              <Lock size={16} aria-hidden="true" />
+              <span className="sh-pay-text">
+                <span className="sh-pay-now">{t("pay.checkout.now", { amount: s.shownTotal === null ? "…" : m(s.shownTotal) })}</span>
+                <span className="sh-hint">{t("pay.checkout.where")}</span>
+              </span>
+            </div>
+          ) : (
+            <p className="sh-invoice">
+              <ReceiptText size={16} aria-hidden="true" />
+              {t("shop.checkout.invoice")}
+            </p>
+          )}
 
           <div className={s.priceMoves === null ? "sh-card sh-summary sh-summary--quiet" : "sh-card sh-summary sh-summary--moved"} aria-busy={s.basketQuote?.state === "busy"}>
             {s.priceMoves !== null && (
@@ -185,15 +212,30 @@ export function CheckoutScreen() {
               ref={button}
               type="button"
               className="sh-button sh-button--accent sh-button--wide"
-              aria-busy={s.checking}
-              aria-disabled={s.checking || s.shownTotal === null}
+              aria-busy={s.checking || pay.going}
+              aria-disabled={s.checking || pay.going || s.shownTotal === null}
               onClick={() => {
-                if (!s.checking && s.shownTotal !== null) void place();
+                if (!s.checking && !pay.going && s.shownTotal !== null) void place();
               }}
             >
-              {s.checking && <span className="sh-spinner" aria-hidden="true" />}
-              <span>{s.checking ? t("shop.checkout.checking") : s.priceMoves !== null ? t("shop.checkout.orderAt", { total: m(s.shownTotal) }) : t("shop.checkout.place")}</span>
+              {(s.checking || pay.going) && <span className="sh-spinner" aria-hidden="true" />}
+              <span>
+                {pay.going
+                  ? t("pay.taking")
+                  : s.checking
+                    ? t("shop.checkout.checking")
+                    : s.priceMoves !== null
+                      ? t("shop.checkout.orderAt", { total: m(s.shownTotal) })
+                      : online
+                        ? t("pay.checkout.place", { amount: m(s.shownTotal) })
+                        : t("shop.checkout.place")}
+              </span>
             </button>
+            {pay.going && (
+              <span className="sh-sr" role="status">
+                {t("pay.taking")}
+              </span>
+            )}
           </div>
         </div>
       )}
