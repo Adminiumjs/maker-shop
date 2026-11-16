@@ -15,6 +15,10 @@
  * confirmation e-mail carries, and the one the confirmation page is handed
  * once): the order, its lines and its proofs, and the same answer to a proof.
  *
+ * Paying online: placing an order answers its pay link while the studio takes
+ * payments online (`pay`), and the order's own link or the shopper's sign-in
+ * asks Adminium for it again ("Pay now"). The amount is always the order's.
+ *
  * The Customiser declares its own entries on the `customer` key (its
  * catalogue for this shop, a shopper's design and its link), not here.
  *
@@ -47,6 +51,18 @@ export const ORDER_SELECT = [
   "tracking",
   "cancelled_at",
   "link_expires",
+  // Paying online: whether the order was asked to, whether it waits for it before anything is made, what was paid and
+  // what is left, when the money came in, and the post-by counted from it.
+  "pay_online",
+  "waits_pay",
+  "pay_mode",
+  "paid",
+  "refunded",
+  "pay_due",
+  "paid_at",
+  "pay_hold",
+  "lead_max",
+  "paid_post_by",
 ];
 
 /** What placing an order answers: its figures, never the shopper's own details back. */
@@ -186,7 +202,7 @@ export const PUBLIC_ACCESS = [
     humanCheck: true,
     level: "verified",
     select: PLACED_SELECT,
-    writable: ["name", "email", "address_line1", "address_line2", "town", "postcode", "note", "language", "service_id", "client_key", "may_email"],
+    writable: ["name", "email", "address_line1", "address_line2", "town", "postcode", "note", "language", "service_id", "client_key", "may_email", "pay_online"],
     requires: ["name", "email", "address_line1", "town", "postcode", "service_id"],
     requireSetting: [{ table: "settings", column: "taking_orders" }],
     claimedBy: { table: "customers", column: "customer_id", optional: true },
@@ -222,6 +238,8 @@ export const PUBLIC_ACCESS = [
     dryRun: true,
     expect: "total",
     clientKey: "client_key",
+    // While the studio takes payments online, the order's pay link comes back with it: one round trip at checkout.
+    pay: true,
   },
 
   // ── asking for something made, and telling the studio something went wrong ──

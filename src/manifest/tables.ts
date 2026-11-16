@@ -268,6 +268,18 @@ const ON_HAND_CHANGE = {
     },
   ],
 };
+/**
+ * How an order is paid, as it was placed: 0 as it always was (an invoice with
+ * the order), 1 online at checkout, 2 online at checkout with nothing made
+ * until it is paid ("Take payment before making", as the setting stood).
+ */
+const PAY_MODE = { if: [{ eq: ["pay_online", true] }, { if: [{ eq: ["waits_pay", true] }, 2, 1] }, 0] };
+/** What is left to pay: the total less what was paid. A refund is money given back, never asked for again. */
+const PAY_DUE = { max: [0, { sub: [{ coalesce: ["total", 0] }, { coalesce: ["paid", 0] }] }] };
+/** 1 while the order waits for its payment before anything is made; 0 otherwise. */
+const PAY_HOLD = { if: [{ and: [{ eq: ["pay_mode", 2] }, { gt: ["pay_due", 0] }] }, 1, 0] };
+/** 1 for an order of one way of paying, empty for the others: what an e-mail block shows itself by (`onlyWith`). */
+const ONLY_MODE = (mode: number) => ({ if: [{ eq: ["pay_mode", mode] }, 1, { div: [0, 0] }] });
 const COMMITTED_CHANGE = { if: [{ eq: ["kind", "committed"] }, "qty", { if: [{ eq: ["kind", "released"] }, { sub: [0, "qty"] }, 0] }] };
 
 /**
@@ -322,6 +334,8 @@ export const TABLES: Table[] = [
       // What the box and its packing weigh, added to every parcel.
       int("packaging_grams", "Packing weight (g)", { default: 120, rules: { validation: { min: 0, max: 5000 } } }),
       bool("taking_orders", "Taking orders", true),
+      // With online payments on: a line goes on the machine only once its order is paid. The app's own admin sets it.
+      bool("pay_first", "Take payment before making", false),
     ],
   },
   {
@@ -591,6 +605,48 @@ export const TABLES: Table[] = [
       text("client_key", 64, "Retry key", { ...opt, unique: true }),
       // The tick the shopper gave at checkout: theirs, written by nobody else.
       bool("may_email", "News from the workshop", false),
+      // ── paying online ──
+      // Asked at checkout by the shop's page while the studio takes payments online. An order placed with payments off
+      // reads as it always did: the studio sends an invoice, and nothing here is asked of it.
+      bool("pay_online", "Asked to pay online", false),
+      // "Take payment before making", as the studio's setting stood when the order was placed. The owner may untick it.
+      { ref: "waits_pay", type: "bool", nullable: true, label: l("Payment before making"), rules: { default: { from: setting("pay_first") } } },
+      figure("pay_mode", "int", "How it is paid", { formula: PAY_MODE }),
+      // The money taken for it online, and what was given back; a refund never asks for the money again.
+      money("paid", "Paid", { rollup: { from: "payments", via: "order_id", sum: "amount" } }),
+      money("refunded", "Refunded", { rollup: { from: "payments", via: "order_id", sum: "refunded" } }),
+      money("pay_due", "To pay", { formula: PAY_DUE }),
+      at("paid_at", "Paid at", { ...opt, rules: { rollup: { from: "payments", via: "order_id", latest: { of: "paid_at", by: "paid_at" } } } }),
+      // Whether the bench waits for the payment: every line's move onto the machine asks it (`order_lines.states`).
+      figure("pay_hold", "int", "Waiting for payment", { formula: PAY_HOLD }),
+      figure("mode_free", "int", "Paid online, made at once", { formula: ONLY_MODE(1) }),
+      figure("mode_hold", "int", "Paid online, made once paid", { formula: ONLY_MODE(2) }),
+      // An order that waits for its payment is made from the day it is paid: its post-by counts from then, its
+      // longest piece's studio days after the payment came in, worked out again when the payment lands.
+      figure("lead_max", "int", "Longest lead (studio days)", { rollup: { from: "order_lines", via: "order_id", latest: { of: "lead_days", by: "lead_days" } } }),
+      date("paid_post_by", "Post by, from the payment", {
+        ...opt,
+        rules: stamp(
+          {
+            addWorkingDays: {
+              from: "paid_at",
+              days: "lead_max",
+              weekdays: STUDIO_DAYS,
+              cutoff: CUTOFF,
+              closures: { table: "closures", from: "from_date", to: "to_date", active: "active" },
+            },
+          },
+          { columns: ["paid_at", "lead_max"] },
+        ),
+      }),
+      // The studio day after the order came in: the one reminder of an unpaid order goes then.
+      date("remind_on", "Payment reminder", {
+        ...opt,
+        rules: stamp(
+          { addWorkingDays: { from: "now", days: 1, weekdays: STUDIO_DAYS, cutoff: CUTOFF, closures: { table: "closures", from: "from_date", to: "to_date", active: "active" } } },
+          onCreate,
+        ),
+      }),
     ],
   },
   {
@@ -606,7 +662,8 @@ export const TABLES: Table[] = [
       initial: "make",
       moves: {
         // A line with words or a design goes to the bench only once its proof is approved.
-        make: [{ to: "making", requires: { where: [{ column: "proof_ok", eq: 1 }] } }, "cancelled"],
+        // And, for an order that takes payment before making, once the order is paid.
+        make: [{ to: "making", requires: { where: [{ column: "proof_ok", eq: 1 }], linked: [{ via: "order_id", where: [{ column: "pay_hold", eq: 0 }] }] } }, "cancelled"],
         making: ["finishing", "ready", { to: "make", roles: ["owner", "maker"] }],
         finishing: ["ready", { to: "make", roles: ["owner", "maker"] }],
         ready: ["posted", { to: "make", roles: ["owner", "maker"] }],
@@ -901,6 +958,27 @@ export const TABLES: Table[] = [
       text("note", 200, "Note", opt),
       at("made_at", "When", { ...opt, rules: stamp("now", onCreate) }),
       text("made_by", 80, "By", { ...opt, rules: stamp("user-name", onCreate) }),
+    ],
+  },
+  {
+    // The money taken for an order online, one row a payment: written by Adminium alone when the shopper pays on the
+    // payment service's page, its reference once. A refund given back is kept on its row. No role writes here.
+    ref: "payments",
+    keep: KEPT_FOR_TAX,
+    label: l("Payment"),
+    labelPlural: l("Payments"),
+    keyField: "payment_ref",
+    columns: [
+      id,
+      fk("order_id", "orders", "Order", { index: true }),
+      { ref: "amount", type: "decimal", scale: "currency", default: 0, semantic: "money", label: l("Amount") },
+      at("paid_at", "Paid at", opt),
+      choice("method", "Way paid", { online: "Online" }, { default: "online" }),
+      text("payment_ref", 64, "Payment reference", { ...opt, unique: true }),
+      text("provider", 40, "Taken by", opt),
+      text("currency", 3, "Currency", opt),
+      { ref: "refunded", type: "decimal", scale: "currency", default: 0, semantic: "money", label: l("Refunded") },
+      text("note", 200, "Note", opt),
     ],
   },
   {

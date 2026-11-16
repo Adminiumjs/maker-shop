@@ -36,12 +36,13 @@ const PAGE = 200;
 /** The moments each table holds: SQLite hands them back without a zone. */
 export const MOMENTS: Readonly<Partial<Record<Table | AddOnTable, readonly string[]>>> = {
   customers: ["forgotten_at", "created_at"],
-  orders: ["placed_at", "posted_at", "cancelled_at", "link_expires"],
+  orders: ["placed_at", "posted_at", "cancelled_at", "link_expires", "paid_at"],
   order_lines: ["placed_at", "started_at", "finishing_at", "made_at"],
   proofs: ["sent_at", "answered_at", "reminded_at"],
   batches: ["started_at", "done_at"],
   machine_bookings: ["starts_at", "ends_at"],
   stock_movements: ["made_at"],
+  payments: ["paid_at"],
   designs: ["created_at", "updated_at"],
   design_versions: ["made_at"],
   version_files: ["made_at"],
@@ -49,7 +50,7 @@ export const MOMENTS: Readonly<Partial<Record<Table | AddOnTable, readonly strin
 
 /** The yes/no columns each table holds: SQLite and MySQL hand back 0 or 1. */
 export const YES_NO: Readonly<Partial<Record<Table, readonly string[]>>> = {
-  settings: ["taking_orders"],
+  settings: ["taking_orders", "pay_first"],
   machines: ["active"],
   materials: ["active"],
   products: ["takes_lettering", "published"],
@@ -57,7 +58,7 @@ export const YES_NO: Readonly<Partial<Record<Table, readonly string[]>>> = {
   postage_services: ["tracked", "active"],
   closures: ["active"],
   customers: ["may_email"],
-  orders: ["link_stopped", "may_email"],
+  orders: ["link_stopped", "may_email", "pay_online", "waits_pay"],
 };
 
 const yesNo = (value: unknown): unknown =>

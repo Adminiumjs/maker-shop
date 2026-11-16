@@ -5,7 +5,13 @@
  * To the shopper, every one service mail (each is about their own order,
  * proof or request):
  *   order-received       the order is in: its lines, what it comes to, when
- *                        it will be posted, and the order's own link;
+ *                        it will be posted, and the order's own link (an
+ *                        order placed with payments off, at once);
+ *   order-paid           the same once an order asked to pay online is paid:
+ *                        what was paid, and it is the receipt;
+ *   order-unpaid         the same an hour after such an order, still unpaid:
+ *                        the button that opens its pay link;
+ *   pay-reminder         the one nudge the studio day after, still unpaid;
  *   proof-ready          a proof of a line is waiting: approve it or ask for
  *                        a change;
  *   proof-reminder       the studio's one nudge about a proof still waiting;
@@ -23,6 +29,9 @@
 
 export const KINDS = [
   "order-received",
+  "order-unpaid",
+  "order-paid",
+  "pay-reminder",
   "proof-ready",
   "proof-reminder",
   "order-posted",
@@ -40,6 +49,9 @@ export const TO_STUDIO: ReadonlySet<Kind> = new Set(["request-copy", "problem-co
 /** The outbox's kinds, as the E-mails page names them. */
 export const KIND_NAMES: Record<Kind, string> = {
   "order-received": "Order received",
+  "order-unpaid": "Order received, not paid",
+  "order-paid": "Order received, paid",
+  "pay-reminder": "Payment reminder",
   "proof-ready": "Proof ready",
   "proof-reminder": "Proof reminder",
   "order-posted": "Order posted",
@@ -51,6 +63,12 @@ export const KIND_NAMES: Record<Kind, string> = {
 };
 
 const studio = { setting: { table: "settings", column: "email" } };
+
+/** A message asking for the payment waits while nothing is paid, and is skipped once it is, or once the order is cancelled. */
+const UNTIL_PAID = [
+  { column: "pay_due", lte: 0, reason: "paid" },
+  { column: "status", eq: "cancelled", reason: "void" },
+];
 
 export const OUTBOX = {
   table: "messages",
@@ -82,7 +100,14 @@ export const OUTBOX = {
   kinds: Object.fromEntries(KINDS.map((kind) => [kind, `maker-${kind}`])),
   classes: Object.fromEntries(KINDS.filter((kind) => !TO_STUDIO.has(kind)).map((kind) => [kind, "service"])),
   producers: [
-    { kind: "order-received", link: "order_id", onCreate: { table: "orders" } },
+    // An order placed with payments off: at once, as it always was.
+    { kind: "order-received", link: "order_id", onCreate: { table: "orders", where: { column: "pay_online", eq: false } } },
+    // An order the shopper was asked to pay online: its e-mail goes when the money comes in, and is the receipt …
+    { kind: "order-paid", link: "order_id", onCreate: { table: "payments", via: "order_id" } },
+    // … or, still unpaid an hour after it was placed, as the e-mail with the pay link (paid meanwhile, it never goes) …
+    { kind: "order-unpaid", link: "order_id", onCreate: { table: "orders", where: { column: "pay_online", eq: true } }, holdSeconds: 3600, dropWhen: UNTIL_PAID },
+    // … and, still unpaid the studio day after, the one reminder.
+    { kind: "pay-reminder", link: "order_id", onCreate: { table: "orders", where: { column: "pay_online", eq: true } }, due: { date: "remind_on", days: 0, at: "17:00" }, dropWhen: UNTIL_PAID },
     // About the proof itself, so each proof of an order is its own e-mail; the order and the shopper are found through it.
     // Only a proof with its picture: one added on the dashboard with none has nothing to look at, and is e-mailed once
     // it is given its picture.

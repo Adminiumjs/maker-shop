@@ -2,7 +2,8 @@
  * Who may do what, enforced by Adminium on every read and write.
  *
  *   owner    everything: the dashboard section, the catalogue and its prices,
- *            the settings, the customers, the e-mails; the studio's own
+ *            the settings, the customers, the e-mails; refunds of what a
+ *            shopper paid online for an order; the studio's own
  *            screens; the Customiser's set-up page (what shoppers make their
  *            own); Holiday calendars' closed days (its settings); and
  *            finding and erasing a customer (Studio → Privacy).
@@ -11,8 +12,10 @@
  *            one before is answered by Adminium),
  *            batches, machine bookings and the stock, and a product's
  *            lettering settings. Never a price, a customer or the settings.
+ *            Reads whether an order is paid.
  *   packer   the studio's screens: the orders ready to post, marking them
- *            posted with a tracking number. Nothing else changes.
+ *            posted with a tracking number, and whether it is paid. Nothing
+ *            else changes.
  *
  * Every role reads the Customiser's rows its work needs. The Customiser's
  * panels open for the roles below (`ROLE_PANELS`): an order line's design for
@@ -159,6 +162,9 @@ const CUSTOMISER_SET_UP = CUSTOMISER_PANEL.map((entry) => {
 /** Finding a customer and erasing what the studio keeps of them (Studio → Privacy): the owner's, never a screens-only role's. */
 const ERASE_PEOPLE = "privacy:@:people";
 
+/** Giving back the money paid online for the app's own records: the owner's, as the install shows it. */
+const REFUND_ONLINE = "payments:@:refund";
+
 /** Columns Adminium decides: nobody writes them, whatever their role. */
 const decided = (ref: string): Set<string> =>
   new Set(
@@ -196,6 +202,8 @@ const STUDIO_READS = [
   "batches",
   "machine_bookings",
   "stock_movements",
+  // Whether an order is paid: the bench waits for it on an order that takes payment before making.
+  "payments",
 ];
 
 export { ROLE_PANELS };
@@ -207,8 +215,9 @@ export const ROLES = [
     permissions: [
       "app:@:staff",
       ...TABLE_REFS.flatMap((table) =>
-        // The e-mails are the studio's record of what was sent: nobody deletes from it.
-        table === "messages" ? grant(table, "read", "create", "update") : grant(table, "read", "create", "update", "delete"),
+        // The e-mails are the studio's record of what was sent: nobody deletes from it. The payments are Adminium's
+        // record of the money a payment service took: read, never written by a role.
+        table === "messages" ? grant(table, "read", "create", "update") : table === "payments" ? grant(table, "read") : grant(table, "read", "create", "update", "delete"),
       ),
       ...PAGE_REFS.flatMap((page) => [view(page), `page:@${page}:edit`]),
       ...["orders", "customers", "commission_requests", "problem_reports", "messages"].map(pii),
@@ -217,6 +226,8 @@ export const ROLES = [
       ERASE_PEOPLE,
       // Holiday calendars' one setting, the days the studio is closed: the owner's to keep, not only an administrator's.
       `addOn:${HOLIDAYS}:settings`,
+      // Giving back money a shopper paid online for one of the studio's orders, and only those (shown at install).
+      REFUND_ONLINE,
     ],
     limits: {
       orders: { writable: typed("orders", ...SHOPPERS_OWN), creatable: typed("orders", ...SHOPPERS_OWN) },
@@ -264,7 +275,7 @@ export const ROLES = [
     screensOnly: true,
     permissions: [
       "app:@:staff",
-      ...["settings", "products", "options", "postage_services", "postage_rates", "orders", "order_lines", "order_line_features"].flatMap((table) => grant(table, "read")),
+      ...["settings", "products", "options", "postage_services", "postage_rates", "orders", "order_lines", "order_line_features", "payments"].flatMap((table) => grant(table, "read")),
       pii("orders"),
       ...grant("orders", "update"),
       ...grant("order_lines", "update"),

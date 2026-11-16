@@ -65,6 +65,21 @@ const SPECS: PageSpec[] = [
       [f("service_id", { control: "reference" }), f("weight_g", { control: "number" }), f("postage", { control: "currency" }), f("pieces_total", { control: "currency" }), f("total", { control: "currency" })],
       [f("posted_at", { control: "datetime" }), f("posted_by"), f("tracking"), f("cancelled_at", { control: "datetime" }), wide("cancel_reason", "text")],
       [f("customer_id", { control: "reference" }), f("link_expires", { control: "datetime" }), toggle("link_stopped")],
+      // Paying online: asked at checkout, what was paid and given back, what is left.
+      [toggle("pay_online"), toggle("waits_pay"), f("paid", { control: "currency" }), f("refunded", { control: "currency" }), f("pay_due", { control: "currency" }), f("paid_at", { control: "datetime" }), f("paid_post_by", { control: "date" })],
+    ),
+  },
+  {
+    // What shoppers paid online, as Adminium wrote it down: read here, written by no one.
+    ref: "maker-payments",
+    title: "Payments",
+    group: "orders",
+    icon: "credit-card",
+    order: 6,
+    table: "payments",
+    config: form(
+      [f("order_id", { control: "reference", reference: { name: "number", detail: ["name"] } }), f("amount", { control: "currency" }), f("paid_at", { control: "datetime" }), f("method", { control: "segmented" })],
+      [f("provider"), f("payment_ref"), f("currency"), f("refunded", { control: "currency" }), wide("note", "text")],
     ),
   },
   {
@@ -291,7 +306,7 @@ const SPECS: PageSpec[] = [
     table: "settings",
     config: form(
       [title("studio_name"), f("phone", { control: "phone" }), f("email", { control: "email" }), wide("address", "text"), wide("about")],
-      [f("ref_prefix"), f("first_order_number", { control: "number" }), f("proof_reminder_days", { control: "stepper" }), f("packaging_grams", { control: "number" }), toggle("taking_orders")],
+      [f("ref_prefix"), f("first_order_number", { control: "number" }), f("proof_reminder_days", { control: "stepper" }), f("packaging_grams", { control: "number" }), toggle("taking_orders"), toggle("pay_first")],
     ),
   },
 ];

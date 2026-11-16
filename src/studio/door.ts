@@ -28,7 +28,8 @@ export type Table =
   | "proofs"
   | "batches"
   | "machine_bookings"
-  | "stock_movements";
+  | "stock_movements"
+  | "payments";
 
 /** The add-ons' tables the studio reads: the Customiser's design a line names and its versions, and Holiday calendars' days. */
 export type AddOnTable = "designs" | "design_versions" | "version_files" | "holidays";
