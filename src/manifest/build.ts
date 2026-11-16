@@ -53,9 +53,11 @@ export const VERSION = "0.2.5";
  * lines added by hand before their place was numbered. 0.3.60 takes an
  * order's payment online at checkout (`payments.payables`, a create that
  * answers its pay link, an app role that gives the money back) and works an
- * order's post-by out again when its payment lands.
+ * order's post-by out again when its payment lands. 0.3.61 tells the shop
+ * how an order's payment stands when the shopper comes back from paying
+ * (`payments.state`): with the bank, did not finish, or ran out of time.
  */
-export const MIN_ADMINIUM = "0.3.60";
+export const MIN_ADMINIUM = "0.3.61";
 
 const ENV = {
   VITE_ADMINIUM_API_BASE_URL: { required: false, example: "https://admin.example.com" },
