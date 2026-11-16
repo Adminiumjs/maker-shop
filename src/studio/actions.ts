@@ -12,7 +12,7 @@
  * "making" when one of its lines does.
  */
 import type { ProofPicture, StudioData, StudioDoor } from "./door.ts";
-import { dueForProof, isLive, lineMaterial, linesOf, lockOf, orderOf, pathOf, versionOf, fileIdOf, ORDER_MOVES } from "./facts.ts";
+import { dueForProof, isLive, lineMaterial, linesOf, lockOf, orderOf, pathOf, payHeld, versionOf, fileIdOf, ORDER_MOVES } from "./facts.ts";
 import { ApiError, num, same, type Row } from "./wire.ts";
 
 /** Refused here, before any write: the line waits on its proof. */
@@ -22,6 +22,14 @@ export class HeldByProof extends Error {
     super(lock === "waiting" ? "Waiting on the customer's yes" : "Waiting on the proof: send it first");
     this.name = "HeldByProof";
     this.lock = lock;
+  }
+}
+
+/** Refused here, before any write: the line's order takes payment before making and is not paid yet. */
+export class HeldByPayment extends Error {
+  constructor() {
+    super("Waiting for payment");
+    this.name = "HeldByPayment";
   }
 }
 
@@ -52,16 +60,18 @@ export async function follow(door: StudioDoor, data: StudioData, order: Row, mov
 
 /** Move one line along the bench to a stage; the order follows. */
 export async function moveLine(door: StudioDoor, data: StudioData, line: Row, to: string): Promise<Row> {
-  const moved = await stepLine(door, line, to);
   const order = orderOf(data, line["order_id"]);
+  const moved = await stepLine(door, line, to, order);
   if (order !== undefined) await follow(door, data, order, [moved]);
   return moved;
 }
 
 /** A line's own steps to a stage, without its order. */
-async function stepLine(door: StudioDoor, line: Row, to: string): Promise<Row> {
+async function stepLine(door: StudioDoor, line: Row, to: string, order?: Row): Promise<Row> {
   const path = pathOf(String(line["stage"]), to);
   if (path === null) throw new ApiError(409, "MOVE_NOT_OFFERED", `A line at ${String(line["stage"])} does not go to ${to}.`);
+  // Nothing goes on the machine before its order is paid, when the order takes payment before making.
+  if (line["stage"] === "make" && payHeld(order) && path.some((stage) => stage !== "make" && stage !== "cancelled")) throw new HeldByPayment();
   const lock = lockOf(line);
   if (lock !== null && path.some((stage) => stage !== "make" && stage !== "cancelled")) throw new HeldByProof(lock);
   let at = line;
@@ -79,11 +89,11 @@ export async function moveOrderLines(door: StudioDoor, data: StudioData, order: 
   let held = 0;
   for (const line of linesOf(data, order)) {
     if (!from.includes(String(line["stage"]))) continue;
-    if (lockOf(line) !== null) {
+    if (lockOf(line) !== null || (line["stage"] === "make" && payHeld(order))) {
       held += 1;
       continue;
     }
-    moved.push(await stepLine(door, line, to));
+    moved.push(await stepLine(door, line, to, order));
   }
   if (moved.length > 0) await follow(door, data, order, moved);
   return { moved: moved.length, held };
@@ -145,6 +155,16 @@ export async function spoil(door: StudioDoor, data: StudioData, line: Row, units
   if (material !== undefined) await door.spoil({ line, materialId: material.id, units, note: null });
   const counted = await door.updateLine(line, { spoiled: (num(line["spoiled"]) ?? 0) + units });
   if (line["stage"] !== "make") await moveLine(door, data, { ...line, ...counted, stage: line["stage"] }, "make");
+}
+
+/**
+ * An order cancelled from the studio (an unpaid one, the shopper never
+ * paying): each of its pieces still on the bench comes off it, then the order
+ * itself. Nothing was taken, so nothing is given back.
+ */
+export async function cancelOrder(door: StudioDoor, data: StudioData, order: Row): Promise<void> {
+  for (const line of linesOf(data, order).filter(isLive)) await stepLine(door, line, "cancelled");
+  await door.moveOrder(order, "cancelled");
 }
 
 /**

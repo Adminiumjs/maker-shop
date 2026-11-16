@@ -8,7 +8,7 @@ import { create } from "zustand";
 import type { PanelOpen, StudioData } from "./door.ts";
 import type { Id } from "./wire.ts";
 
-export type View = "today" | "order" | "orders" | "proofs" | "post" | "customers" | "products" | "product" | "materials" | "machines" | "stockcount" | "batch" | "cutlist" | "notfound";
+export type View = "today" | "order" | "orders" | "proofs" | "post" | "customers" | "products" | "product" | "materials" | "machines" | "stockcount" | "batch" | "cutlist" | "settings" | "notfound";
 
 /** A sheet to batch, by its group's key (`batchGroups`). */
 export type Overlay =
@@ -17,6 +17,9 @@ export type Overlay =
   | { kind: "batch"; key: string }
   /** The Customiser's panel on a row: its link into the add-on (the line's design, the product's base), and the sheet's title. */
   | { kind: "panel"; panel: PanelOpen; linked: Id | null; title: string }
+  /** Giving back money a shopper paid online, and cancelling an order nobody paid. */
+  | { kind: "refund"; orderId: Id; paymentId: Id }
+  | { kind: "cancel"; orderId: Id }
   | null;
 
 export type OrderFilter = "all" | "proof" | "late" | "today" | "ready";

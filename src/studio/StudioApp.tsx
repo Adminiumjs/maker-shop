@@ -8,7 +8,7 @@
  * owner and the maker. What their roles cannot do, Adminium refuses anyway.
  */
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Eye, LayoutGrid, Layers, LogOut, Menu, Moon, Package, ReceiptText, Search, Sun, Trees, Truck, Users, X, Zap } from "lucide-react";
+import { Eye, LayoutGrid, Layers, LogOut, Menu, Moon, Package, ReceiptText, Search, Settings, Sun, Trees, Truck, Users, X, Zap } from "lucide-react";
 
 import { useData, useEnv } from "./env.tsx";
 import { productOf } from "./facts.ts";
@@ -23,6 +23,7 @@ import { CustomersScreen, NotFoundScreen, ProductScreen, ProductsScreen } from "
 import { Overlays } from "./screens/Overlays.tsx";
 import { MachinesScreen, MaterialsScreen, StockCountScreen } from "./screens/Making.tsx";
 import { BatchPageScreen, CutListScreen } from "./screens/Batches.tsx";
+import { SettingsScreen, settingsShown } from "./screens/Payments.tsx";
 import { useI18n, useT } from "../i18n/index.tsx";
 import { text } from "./wire.ts";
 import type { Person } from "./door.ts";
@@ -251,9 +252,18 @@ function Screen({ view, reach }: { view: View; reach: string[] }) {
       return <BatchPageScreen />;
     case "cutlist":
       return <CutListScreen />;
+    case "settings":
+      return <SettingsDoor reach={reach} />;
     default:
       return <NotFoundScreen home={homeOf(reach)} />;
   }
+}
+
+/** Settings, for the studio's admin once payments are on; for anyone else, an address the studio has no screen for. */
+function SettingsDoor({ reach }: { reach: string[] }) {
+  const data = useData();
+  const { door } = useEnv();
+  return settingsShown(door, data.settings) ? <SettingsScreen /> : <NotFoundScreen home={homeOf(reach)} />;
 }
 
 function Brand({ name }: { name: string }) {
@@ -273,6 +283,8 @@ function Brand({ name }: { name: string }) {
 
 function Nav({ view, reach }: { view: View; reach: string[] }) {
   const t = useT();
+  const data = useData();
+  const { door } = useEnv();
   const lit = navOf(view);
   return (
     <nav className="st-nav" aria-label={t("studio.menu")}>
@@ -282,6 +294,13 @@ function Nav({ view, reach }: { view: View; reach: string[] }) {
           {t(entry.labelKey)}
         </button>
       ))}
+      {/* Last, for the studio's admin once payments are on: "Take payment before making". */}
+      {settingsShown(door, data.settings) && (
+        <button type="button" className="st-nav-item" aria-current={lit === "settings" ? "page" : undefined} onClick={() => go("settings")}>
+          <Settings size={17} aria-hidden="true" />
+          {t("studio.nav.settings")}
+        </button>
+      )}
     </nav>
   );
 }

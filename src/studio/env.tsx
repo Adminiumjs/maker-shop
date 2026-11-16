@@ -12,7 +12,7 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 
 import type { StudioData, StudioDoor } from "./door.ts";
-import { HeldByProof } from "./actions.ts";
+import { HeldByPayment, HeldByProof } from "./actions.ts";
 import { toast, useStudio } from "./store.ts";
 import { isApiError, type Row } from "./wire.ts";
 import { useT } from "../i18n/index.tsx";
@@ -73,7 +73,8 @@ export function useRun(): { busy: boolean; run: (work: (door: StudioDoor, data: 
         if (typeof said === "string") toast(said, "pos");
         return true;
       } catch (error) {
-        if (error instanceof HeldByProof) toast(t(error.lock === "waiting" ? "studio.lock.waiting" : "studio.lock.unsent"), "warn");
+        if (error instanceof HeldByPayment) toast(t("studio.pay.waiting"), "warn");
+        else if (error instanceof HeldByProof) toast(t(error.lock === "waiting" ? "studio.lock.waiting" : "studio.lock.unsent"), "warn");
         // Adminium held the line at "make": its proof is not approved (the move's `requires`).
         else if (isApiError(error) && error.code === "STATE_MOVE_REFUSED" && error.params["from"] === "make" && error.params["to"] === "making" && error.params["named"] === undefined) toast(t("studio.lock.unsent"), "warn");
         // The row moved on since the screen read it.

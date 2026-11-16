@@ -9,7 +9,7 @@
  *
  * DEMO BUILD ONLY — nothing in a real build imports it.
  */
-import type { Person, SendProof, StudioData, StudioDoor, StudioFacts } from "../studio/door.ts";
+import type { Person, SendProof, StaffPayments, StudioData, StudioDoor, StudioFacts } from "../studio/door.ts";
 import { LINE_MOVES, ORDER_MOVES } from "../studio/facts.ts";
 import { HOLIDAY_ADD_ON, holidayClosure } from "../studio/holidays.ts";
 import { ApiError, type Id, type Row } from "../studio/wire.ts";
@@ -91,7 +91,45 @@ export class DemoStudio implements StudioDoor {
       versions,
       files: w.all("version_files").filter((f) => versionIds.has(String(f["version_id"]))),
       holidays: w.addOns.has(HOLIDAY_ADD_ON) ? [...DEMO_HOLIDAYS] : null,
+      payments: w.all("payments"),
     });
+  }
+
+  /** The demo takes payments online and no money moves; Ada may give money back, which the demo does at once. */
+  payments(): StaffPayments {
+    return { on: true, online: true, test: false, refund: true };
+  }
+
+  /** No kit in the page: the demo's own refund stands in for Adminium's two steps. */
+  kit(): null {
+    return null;
+  }
+
+  csrf(): null {
+    return null;
+  }
+
+  async payLink(order: Row): Promise<{ url: string; expiresAt: number }> {
+    const held = this.world.get("orders", order.id);
+    if (held === undefined || Number(held["pay_due"] ?? 0) <= 0) throw new ApiError(409, "NOTHING_DUE", "Nothing is left to pay.");
+    return { url: `https://adminium.dev/demo/pay/${String(held["link_token"] ?? held.id)}`, expiresAt: this.world.now + 30 * 86_400_000 };
+  }
+
+  async saveSettings(_settings: Row, values: Record<string, unknown>): Promise<Row> {
+    const settings = this.world.settings();
+    Object.assign(settings, values);
+    this.world.changed();
+    return copy(settings);
+  }
+
+  /** A refund in the demo: given back at once, as the payment service would confirm it. */
+  async refund(payment: Row, amount: string, _reason: string): Promise<Row> {
+    const held = this.world.get("payments", payment.id);
+    if (held === undefined) throw new ApiError(404, "NOT_FOUND", "No such payment.");
+    const given = Math.round(Number(held["refunded"] ?? 0) * 100) + Math.round(Number(amount) * 100);
+    this.world.update("payments", payment.id, { refunded: (given / 100).toFixed(2) });
+    this.world.changed();
+    return copy(this.world.get("payments", payment.id)!);
   }
 
   /** A row moved from the state the screen saw: refused when it is not there any more, or the move is not one the table allows. */

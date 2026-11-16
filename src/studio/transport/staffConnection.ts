@@ -136,6 +136,45 @@ export interface StaffConfig {
    * a server up to 0.3.7, which does not say.
    */
   sharedTables: Record<string, string[]>;
+  /**
+   * Whether the app takes payments, and what this person may do with them:
+   * `on` someone who manages payments switched the app on; `online` shoppers
+   * can pay online right now; `test` this person is rehearsing; `refund` they
+   * may give money back. Null from a server that does not say: then the
+   * studio's screens read as they did before payments.
+   */
+  payments?: StaffPayments | null;
+  /** Where Adminium's kit is, for the parts the studio draws with it (a refund); null when this server has none. */
+  kit?: StaffKit | null;
+}
+
+export interface StaffPayments {
+  on: boolean;
+  online: boolean;
+  test: boolean;
+  refund: boolean;
+}
+
+export interface StaffKit {
+  /** The mount contract's number: the studio mounts only the one it was built for. */
+  contract: number;
+  /** The file to import, an absolute same-origin path. */
+  entry: string;
+}
+
+/** `payments` as the server sent it; null when it sent none. */
+function paymentsOf(value: unknown): StaffPayments | null {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return null;
+  const p = value as Record<string, unknown>;
+  return { on: p.on === true, online: p.online === true, test: p.test === true, refund: p.refund === true };
+}
+
+/** `kit` as the server sent it: only a same-origin path to a script; null otherwise. */
+function kitOf(value: unknown): StaffKit | null {
+  const k = value !== null && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+  const entry = typeof k.entry === "string" ? k.entry : null;
+  if (typeof k.contract !== "number" || entry === null || !/^\/[A-Za-z0-9/_.-]+\.js$/.test(entry) || entry.startsWith("//")) return null;
+  return { contract: k.contract, entry };
 }
 
 export interface StaffAddOn {
@@ -236,6 +275,8 @@ export async function loadStaffConfig(opts: StaffConfigOptions = {}): Promise<St
           .map(([ref, keys]) => [ref, Array.isArray(keys) ? keys.filter((k): k is string => typeof k === "string") : []] as const)
           .filter(([, keys]) => keys.length > 0),
       ),
+      payments: paymentsOf(d.payments),
+      kit: kitOf(d.kit),
     };
   } catch {
     // An older server answers this path with the SPA index (HTML).

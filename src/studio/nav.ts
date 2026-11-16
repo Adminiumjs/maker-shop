@@ -33,6 +33,8 @@ export const STUDIO_PLACES = [
   { id: "batch", path: "batch", view: "batch", side: "staff", icon: "grid-3x3", labelKey: "bench.batch.screenTitle" },
   { id: "cutlist", path: "cut-list", view: "cutlist", side: "staff", icon: "scissors", labelKey: "bench.cut.title" },
   { id: "stockcount", path: "count", view: "stockcount", side: "staff", icon: "clipboard-list", labelKey: "bench.count.title" },
+  // The studio's Settings: listed last in its own sidebar, only for its admin once payments are on (`settingsShown`).
+  { id: "settings", path: "settings", view: "settings", side: "staff", icon: "settings", labelKey: "studio.nav.settings" },
 ] as const satisfies readonly StudioNavEntry[];
 
 /** The sidebar item a screen lights: an order under Orders, a product under Products. */

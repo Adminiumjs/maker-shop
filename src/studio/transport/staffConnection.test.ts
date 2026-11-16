@@ -108,6 +108,8 @@ describe("loadStaffConfig", () => {
       access: { tables: { tickets: ["read", "update", "fly"], odd: "all" }, roles: [{ slug: "pos-cashier", name: "POS cashier" }, { name: "no slug" }] },
       addOns: { invoices: { version: "1.0.3", settings: { business_name: "Harbour Café" }, tables: { invoices: "invoices_invoices", odd: 4 } }, odd: 3 },
       sharedTables: { menu_items: ["ordering"], tickets: [], odd: "all" },
+      payments: { on: true, online: true, test: false, refund: "yes", extra: 1 },
+      kit: { contract: 1, entry: "/kit/assets/kit-abc123.js" },
     });
     expect(await loadStaffConfig({ hostedStaff: true, base: "/apps/pos/staff/", fetchImpl })).toEqual({
       connectionId: "con_42",
@@ -126,7 +128,19 @@ describe("loadStaffConfig", () => {
       access: { tables: { tickets: ["read", "update"] }, roles: [{ slug: "pos-cashier", name: "POS cashier" }] },
       addOns: { invoices: { version: "1.0.3", settings: { business_name: "Harbour Café" }, tables: { invoices: "invoices_invoices" } } },
       sharedTables: { menu_items: ["ordering"] },
+      // Paying online: only a yes is a yes, and the kit only from a same-origin script path.
+      payments: { on: true, online: true, test: false, refund: false },
+      kit: { contract: 1, entry: "/kit/assets/kit-abc123.js" },
     });
+  });
+
+  it("says nothing of payments, and offers no kit, where the server said nothing or something it may not", async () => {
+    const quiet = await loadStaffConfig({ hostedStaff: true, base: "/apps/pos/staff/", fetchImpl: ok({ connectionId: "con_42", tables: {} }) });
+    expect([quiet?.payments, quiet?.kit]).toEqual([null, null]);
+    for (const entry of ["https://elsewhere.example/kit.js", "//elsewhere.example/kit.js", "/kit/kit.css", 7]) {
+      const config = await loadStaffConfig({ hostedStaff: true, base: "/apps/pos/staff/", fetchImpl: ok({ connectionId: "con_42", tables: {}, kit: { contract: 1, entry } }) });
+      expect(config?.kit, String(entry)).toBeNull();
+    }
   });
 
   it("says nothing of access when the server said nothing, so no button is hidden on a guess", async () => {

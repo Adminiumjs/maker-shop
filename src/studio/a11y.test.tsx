@@ -177,6 +177,22 @@ const withPanels = () => {
   return door;
 };
 
+/**
+ * The studio with payments switched on: BR-2268 paid online at checkout and £20 of it given back, BR-2276 asked to
+ * pay online, made once it is paid, and not paid yet.
+ */
+const withPay = () =>
+  doorWith((d) => {
+    Object.assign(d.orders.find((o) => o.id === 13)!, { pay_online: true, waits_pay: false, paid: "79.95", refunded: "20.00", pay_due: "0.00", pay_hold: 0, paid_at: "2026-07-23T09:02:00.000Z" });
+    Object.assign(d.orders.find((o) => o.id === 10)!, { pay_online: true, waits_pay: true, paid: "0.00", refunded: "0.00", pay_due: "61.95", pay_hold: 1 });
+    d.payments = [{ id: 1, order_id: 13, amount: "79.95", paid_at: "2026-07-23T09:02:00.000Z", method: "online", payment_ref: "pat_01", provider: "payments-stripe", currency: "GBP", refunded: "20.00" }];
+  });
+const paying = () => {
+  const door = withPay();
+  door.pay = { on: true, online: true, test: false, refund: true };
+  return door;
+};
+
 const STATES: Row[] = [
   // The shell
   { view: "today", state: "reading", go: () => set({ data: null }), shows: "[aria-busy='true']", noHeading: "a skeleton for a moment, its busy status says it is reading" },
@@ -216,6 +232,20 @@ const STATES: Row[] = [
   { view: "order", state: "the spoil dialog", more: { orderId: 12, overlay: { kind: "spoil", lineId: 121 } }, shows: "[role='dialog'] input" },
   { view: "order", state: "the spoil dialog refusing nothing", more: { orderId: 12, overlay: { kind: "spoil", lineId: 121 } }, go: async () => (await type("[role='dialog'] input", ""), await click("[role='dialog'] .st-btn--dark")), shows: "[role='dialog'] input[aria-invalid='true']" },
   { view: "order", state: "a packer's order", door: () => new FakeDoor({ roles: ["packer"] }), more: { orderId: 12 }, shows: ".st-screen", says: "BR-2281" },
+  // An order paid online, and one waiting for its payment
+  { view: "order", state: "paid online, part refunded", door: paying, more: { orderId: 13 }, shows: ".st-paycard", says: "Paid · Online · Stripe" },
+  { view: "order", state: "waiting for payment", door: paying, more: { orderId: 10 }, shows: ".st-paycard", says: "Nothing is cut until the order is paid." },
+  { view: "order", state: "the refund, how much and why", door: paying, more: { orderId: 13, overlay: { kind: "refund", orderId: 13, paymentId: 1 } }, shows: "[role='dialog'] input", says: "Up to £59.95." },
+  {
+    view: "order",
+    state: "the refund, what it does",
+    door: paying,
+    more: { orderId: 13, overlay: { kind: "refund", orderId: 13, paymentId: 1 } },
+    go: async () => (await type("[role='dialog'] input:not([inputmode])", "The sign was set too small"), await click("[role='dialog'] .st-btn--dark")),
+    shows: "[role='dialog'] .st-refund-say",
+    says: "This can't be undone.",
+  },
+  { view: "order", state: "cancelling an unpaid order", door: paying, more: { orderId: 10, overlay: { kind: "cancel", orderId: 10 } }, shows: "[role='dialog']", says: "It isn't paid, so nothing is given back." },
   // The orders
   { view: "orders", state: "all", shows: ".st-filters", says: "BR-2276" },
   { view: "orders", state: "waiting on a customer", more: { orderFilter: "proof" }, shows: ".st-filters", says: "BR-2276" },
@@ -224,6 +254,7 @@ const STATES: Row[] = [
   { view: "orders", state: "ready to post", more: { orderFilter: "ready" }, shows: ".st-filters", says: "BR-2271" },
   { view: "orders", state: "none", door: () => doorWith((d) => void (d.orders = [])), shows: ".st-empty" },
   { view: "orders", state: "a packer's list", door: () => new FakeDoor({ roles: ["packer"] }), shows: ".st-filters" },
+  { view: "orders", state: "with payments on", door: paying, shows: ".st-paychip", says: "TOTAL" },
   // The proofs
   { view: "proofs", state: "waiting and to send", shows: ".st-screen", says: "Sent, waiting on a reply" },
   { view: "proofs", state: "a reminder sent", go: () => click(".st-screen .st-btn:not(.st-btn--accent)"), shows: ".st-screen" },
@@ -283,6 +314,9 @@ const STATES: Row[] = [
   { view: "cutlist", state: "a sheet's cut list", shows: "section", says: "Print it for the bench" },
   { view: "cutlist", state: "a batch started", more: { cutKey: "batch-1" }, shows: "section", says: "The Pughs" },
   { view: "cutlist", state: "nothing queued", door: nothingToBatch, shows: "section", says: "Nothing is queued for a sheet." },
+  // Settings, once payments are on
+  { view: "settings", state: "payments on", door: paying, shows: ".st-switch[role='switch']", says: "Take payment before making" },
+  { view: "settings", state: "take payment before making, on", door: paying, go: () => click(".st-switch[role='switch']"), shows: ".st-switch[aria-checked='true']", says: "When it's on, nothing is cut until the order is paid." },
   // The 404
   { view: "notfound", state: "an address with no screen", shows: "h1", says: "Nothing on this bench" },
   { view: "notfound", state: "a packer at an address with no screen", door: () => new FakeDoor({ roles: ["packer"] }), shows: "h1", says: "Back to Orders" },
@@ -303,11 +337,12 @@ const VIEWS = {
   stockcount: true,
   batch: true,
   cutlist: true,
+  settings: true,
   notfound: true,
 } as const satisfies Record<View, true>;
 
 /** Every overlay a screen opens. */
-const OVERLAYS = { proof: true, spoil: true, batch: true, panel: true } as const satisfies Record<NonNullable<Overlay>["kind"], true>;
+const OVERLAYS = { proof: true, spoil: true, batch: true, panel: true, refund: true, cancel: true } as const satisfies Record<NonNullable<Overlay>["kind"], true>;
 
 const LOCALES = [
   ["en-US", "ltr"],

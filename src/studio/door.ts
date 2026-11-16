@@ -11,6 +11,19 @@
 import type { Id, Row } from "./wire.ts";
 import type { AddOnRegistry } from "../add-ons/host.ts";
 import type { PanelId } from "../manifest/panels.ts";
+/** Whether the app takes payments, and what this person may do with them (the staff config's `payments`). */
+export interface StaffPayments {
+  on: boolean;
+  online: boolean;
+  test: boolean;
+  refund: boolean;
+}
+
+/** Adminium's kit (the staff config's `kit`): its mount contract's number, and the same-origin file to import. */
+export interface StaffKit {
+  contract: number;
+  entry: string;
+}
 
 /** The app's tables, by the names the manifest gives them. */
 export type Table =
@@ -68,6 +81,8 @@ export interface StudioData {
   versions: Row[];
   /** The files the Customiser made of those versions for the machines (a laser's SVG, a printer's 3MF). */
   files: Row[];
+  /** What shoppers paid online for the orders, one row a payment, as Adminium wrote it; empty for a role that reads none. */
+  payments: Row[];
   /**
    * The public holidays Holiday calendars keeps for the studio's country
    * (`holidays`: `id, country, region, day, name`), by day; null when that
@@ -218,4 +233,31 @@ export interface StudioDoor {
   count(input: { materialId: Id; counted: number }): Promise<Row>;
   /** A document of a row the app ships a profile for (a sheet of labels), drawn by the add-on that draws it. */
   render(input: { kind: string; ref: Table; pk: Id; values?: Record<string, unknown> }): Promise<{ contentUrl: string; printUrl: string | null }>;
+
+  // ── paying online ────────────────────────────────────────────────────────
+
+  /**
+   * Whether the app takes payments, and what this person may do with them, as
+   * Adminium said it; null where it says nothing (an older Adminium): then no
+   * payment part shows and the screens read as they always did.
+   */
+  payments(): StaffPayments | null;
+  /** Adminium's kit, for the refund's own two steps; null where there is none (the demo, an older Adminium). */
+  kit(): StaffKit | null;
+  /** The session's write token, which the kit's refund sends with this person's session; null where there is none. */
+  csrf(): string | null;
+  /**
+   * An order's pay link, as Adminium's payment panel makes it: the one the
+   * shopper already holds while it works, else a new one. Asks the order's
+   * update grant; refused while the order cannot be paid online.
+   */
+  payLink(order: Row): Promise<{ url: string; expiresAt: number }>;
+  /** The studio's own settings row (its "Take payment before making"): the app's admin's to change. */
+  saveSettings(settings: Row, values: Record<string, unknown>): Promise<Row>;
+  /**
+   * Money given back where no Adminium draws the refund (the demo, which has
+   * no kit): the payment's refunded amount, at once. A real install gives it
+   * through Adminium's own two steps (the kit), never through this.
+   */
+  refund?(payment: Row, amount: string, reason: string): Promise<Row>;
 }

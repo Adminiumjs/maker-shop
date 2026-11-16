@@ -109,6 +109,7 @@ export function fixture(): StudioData {
     versions: [r({ id: 30, design_id: 3, version: 1, proof_file: DESIGN_PROOF })],
     files: [r({ id: 300, version_id: 30, kind: "laser", name: "BR-2290 coasters.svg", file: "/api/v1/files/file_01J8Z6Q3M4N5P6R7S8T9V0W1XC/content", position: 1 })],
     holidays: null,
+    payments: [],
   };
 }
 

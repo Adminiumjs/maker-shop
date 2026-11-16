@@ -22,7 +22,7 @@
 import { withInstall, type StaffConfig } from "./transport/staffConnection.ts";
 import { SessionPortError, type SessionTransport } from "./transport/sessionSource.ts";
 import { momentOf } from "./time.ts";
-import type { Action, AddOnTable, PanelDoor, PanelList, PanelOpen, PanelUploaded, Person, ProofPicture, SendProof, StudioData, StudioDoor, StudioFacts, Table } from "./door.ts";
+import type { Action, AddOnTable, PanelDoor, PanelList, PanelOpen, PanelUploaded, Person, ProofPicture, SendProof, StaffKit, StaffPayments, StudioData, StudioDoor, StudioFacts, Table } from "./door.ts";
 import { HOLIDAY_ADD_ON, holidayClosure, holidayPlace, inPlace } from "./holidays.ts";
 import { ApiError, type Id, type Row } from "./wire.ts";
 import { loadConnectedAddOns, loadPanelModule, type ConnectedProblem } from "../add-ons/connected.ts";
@@ -314,7 +314,7 @@ export class AdminiumStudio implements StudioDoor {
     return this.run(async () => {
       // The session's write token comes with the first read.
       await this.t.port.config();
-      const [settings, products, options, materials, machines, services, closures, customers, orders, lines, features, proofs, bookings, batches, movements] = await Promise.all([
+      const [settings, products, options, materials, machines, services, closures, customers, orders, lines, features, proofs, bookings, batches, movements, payments] = await Promise.all([
         this.list("settings"),
         this.list("products", "position.asc,id.asc"),
         this.list("options", "position.asc,id.asc"),
@@ -330,6 +330,8 @@ export class AdminiumStudio implements StudioDoor {
         this.list("machine_bookings", "starts_at.asc"),
         this.list("batches", "id.asc"),
         this.list("stock_movements", "id.asc"),
+        // What was paid online: read once the app takes payments, by the roles that may read it.
+        this.cfg.payments == null ? Promise.resolve([] as Row[]) : this.list("payments", "id.asc"),
       ]);
       // The designs the lines name, and their versions: the Customiser's rows, read as its readers may. A table
       // the person's role does not read is not asked for (the packer reads whether a line names a design, no more).
@@ -357,7 +359,7 @@ export class AdminiumStudio implements StudioDoor {
         }
       }
       const holidays = await this.holidays();
-      return { settings: settings![0] ?? null, products: products!, options: options!, materials: materials!, machines: machines!, services: services!, closures: closures!, customers: customers!, orders: orders!, lines: lines!, features: features!, proofs: proofs!, bookings: bookings!, batches: batches!, movements: movements!, designs, versions, files, holidays };
+      return { settings: settings![0] ?? null, products: products!, options: options!, materials: materials!, machines: machines!, services: services!, closures: closures!, customers: customers!, orders: orders!, lines: lines!, features: features!, proofs: proofs!, bookings: bookings!, batches: batches!, movements: movements!, designs, versions, files, holidays, payments: payments! };
     });
   }
 
@@ -489,6 +491,38 @@ export class AdminiumStudio implements StudioDoor {
 
   count(input: { materialId: Id; counted: number }): Promise<Row> {
     return this.run(() => this.create("stock_movements", { material_id: input.materialId, kind: "count", counted: input.counted }));
+  }
+
+  // ── paying online ─────────────────────────────────────────────────────────
+
+  payments(): StaffPayments | null {
+    return this.cfg.payments ?? null;
+  }
+
+  kit(): StaffKit | null {
+    return this.cfg.kit ?? null;
+  }
+
+  csrf(): string | null {
+    return this.cfg.csrfToken;
+  }
+
+  payLink(order: Row): Promise<{ url: string; expiresAt: number }> {
+    return this.run(async () => {
+      await this.t.port.config();
+      // The order as Adminium's payments name it: the connection, the orders table's id there, the row's key.
+      const payable = { kind: "profile", connectionId: await this.conn(), tableName: await this.t.tableId(this.real("orders")), rowKey: String(order.id) };
+      const current = await this.t.mutate<{ data?: { url?: string; expiresAt?: number } | null }>("/api/v1/payments/links/current", "POST", payable);
+      if (typeof current.data?.url === "string" && typeof current.data.expiresAt === "number") return { url: current.data.url, expiresAt: current.data.expiresAt };
+      const made = await this.t.mutate<{ data?: { link?: { url?: string; expiresAt?: number } } }>("/api/v1/payments/links", "POST", payable);
+      const link = made.data?.link;
+      if (typeof link?.url !== "string" || typeof link.expiresAt !== "number") throw new ApiError(500, "PAY_LINK_EMPTY", "The pay link came back empty.", {});
+      return { url: link.url, expiresAt: link.expiresAt };
+    });
+  }
+
+  saveSettings(settings: Row, values: Record<string, unknown>): Promise<Row> {
+    return this.run(() => this.change("settings", settings.id, values));
   }
 
   render(input: { kind: string; ref: Table; pk: Id; values?: Record<string, unknown> }): Promise<{ contentUrl: string; printUrl: string | null }> {

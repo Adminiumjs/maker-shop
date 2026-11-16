@@ -67,6 +67,88 @@ export function lockOf(line: Row): "waiting" | "unsent" | null {
   return line["proof_state"] === "sent" ? "waiting" : "unsent";
 }
 
+// ── paying online ──────────────────────────────────────────────────────────
+
+/** An order that takes payment before making and is not paid yet: none of its pieces goes on the machine (`pay_hold`). */
+export const payHeld = (order: Row | undefined): boolean => order !== undefined && num(order["pay_hold"]) === 1;
+
+/** What holds a line at "make": its order's payment (which wins, said first), or its proof; null when it may go. */
+export type BenchLock = "pay" | "waiting" | "unsent";
+export function benchLockOf(data: StudioData, line: Row): BenchLock | null {
+  if (line["stage"] === "make" && payHeld(orderOf(data, line["order_id"]))) return "pay";
+  return lockOf(line);
+}
+
+/** The order was asked to be paid online at checkout. */
+export const asksOnline = (order: Row): boolean => order["pay_online"] === true || order["pay_online"] === 1 || order["pay_online"] === "1";
+/** Nothing of it is made before it is paid ("Take payment before making", as it stood when it was placed). */
+export const madeOncePaid = (order: Row): boolean => asksOnline(order) && (order["waits_pay"] === true || order["waits_pay"] === 1 || order["waits_pay"] === "1");
+
+/** The states an order may still be paid in. */
+const PAYABLE = new Set(["placed", "making", "ready"]);
+
+/** An order's money taken online, as Adminium wrote it down: each payment, what is paid and left, and what went back. */
+export interface OrderPayment {
+  online: boolean;
+  paid: boolean;
+  /** Still to pay, on an order that may still be paid. */
+  owes: boolean;
+  paidSum: number;
+  refunded: number;
+  due: number;
+  rows: Row[];
+  /** The service the latest payment went through ("payments-stripe"), or null. */
+  provider: string | null;
+}
+
+export function paymentOf(data: StudioData, order: Row): OrderPayment {
+  const rows = data.payments.filter((p) => same(p["order_id"], order.id)).sort((a, b) => String(a["paid_at"] ?? "").localeCompare(String(b["paid_at"] ?? "")) || Number(a.id) - Number(b.id));
+  const online = asksOnline(order);
+  const paidSum = num(order["paid"]) ?? rows.reduce((sum, p) => sum + (num(p["amount"]) ?? 0), 0);
+  const due = num(order["pay_due"]) ?? 0;
+  const refunded = num(order["refunded"]) ?? rows.reduce((sum, p) => sum + (num(p["refunded"]) ?? 0), 0);
+  return {
+    online,
+    paid: online && paidSum > 0 && due <= 0,
+    owes: online && due > 0 && PAYABLE.has(String(order["status"])),
+    paidSum,
+    refunded,
+    due,
+    rows,
+    provider: text(rows[rows.length - 1]?.["provider"]),
+  };
+}
+
+/** A payment service by the name a person knows it: "Stripe", "PayPal"; its own key where it is none of those. */
+export function serviceName(provider: string | null): string {
+  if (provider === null) return "";
+  if (/stripe/i.test(provider)) return "Stripe";
+  if (/paypal/i.test(provider)) return "PayPal";
+  return provider;
+}
+
+/** What is left of a payment to give back. */
+export const refundableOf = (payment: Row): number => (num(payment["amount"]) ?? 0) - (num(payment["refunded"]) ?? 0);
+
+/**
+ * The day an order's pieces go in the post, as the studio counts it: the
+ * order's post-by, or, for an order made once it is paid, the one Adminium
+ * worked out from its payment. Null for such an order not yet paid: it waits,
+ * and is never late.
+ */
+export function orderPostBy(order: Row): string | null {
+  if (!madeOncePaid(order)) return dayOf(order["post_by"]);
+  if (payHeld(order)) return null;
+  return dayOf(order["paid_post_by"]) ?? dayOf(order["post_by"]);
+}
+
+/** A line's post-by: its own, or, on an order made once it is paid, the order's from the payment (none while it waits). */
+export function linePostBy(data: StudioData, line: Row): string | null {
+  const order = orderOf(data, line["order_id"]);
+  if (order === undefined || !madeOncePaid(order)) return dayOf(line["post_by"]);
+  return orderPostBy(order);
+}
+
 /** The studio days a proof waits before a reminder is offered: the studio's own setting (3 when it says none). */
 export function reminderDays(data: StudioData): number {
   const days = num(data.settings?.["proof_reminder_days"]);
@@ -141,7 +223,8 @@ export function bench(data: StudioData): Record<BenchStage, Row[]> {
     const stage = line["stage"] as BenchStage;
     if (stage in out) out[stage].push(line);
   }
-  for (const stage of BENCH) out[stage].sort((a, b) => String(dayOf(a["post_by"]) ?? "9").localeCompare(String(dayOf(b["post_by"]) ?? "9")) || Number(a.id) - Number(b.id));
+  // Soonest post-by first; a piece whose order waits for its payment has none yet, and goes last.
+  for (const stage of BENCH) out[stage].sort((a, b) => String(linePostBy(data, a) ?? "9").localeCompare(String(linePostBy(data, b) ?? "9")) || Number(a.id) - Number(b.id));
   return out;
 }
 
@@ -156,7 +239,8 @@ export function kpis(data: StudioData, today: Day, zone: string): { due: number;
   let late = 0;
   for (const line of data.lines) {
     if (!isLive(line)) continue;
-    const postBy = dayOf(line["post_by"]);
+    // An order made once it is paid is counted from its payment, and never late while it waits for it.
+    const postBy = linePostBy(data, line);
     if (postBy === null) continue;
     const qty = num(line["qty"]) ?? 0;
     if (postBy < today) late += qty;
@@ -210,7 +294,7 @@ export function postRun(data: StudioData): Row[] {
       const live = linesOf(data, o).filter(isLive);
       return live.length > 0 && live.every((l) => l["stage"] === "ready");
     })
-    .sort((a, b) => String(dayOf(a["post_by"]) ?? "").localeCompare(String(dayOf(b["post_by"]) ?? "")) || Number(a.id) - Number(b.id));
+    .sort((a, b) => String(orderPostBy(a) ?? "").localeCompare(String(orderPostBy(b) ?? "")) || Number(a.id) - Number(b.id));
 }
 
 /** How many of a product are queued: units on lines not yet ready or posted. */
