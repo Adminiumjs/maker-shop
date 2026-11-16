@@ -13,7 +13,10 @@
  * by hand takes the next number after the order's own ("BR-2287/2"), the
  * sample's lines keep theirs, and its proof is named by it ("BR-2287/2 #1").
  * Numbering the lines already there is Adminium 0.3.54's: on an older
- * Adminium those checks are expected to fail, and say so.
+ * Adminium those checks are expected to fail, and say so. The update keeps
+ * every order, each read as placed with payments off (the columns an order
+ * paid online fills, worked out for the rows already there), and brings the
+ * orders' payable switched off.
  *
  * It runs with `CONTRACT=1` where a built Adminium and a built add-ons
  * checkout are, and says why it skipped otherwise. Its ports start at
@@ -149,7 +152,9 @@ describe.skipIf(why !== null)(`a studio on ${FROM} updated, a line added by hand
         const app = await stage(TO_MANIFEST);
         const plan = ok(await staff.post<{ plan: { checksum: string; installable: boolean; problems: unknown[] } }>("/api/v1/apps/plan", { key: app.key, version: app.version, connectionId })).plan;
         expect([plan.installable, plan.problems]).toEqual([true, []]);
-        const reply = await staff.post<{ from: string; to: string }>("/api/v1/apps/maker/update", { planChecksum: plan.checksum, publicAccess: true, roleTables: true });
+        // The update shows a shopper whether their order is paid and answers its pay link (wider: `publicWider`), and gives
+        // the owner the refund of money paid online (`roleGrants`): an operator allows both, as the update asks.
+        const reply = await staff.post<{ from: string; to: string }>("/api/v1/apps/maker/update", { planChecksum: plan.checksum, publicAccess: true, publicWider: true, roleTables: true, roleGrants: true });
         expect(reply.status, JSON.stringify(reply.body).slice(0, 1500)).toBe(200);
         expect([reply.body.from, reply.body.to]).toEqual([FROM, app.version]);
       }, 300_000);
@@ -162,6 +167,24 @@ describe.skipIf(why !== null)(`a studio on ${FROM} updated, a line added by hand
         ]);
         const named = (await rows("proofs")).find((p) => String(p.id) === String(proof.id))!;
         expect([named["line_code"], named["title"]]).toEqual(["BR-2287/2", "BR-2287/2 #1"]);
+      });
+
+      it("keeps every order it held, each read as placed with payments off: nothing asked, nothing held, all of it left to pay", async () => {
+        const orders = await rows("orders");
+        expect(orders.length).toBeGreaterThan(20);
+        for (const o of orders) {
+          expect([o["number"], o["pay_online"] === true || o["pay_online"] === 1, Number(o["pay_mode"]), Number(o["pay_hold"]), Number(o["paid"] ?? 0)]).toEqual([o["number"], false, 0, 0, 0]);
+          expect(Number(o["pay_due"]), String(o["number"])).toBe(Math.max(0, Number(o["total"] ?? 0)));
+        }
+        expect(await rows("payments")).toEqual([]);
+        // And their pieces still go on the bench: a line of an order kept by the update, its proof approved.
+        const line = (await rows("order_lines")).find((l) => l["stage"] === "make" && Number(l["proof_ok"]) === 1);
+        if (line !== undefined) ok(await staff.patch(`/api/v1/data/${connectionId}/maker_order_lines/${String(line.id)}`, { values: { stage: "making" }, from: "make" }));
+      });
+
+      it("arrives with the orders payable and switched off", async () => {
+        const apps = ok(await staff.get<{ data: { apps: { appKey: string; connectionId: string; enabled: boolean }[] } }>("/api/v1/payments/apps")).data.apps;
+        expect(apps.filter((a) => a.appKey === "maker" && a.connectionId === connectionId).map((a) => a.enabled)).toEqual([false]);
       });
 
       numbers(`names every proof by its line's label code and its number${NEEDS}`, async () => {
