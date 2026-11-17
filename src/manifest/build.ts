@@ -56,8 +56,11 @@ export const VERSION = "0.2.5";
  * order's post-by out again when its payment lands. 0.3.61 tells the shop
  * how an order's payment stands when the shopper comes back from paying
  * (`payments.state`): with the bank, did not finish, or ran out of time.
+ * 0.3.62 places an order by whether the studio takes payments online right
+ * now (`requirePayments`), as Adminium judges it, and sends the order's
+ * e-mails by the same (`producers[].payments`).
  */
-export const MIN_ADMINIUM = "0.3.61";
+export const MIN_ADMINIUM = "0.3.62";
 
 const ENV = {
   VITE_ADMINIUM_API_BASE_URL: { required: false, example: "https://admin.example.com" },

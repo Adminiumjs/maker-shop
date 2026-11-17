@@ -18,7 +18,7 @@
     "commerce"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.61",
+    "minAdminiumVersion": "0.3.62",
     "engines": [
       "sqlite",
       "postgres",
@@ -12747,8 +12747,7 @@
         "language",
         "service_id",
         "client_key",
-        "may_email",
-        "pay_online"
+        "may_email"
       ],
       "requires": [
         "name",
@@ -12903,7 +12902,7 @@
       "dryRun": true,
       "expect": "total",
       "clientKey": "client_key",
-      "pay": true
+      "requirePayments": "off"
     },
     {
       "table": "commission_requests",
@@ -13166,6 +13165,212 @@
           "sent"
         ]
       }
+    },
+    {
+      "table": "orders",
+      "methods": [
+        "POST"
+      ],
+      "humanCheck": true,
+      "level": "verified",
+      "select": [
+        "id",
+        "number",
+        "status",
+        "service_id",
+        "item_count",
+        "weight_g",
+        "postage",
+        "pieces_total",
+        "total",
+        "placed_at",
+        "post_by",
+        "posted_at",
+        "tracking",
+        "cancelled_at",
+        "link_expires",
+        "pay_online",
+        "waits_pay",
+        "pay_mode",
+        "paid",
+        "refunded",
+        "pay_due",
+        "paid_at",
+        "pay_hold",
+        "lead_max",
+        "paid_post_by"
+      ],
+      "writable": [
+        "name",
+        "email",
+        "address_line1",
+        "address_line2",
+        "town",
+        "postcode",
+        "note",
+        "language",
+        "service_id",
+        "client_key",
+        "may_email"
+      ],
+      "requires": [
+        "name",
+        "email",
+        "address_line1",
+        "town",
+        "postcode",
+        "service_id"
+      ],
+      "requireSetting": [
+        {
+          "table": "settings",
+          "column": "taking_orders"
+        }
+      ],
+      "claimedBy": {
+        "table": "customers",
+        "column": "customer_id",
+        "optional": true
+      },
+      "identity": {
+        "table": "customers",
+        "email": "email",
+        "link": "customer_id",
+        "fill": {
+          "name": "name",
+          "language": "language"
+        }
+      },
+      "consent": {
+        "column": "may_email",
+        "purpose": "newsletter",
+        "wording": {
+          "version": 1,
+          "text": {
+            "en-US": "Send me news from the studio now and then",
+            "de-DE": "Schickt mir ab und zu Neuigkeiten aus der Werkstatt",
+            "fr-FR": "Envoyez-moi de temps en temps des nouvelles de l'atelier",
+            "cs-CZ": "Občas mi pošlete novinky z dílny",
+            "da-DK": "Send mig nyheder fra værkstedet en gang imellem",
+            "ar-EG": "أرسلوا لي أخبار الورشة من حين لآخر",
+            "zh-CN": "偶尔给我发送工作室的消息",
+            "zh-TW": "偶爾寄給我工作室的消息"
+          }
+        }
+      },
+      "shareLink": "link_token",
+      "anonymous": {
+        "perValue": {
+          "columns": [
+            "email"
+          ],
+          "n": 10
+        },
+        "perIpHour": 10,
+        "perKeyHour": 300,
+        "plainText": [
+          "name",
+          "town",
+          {
+            "column": "address_line1",
+            "digits": 4,
+            "max": 120
+          },
+          {
+            "column": "address_line2",
+            "digits": 4,
+            "max": 120
+          },
+          {
+            "column": "note",
+            "digits": 4,
+            "max": 200
+          }
+        ]
+      },
+      "children": {
+        "order_lines": {
+          "via": "order_id",
+          "writable": [
+            "product_id",
+            "qty",
+            "material_id",
+            "size_id",
+            "finish_id",
+            "lettering",
+            "design_code"
+          ],
+          "requires": [
+            "product_id"
+          ],
+          "select": [
+            "id",
+            "position",
+            "product_id",
+            "product_name",
+            "qty",
+            "material_id",
+            "size_id",
+            "finish_id",
+            "lettering",
+            "design_id",
+            "design_code",
+            "unit_price",
+            "base_each",
+            "percent_off",
+            "each",
+            "pieces",
+            "features_each",
+            "features_total",
+            "line_total",
+            "lead_days",
+            "post_by",
+            "stage",
+            "proof_state",
+            "started_at",
+            "finishing_at",
+            "made_at"
+          ],
+          "position": "position",
+          "min": 1,
+          "max": 20,
+          "children": {
+            "order_line_features": {
+              "via": "line_id",
+              "writable": [
+                "option_id"
+              ],
+              "select": [
+                "id",
+                "option_id",
+                "feature",
+                "feature_id",
+                "name",
+                "price"
+              ],
+              "max": 4
+            }
+          },
+          "agrees": [
+            {
+              "column": "lettering",
+              "length": true,
+              "lte": {
+                "via": "product_id",
+                "column": "lettering_limit"
+              }
+            }
+          ]
+        }
+      },
+      "dryRun": true,
+      "expect": "total",
+      "clientKey": "client_key",
+      "requirePayments": "on",
+      "defaults": {
+        "pay_online": true
+      },
+      "pay": true
     }
   ],
   "outbox": {
@@ -13243,12 +13448,21 @@
         "kind": "order-received",
         "link": "order_id",
         "onCreate": {
+          "table": "orders"
+        },
+        "payments": "off"
+      },
+      {
+        "kind": "order-received",
+        "link": "order_id",
+        "onCreate": {
           "table": "orders",
           "where": {
             "column": "pay_online",
             "eq": false
           }
-        }
+        },
+        "payments": "on"
       },
       {
         "kind": "order-paid",
@@ -13268,6 +13482,7 @@
             "eq": true
           }
         },
+        "payments": "on",
         "holdSeconds": 3600,
         "dropWhen": [
           {
@@ -13292,6 +13507,7 @@
             "eq": true
           }
         },
+        "payments": "on",
         "due": {
           "date": "remind_on",
           "days": 0,

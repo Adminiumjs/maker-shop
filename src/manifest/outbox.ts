@@ -100,14 +100,16 @@ export const OUTBOX = {
   kinds: Object.fromEntries(KINDS.map((kind) => [kind, `maker-${kind}`])),
   classes: Object.fromEntries(KINDS.filter((kind) => !TO_STUDIO.has(kind)).map((kind) => [kind, "service"])),
   producers: [
-    // An order placed with payments off: at once, as it always was.
-    { kind: "order-received", link: "order_id", onCreate: { table: "orders", where: { column: "pay_online", eq: false } } },
-    // An order the shopper was asked to pay online: its e-mail goes when the money comes in, and is the receipt …
+    // While the studio takes no payments online (as Adminium judges it when the order comes in): at once, as it always was.
+    { kind: "order-received", link: "order_id", onCreate: { table: "orders" }, payments: "off" },
+    // While it does, the same at once for an order the studio placed itself (on the dashboard): nobody was asked to pay.
+    { kind: "order-received", link: "order_id", onCreate: { table: "orders", where: { column: "pay_online", eq: false } }, payments: "on" },
+    // An order the shop placed asking to pay online: its e-mail goes when the money comes in, and is the receipt …
     { kind: "order-paid", link: "order_id", onCreate: { table: "payments", via: "order_id" } },
     // … or, still unpaid an hour after it was placed, as the e-mail with the pay link (paid meanwhile, it never goes) …
-    { kind: "order-unpaid", link: "order_id", onCreate: { table: "orders", where: { column: "pay_online", eq: true } }, holdSeconds: 3600, dropWhen: UNTIL_PAID },
+    { kind: "order-unpaid", link: "order_id", onCreate: { table: "orders", where: { column: "pay_online", eq: true } }, payments: "on", holdSeconds: 3600, dropWhen: UNTIL_PAID },
     // … and, still unpaid the studio day after, the one reminder.
-    { kind: "pay-reminder", link: "order_id", onCreate: { table: "orders", where: { column: "pay_online", eq: true } }, due: { date: "remind_on", days: 0, at: "17:00" }, dropWhen: UNTIL_PAID },
+    { kind: "pay-reminder", link: "order_id", onCreate: { table: "orders", where: { column: "pay_online", eq: true } }, payments: "on", due: { date: "remind_on", days: 0, at: "17:00" }, dropWhen: UNTIL_PAID },
     // About the proof itself, so each proof of an order is its own e-mail; the order and the shopper are found through it.
     // Only a proof with its picture: one added on the dashboard with none has nothing to look at, and is e-mailed once
     // it is given its picture.

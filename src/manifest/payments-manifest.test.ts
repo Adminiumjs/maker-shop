@@ -31,10 +31,10 @@ const template = (kind: string) => (emailTemplates(KINDS) as { key: string; loca
 describe("an order is payable online at checkout", () => {
   const payable = PAYMENTS.payables[0]!;
 
-  it("passes the 0.3.60 validator, and an older floor refuses it", () => {
+  it("passes the 0.3.62 validator, and an older floor refuses it", () => {
     const result = validateManifest(manifest);
     expect(result.ok ? [] : result.issues).toEqual([]);
-    const older = validateManifest({ ...manifest, compatibility: { ...(manifest["compatibility"] as Json), minAdminiumVersion: "0.3.59" } });
+    const older = validateManifest({ ...manifest, compatibility: { ...(manifest["compatibility"] as Json), minAdminiumVersion: "0.3.61" } });
     expect(older.ok).toBe(false);
   });
 
@@ -94,14 +94,23 @@ describe("an order is payable online at checkout", () => {
     expect(role("packer").permissions).not.toContain("payments:@:refund");
   });
 
-  it("answers the pay link with the order placed, and lets the shopper's page say it asked to pay online", () => {
-    const place = manifest.publicAccess.find((e) => e.table === "orders" && e.methods.includes("POST"))!;
-    expect(place["pay"]).toBe(true);
-    expect(place["humanCheck"]).toBe(true);
-    expect(place.writable).toContain("pay_online");
-    // Never what the payment decides.
-    for (const decided of ["paid", "refunded", "pay_due", "paid_at", "waits_pay", "pay_hold"]) expect(place.writable).not.toContain(decided);
-    expect(PUBLIC_REFS.placeOrder).toBe("maker_orders_verified_2");
+  it("places an order by whether the studio takes payments online, Adminium judging it, never the page", () => {
+    const places = manifest.publicAccess.filter((e) => e.table === "orders" && e.methods.includes("POST"));
+    expect(places.map((e) => e["requirePayments"])).toEqual(["off", "on"]);
+    const [off, on] = places as (Json & { writable: string[] })[];
+    // While it does not: as it always was, no pay link, nothing of paying.
+    expect([off!["pay"], off!["defaults"]]).toEqual([undefined, undefined]);
+    // While it does: the order asks to be paid online by the entry's own value, and its pay link comes back with it.
+    expect([on!["pay"], on!["defaults"], on!["humanCheck"]]).toEqual([true, { pay_online: true }, true]);
+    for (const entry of [off!, on!]) {
+      expect(entry.writable).not.toContain("pay_online");
+      for (const decided of ["paid", "refunded", "pay_due", "paid_at", "waits_pay", "pay_hold"]) expect(entry.writable).not.toContain(decided);
+    }
+    // The same order either way: only paying differs.
+    const { requirePayments: _a, pay: _b, defaults: _c, ...plainOff } = off!;
+    const { requirePayments: _d, pay: _e, defaults: _f, ...plainOn } = on!;
+    expect(plainOn).toEqual(plainOff);
+    expect([PUBLIC_REFS.placeOrder, PUBLIC_REFS.placeOrderPaying]).toEqual(["maker_orders_verified_2", "maker_orders_verified_3"]);
   });
 
   it("shows the shopper whether their order is paid, what is left, and the post-by counted from the payment", () => {
@@ -136,8 +145,11 @@ describe("Take payment before making", () => {
 });
 
 describe("the e-mails of an order paid online", () => {
-  it("sends today's order-received e-mail at once, and only for an order not asked to pay online", () => {
-    expect(producer("order-received")).toEqual([{ kind: "order-received", link: "order_id", onCreate: { table: "orders", where: { column: "pay_online", eq: false } } }]);
+  it("sends today's order-received e-mail at once while the studio takes no payments online, and for an order it placed itself", () => {
+    expect(producer("order-received")).toEqual([
+      { kind: "order-received", link: "order_id", onCreate: { table: "orders" }, payments: "off" },
+      { kind: "order-received", link: "order_id", onCreate: { table: "orders", where: { column: "pay_online", eq: false } }, payments: "on" },
+    ]);
   });
 
   it("sends the order's e-mail when the money comes in: the receipt", () => {
@@ -149,8 +161,8 @@ describe("the e-mails of an order paid online", () => {
       { column: "pay_due", lte: 0, reason: "paid" },
       { column: "status", eq: "cancelled", reason: "void" },
     ];
-    expect(producer("order-unpaid")).toEqual([{ kind: "order-unpaid", link: "order_id", onCreate: { table: "orders", where: { column: "pay_online", eq: true } }, holdSeconds: 3600, dropWhen: until }]);
-    expect(producer("pay-reminder")).toEqual([{ kind: "pay-reminder", link: "order_id", onCreate: { table: "orders", where: { column: "pay_online", eq: true } }, due: { date: "remind_on", days: 0, at: "17:00" }, dropWhen: until }]);
+    expect(producer("order-unpaid")).toEqual([{ kind: "order-unpaid", link: "order_id", onCreate: { table: "orders", where: { column: "pay_online", eq: true } }, payments: "on", holdSeconds: 3600, dropWhen: until }]);
+    expect(producer("pay-reminder")).toEqual([{ kind: "pay-reminder", link: "order_id", onCreate: { table: "orders", where: { column: "pay_online", eq: true } }, payments: "on", due: { date: "remind_on", days: 0, at: "17:00" }, dropWhen: until }]);
     expect((rules("orders", "remind_on")["stamp"] as Json)["set"]).toMatchObject({ addWorkingDays: { from: "now", days: 1 } });
   });
 

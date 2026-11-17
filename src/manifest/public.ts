@@ -162,47 +162,23 @@ export const PUBLIC_KEYS = { [ORDER_KEY]: {} };
  */
 export const LETTERING_FITS = { column: "lettering", length: true, lte: { via: "product_id", column: "lettering_limit" } };
 
-export const PUBLIC_ACCESS = [
-  // ── the shopper who signs in with a link or code e-mailed to them ───────────
-  {
-    table: "customers",
-    methods: ["GET"],
-    select: ["name", "email"],
-    claim: { verify: "email-link", email: "email" },
-    humanCheck: true,
-    // "Delete my details" also stops every link their orders were e-mailed with, and takes back the newsletter.
-    forget: { columns: ["email", "name", "may_email"], stamp: "forgotten_at", links: true },
-  },
-  { table: "orders", methods: ["GET"], level: "verified", claimedBy: { table: "customers", column: "customer_id" }, select: ORDER_SELECT },
-  ...underOrder(),
-
-  // ── the catalogue, the post and the calendar ─────────────────────────────────
-  { table: "products", methods: ["GET"], select: PRODUCT_SELECT, filters: [{ column: "published", op: "eq", value: true }], pictures: ["photo"] },
-  { table: "options", methods: ["GET"], select: OPTION_SELECT, filters: [{ column: "active", op: "eq", value: true }] },
-  { table: "postage_services", methods: ["GET"], select: ["id", "code", "name", "detail", "tracked", "position"], filters: [{ column: "active", op: "eq", value: true }] },
-  { table: "postage_rates", methods: ["GET"], select: ["id", "service_id", "min_grams", "max_grams", "price"] },
-  {
-    table: "closures",
-    methods: ["GET"],
-    select: ["id", "from_date", "to_date", "reason"],
-    filters: [
-      { column: "active", op: "eq", value: true },
-      { column: "to_date", op: "from-today" },
-    ],
-  },
-  { table: "materials", methods: ["GET"], select: ["id", "code", "name", "family", "thickness_mm", "tint", "care"], filters: [{ column: "active", op: "eq", value: true }] },
-  { table: "settings", methods: ["GET"], select: SETTINGS_SELECT },
-  // The machines the About page names, each with the studio's sentence about it.
-  { table: "machines", methods: ["GET"], select: ["id", "name", "kind", "icon", "shop_note", "position"], filters: [{ column: "active", op: "eq", value: true }] },
-
-  // ── placing an order ─────────────────────────────────────────────────────────
-  {
+/**
+ * Placing an order: the order, its lines, their features and the shopper, in
+ * one write, priced by Adminium and held to the total the shopper saw. Two
+ * entries, by whether the studio takes payments online for its orders right
+ * now (Adminium judges it, never the page): while it does not, the order is
+ * placed as it always was; while it does, it is placed asking to be paid
+ * online (`pay_online`, the entry's own value, never the caller's) and its
+ * pay link comes back with it, one round trip at checkout.
+ */
+function placeOrder(payments: "on" | "off") {
+  return {
     table: "orders",
     methods: ["POST"],
     humanCheck: true,
     level: "verified",
     select: PLACED_SELECT,
-    writable: ["name", "email", "address_line1", "address_line2", "town", "postcode", "note", "language", "service_id", "client_key", "may_email", "pay_online"],
+    writable: ["name", "email", "address_line1", "address_line2", "town", "postcode", "note", "language", "service_id", "client_key", "may_email"],
     requires: ["name", "email", "address_line1", "town", "postcode", "service_id"],
     requireSetting: [{ table: "settings", column: "taking_orders" }],
     claimedBy: { table: "customers", column: "customer_id", optional: true },
@@ -238,9 +214,46 @@ export const PUBLIC_ACCESS = [
     dryRun: true,
     expect: "total",
     clientKey: "client_key",
-    // While the studio takes payments online, the order's pay link comes back with it: one round trip at checkout.
-    pay: true,
+    requirePayments: payments,
+    ...(payments === "on" ? { defaults: { pay_online: true }, pay: true as const } : {}),
+  };
+}
+
+export const PUBLIC_ACCESS = [
+  // ── the shopper who signs in with a link or code e-mailed to them ───────────
+  {
+    table: "customers",
+    methods: ["GET"],
+    select: ["name", "email"],
+    claim: { verify: "email-link", email: "email" },
+    humanCheck: true,
+    // "Delete my details" also stops every link their orders were e-mailed with, and takes back the newsletter.
+    forget: { columns: ["email", "name", "may_email"], stamp: "forgotten_at", links: true },
   },
+  { table: "orders", methods: ["GET"], level: "verified", claimedBy: { table: "customers", column: "customer_id" }, select: ORDER_SELECT },
+  ...underOrder(),
+
+  // ── the catalogue, the post and the calendar ─────────────────────────────────
+  { table: "products", methods: ["GET"], select: PRODUCT_SELECT, filters: [{ column: "published", op: "eq", value: true }], pictures: ["photo"] },
+  { table: "options", methods: ["GET"], select: OPTION_SELECT, filters: [{ column: "active", op: "eq", value: true }] },
+  { table: "postage_services", methods: ["GET"], select: ["id", "code", "name", "detail", "tracked", "position"], filters: [{ column: "active", op: "eq", value: true }] },
+  { table: "postage_rates", methods: ["GET"], select: ["id", "service_id", "min_grams", "max_grams", "price"] },
+  {
+    table: "closures",
+    methods: ["GET"],
+    select: ["id", "from_date", "to_date", "reason"],
+    filters: [
+      { column: "active", op: "eq", value: true },
+      { column: "to_date", op: "from-today" },
+    ],
+  },
+  { table: "materials", methods: ["GET"], select: ["id", "code", "name", "family", "thickness_mm", "tint", "care"], filters: [{ column: "active", op: "eq", value: true }] },
+  { table: "settings", methods: ["GET"], select: SETTINGS_SELECT },
+  // The machines the About page names, each with the studio's sentence about it.
+  { table: "machines", methods: ["GET"], select: ["id", "name", "kind", "icon", "shop_note", "position"], filters: [{ column: "active", op: "eq", value: true }] },
+
+  // ── placing an order: as it always was, while the studio takes no payments online ──
+  placeOrder("off"),
 
   // ── asking for something made, and telling the studio something went wrong ──
   {
@@ -279,6 +292,9 @@ export const PUBLIC_ACCESS = [
     claim: { by: "token", column: "link_token", expires: "link_expires", stopped: "link_stopped", own: true, address: "email" },
   },
   ...underOrder(ORDER_KEY),
+
+  // ── placing an order and paying it online, while the studio takes payments online ──
+  placeOrder("on"),
 ];
 
 /**
@@ -310,4 +326,5 @@ export const PUBLIC_REFS = {
   linkLines: "maker_order_lines_verified_2",
   linkFeatures: "maker_order_line_features_verified_2",
   linkProofs: "maker_proofs_verified_2",
+  placeOrderPaying: "maker_orders_verified_3",
 } as const;
