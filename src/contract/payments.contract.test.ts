@@ -7,21 +7,19 @@
  *
  * - the orders are payable, and the payable arrives switched off: listed in
  *   Studio → Payments → Apps for someone who manages payments to switch on;
- * - while no payment service is ready the shop is told it takes no payments
- *   online, and "Pay now" is refused, as the shop reads it;
- * - an order placed asking to pay online reads what it comes to and what is
- *   left (the server's figures), asks nothing of the bench, and gets no
- *   order-received e-mail at once: the unpaid one waits an hour, the one
- *   reminder the studio day after, at five;
- * - an order placed as before (payments off) gets today's e-mail at once;
- * - with "Take payment before making" on, an order placed online keeps it,
- *   and its pieces are held at "make" by Adminium until it is paid;
+ * - with payments off, the shop is told it takes no payments online: the
+ *   order is placed as it always was, gets today's e-mail at once, "Pay now"
+ *   is refused, and the entry that asks to pay online is closed;
+ * - with payments on (someone who manages payments rehearsing the checkout,
+ *   Adminium's test mode): the order is placed asking to pay online, by the
+ *   entry's own value, its pay link answered; no e-mail at once, the unpaid
+ *   one an hour later and the reminder the studio day after at five; paid
+ *   with the demo service on the pay page, its payment lands once in the
+ *   app's own table and its e-mail (the receipt) is queued; an order taken
+ *   before making holds its pieces until it is paid and counts its post-by
+ *   from the payment; an order the studio places itself gets today's e-mail;
  * - no role writes a payment, and the staff config tells the owner it may
  *   give money back.
- *
- * A payment itself landing (the provider's page, its webhook, the paid
- * e-mail, the post-by worked out again from it) needs a payment service: it
- * is proven by the engine's own suite against its recorder, not here.
  *
  * It runs with `CONTRACT=1` where a built Adminium and a built add-ons checkout
  * are, and says why it skipped otherwise. Its ports start at
@@ -36,7 +34,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AdminiumShop } from "../shop/door.ts";
 import { isShopError, type Row } from "../shop/port.ts";
 import { orderBody, useShop, type BasketLine } from "../shop/store.ts";
-import { addOnBundle, addSample, appBundle, boot, Caller, ENGINES, missing, missingAddOn, ok, PORTS_PER_ENGINE, type Engine, type Server } from "./harness.ts";
+import { addOnBundle, addSample, appBundle, boot, Caller, ENGINES, missing, missingAddOn, ok, PORTS_PER_ENGINE, solve, until, type Engine, type Server } from "./harness.ts";
 import { MANIFEST_TEXT } from "./release.ts";
 
 const why = missing() ?? missingAddOn("customiser");
@@ -56,6 +54,7 @@ describe.skipIf(why !== null)(`paying online on a built Adminium${why === null ?
       let connectionId = "";
       let tables: Record<string, string> = {};
       let door: AdminiumShop;
+      let shopKey = "";
       const real = (ref: string) => tables[ref] ?? `maker_${ref}`;
       const rows = async (ref: string, where = ""): Promise<Row[]> => ok(await staff.get<{ data: Row[] }>(`/api/v1/data/${connectionId}/${encodeURIComponent(real(ref))}?limit=200${where}`)).data;
       const row = async (ref: string, id: unknown): Promise<Row> => ok(await staff.get<{ data: Row }>(`/api/v1/data/${connectionId}/${encodeURIComponent(real(ref))}/${encodeURIComponent(String(id))}`)).data;
@@ -96,6 +95,7 @@ describe.skipIf(why !== null)(`paying online on a built Adminium${why === null ?
           return fetch(input, { ...init, headers });
         };
         tables = served.tables ?? {};
+        shopKey = served.publishableKey;
         door = new AdminiumShop({ baseUrl: server.base, publishableKey: served.publishableKey, ...(served.tables === undefined ? {} : { tables: served.tables }), ...(served.publicKeys === undefined ? {} : { publicKeys: served.publicKeys }) }, { fetch: originFetch });
         useShop.setState({ catalogue: await door.catalogue() });
       }, 360_000);
@@ -104,17 +104,47 @@ describe.skipIf(why !== null)(`paying online on a built Adminium${why === null ?
         await server?.stop();
       });
 
-      /** One plain piece (nothing to proof), Second class, placed as the checkout places it. */
-      async function place(online: boolean): Promise<{ order: Row; payUrl: string | null }> {
+      /** One plain piece (nothing to proof), Second class, placed through a door as the checkout places it. */
+      async function place(through: AdminiumShop = door): Promise<{ order: Row; payUrl: string | null }> {
         const catalogue = useShop.getState().catalogue!;
         const product = catalogue.products.find((p) => !p.takesLettering && p.baseId === null) ?? catalogue.products[0]!;
         const first = (kind: string) => catalogue.options.find((o) => String(o.productId) === String(product.id) && o.kind === kind)?.id ?? null;
         const line: BasketLine = { id: "l1", productId: product.id, qty: 1, materialId: first("material"), sizeId: first("size"), finishId: first("finish"), lettering: null, design: null, features: [] };
         const service = catalogue.services[0]!;
-        const body = orderBody({ ...SHOPPER, service_id: service.id, ...(online ? { pay_online: true } : {}) }, [line]);
-        const quoted = await door.quote(body);
-        const placed = await door.place(body, `pay-contract-${engine}-${String(Math.random()).slice(2)}`, String(quoted.order["total"]));
+        // The page never says it asks to pay online: Adminium places it through the entry open now.
+        const body = orderBody({ ...SHOPPER, service_id: service.id }, [line]);
+        const quoted = await through.quote(body);
+        const placed = await through.place(body, `pay-contract-${engine}-${String(Math.random()).slice(2)}`, String(quoted.order["total"]));
         return { order: placed.order, payUrl: placed.payUrl };
+      }
+      const messagesOf = async (order: Row) => (await rows("messages")).filter((m) => String(m["order_id"]) === String(order["id"]));
+      const yes = (value: unknown) => value === true || value === 1 || value === "1";
+
+      /**
+       * Payments on, as someone who manages payments rehearses the checkout: the shop opened on the staff
+       * address with their session, its writes carrying their token. Adminium treats the app as taking payments
+       * for them alone, in test mode, and the rows they make are sample rows whose mail comes to them.
+       */
+      async function rehearsing(): Promise<AdminiumShop> {
+        ok(await staff.put("/api/v1/payments/rehearsal", { on: true }));
+        const served = ok(await staff.get<{ publishableKey: string; publicKeys?: Record<string, string>; tables?: Record<string, string>; rehearsal?: { csrfToken: string } }>("/apps/maker/customer/surface-config.json"));
+        expect(served.rehearsal?.csrfToken).toBeTruthy();
+        return new AdminiumShop(
+          { baseUrl: server.base, publishableKey: served.publishableKey, rehearsalToken: served.rehearsal!.csrfToken, ...(served.tables === undefined ? {} : { tables: served.tables }), ...(served.publicKeys === undefined ? {} : { publicKeys: served.publicKeys }) },
+          { fetch: staff.fetchAs() },
+        );
+      }
+
+      /** The shopper pays on the pay page with the demo service (a test link, driven by the person rehearsing). */
+      async function payDemo(payUrl: string): Promise<void> {
+        const token = new URL(payUrl, server.base).pathname.split("/").pop()!;
+        const challenge = ok(await staff.get<{ id: string; salt: string; difficulty: number }>(`/pay/api/${token}/challenge`));
+        const started = ok(await staff.post<{ url?: string; state?: string }>(`/pay/api/${token}/checkout`, { source: "demo" }, { "x-adminium-proof": `${challenge.id}.${solve(challenge.salt, challenge.difficulty)}` }));
+        expect(started.url, JSON.stringify(started)).toBeTruthy();
+        const attempt = new URL(started.url!, server.base).pathname.split("/").pop()!;
+        const done = ok(await staff.post<{ back: string }>(`/pay/api/demo/${attempt}`, { action: "succeeds" }));
+        const nonce = done.back.split("/").pop()!.split("?")[0]!;
+        ok(await staff.get(`/pay/api/back/${nonce}`));
       }
 
       it("makes the orders payable, switched off, for someone who manages payments to switch on", async () => {
@@ -124,73 +154,113 @@ describe.skipIf(why !== null)(`paying online on a built Adminium${why === null ?
         expect(maker.tables).toEqual([expect.objectContaining({ tableName: expect.stringMatching(/orders$/), valid: true })]);
       });
 
-      it("tells the shop it takes no payments online while none can be taken, and refuses Pay now", async () => {
-        expect(await door.payments()!.available()).toEqual({ online: false, test: false });
-        const { order, payUrl } = await place(true);
-        expect(payUrl).toBeNull();
-        const refused = await door
-          .payments()!
-          .start("link", order["id"] as string)
-          .catch((error: unknown) => error);
-        expect(isShopError(refused)).toBe(true);
-        // Coming back, the shop asks how the order's payment stands: none was started.
-        expect(await door.payments()!.state!("link", order["id"] as string)).toBe("none");
+      describe("with payments off", () => {
+        it("tells the shop it takes no payments online, places the order as before, and refuses Pay now", async () => {
+          expect(await door.payments()!.available()).toEqual({ online: false, test: false });
+          const { order, payUrl } = await place();
+          expect(payUrl).toBeNull();
+          const held = await row("orders", order["id"]);
+          expect([yes(held["pay_online"]), num(held["pay_mode"]), num(held["pay_hold"])]).toEqual([false, 0, 0]);
+          const refused = await door
+            .payments()!
+            .start("link", order["id"] as string)
+            .catch((error: unknown) => error);
+          expect(isShopError(refused)).toBe(true);
+          // Coming back, the shop asks how the order's payment stands: none was started.
+          expect(await door.payments()!.state!("link", order["id"] as string)).toBe("none");
+        });
+
+        it("e-mails today's order-received at once, and nothing of paying", async () => {
+          const { order } = await place();
+          expect((await messagesOf(order)).map((m) => m["kind"])).toEqual(["order-received"]);
+        });
+
+        it("places nothing through the entry that asks to pay online", async () => {
+          const body = { values: { ...SHOPPER, service_id: useShop.getState().catalogue!.services[0]!.id }, children: { order_lines: [] } };
+          const refused = await new Caller(server.base, { origin: server.base, authorization: `Bearer ${shopKey}` }).post(`/api/v1/public/records/${real("orders")}_verified_3/dry-run`, body);
+          expect([refused.status, refused.code]).toEqual([403, "PUBLIC_SWITCHED_OFF"]);
+        });
       });
 
-      it("reads an order placed to pay online, what it comes to and what is left, and asks nothing of the bench", async () => {
-        const { order } = await place(true);
-        const held = await row("orders", order["id"]);
-        expect(held["pay_online"] === true || held["pay_online"] === 1).toBe(true);
-        expect(num(held["pay_mode"])).toBe(1);
-        expect(num(held["paid"])).toBe(0);
-        expect(num(held["pay_due"])).toBe(num(held["total"]));
-        expect(num(held["pay_hold"])).toBe(0);
-        expect(held["paid_post_by"]).toBeNull();
-        expect(num(held["lead_max"])).toBeGreaterThan(0);
-        // The studio day after it came in (Thursday, before five): Friday.
-        expect(String(held["remind_on"]).slice(0, 10)).toBe("2026-08-07");
-        // The shopper reads the same through the order's own link.
-        const read = await door.after().readShared();
-        expect(read?.order["number"]).toBe(held["number"]);
-        expect(num(read?.order["pay_due"])).toBe(num(held["total"]));
-      });
+      describe("with payments on (someone who manages payments rehearsing)", () => {
+        let shop: AdminiumShop;
+        beforeAll(async () => {
+          shop = await rehearsing();
+        }, 60_000);
+        afterAll(async () => {
+          await staff.put("/api/v1/payments/rehearsal", { on: false });
+        });
 
-      it("e-mails an order placed online when it is paid, or an hour later unpaid, and reminds once the studio day after", async () => {
-        const { order } = await place(true);
-        const messages = (await rows("messages")).filter((m) => String(m["order_id"]) === String(order["id"]));
-        expect(messages.map((m) => m["kind"]).sort()).toEqual(["order-unpaid", "pay-reminder"]);
-        const unpaid = messages.find((m) => m["kind"] === "order-unpaid")!;
-        expect(Math.abs(Date.parse(String(unpaid["due"])) - (THURSDAY + 3_600_000))).toBeLessThan(5 * 60_000);
-        const reminder = messages.find((m) => m["kind"] === "pay-reminder")!;
-        // Friday 7 August at five in Settle.
-        expect(Date.parse(String(reminder["due"]))).toBe(Date.parse("2026-08-07T16:00:00Z"));
-        for (const m of messages) expect(m["status"]).toBe("queued");
-      });
+        it("places the order asking to pay online, by the entry's own value, and answers its pay link", async () => {
+          expect(await shop.payments()!.available()).toEqual({ online: true, test: true });
+          const { order, payUrl } = await place(shop);
+          expect(payUrl).toMatch(/\/pay\//);
+          const held = await row("orders", order["id"]);
+          expect([yes(held["pay_online"]), num(held["pay_mode"]), num(held["pay_hold"])]).toEqual([true, 1, 0]);
+          expect(num(held["pay_due"])).toBe(num(held["total"]));
+          expect(held["paid_post_by"]).toBeNull();
+          // The studio day after it came in (Thursday, before five): Friday.
+          expect(String(held["remind_on"]).slice(0, 10)).toBe("2026-08-07");
+        });
 
-      it("e-mails an order placed as before at once, its words as they were", async () => {
-        const { order } = await place(false);
-        const messages = (await rows("messages")).filter((m) => String(m["order_id"]) === String(order["id"]));
-        expect(messages.map((m) => m["kind"])).toEqual(["order-received"]);
-        const held = await row("orders", order["id"]);
-        expect(num(held["pay_mode"])).toBe(0);
-      });
+        it("e-mails nothing at once: the unpaid one waits an hour, the one reminder the studio day after at five", async () => {
+          const { order } = await place(shop);
+          const messages = await messagesOf(order);
+          expect(messages.map((m) => m["kind"]).sort()).toEqual(["order-unpaid", "pay-reminder"]);
+          const unpaid = messages.find((m) => m["kind"] === "order-unpaid")!;
+          expect(Math.abs(Date.parse(String(unpaid["due"])) - (THURSDAY + 3_600_000))).toBeLessThan(5 * 60_000);
+          expect(Date.parse(String(messages.find((m) => m["kind"] === "pay-reminder")!["due"]))).toBe(Date.parse("2026-08-07T16:00:00Z"));
+          for (const m of messages) expect(m["status"]).toBe("queued");
+        });
 
-      it("holds the pieces of an order taken before making at make until it is paid", async () => {
-        const settings = (await rows("settings"))[0]!;
-        ok(await staff.patch(`/api/v1/data/${connectionId}/${encodeURIComponent(real("settings"))}/${String(settings["id"])}`, { values: { pay_first: true } }));
-        const { order } = await place(true);
-        const held = await row("orders", order["id"]);
-        expect(held["waits_pay"] === true || held["waits_pay"] === 1).toBe(true);
-        expect([num(held["pay_mode"]), num(held["pay_hold"])]).toEqual([2, 1]);
-        const line = (await rows("order_lines")).find((l) => String(l["order_id"]) === String(order["id"]))!;
-        expect(num(line["proof_ok"])).toBe(1);
-        const moved = await staff.patch(`/api/v1/data/${connectionId}/${encodeURIComponent(real("order_lines"))}/${String(line["id"])}`, { values: { stage: "making" }, from: "make" });
-        expect(moved.status).toBe(409);
-        // An order placed as before still goes on the bench.
-        const { order: plain } = await place(false);
-        const other = (await rows("order_lines")).find((l) => String(l["order_id"]) === String(plain["id"]))!;
-        ok(await staff.patch(`/api/v1/data/${connectionId}/${encodeURIComponent(real("order_lines"))}/${String(other["id"])}`, { values: { stage: "making" }, from: "make" }));
-        ok(await staff.patch(`/api/v1/data/${connectionId}/${encodeURIComponent(real("settings"))}/${String(settings["id"])}`, { values: { pay_first: false } }));
+        it("e-mails the order when the money comes in, which is its receipt, and tells the shop it is paid", async () => {
+          const { order, payUrl } = await place(shop);
+          await payDemo(payUrl!);
+          const paid = await until(async () => {
+            const held = await row("orders", order["id"]);
+            return num(held["pay_due"]) === 0 ? held : undefined;
+          }, "the order paid", 60_000);
+          expect(num(paid["paid"])).toBe(num(paid["total"]));
+          const payments = (await rows("payments")).filter((p) => String(p["order_id"]) === String(order["id"]));
+          expect(payments).toHaveLength(1);
+          // The service as Adminium names it ("Demo" for its pretend one, in test mode), and the payment's reference, once.
+          expect([payments[0]!["method"], payments[0]!["provider"], typeof payments[0]!["payment_ref"]]).toEqual(["online", "Demo", "string"]);
+          expect((await messagesOf(order)).map((m) => m["kind"]).sort()).toEqual(["order-paid", "order-unpaid", "pay-reminder"]);
+          expect(await shop.payments()!.state!("link", order["id"] as string)).toBe("paid");
+        });
+
+        it("holds a piece of an order taken before making until it is paid, and counts its post-by from the payment", async () => {
+          const settings = (await rows("settings"))[0]!;
+          ok(await staff.patch(`/api/v1/data/${connectionId}/${encodeURIComponent(real("settings"))}/${String(settings["id"])}`, { values: { pay_first: true } }));
+          try {
+            const { order, payUrl } = await place(shop);
+            const held = await row("orders", order["id"]);
+            expect(yes(held["waits_pay"])).toBe(true);
+            expect([num(held["pay_mode"]), num(held["pay_hold"])]).toEqual([2, 1]);
+            const line = (await rows("order_lines")).find((l) => String(l["order_id"]) === String(order["id"]))!;
+            expect(num(line["proof_ok"])).toBe(1);
+            const moved = await staff.patch(`/api/v1/data/${connectionId}/${encodeURIComponent(real("order_lines"))}/${String(line["id"])}`, { values: { stage: "making" }, from: "make" });
+            expect(moved.status).toBe(409);
+            await payDemo(payUrl!);
+            const paid = await until(async () => {
+              const now = await row("orders", order["id"]);
+              return num(now["pay_hold"]) === 0 ? now : undefined;
+            }, "the order paid", 60_000);
+            // Counted from the payment: never before the post-by counted from placing (paid the same Thursday afternoon).
+            expect(paid["paid_post_by"]).not.toBeNull();
+            expect(String(paid["paid_post_by"]).slice(0, 10) >= String(paid["post_by"]).slice(0, 10)).toBe(true);
+            ok(await staff.patch(`/api/v1/data/${connectionId}/${encodeURIComponent(real("order_lines"))}/${String(line["id"])}`, { values: { stage: "making" }, from: "make" }));
+          } finally {
+            ok(await staff.patch(`/api/v1/data/${connectionId}/${encodeURIComponent(real("settings"))}/${String(settings["id"])}`, { values: { pay_first: false } }));
+          }
+        });
+
+        it("e-mails today's order-received at once for an order the studio placed itself", async () => {
+          const service = useShop.getState().catalogue!.services[0]!;
+          const made = ok(await staff.post<{ data: Row }>(`/api/v1/data/${connectionId}/${encodeURIComponent(real("orders"))}`, { values: { ...SHOPPER, service_id: service.id } }), 201).data;
+          // Nobody was asked to pay it, whether payments count as on or off for it: today's e-mail, at once.
+          expect((await messagesOf(made)).map((m) => m["kind"])).toEqual(["order-received"]);
+        });
       });
 
       it("lets no role write a payment, and tells the owner it may give money back", async () => {
