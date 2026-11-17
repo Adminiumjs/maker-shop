@@ -17,6 +17,8 @@ export const SHOP_REFS = {
   postageServices: ["postage_services", ""],
   settings: ["settings", ""],
   placeOrder: ["orders", "_verified_2"],
+  // Placing an order and paying it online: open only while the studio takes payments online.
+  placeOrderPaying: ["orders", "_verified_3"],
   orderByLink: ["orders", "_claimed"],
 } as const satisfies Record<string, readonly [string, string]>;
 

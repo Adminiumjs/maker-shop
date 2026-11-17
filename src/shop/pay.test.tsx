@@ -163,7 +163,8 @@ describe("with payments on", () => {
     await act(async () => placeButton().click());
     await settle();
     const place = port.calls.find((c) => c.call === "place")!;
-    expect(place.body.values["pay_online"]).toBe(true);
+    // The page never says it asks to pay online: Adminium places it through the entry open while payments are on.
+    expect("pay_online" in place.body.values).toBe(false);
     // To the pay link the order answered, the confirmation kept for the way back.
     expect(left).toEqual(["pay-link:2291"]);
     expect(usePay.getState().going).toBe(true);

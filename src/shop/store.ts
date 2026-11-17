@@ -21,7 +21,7 @@ import { heldDesign, type DesignForBasket, type HeldDesign, type SavedDesign } f
 import { freshClientKey } from "./door.ts";
 import type { Elsewhere } from "./route.ts";
 import { isShopError, type Catalogue, type Figures, type Id, type LineValues, type Option, type OrderBody, type Placed, type Product, type Refused, type Row, type ShopConfig, type ShopPort } from "./port.ts";
-import { checkBack, goPay, keptConfirmation, loadOffer, paysOnline } from "./pay.ts";
+import { checkBack, goPay, keptConfirmation, loadOffer } from "./pay.ts";
 
 export type ShopView = "shop" | "product" | "customise" | "basket" | "checkout" | "confirm" | "missing" | Elsewhere;
 
@@ -256,9 +256,9 @@ export async function loadShop(): Promise<void> {
   if (port === null) return;
   set({ loading: "loading" });
   try {
-    // Whether the studio takes payments online right now is asked beside the catalogue, and never holds the shop up.
-    void loadOffer(port);
-    const [config, catalogue] = await Promise.all([port.config(), port.catalogue()]);
+    // Whether the studio takes payments online right now is asked beside the catalogue (never throws): the order's
+    // prices are asked of the entry open for it.
+    const [config, catalogue] = await Promise.all([port.config(), port.catalogue(), loadOffer(port)]);
     const serviceId = get().serviceId;
     const known = serviceId !== null && catalogue.services.some((s) => String(s.id) === String(serviceId));
     set({ config, catalogue, loading: "ok", serviceId: known ? serviceId : (catalogue.services[0]?.id ?? null) });
@@ -653,9 +653,8 @@ export async function placeOrder(): Promise<"placed" | "fix" | "moved" | "failed
   set({ tried: true, refusedLine: null, failure: null });
   if (Object.keys(formErrors(s.details)).length > 0 || Object.keys(s.refusedFields).length > 0) return "fix";
   set({ checking: true });
-  // While the studio takes payments online the order asks to be paid online: its pay link comes back with it.
-  const online = paysOnline();
-  const body = orderBody({ ...detailValues(s.details), ...(s.serviceId === null ? {} : { service_id: s.serviceId }), language: language(), ...(online ? { pay_online: true } : {}) }, s.basket);
+  // While the studio takes payments online, Adminium places the order asking to be paid online: its pay link comes back with it.
+  const body = orderBody({ ...detailValues(s.details), ...(s.serviceId === null ? {} : { service_id: s.serviceId }), language: language() }, s.basket);
   try {
     const quoted = await s.port.quote(body);
     const total = String(quoted.order["total"] ?? "");

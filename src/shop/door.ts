@@ -172,6 +172,14 @@ export class AdminiumShop implements ShopPort {
   /** The order key's client: the session a placed order's link opens is held here. */
   readonly orderClient: PublicClient | null;
   private config$: Promise<PublicConfig> | null = null;
+  /**
+   * Whether the studio takes payments online, as Adminium last said it: an
+   * order is priced and placed through the entry open for that (the one that
+   * asks to be paid online while it does, the one as it always was while it
+   * does not). Adminium refuses the other, so a page that guessed wrong asks
+   * again and goes through the one that is open.
+   */
+  private paying = false;
   private api: CustomiserApi | null = null;
   private afterDoor: AfterPort | null = null;
 
@@ -237,20 +245,44 @@ export class AdminiumShop implements ShopPort {
     });
   }
 
+  /** The place-order entry open now: while the studio takes payments online, the one that asks to be paid online. */
+  private placeRef(): string {
+    return this.paying ? this.refs.placeOrderPaying : this.refs.placeOrder;
+  }
+
+  /**
+   * Through the entry open now; refused as switched off, Adminium is asked
+   * again whether payments are on and, where that changed, the other entry is
+   * tried once. A shop not taking orders is refused either way.
+   */
+  private async throughOpen<T>(run: (ref: string) => Promise<T>): Promise<T> {
+    try {
+      return await run(this.placeRef());
+    } catch (error) {
+      if (!(error instanceof PublicApiError) || error.code !== "PUBLIC_SWITCHED_OFF" || this.client.payments === undefined) throw error;
+      const was = this.paying;
+      this.paying = (await this.client.payments.available().catch(() => ({ online: false }))).online === true;
+      if (this.paying === was) throw error;
+      return run(this.placeRef());
+    }
+  }
+
   quote(body: OrderBody): Promise<Figures> {
     return answer(async () => {
-      const quote = await this.client.quote<Row>(this.refs.placeOrder, { values: body.values, children: body.children as never });
+      const quote = await this.throughOpen((ref) => this.client.quote<Row>(ref, { values: body.values, children: body.children as never }));
       return { order: quote.data, lines: (quote.children["order_lines"] ?? []).map((line) => line.data) };
     });
   }
 
   place(body: OrderBody, clientKey: string, expectTotal: string): Promise<Placed> {
     return answer(async () => {
-      const made = await this.client.createTree<Row>(this.refs.placeOrder, {
-        values: { ...body.values, client_key: clientKey },
-        children: body.children as never,
-        expect: { total: expectTotal },
-      });
+      const made = await this.throughOpen((ref) =>
+        this.client.createTree<Row>(ref, {
+          values: { ...body.values, client_key: clientKey },
+          children: body.children as never,
+          expect: { total: expectTotal },
+        }),
+      );
       // The order's own link, a session on it already open: the order's page needs no claim.
       if (made.link !== null && this.orderClient !== null && made.link.session !== null && made.link.expiresAt !== null) {
         this.orderClient.adoptSession({ token: made.link.session, expiresAt: made.link.expiresAt, level: "verified" });
@@ -273,8 +305,10 @@ export class AdminiumShop implements ShopPort {
       available: async (): Promise<PayOffer> => {
         try {
           const said = await pays.available();
+          this.paying = said.online === true;
           return { online: said.online === true, test: said.test === true };
         } catch {
+          this.paying = false;
           return { online: false, test: false };
         }
       },

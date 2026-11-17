@@ -115,7 +115,8 @@ export class DemoShop implements ShopPort {
       client_key: clientKey,
       link_token: w.code("LINK"),
       link_stopped: false,
-      pay_online: body.values["pay_online"] === true,
+      // The demo takes payments online: placed, as Adminium places it then, asking to be paid online.
+      pay_online: true,
       // "Take payment before making", as the studio's setting stands now.
       waits_pay: w.settings()["pay_first"] === true,
     });

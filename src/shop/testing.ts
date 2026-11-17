@@ -211,10 +211,11 @@ export function fakePort(catalogue: Catalogue = sampleCatalogue()): FakePort {
         if (made.order["total"] !== expect) {
           throw new ShopError({ code: "PUBLIC_PRICE_CHANGED", status: 409, column: null, child: null, index: null, reason: null, changed: made, raw: null }, "changed");
         }
-        const online = body.values["pay_online"] === true;
+        // Adminium places it through the entry open now: asking to be paid online while payments are on.
+        const online = port.offer.online;
         const order: Row = { ...made.order, id: number, number: `BR-${number}`, status: "placed", pay_online: online, paid: "0.00", pay_due: made.order["total"] };
         number += 1;
-        return { order, lines: made.lines, replayed: false, link: { token: "LINKCODE0000000A" }, payUrl: online && port.offer.online ? `pay-link:${String(order["id"])}` : null };
+        return { order, lines: made.lines, replayed: false, link: { token: "LINKCODE0000000A" }, payUrl: online ? `pay-link:${String(order["id"])}` : null };
       });
     },
     customiser: () => api,

@@ -111,3 +111,40 @@ describe("paying online through the door", () => {
     expect(sent.map((s) => `${s.method} ${s.path}`)).toEqual(["GET /api/v1/public/payments/state"]);
   });
 });
+
+describe("placing through the entry open for payments", () => {
+  const SWITCHED_OFF = { status: 403, body: { error: { code: "PUBLIC_SWITCHED_OFF", message: "This is switched off." } } };
+  const FIGURES = { body: { data: { total: "37.95" }, children: { order_lines: [] } } };
+
+  it("prices through the entry that asks to pay online while the studio takes payments online", async () => {
+    const { fetch, sent } = wire({
+      "GET /api/v1/public/payments/available": { body: { data: { online: true } } },
+      "POST /api/v1/public/records/maker_orders_verified_3/dry-run": FIGURES,
+    });
+    const shop = new AdminiumShop({ baseUrl: "https://shop.example.test", publishableKey: "adm_pub_shop" }, { fetch, humanCheck: false });
+    await shop.payments()!.available();
+    await shop.quote(BODY);
+    expect(sent.map((s) => s.path)).toEqual(["/api/v1/public/payments/available", "/api/v1/public/records/maker_orders_verified_3/dry-run"]);
+  });
+
+  it("asks again when the one it took is switched off, and goes through the other once", async () => {
+    const { fetch, sent } = wire({
+      "POST /api/v1/public/records/maker_orders_verified_2/dry-run": SWITCHED_OFF,
+      "GET /api/v1/public/payments/available": { body: { data: { online: true } } },
+      "POST /api/v1/public/records/maker_orders_verified_3/dry-run": FIGURES,
+    });
+    const shop = new AdminiumShop({ baseUrl: "https://shop.example.test", publishableKey: "adm_pub_shop" }, { fetch, humanCheck: false });
+    expect((await shop.quote(BODY)).order["total"]).toBe("37.95");
+    expect(sent.map((s) => s.path)).toEqual(["/api/v1/public/records/maker_orders_verified_2/dry-run", "/api/v1/public/payments/available", "/api/v1/public/records/maker_orders_verified_3/dry-run"]);
+  });
+
+  it("says a shop not taking orders as it always did, whatever payments say", async () => {
+    const { fetch } = wire({
+      "POST /api/v1/public/records/maker_orders_verified_2/dry-run": SWITCHED_OFF,
+      "GET /api/v1/public/payments/available": { body: { data: { online: false } } },
+    });
+    const shop = new AdminiumShop({ baseUrl: "https://shop.example.test", publishableKey: "adm_pub_shop" }, { fetch, humanCheck: false });
+    const refused = await shop.quote(BODY).catch((error: unknown) => error);
+    expect(isShopError(refused) && refused.refused.code).toBe("PUBLIC_SWITCHED_OFF");
+  });
+});
