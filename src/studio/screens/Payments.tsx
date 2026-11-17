@@ -18,13 +18,13 @@ import { useEffect, useRef, useState } from "react";
 import { CircleCheck, Clock, Globe, Link2, Lock, Undo2, Wallet, X, XCircle } from "lucide-react";
 
 import { cancelOrder } from "../actions.ts";
-import type { StudioDoor } from "../door.ts";
+import type { OrderRefund, StudioDoor } from "../door.ts";
 import { reload, useData, useEnv, useRun } from "../env.tsx";
 import { madeOncePaid, paymentOf, refundableOf, serviceName } from "../facts.ts";
 import { useFmt } from "../format.ts";
 import { toast, useStudio } from "../store.ts";
 import { num, same, text, type Row } from "../wire.ts";
-import { useI18n, useT } from "../../i18n/index.tsx";
+import { useI18n, useT, type MessageKey } from "../../i18n/index.tsx";
 import { close, Modal } from "./Modal.tsx";
 
 /** The kit's mount contract the studio was built against: another one is not mounted. */
@@ -87,13 +87,52 @@ export function PayChips({ order }: { order: Row }) {
 
 // ── the Payment card ────────────────────────────────────────────────────────
 
+/** The words of a refund's reason, as the refund's own two steps offer them. */
+const REASONS: Record<string, MessageKey> = {
+  requested_by_customer: "studio.pay.reasons.requested_by_customer",
+  duplicate: "studio.pay.reasons.duplicate",
+  fraudulent: "studio.pay.reasons.fraudulent",
+  other: "studio.pay.reasons.other",
+};
+
+/**
+ * An order's refunds as Adminium keeps them (who gave each and why, where
+ * this person may be told), read once the order has given money back; null
+ * until then, and where nobody keeps them (an older Adminium).
+ */
+function useRefunds(order: Row, refunded: number): Record<string, OrderRefund[]> | null {
+  const { door } = useEnv();
+  const [found, setFound] = useState<Record<string, OrderRefund[]> | null>(null);
+  const key = refunded > 0 && door.refundsOf !== undefined ? `${String(order.id)}:${String(refunded)}` : null;
+  useEffect(() => {
+    if (key === null) return;
+    let live = true;
+    door.refundsOf!(order)
+      .then((read) => live && setFound(read))
+      .catch(() => live && setFound(null));
+    return () => {
+      live = false;
+    };
+    // Read again only when what was given back changed.
+  }, [key, door]);
+  return key === null ? null : found;
+}
+
 /** An order's payments: each one taken online, each refund, and what is paid or left to pay. */
 export function PaymentCard({ order }: { order: Row }) {
   const t = useT();
   const fmt = useFmt();
   const data = useData();
   const pay = paymentOf(data, order);
+  const kept = useRefunds(order, pay.online ? pay.refunded : 0);
   if (!pay.online) return null;
+  /** "Thu 6 Aug · by Ada Whitlow · The sign was set too small": the note typed, else the reason picked. */
+  const toldOf = (refund: OrderRefund): string => {
+    const day = fmt.day(fmt.today(refund.at));
+    const why = refund.note ?? (refund.reason === null || REASONS[refund.reason] === undefined ? null : t(REASONS[refund.reason]!));
+    if (refund.by === null) return why === null ? day : `${day} · ${why}`;
+    return why === null ? t("studio.pay.refundByOnly", { day, person: refund.by }) : t("studio.pay.refundBy", { day, person: refund.by, why });
+  };
   const placed = Date.parse(text(order["placed_at"]) ?? "");
   return (
     <section className="st-panel st-panel--pad st-paycard" aria-labelledby={`st-pay-${String(order.id)}`}>
@@ -121,14 +160,27 @@ export function PaymentCard({ order }: { order: Row }) {
                 </span>
                 <span className="st-payrow-amount st-mono">{fmt.money(p["amount"])}</span>
               </div>
-              {refunded > 0 && (
-                <div className="st-payrow st-payrow--back">
-                  <span className="st-payrow-text">
-                    <span className="st-payrow-label">{t("studio.pay.refunded")}</span>
-                  </span>
-                  <span className="st-payrow-amount st-mono">−{fmt.money(refunded)}</span>
-                </div>
-              )}
+              {/* Each refund with who gave it and why, where Adminium tells this person; else what went back in all. */}
+              {refunded > 0 && kept?.[text(p["payment_ref"]) ?? ""] !== undefined
+                ? kept[text(p["payment_ref"])!]!
+                    .filter((r) => r.state !== "failed" && r.state !== "cancelled")
+                    .map((r, i) => (
+                      <div key={i} className="st-payrow st-payrow--back">
+                        <span className="st-payrow-text">
+                          <span className="st-payrow-label">{t("studio.pay.refunded")}</span>
+                          <span className="st-payrow-sub">{toldOf(r)}</span>
+                        </span>
+                        <span className="st-payrow-amount st-mono">−{fmt.money(r.amount)}</span>
+                      </div>
+                    ))
+                : refunded > 0 && (
+                    <div className="st-payrow st-payrow--back">
+                      <span className="st-payrow-text">
+                        <span className="st-payrow-label">{t("studio.pay.refunded")}</span>
+                      </span>
+                      <span className="st-payrow-amount st-mono">−{fmt.money(refunded)}</span>
+                    </div>
+                  )}
             </li>
           );
         })}

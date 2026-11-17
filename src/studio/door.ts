@@ -19,6 +19,17 @@ export interface StaffPayments {
   refund: boolean;
 }
 
+/** One refund of a payment: when it was asked, how much, how it stands, and who gave it and why where they may be told. */
+export interface OrderRefund {
+  at: number;
+  amount: string;
+  state: string;
+  by: string | null;
+  /** The reason picked: `requested_by_customer`, `duplicate`, `fraudulent`, `other`. */
+  reason: string | null;
+  note: string | null;
+}
+
 /** Adminium's kit (the staff config's `kit`): its mount contract's number, and the same-origin file to import. */
 export interface StaffKit {
   contract: number;
@@ -254,6 +265,12 @@ export interface StudioDoor {
   payLink(order: Row): Promise<{ url: string; expiresAt: number }>;
   /** The studio's own settings row (its "Take payment before making"): the app's admin's to change. */
   saveSettings(settings: Row, values: Record<string, unknown>): Promise<Row>;
+  /**
+   * The refunds of an order's online payments, as Adminium keeps them, by the
+   * payment's reference: when, how much, and (for someone who may see payments
+   * or give them back) who gave it and why. Absent where nobody keeps them.
+   */
+  refundsOf?(order: Row): Promise<Record<string, OrderRefund[]>>;
   /**
    * Money given back where no Adminium draws the refund (the demo, which has
    * no kit): the payment's refunded amount, at once. A real install gives it

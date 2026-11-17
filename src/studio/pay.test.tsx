@@ -118,6 +118,19 @@ describe("with payments on", () => {
     expect(button("Cancel the order")).toBeUndefined();
   });
 
+  it("says who gave each refund and why, as Adminium tells it to someone who may see payments", async () => {
+    const door = paying();
+    door.kept = { pat_01: [{ at: Date.parse("2026-07-24T10:00:00Z"), amount: "20.00", state: "succeeded", by: "Ada Whitlow", reason: "other", note: "The sign was set too small" }] };
+    await mount(door, "order", { orderId: 13 });
+    const back = [...host.querySelectorAll(".st-payrow--back")].map((r) => r.textContent);
+    expect(back).toEqual([`Refunded${"Fri, Jul 24 · by Ada Whitlow · The sign was set too small"}−£20.00`]);
+    // No note typed: the reason picked.
+    door.kept = { pat_01: [{ ...door.kept.pat_01![0]!, note: null, reason: "requested_by_customer" }] };
+    await act(async () => root?.unmount());
+    await mount(door, "order", { orderId: 13 });
+    expect(host.querySelector(".st-payrow--back .st-payrow-sub")?.textContent).toBe("Fri, Jul 24 · by Ada Whitlow · Requested by customer");
+  });
+
   it("copies an unpaid order's pay link, as Adminium makes it", async () => {
     const door = paying();
     await mount(door, "order", { orderId: 10 });

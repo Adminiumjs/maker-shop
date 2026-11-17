@@ -22,7 +22,7 @@
 import { withInstall, type StaffConfig } from "./transport/staffConnection.ts";
 import { SessionPortError, type SessionTransport } from "./transport/sessionSource.ts";
 import { momentOf } from "./time.ts";
-import type { Action, AddOnTable, PanelDoor, PanelList, PanelOpen, PanelUploaded, Person, ProofPicture, SendProof, StaffKit, StaffPayments, StudioData, StudioDoor, StudioFacts, Table } from "./door.ts";
+import type { Action, AddOnTable, PanelDoor, PanelList, PanelOpen, PanelUploaded, Person, OrderRefund, ProofPicture, SendProof, StaffKit, StaffPayments, StudioData, StudioDoor, StudioFacts, Table } from "./door.ts";
 import { HOLIDAY_ADD_ON, holidayClosure, holidayPlace, inPlace } from "./holidays.ts";
 import { ApiError, type Id, type Row } from "./wire.ts";
 import { loadConnectedAddOns, loadPanelModule, type ConnectedProblem } from "../add-ons/connected.ts";
@@ -518,6 +518,31 @@ export class AdminiumStudio implements StudioDoor {
       const link = made.data?.link;
       if (typeof link?.url !== "string" || typeof link.expiresAt !== "number") throw new ApiError(500, "PAY_LINK_EMPTY", "The pay link came back empty.", {});
       return { url: link.url, expiresAt: link.expiresAt };
+    });
+  }
+
+  refundsOf(order: Row): Promise<Record<string, OrderRefund[]>> {
+    return this.run(async () => {
+      await this.t.port.config();
+      // The order's Payment panel, as Adminium answers it to this person: its payments, each with its refunds.
+      const panel = await this.t.mutate<{ data: { payments?: { attemptId?: string | null; refunds?: Record<string, unknown>[] }[] } | null }>("/api/v1/payments/panel", "POST", {
+        connectionId: await this.conn(),
+        table: this.real("orders"),
+        recordId: String(order.id),
+      });
+      const out: Record<string, OrderRefund[]> = {};
+      for (const payment of panel.data?.payments ?? []) {
+        if (typeof payment.attemptId !== "string") continue;
+        out[payment.attemptId] = (payment.refunds ?? []).map((r) => ({
+          at: typeof r["createdAt"] === "number" ? r["createdAt"] : 0,
+          amount: String(r["amount"] ?? "0"),
+          state: String(r["state"] ?? ""),
+          by: typeof r["by"] === "string" ? r["by"] : null,
+          reason: typeof r["reason"] === "string" ? r["reason"] : null,
+          note: typeof r["note"] === "string" && r["note"] !== "" ? r["note"] : null,
+        }));
+      }
+      return out;
     });
   }
 

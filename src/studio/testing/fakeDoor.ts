@@ -6,7 +6,7 @@
  *
  * Tests only; nothing that ships imports it.
  */
-import type { PanelDoor, Person, SendProof, StaffKit, StaffPayments, StudioData, StudioDoor, StudioFacts } from "../door.ts";
+import type { OrderRefund, PanelDoor, Person, SendProof, StaffKit, StaffPayments, StudioData, StudioDoor, StudioFacts } from "../door.ts";
 import { ApiError, same, type Id, type Row } from "../wire.ts";
 import { holidayClosure } from "../holidays.ts";
 import { FACTS, fixture, person, THURSDAY } from "./fixture.ts";
@@ -188,6 +188,12 @@ export class FakeDoor implements StudioDoor {
     this.record("refund", { id: payment.id, amount, reason });
     const held = this.data.payments.find((p) => same(p.id, payment.id))!;
     return this.update(this.data.payments, payment.id, { refunded: (Number(held["refunded"] ?? 0) + Number(amount)).toFixed(2) });
+  }
+  /** The refunds Adminium keeps, by payment reference; none unless a test gives some (then the card says who and why). */
+  kept: Record<string, OrderRefund[]> | null = null;
+  async refundsOf(order: Row): Promise<Record<string, OrderRefund[]>> {
+    this.record("refundsOf", { id: order.id });
+    return structuredClone(this.kept ?? {});
   }
   async saveSettings(settings: Row, values: Record<string, unknown>): Promise<Row> {
     this.record("saveSettings", { id: settings.id, values });

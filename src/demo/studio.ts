@@ -9,7 +9,7 @@
  *
  * DEMO BUILD ONLY — nothing in a real build imports it.
  */
-import type { Person, SendProof, StaffPayments, StudioData, StudioDoor, StudioFacts } from "../studio/door.ts";
+import type { OrderRefund, Person, SendProof, StaffPayments, StudioData, StudioDoor, StudioFacts } from "../studio/door.ts";
 import { LINE_MOVES, ORDER_MOVES } from "../studio/facts.ts";
 import { HOLIDAY_ADD_ON, holidayClosure } from "../studio/holidays.ts";
 import { ApiError, type Id, type Row } from "../studio/wire.ts";
@@ -123,13 +123,25 @@ export class DemoStudio implements StudioDoor {
   }
 
   /** A refund in the demo: given back at once, as the payment service would confirm it. */
-  async refund(payment: Row, amount: string, _reason: string): Promise<Row> {
+  async refund(payment: Row, amount: string, reason: string): Promise<Row> {
     const held = this.world.get("payments", payment.id);
     if (held === undefined) throw new ApiError(404, "NOT_FOUND", "No such payment.");
     const given = Math.round(Number(held["refunded"] ?? 0) * 100) + Math.round(Number(amount) * 100);
     this.world.update("payments", payment.id, { refunded: (given / 100).toFixed(2) });
+    // Kept as Adminium keeps a refund: when, how much, who gave it and why.
+    this.refunds.push({ ref: String(held["payment_ref"]), refund: { at: this.world.now, amount: Number(amount).toFixed(2), state: "succeeded", by: DEMO_PERSON.name, reason: "other", note: reason.trim() === "" ? null : reason.trim() } });
     this.world.changed();
     return copy(this.world.get("payments", payment.id)!);
+  }
+
+  /** The refunds given in this demo, by payment. */
+  private readonly refunds: { ref: string; refund: OrderRefund }[] = [];
+
+  async refundsOf(order: Row): Promise<Record<string, OrderRefund[]>> {
+    const refs = new Set(this.world.all("payments").filter((p) => same(p["order_id"], order.id)).map((p) => String(p["payment_ref"])));
+    const out: Record<string, OrderRefund[]> = {};
+    for (const { ref, refund } of this.refunds) if (refs.has(ref)) (out[ref] ??= []).push({ ...refund });
+    return out;
   }
 
   /** A row moved from the state the screen saw: refused when it is not there any more, or the move is not one the table allows. */

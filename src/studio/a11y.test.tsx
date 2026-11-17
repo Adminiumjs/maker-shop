@@ -190,6 +190,7 @@ const withPay = () =>
 const paying = () => {
   const door = withPay();
   door.pay = { on: true, online: true, test: false, refund: true };
+  door.kept = { pat_01: [{ at: Date.parse("2026-07-24T10:00:00Z"), amount: "20.00", state: "succeeded", by: "Ada Whitlow", reason: "other", note: "The sign was set too small" }] };
   return door;
 };
 

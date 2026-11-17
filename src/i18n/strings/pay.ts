@@ -73,6 +73,13 @@ export const pay = {
     "studio.pay.refundSay": "Refund {amount} to {customer} for {ref}. Reason: {why}.",
     "studio.pay.refundedToast": "Refunded {amount}.",
 
+    "studio.pay.refundBy": "{day} · by {person} · {why}",
+    "studio.pay.refundByOnly": "{day} · by {person}",
+    "studio.pay.reasons.requested_by_customer": "Requested by customer",
+    "studio.pay.reasons.duplicate": "Duplicate",
+    "studio.pay.reasons.fraudulent": "Fraudulent",
+    "studio.pay.reasons.other": "Other",
+
     "studio.nav.settings": "Settings",
     "studio.settings.title": "Settings",
     "studio.settings.payments": "Payments",
@@ -144,6 +151,13 @@ export const pay = {
     "studio.pay.notNow": "Abbrechen",
     "studio.pay.refundSay": "{amount} an {customer} für {ref} erstatten. Grund: {why}.",
     "studio.pay.refundedToast": "{amount} erstattet.",
+
+    "studio.pay.refundBy": "{day} · von {person} · {why}",
+    "studio.pay.refundByOnly": "{day} · von {person}",
+    "studio.pay.reasons.requested_by_customer": "Auf Wunsch des Kunden",
+    "studio.pay.reasons.duplicate": "Doppelt",
+    "studio.pay.reasons.fraudulent": "Betrug",
+    "studio.pay.reasons.other": "Anderer Grund",
 
     "studio.nav.settings": "Einstellungen",
     "studio.settings.title": "Einstellungen",
@@ -217,6 +231,13 @@ export const pay = {
     "studio.pay.refundSay": "Rembourser {amount} à {customer} pour {ref}. Motif : {why}.",
     "studio.pay.refundedToast": "{amount} remboursé.",
 
+    "studio.pay.refundBy": "{day} · par {person} · {why}",
+    "studio.pay.refundByOnly": "{day} · par {person}",
+    "studio.pay.reasons.requested_by_customer": "Demandé par le client",
+    "studio.pay.reasons.duplicate": "Doublon",
+    "studio.pay.reasons.fraudulent": "Frauduleux",
+    "studio.pay.reasons.other": "Autre",
+
     "studio.nav.settings": "Réglages",
     "studio.settings.title": "Réglages",
     "studio.settings.payments": "Paiements",
@@ -288,6 +309,13 @@ export const pay = {
     "studio.pay.notNow": "Zrušit",
     "studio.pay.refundSay": "Vrátit {amount} zákazníkovi {customer} za {ref}. Důvod: {why}.",
     "studio.pay.refundedToast": "Vráceno {amount}.",
+
+    "studio.pay.refundBy": "{day} · vrátil(a) {person} · {why}",
+    "studio.pay.refundByOnly": "{day} · vrátil(a) {person}",
+    "studio.pay.reasons.requested_by_customer": "Na žádost zákazníka",
+    "studio.pay.reasons.duplicate": "Duplicitní",
+    "studio.pay.reasons.fraudulent": "Podvodná",
+    "studio.pay.reasons.other": "Jiný",
 
     "studio.nav.settings": "Nastavení",
     "studio.settings.title": "Nastavení",
@@ -361,6 +389,13 @@ export const pay = {
     "studio.pay.refundSay": "Refundér {amount} til {customer} for {ref}. Årsag: {why}.",
     "studio.pay.refundedToast": "{amount} refunderet.",
 
+    "studio.pay.refundBy": "{day} · af {person} · {why}",
+    "studio.pay.refundByOnly": "{day} · af {person}",
+    "studio.pay.reasons.requested_by_customer": "Kunden har bedt om det",
+    "studio.pay.reasons.duplicate": "Dublet",
+    "studio.pay.reasons.fraudulent": "Svindel",
+    "studio.pay.reasons.other": "Andet",
+
     "studio.nav.settings": "Indstillinger",
     "studio.settings.title": "Indstillinger",
     "studio.settings.payments": "Betalinger",
@@ -432,6 +467,13 @@ export const pay = {
     "studio.pay.notNow": "取消",
     "studio.pay.refundSay": "为 {ref} 向 {customer} 退款 {amount}。原因：{why}。",
     "studio.pay.refundedToast": "已退款 {amount}。",
+
+    "studio.pay.refundBy": "{day} · {person} 退款 · {why}",
+    "studio.pay.refundByOnly": "{day} · {person} 退款",
+    "studio.pay.reasons.requested_by_customer": "客户要求",
+    "studio.pay.reasons.duplicate": "重复付款",
+    "studio.pay.reasons.fraudulent": "欺诈",
+    "studio.pay.reasons.other": "其他",
 
     "studio.nav.settings": "设置",
     "studio.settings.title": "设置",
@@ -505,6 +547,13 @@ export const pay = {
     "studio.pay.refundSay": "為 {ref} 向 {customer} 退款 {amount}。原因：{why}。",
     "studio.pay.refundedToast": "已退款 {amount}。",
 
+    "studio.pay.refundBy": "{day} · {person} 退款 · {why}",
+    "studio.pay.refundByOnly": "{day} · {person} 退款",
+    "studio.pay.reasons.requested_by_customer": "客戶要求",
+    "studio.pay.reasons.duplicate": "重複付款",
+    "studio.pay.reasons.fraudulent": "詐欺",
+    "studio.pay.reasons.other": "其他",
+
     "studio.nav.settings": "設定",
     "studio.settings.title": "設定",
     "studio.settings.payments": "付款",
@@ -576,6 +625,13 @@ export const pay = {
     "studio.pay.notNow": "إلغاء",
     "studio.pay.refundSay": "استرداد {amount} إلى {customer} للطلب {ref}. السبب: {why}.",
     "studio.pay.refundedToast": "تم استرداد {amount}.",
+
+    "studio.pay.refundBy": "{day} · بواسطة {person} · {why}",
+    "studio.pay.refundByOnly": "{day} · بواسطة {person}",
+    "studio.pay.reasons.requested_by_customer": "بطلب من العميل",
+    "studio.pay.reasons.duplicate": "مكررة",
+    "studio.pay.reasons.fraudulent": "احتيالية",
+    "studio.pay.reasons.other": "سبب آخر",
 
     "studio.nav.settings": "الإعدادات",
     "studio.settings.title": "الإعدادات",
