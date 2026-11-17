@@ -76,12 +76,16 @@ export async function resolveShop(opts: ResolveOptions = {}): Promise<ShopServed
     const tables = strings(doc["tables"]);
     const publicKeys = strings(doc["publicKeys"]);
     const settings = doc["settings"];
+    // Someone who manages payments, rehearsing the checkout here: their writes carry their own token.
+    const rehearsal = doc["rehearsal"] as { csrfToken?: unknown } | null | undefined;
+    const rehearsalToken = typeof rehearsal?.csrfToken === "string" && rehearsal.csrfToken !== "" ? rehearsal.csrfToken : undefined;
     return {
       baseUrl: typeof served === "string" && served !== "" ? served : (opts.origin ?? window.location.origin),
       publishableKey: key,
       ...(tables === null ? {} : { tables }),
       ...(publicKeys === null ? {} : { publicKeys }),
       ...(settings !== null && typeof settings === "object" && !Array.isArray(settings) ? { settings: settings as Record<string, unknown> } : {}),
+      ...(rehearsalToken === undefined ? {} : { rehearsalToken }),
     };
   } catch {
     // No answer, or the page's own HTML answered for the document: not configured.

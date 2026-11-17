@@ -67,6 +67,14 @@ export type EmailWords = Record<Kind, Words> & {
   proofPicture: string;
   /** The row naming the piece a proof is of: its label code and what it is. */
   piece: string;
+  /** Paying online: the row of what was paid, the post-by of an order made once paid, the pay button and its line. */
+  paidRow: string;
+  postByToday: string;
+  payOnline: string;
+  payNote: string;
+  startOnce: string;
+  notPaid: string;
+  ordered: string;
   /** The footer of a shopper's e-mail, and of the studio's own. */
   foot: string;
   staffFoot: string;
@@ -94,6 +102,13 @@ export const EMAIL_EN: EmailWords = {
   sent: "Sent",
   proofPicture: "Your proof",
   piece: "Piece",
+  paidRow: "Paid",
+  postByToday: "Post by, if it's paid today",
+  payOnline: "Pay {{order.pay_due}} online",
+  payNote: "The button opens a pay link. You'll pay on the Stripe or PayPal page.",
+  startOnce: "We'll start making once it's paid.",
+  notPaid: "Your order is placed. It isn't paid yet.",
+  ordered: "Ordered",
   foot: "{{appName}} · {{practice.address|}}. Reply to this e-mail and it reaches the studio.",
   staffFoot: "Sent by the shop to the studio.",
   "order-received": {
@@ -102,6 +117,28 @@ export const EMAIL_EN: EmailWords = {
     preheader: "{{order.total}} · post by {{order.post_by}}",
     heading: "Thanks, {{recipient.first_name}} — we've got your order {{order.number}}.",
     paras: ["Here's what you ordered. Anything with words on it gets a proof first: we'll e-mail you a picture to say yes to before we make it."],
+  },
+  "order-unpaid": {
+    name: "Order received, not paid",
+    subject: "We've got your order {{order.number}}",
+    preheader: "Pay {{order.pay_due}} online · {{order.number}}",
+    heading: "Thanks, {{recipient.first_name}} — we've got your order {{order.number}}.",
+    paras: ["Here's what you ordered. Anything with words on it gets a proof first: we'll e-mail you a picture to say yes to before we make it."],
+  },
+  "order-paid": {
+    name: "Order received, paid",
+    subject: "We've got your order {{order.number}}",
+    preheader: "Paid {{order.paid}} · {{order.number}}",
+    heading: "Thanks, {{recipient.first_name}} — we've got your order {{order.number}}.",
+    paras: ["Here's what you ordered. Anything with words on it gets a proof first: we'll e-mail you a picture to say yes to before we make it."],
+  },
+  "pay-reminder": {
+    name: "Payment reminder",
+    subject: "Your order is waiting for payment",
+    preheader: "Pay {{order.pay_due}} online · {{order.number}}",
+    heading: "Your order is waiting for payment",
+    paras: ["{{recipient.first_name}}, your order {{order.number}} is placed, but we haven't had the payment yet."],
+    after: ["This is the only reminder we'll send."],
   },
   "proof-ready": {
     name: "Proof ready",
@@ -190,6 +227,22 @@ const LINES: Block = {
   },
 };
 
+/** A block shown only when the e-mail's variable holds something (`order.mode_hold`: an order made once it is paid). */
+const only = (block: Block, onlyWith: string): Block => ({ ...block, data: { ...block.data, onlyWith } });
+/** The pay link, opened by the button: the order's live pay link, left out (with its line) when it cannot be paid online now. */
+const PAY_LINK = "{{pay_url}}";
+/** The post-by of an order paid online: counted from placing, or, for one made once it is paid, from the payment. */
+const postByRows = (all: EmailWords, held: string): Block[] => [
+  facts("post-by", [{ label: all.postBy, amount: "{{order.post_by}}" }], "order.mode_free"),
+  facts("post-by-paid", [{ label: all.postBy, amount: held }], "order.mode_hold"),
+];
+/** The pay button, its line, and for an order made once it is paid, that it waits. */
+const payBlocks = (all: EmailWords): Block[] => [
+  button("pay", all.payOnline, PAY_LINK, "pay_url"),
+  only(text("pay-note", all.payNote), "pay_url"),
+  only(text("start", all.startOnce), "order.mode_hold"),
+];
+
 /** The piece a proof is of: its label code ("BR-2291/1") and what it is, as the catalogue names it. */
 const PIECE = (all: EmailWords) => ({ label: all.piece, amount: "{{proof.line_code}} · {{proof.line.product_name}}" });
 
@@ -205,6 +258,35 @@ function layout(kind: Kind, all: EmailWords) {
         { label: all.postBy, amount: "{{order.post_by}}" },
       ]));
       blocks.push(button("follow", all.follow));
+      break;
+    case "order-unpaid":
+      blocks.push(text("not-paid", all.notPaid));
+      blocks.push(LINES);
+      blocks.push(facts("totals", [
+        { label: all.postage, amount: "{{order.postage}}" },
+        { label: all.total, amount: "{{order.total}}" },
+      ]));
+      // Nothing is made before it is paid: the date is the one it would be posted by if it were paid now.
+      blocks.push(facts("post-by", [{ label: all.postBy, amount: "{{order.post_by}}" }], "order.mode_free"));
+      blocks.push(facts("post-by-today", [{ label: all.postByToday, amount: "{{order.post_by}}" }], "order.mode_hold"));
+      blocks.push(...payBlocks(all));
+      blocks.push(button("follow", all.follow));
+      break;
+    case "order-paid":
+      blocks.push(LINES);
+      blocks.push(facts("totals", [
+        { label: all.postage, amount: "{{order.postage}}" },
+        { label: all.paidRow, amount: "{{order.paid}}" },
+      ]));
+      blocks.push(...postByRows(all, "{{order.paid_post_by}}"));
+      blocks.push(button("follow", all.follow));
+      break;
+    case "pay-reminder":
+      blocks.push(facts("totals", [
+        { label: all.total, amount: "{{order.total}}" },
+        { label: all.ordered, amount: "{{order.placed_at.date}}" },
+      ]));
+      blocks.push(...payBlocks(all));
       break;
     case "proof-ready":
     case "proof-reminder":

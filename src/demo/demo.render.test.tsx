@@ -24,7 +24,8 @@ import { applyDemoMessage } from "../demoBridge.ts";
 import { addChoiceToBasket, choose, goView, openProduct, placeOrder, setDetails, useShop } from "../shop/store.ts";
 import { useStudio } from "../studio/store.ts";
 import { demoAdminium, resetDemo, useDemo } from "./adminium.ts";
-import { bootDemo } from "./boot.tsx";
+import { bootDemo, DEMO_PAY_MS } from "./boot.tsx";
+import { usePay } from "../shop/pay.ts";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 // jsdom draws no page to scroll; a new screen asks to start at its top.
@@ -83,8 +84,16 @@ describe("the demo, with no server", () => {
     });
     await settle();
     expect(placed).toBe("placed");
+    // The demo takes payments online and no money moves: the hand-off moment, then back on the confirmation, paid.
+    expect(host.textContent).toContain("Taking you to the secure payment page…");
+    await settle(DEMO_PAY_MS + 600);
     expect(useShop.getState().view).toBe("confirm");
+    expect(usePay.getState().back).toBe("paid");
     expect(host.textContent).toContain("BR-2291");
+    expect(host.textContent).toContain("Paid");
+    const order = demoAdminium().world.all("orders").find((o) => o["number"] === "BR-2291")!;
+    expect(demoAdminium().world.all("payments").filter((p) => p["order_id"] === order.id).map((p) => p["amount"])).toEqual(["27.95"]);
+    expect(order["pay_due"]).toBe("0.00");
   });
 
   it("shows that order on the studio's bench when the card switches to the maker", async () => {
@@ -112,7 +121,8 @@ describe("the demo, with no server", () => {
       await applyDemoMessage({ type: "adminium:demo:set", dv: 1, addOn: { key: "shipping-dhl", on: true } });
       await applyDemoMessage({ type: "adminium:demo:go", dv: 1, screen: "post" });
     });
-    await settle();
+    // DHL's client half is imported the first time a screen needs its slot: waited for, never guessed at.
+    for (let i = 0; i < 25 && host.querySelector("[data-add-on-slot='order.dispatch.actions']") === null; i += 1) await settle(200);
     expect(useStudio.getState().view).toBe("post");
     expect(host.querySelectorAll("[data-add-on-slot='order.dispatch.actions']").length, host.querySelector("main")?.textContent ?? "").toBeGreaterThan(0);
     expect(host.querySelector("[data-add-on-slot='order.dispatch.actions']")?.textContent).toContain("Book a collection");

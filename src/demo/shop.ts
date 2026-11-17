@@ -11,7 +11,7 @@ import type { CustomiserApi, DesignData, DesignValues, HeldSession, SavedDesign 
 import type { AfterPort, CodeAnswer, Extras, OrderRead, ProofAnswer, Via } from "../shop/after-port.ts";
 import { catalogueFrom } from "../shop/door.ts";
 import { fileUrl } from "./files.ts";
-import { ShopError, type Catalogue, type Figures, type Id, type OrderBody, type Placed, type Refused, type ShopConfig, type ShopPort } from "../shop/port.ts";
+import { ShopError, type Catalogue, type Figures, type Id, type OrderBody, type Placed, type Refused, type ShopConfig, type ShopPayments, type ShopPort } from "../shop/port.ts";
 import { deriveLine, deriveOrder, postBy, closuresIn, CUTOFF, STUDIO_DAYS } from "./rules.ts";
 import type { Row } from "./sample.ts";
 import type { DemoWorld } from "./world.ts";
@@ -47,6 +47,10 @@ function draft(world: DemoWorld, body: OrderBody): { order: Row; lines: Row[]; f
   deriveOrder(order, tables);
   return { order, lines, features };
 }
+
+/** The demo's own "pay page": not an address at all, read by the demo's boot (`boot.tsx`). */
+export const DEMO_PAY = "demo-pay:";
+const demoPayUrl = (orderId: unknown) => `${DEMO_PAY}${String(orderId)}`;
 
 export class DemoShop implements ShopPort {
   private readonly world: DemoWorld;
@@ -87,7 +91,7 @@ export class DemoShop implements ShopPort {
     const w = this.world;
     const again = w.all("orders").find((o) => o["client_key"] === clientKey);
     if (again !== undefined) {
-      return copy({ order: again, lines: w.all("order_lines").filter((l) => same(l["order_id"], again.id)), replayed: true, link: { token: String(again["link_token"]) } });
+      return copy({ order: again, lines: w.all("order_lines").filter((l) => same(l["order_id"], again.id)), replayed: true, link: { token: String(again["link_token"]) }, payUrl: null });
     }
     if (w.settings()["taking_orders"] === false) throw refusal("PUBLIC_WRITE_CLOSED", 409);
     const made = draft(w, body);
@@ -111,6 +115,10 @@ export class DemoShop implements ShopPort {
       client_key: clientKey,
       link_token: w.code("LINK"),
       link_stopped: false,
+      // The demo takes payments online: placed, as Adminium places it then, asking to be paid online.
+      pay_online: true,
+      // "Take payment before making", as the studio's setting stands now.
+      waits_pay: w.settings()["pay_first"] === true,
     });
     for (const [i, line] of made.lines.entries()) {
       const saved = w.insert("order_lines", { ...line, id: undefined, order_id: order.id, position: i + 1, stage: "make", spoiled: 0, batch_id: null, started_at: null, finishing_at: null, made_at: null });
@@ -123,7 +131,21 @@ export class DemoShop implements ShopPort {
     }
     w.changed();
     const placed = w.get("orders", order.id)!;
-    return copy({ order: placed, lines: w.all("order_lines").filter((l) => same(l["order_id"], order.id)), replayed: false, link: { token: String(placed["link_token"]) } });
+    this.afterDoor.holdLink(placed.id);
+    return copy({ order: placed, lines: w.all("order_lines").filter((l) => same(l["order_id"], order.id)), replayed: false, link: { token: String(placed["link_token"]) }, payUrl: placed["pay_online"] === true ? demoPayUrl(placed.id) : null });
+  }
+
+  /** The demo takes payments online, and no money moves: its pay page is a moment of the page itself. */
+  payments(): ShopPayments {
+    const w = this.world;
+    return {
+      available: async () => ({ online: true, test: false, demo: true }),
+      start: async (_via, orderId) => {
+        const order = w.get("orders", orderId);
+        if (order === undefined || Number(order["pay_due"] ?? 0) <= 0) throw refusal("PUBLIC_PAY_REFUSED", 409);
+        return demoPayUrl(order.id);
+      },
+    };
   }
 
   customiser(): CustomiserApi {
@@ -219,6 +241,11 @@ export class DemoAfter implements AfterPort {
 
   sharedHeld(): boolean {
     return this.linked !== null;
+  }
+
+  /** The order just placed, held as the real shop holds the session its own link opens. */
+  holdLink(orderId: Id): void {
+    this.linked = orderId;
   }
 
   async readShared(): Promise<OrderRead | null> {

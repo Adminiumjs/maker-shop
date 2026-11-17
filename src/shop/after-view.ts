@@ -6,8 +6,9 @@
  */
 import type { OrderRead } from "./after-port.ts";
 import type { Catalogue, Id, Row } from "./port.ts";
+import { asksOnline, isPaid, madeOncePaid, postByOf } from "./pay.ts";
 
-export type StageKey = "accepted" | "proof" | "making" | "finishing" | "posted";
+export type StageKey = "accepted" | "paid" | "unpaid" | "proof" | "making" | "finishing" | "posted";
 
 export interface Stage {
   key: StageKey;
@@ -57,8 +58,10 @@ export interface OrderView {
   postBy: string | null;
   postedAt: string | null;
   status: string;
-  /** Posted, cancelled, overdue (its post-by gone by), or due by its post-by. */
-  post: "posted" | "cancelled" | "late" | "due";
+  /** Posted, cancelled, overdue (its post-by gone by), or due by its post-by; `paying` while it waits for its payment before anything is made. */
+  post: "posted" | "cancelled" | "late" | "due" | "paying";
+  /** Asked to be paid online at checkout: whether it is paid. Null for an order not asked to. */
+  paid: boolean | null;
   stages: Stage[];
   waiting: WaitingProof[];
   lines: LineView[];
@@ -102,16 +105,30 @@ export function orderView(read: OrderRead, catalogue: Catalogue, today: string |
   const approvedAt = latest(read.proofs.filter((p) => p["state"] === "approved").map((p) => p["answered_at"]));
   const onBench = live.filter((l) => BENCH.includes(String(l["stage"])));
   const finishing = live.filter((l) => ["finishing", "ready", "posted"].includes(String(l["stage"])));
+  // Paying online, the first step says whether it is paid: when it was, or "Not paid yet" with no date.
+  const online = asksOnline(order);
+  const paidOnline = online && isPaid(order);
+  const first: Stage = !online ? { key: "accepted", done: true, at: text(order["placed_at"]), due: false } : paidOnline ? { key: "paid", done: true, at: text(order["paid_at"]), due: false } : { key: "unpaid", done: false, at: null, due: false };
+  // The post-by is counted from placing — or, for an order made once it is paid, from the payment: none till then.
+  const postBy = postByOf(order);
   const stages: Stage[] = [
-    { key: "accepted", done: true, at: text(order["placed_at"]), due: false },
+    first,
     { key: "proof", done: posted || proofed, at: asked.length === 0 ? text(order["placed_at"]) : proofed ? approvedAt : null, due: false },
     { key: "making", done: posted || onBench.length > 0, at: earliest(onBench.map((l) => l["started_at"])), due: false },
     { key: "finishing", done: posted || finishing.length > 0, at: earliest(finishing.map((l) => l["finishing_at"] ?? l["made_at"])), due: false },
-    { key: "posted", done: posted, at: posted ? text(order["posted_at"]) : text(order["post_by"]), due: !posted },
+    { key: "posted", done: posted, at: posted ? text(order["posted_at"]) : postBy, due: !posted },
   ];
 
-  const postBy = text(order["post_by"]);
-  const post: OrderView["post"] = posted ? "posted" : status === "cancelled" ? "cancelled" : today !== null && postBy !== null && postBy.slice(0, 10) < today ? "late" : "due";
+  const waitsForPay = madeOncePaid(order) && !paidOnline;
+  const post: OrderView["post"] = posted
+    ? "posted"
+    : status === "cancelled"
+      ? "cancelled"
+      : waitsForPay
+        ? "paying"
+        : today !== null && postBy !== null && postBy.slice(0, 10) < today
+          ? "late"
+          : "due";
 
   const lineOf = (id: unknown) => lines.find((l) => String(l["id"]) === String(id)) ?? null;
   /**
@@ -162,6 +179,7 @@ export function orderView(read: OrderRead, catalogue: Catalogue, today: string |
     postedAt: text(order["posted_at"]),
     status,
     post,
+    paid: online ? paidOnline : null,
     stages,
     waiting,
     lines: lines.map((l) => ({

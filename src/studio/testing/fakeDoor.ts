@@ -6,7 +6,7 @@
  *
  * Tests only; nothing that ships imports it.
  */
-import type { PanelDoor, Person, SendProof, StudioData, StudioDoor, StudioFacts } from "../door.ts";
+import type { OrderRefund, PanelDoor, Person, SendProof, StaffKit, StaffPayments, StudioData, StudioDoor, StudioFacts } from "../door.ts";
 import { ApiError, same, type Id, type Row } from "../wire.ts";
 import { holidayClosure } from "../holidays.ts";
 import { FACTS, fixture, person, THURSDAY } from "./fixture.ts";
@@ -165,6 +165,40 @@ export class FakeDoor implements StudioDoor {
   async render(input: { kind: string; ref: string; pk: Id; values?: Record<string, unknown> }): Promise<{ contentUrl: string; printUrl: string | null }> {
     this.record("render", { ...input });
     return { contentUrl: "/api/v1/documents/doc_1/content", printUrl: "/api/v1/documents/doc_1/print" };
+  }
+
+  /** What Adminium says of payments for this person; none unless a test says (the screens then read as before payments). */
+  pay: StaffPayments | null = null;
+  /** Adminium's kit, for the refund; none unless a test hands one in. */
+  kitAt: StaffKit | null = null;
+  payments(): StaffPayments | null {
+    return this.pay;
+  }
+  kit(): StaffKit | null {
+    return this.kitAt;
+  }
+  csrf(): string | null {
+    return "csrf-token";
+  }
+  async payLink(order: Row): Promise<{ url: string; expiresAt: number }> {
+    this.record("payLink", { id: order.id });
+    return { url: `pay-link:${String(order.id)}`, expiresAt: THURSDAY + 30 * 86_400_000 };
+  }
+  async refund(payment: Row, amount: string, reason: string): Promise<Row> {
+    this.record("refund", { id: payment.id, amount, reason });
+    const held = this.data.payments.find((p) => same(p.id, payment.id))!;
+    return this.update(this.data.payments, payment.id, { refunded: (Number(held["refunded"] ?? 0) + Number(amount)).toFixed(2) });
+  }
+  /** The refunds Adminium keeps, by payment reference; none unless a test gives some (then the card says who and why). */
+  kept: Record<string, OrderRefund[]> | null = null;
+  async refundsOf(order: Row): Promise<Record<string, OrderRefund[]>> {
+    this.record("refundsOf", { id: order.id });
+    return structuredClone(this.kept ?? {});
+  }
+  async saveSettings(settings: Row, values: Record<string, unknown>): Promise<Row> {
+    this.record("saveSettings", { id: settings.id, values });
+    this.data.settings = { ...this.data.settings!, ...values };
+    return this.data.settings;
   }
 
   /** The calls made, as `method id→to` lines, for a short assertion. */

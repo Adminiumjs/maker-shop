@@ -1,5 +1,5 @@
 /**
- * What the app's three roles do on the studio's screens (plan §8): the owner
+ * What the app's three roles do on the studio's screens: the owner
  * everything; the maker the bench, the proofs and a product's lettering; the
  * packer the post. A button shows by the role, and the role's grants and
  * limits are what refuse the write: a hidden button is not a lock.

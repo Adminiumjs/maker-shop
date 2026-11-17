@@ -1,6 +1,7 @@
 /**
- * What opens over a screen: the proof sheet (comp "Send a proof") and the
- * spoil dialog (comp "Spoiled — remake it").
+ * What opens over a screen: the proof sheet (comp "Send a proof"), the
+ * spoil dialog (comp "Spoiled — remake it"), and the refund and the cancel
+ * of an unpaid order (`Payments.tsx`).
  *
  * The proof sheet shows each piece of the order that waits for a proof as the
  * customer will see it: a design's proof as the Customiser's panel made it
@@ -28,6 +29,7 @@ import { BatchDialog } from "./Batches.tsx";
 import { PanelSheet } from "../panels/PanelSheet.tsx";
 import { mayOpenPanel } from "../roles.ts";
 import { close, Modal } from "./Modal.tsx";
+import { CancelSheet, RefundSheet } from "./Payments.tsx";
 
 export function Overlays() {
   const overlay = useStudio((s) => s.overlay);
@@ -35,6 +37,8 @@ export function Overlays() {
   if (overlay.kind === "proof") return <ProofSheet orderId={overlay.orderId} />;
   if (overlay.kind === "batch") return <BatchDialog sheetKey={overlay.key} />;
   if (overlay.kind === "panel") return <PanelSheet panel={overlay.panel} linked={overlay.linked} title={overlay.title} />;
+  if (overlay.kind === "refund") return <RefundSheet orderId={overlay.orderId} paymentId={overlay.paymentId} />;
+  if (overlay.kind === "cancel") return <CancelSheet orderId={overlay.orderId} />;
   return <SpoilDialog lineId={overlay.lineId} />;
 }
 

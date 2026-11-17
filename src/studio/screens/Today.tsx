@@ -14,12 +14,12 @@ import { Clock, Ellipsis, Hammer, Lock, TriangleAlert, Zap } from "lucide-react"
 
 import { moveLine } from "../actions.ts";
 import { useData, useEnv, useRun } from "../env.tsx";
-import { BENCH, bench, closuresOf, kpis, lockOf, pathOf, productOf, lineMaterial, optionOf, type BenchStage } from "../facts.ts";
+import { BENCH, bench, benchLockOf, closuresOf, kpis, linePostBy, pathOf, productOf, lineMaterial, optionOf, type BenchStage } from "../facts.ts";
 import { useFmt } from "../format.ts";
 import { go } from "../store.ts";
 import { isStudioDay } from "../time.ts";
 import { LineTile, ShipChip, Typed } from "../ui.tsx";
-import { dayOf, num, text, type Row } from "../wire.ts";
+import { num, text, type Row } from "../wire.ts";
 import { useT, type MessageKey } from "../../i18n/index.tsx";
 import { wordsOfDesign } from "../designs.ts";
 import { BatchStrip } from "./Batches.tsx";
@@ -143,9 +143,10 @@ function Card({ line, today, studioDays, closures, mayMove }: { line: Row; today
   const [dragging, setDragging] = useState(false);
   const order = data.orders.find((o) => String(o.id) === String(line["order_id"]));
   const product = productOf(data, line);
-  const lock = lockOf(line);
+  // The payment's lock wins over the proof's: an order that takes payment before making, not paid yet.
+  const lock = benchLockOf(data, line);
   const ref = text(order?.["number"]) ?? "";
-  const lockLabel = lock === null ? "" : t(lock === "waiting" ? "studio.lock.waiting" : "studio.lock.unsent");
+  const lockLabel = lock === null ? "" : t(lock === "pay" ? "studio.pay.waiting" : lock === "waiting" ? "studio.lock.waiting" : "studio.lock.unsent");
   const stage = String(line["stage"]) as BenchStage;
   const targets = BENCH.filter((s) => s !== stage && pathOf(stage, s) !== null);
   const openOrder = () => order !== undefined && go("order", { orderId: order.id });
@@ -174,7 +175,11 @@ function Card({ line, today, studioDays, closures, mayMove }: { line: Row; today
           </span>
           <span className="st-card-name">{text(line["product_name"]) ?? text(product?.["name"])}</span>
         </div>
-        <ShipChip postBy={dayOf(line["post_by"])} today={today} studioDays={studioDays} closures={closures} />
+        {lock === "pay" ? (
+          <span className="st-chip st-tone-soon">{t("studio.pay.lineWaiting")}</span>
+        ) : (
+          <ShipChip postBy={linePostBy(data, line)} today={today} studioDays={studioDays} closures={closures} />
+        )}
       </div>
       <div className="st-card-mat">
         <LineTile data={data} line={line} product={product} size={20} iconSize={11} />

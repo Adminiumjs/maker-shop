@@ -10,16 +10,17 @@
  * in a sheet, for a role that opens it (the owner, the maker): it makes the
  * proof and the machine's files.
  */
-import { ArrowLeft, Check, FileCog, Image as ImageIcon, PackageCheck, Send, Truck } from "lucide-react";
+import { ArrowLeft, Check, FileCog, Image as ImageIcon, Lock, PackageCheck, Send, Truck } from "lucide-react";
 
 import { moveOrderLines } from "../actions.ts";
 import { useData, useEnv, useRun } from "../env.tsx";
-import { closuresOf, isLive, lineCode, lineMaterial, linesOf, lockOf, optionOf, productOf, proofsOf, serviceOf, takesProof } from "../facts.ts";
+import { benchLockOf, closuresOf, isLive, lineCode, lineMaterial, linesOf, lockOf, optionOf, orderPostBy, payHeld, paymentOf, productOf, proofsOf, serviceOf, takesProof } from "../facts.ts";
+import { PayActions, PayChips, PaymentCard, paymentsOn } from "./Payments.tsx";
 import { useFmt } from "../format.ts";
-import { go, useStudio } from "../store.ts";
+import { go, toast, useStudio } from "../store.ts";
 import { postTone } from "../facts.ts";
 import { LineTile, Tile, Typed } from "../ui.tsx";
-import { dayOf, num, same, text, type Id, type Row } from "../wire.ts";
+import { num, same, text, type Id, type Row } from "../wire.ts";
 import { useT, type MessageKey } from "../../i18n/index.tsx";
 import { wordsOfDesign } from "../designs.ts";
 import { mayMake, mayOpenPanel } from "../roles.ts";
@@ -58,8 +59,11 @@ export function OrderScreen() {
 
   const facts = door.facts();
   const today = fmt.today(door.now());
-  const postBy = dayOf(order["post_by"]);
+  // An order made once it is paid has no post-by while it waits for its payment, and is never late.
+  const held = payHeld(order);
+  const postBy = orderPostBy(order);
   const tone = postTone(postBy, today, facts.studioDays, closuresOf(data));
+  const paying = paymentsOn(door);
   const lines = linesOf(data, order);
   const customer = text(order["name"]) ?? "";
   const service = serviceOf(data, order);
@@ -69,8 +73,13 @@ export function OrderScreen() {
 
   const mark = (to: "finishing" | "ready") =>
     run(async (d, fresh) => {
-      const { moved, held } = await moveOrderLines(d, fresh, order, to, to === "finishing" ? ["make", "making"] : ["make", "making", "finishing"]);
-      if (moved === 0 && held > 0) return t("studio.order.held", { count: held }, held);
+      const { moved, held: waiting } = await moveOrderLines(d, fresh, order, to, to === "finishing" ? ["make", "making"] : ["make", "making", "finishing"]);
+      // Nothing goes on the machine before the order is paid: said as the lock says it.
+      if (moved === 0 && waiting > 0 && held) {
+        toast(t("studio.pay.waiting"), "warn");
+        return null;
+      }
+      if (moved === 0 && waiting > 0) return t("studio.order.held", { count: waiting }, waiting);
       if (moved === 0) return t("studio.order.nothingToMove");
       return to === "finishing" ? t("bench.order.madeToast") : t("bench.order.readyToast", { ref: text(order["number"]) ?? "" });
     });
@@ -90,11 +99,19 @@ export function OrderScreen() {
             {text(order["number"])}
           </h1>
           <span className="st-order-meta">
-            {t("studio.order.meta", { customer, town: text(order["town"]) ?? "", day: fmt.moment(order["placed_at"]), total: fmt.money(order["total"]) })}
+            {/* With payments on, what the order comes to is its total, and the chips say whether it is paid. */}
+            {t(paying ? "studio.pay.meta" : "studio.order.meta", { customer, town: text(order["town"]) ?? "", day: fmt.moment(order["placed_at"]), total: fmt.money(order["total"]) })}
           </span>
+          {paying && <PayChips order={order} />}
         </div>
-        {!posted && (
+        {!posted && postBy !== null && (
           <span className={`st-chip st-order-chip st-tone-${tone}`}>{tone === "late" ? t("bench.order.overdue", { day: fmt.day(postBy) }) : t("bench.order.postBy", { day: fmt.day(postBy) })}</span>
+        )}
+        {!posted && held && (
+          <span className="st-chip st-order-chip st-tone-soon st-ship-wait">
+            <Lock size={13} aria-hidden="true" />
+            {t("studio.pay.waiting")}
+          </span>
         )}
       </div>
 
@@ -118,6 +135,14 @@ export function OrderScreen() {
               </button>
             </>
           )}
+          <PayActions order={order} />
+        </div>
+      )}
+
+      {/* A posted order may still be given money back. */}
+      {posted && paying && paymentOf(data, order).rows.length > 0 && (
+        <div className="st-actions">
+          <PayActions order={order} />
         </div>
       )}
 
@@ -127,6 +152,8 @@ export function OrderScreen() {
           <Line key={String(line.id)} line={line} maker={maker} opensPanel={mayOpenPanel(who, "customiser-line")} />
         ))}
       </div>
+
+      {paying && <PaymentCard order={order} />}
 
       <div className="st-twocol">
         {who.can("proofs", "read") && <ProofLog order={order} lines={lines} customer={customer} />}
@@ -163,7 +190,8 @@ function Line({ line, maker, opensPanel }: { line: Row; maker: boolean; opensPan
   const t = useT();
   const data = useData();
   const product = productOf(data, line);
-  const lock = lockOf(line);
+  // The payment's lock wins over the proof's: both hold the piece at "make", and it is said once.
+  const lock = benchLockOf(data, line);
   const stage = String(line["stage"]);
   const words = text(line["lettering"]);
   const designed = line["design_id"] !== null && line["design_id"] !== undefined;
@@ -183,7 +211,10 @@ function Line({ line, maker, opensPanel }: { line: Row; maker: boolean; opensPan
           <span className="st-line-name">
             <strong>{name}</strong>
             <span className="st-qty">{t("bench.card.qty", { count: num(line["qty"]) ?? 0 })}</span>
-            <span className={`st-stage${held ? " st-stage--held" : ""}`}>{held ? t(lock === "waiting" ? "studio.chip.waiting" : "studio.chip.unsent") : t(STAGE_LABEL[stage] ?? "bench.col.to-make")}</span>
+            <span className={`st-stage${held ? " st-stage--held" : ""}`}>
+              {lock === "pay" && held && <Lock size={11} aria-hidden="true" />}
+              {held ? t(lock === "pay" ? "studio.pay.lineWaiting" : lock === "waiting" ? "studio.chip.waiting" : "studio.chip.unsent") : t(STAGE_LABEL[stage] ?? "bench.col.to-make")}
+            </span>
           </span>
           <span className="st-opts">{opts}</span>
           {words !== null && (

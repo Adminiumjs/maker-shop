@@ -8,12 +8,14 @@ import { Check, MailCheck } from "lucide-react";
 
 import { postOrders } from "../actions.ts";
 import { useData, useEnv, useRun } from "../env.tsx";
-import { closuresOf, fileSrc, isLive, lineCode, linesOf, postRun, productOf, proofQueue, reminderDays, serviceOf, type ProofItem } from "../facts.ts";
+import { closuresOf, fileSrc, isLive, lineCode, linesOf, orderPostBy, payHeld, paymentOf, postRun, productOf, proofQueue, reminderDays, serviceOf, type ProofItem } from "../facts.ts";
+import { paymentsOn } from "./Payments.tsx";
+import { Lock } from "lucide-react";
 import { useFmt } from "../format.ts";
 import { go, toast, useStudio, type OrderFilter } from "../store.ts";
 import { studioDaysBetween } from "../time.ts";
 import { LineTile, ProofImage, ShipChip, Typed } from "../ui.tsx";
-import { dayOf, num, text } from "../wire.ts";
+import { num, text, type Row } from "../wire.ts";
 import { wordsOfDesign } from "../designs.ts";
 import { useT, type MessageKey } from "../../i18n/index.tsx";
 import { mayPost } from "../roles.ts";
@@ -47,18 +49,21 @@ export function OrdersScreen() {
   const today = fmt.today(door.now());
   const facts = door.facts();
   const closures = closuresOf(data);
+  // With payments on, what an order comes to is its total, and a chip says whether it is paid.
+  const paying = paymentsOn(door);
 
   const rows = data.orders
     .filter((o) => o["status"] !== "cancelled")
     .map((order) => {
       const lines = linesOf(data, order);
       const live = lines.filter(isLive);
-      const postBy = dayOf(order["post_by"]);
+      // An order made once it is paid has no post-by while it waits for the payment: never late, listed last.
+      const postBy = orderPostBy(order);
       const posted = order["status"] === "posted";
       return { order, lines, postBy, posted, waiting: live.some((l) => l["proof_state"] === "sent"), ready: order["status"] === "ready" };
     })
     .filter((r) => filter === "all" || (filter === "proof" && r.waiting) || (filter === "late" && !r.posted && r.postBy !== null && r.postBy < today) || (filter === "today" && !r.posted && r.postBy === today) || (filter === "ready" && r.ready))
-    .sort((a, b) => Number(a.posted) - Number(b.posted) || String(a.postBy ?? "").localeCompare(String(b.postBy ?? "")) || Number(a.order.id) - Number(b.order.id));
+    .sort((a, b) => Number(a.posted) - Number(b.posted) || String(a.postBy ?? "9").localeCompare(String(b.postBy ?? "9")) || Number(a.order.id) - Number(b.order.id));
 
   return (
     <section className="st-screen" aria-labelledby="st-orders-title">
@@ -80,7 +85,7 @@ export function OrdersScreen() {
           <span className="st-th">{t("studio.orders.ref")}</span>
           <span className="st-th">{t("studio.orders.who")}</span>
           <span className="st-th st-wide">{t("studio.orders.what")}</span>
-          <span className="st-th st-end st-wide">{t("studio.orders.charged")}</span>
+          <span className="st-th st-end st-wide">{t(paying ? "studio.pay.total" : "studio.orders.charged")}</span>
           <span className="st-th st-end">{t("bench.orders.col.ship")}</span>
         </div>
         {rows.map(({ order, lines, postBy, posted, waiting }) => (
@@ -97,9 +102,19 @@ export function OrdersScreen() {
                 <span>{lines.map((l) => `${text(l["product_name"]) ?? ""} ×${String(num(l["qty"]) ?? 0)}`).join(", ")}</span>
                 <span className={`st-stage-line${waiting ? " st-stage-line--warn" : ""}`}>{waiting ? t("bench.order.waitingPicture") : [...new Set(lines.map((l) => t(STAGE_WORD[String(l["stage"])] ?? "bench.col.to-make")))].join(" · ").toLocaleLowerCase()}</span>
               </span>
-              <span className="st-mono st-cell-strong st-end st-wide">{fmt.money(order["total"])}</span>
+              <span className="st-cell-stack st-end st-wide">
+                <span className="st-mono st-cell-strong">{fmt.money(order["total"])}</span>
+                {paying && <OrderPayChip order={order} />}
+              </span>
               <span className="st-end">
-                <ShipChip postBy={postBy} today={today} studioDays={facts.studioDays} closures={closures} posted={posted} />
+                {!posted && payHeld(order) ? (
+                  <span className="st-chip st-tone-soon st-ship-wait">
+                    <Lock size={11} aria-hidden="true" />
+                    {t("studio.pay.lineWaiting")}
+                  </span>
+                ) : (
+                  <ShipChip postBy={postBy} today={today} studioDays={facts.studioDays} closures={closures} posted={posted} />
+                )}
               </span>
             </button>
           </div>
@@ -108,6 +123,15 @@ export function OrdersScreen() {
       </div>
     </section>
   );
+}
+
+/** Paid, or Not paid, for an order asked to be paid online; nothing for any other. */
+function OrderPayChip({ order }: { order: Row }) {
+  const t = useT();
+  const data = useData();
+  const pay = paymentOf(data, order);
+  if (!pay.online || (!pay.paid && !pay.owes)) return null;
+  return <span className={pay.paid ? "st-paychip st-paychip--pos" : "st-paychip st-paychip--warn"}>{t(pay.paid ? "studio.pay.listPaid" : "studio.pay.listNotPaid")}</span>;
 }
 
 // ── proofs ──────────────────────────────────────────────────────────────────

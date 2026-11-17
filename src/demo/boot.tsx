@@ -23,7 +23,11 @@ import { drawLettering } from "../studio/picture.ts";
 import { useStudio } from "../studio/store.ts";
 import { StudioApp } from "../studio/StudioApp.tsx";
 import { attachDemoBridge, clearTab } from "../demoBridge.ts";
+import { setLeave } from "../shop/pay.ts";
 import { demoAdminium, useDemo } from "./adminium.ts";
+import { payInDemo } from "./pay.ts";
+
+export { DEMO_PAY_MS } from "./pay.ts";
 
 /** The card's language, once it has said one. */
 function CardLocale() {
@@ -77,6 +81,7 @@ export function DemoRoot() {
 export async function bootDemo(mount: HTMLElement): Promise<void> {
   // A new demo page is a new Birch Row: nothing of the last one's basket, designs or sign-in.
   clearTab();
+  setLeave(payInDemo);
   useShop.setState({ port: demoAdminium().shop });
   createRoot(mount).render(
     <StrictMode>

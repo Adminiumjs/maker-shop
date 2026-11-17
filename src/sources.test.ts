@@ -244,7 +244,7 @@ const ALLOWED_MODULES: readonly AllowedModule[] = [
   { name: "zustand", why: "the in-memory store. It holds state and makes no request" },
   {
     name: "@adminiumjs/public-client",
-    why: "the connected mode\u2019s client for this studio\u2019s own Adminium instance (28-T28). It DOES issue requests, which is what it is for, and the address it may reach is not forgiven here \u2014 it is `connectedBackend`\u2019s single declared origin, checked over every file and over the built output",
+    why: "the connected mode\u2019s client for this studio\u2019s own Adminium instance. It DOES issue requests, which is what it is for, and the address it may reach is not forgiven here \u2014 it is `connectedBackend`\u2019s single declared origin, checked over every file and over the built output",
   },
 ];
 
@@ -287,10 +287,18 @@ const HOSTED_STAFF: Readonly<Record<string, readonly string[]>> = {
   "studio/transport/sessionSource.ts": ["fetch reached through a global"],
   "studio/adminiumStudio.ts": ["fetch reached through a global", "Date.now() \u2014 the real clock"],
   "studio/boot.tsx": ["location.assign()/replace(), a navigation", "Date.now() \u2014 the real clock"],
+  // The shop's one way out of itself: to the pay link Adminium answered for the order (its own pay page, on the
+  // address Adminium chose), as a link would. No address is written here; the demo takes the step over in the page.
+  "shop/pay.ts": ["location.assign()/replace(), a navigation"],
 };
 const allowedHere = (rel: string, means: string): boolean => HOSTED_STAFF[rel]?.includes(means) === true;
 /** The one `import()` of something not a relative file: an add-on's bundle from this Adminium, behind `bundleUrlIsSafe`. */
 const DECLARED_DYNAMIC_IMPORT = "add-ons/connected.ts";
+/**
+ * The other one: Adminium's kit, for a refund's own two steps, from the path the staff config names — taken only when
+ * it is a same-origin script path (`kitOf` in `studio/transport/staffConnection.ts`), and only on the hosted studio.
+ */
+const DECLARED_KIT_IMPORT = "studio/screens/Payments.tsx";
 
 describe("nothing here can reach a host we do not control", () => {
   /*
@@ -325,13 +333,20 @@ describe("nothing here can reach a host we do not control", () => {
       ...sendersIn(f.code)
         .filter((means) => !allowedHere(f.rel, means))
         .map((means) => `${f.rel} → ${means}`),
-      ...(f.rel === DECLARED_DYNAMIC_IMPORT ? [] : foreignImportsIn(f.code)).map((spec) => `${f.rel} → ${spec}`),
+      ...(f.rel === DECLARED_DYNAMIC_IMPORT || f.rel === DECLARED_KIT_IMPORT ? [] : foreignImportsIn(f.code)).map((spec) => `${f.rel} → ${spec}`),
       // The static half, which neither of the two above ever looked at.
       ...foreignModulesIn(f.code, ALLOWED_MODULES).map(
         (spec) => `${f.rel} → imports ${spec}, which nobody declared`,
       ),
     ]);
     expect(offenders).toEqual([]);
+  });
+
+  it("forgives the studio's import of Adminium's kit only while it still makes one, and nothing else of that file", () => {
+    const kit = SHIPPED.find((f) => f.rel === DECLARED_KIT_IMPORT);
+    expect(kit, DECLARED_KIT_IMPORT).toBeDefined();
+    expect(foreignImportsIn(kit!.code)).toEqual(["import(kit.entry)"]);
+    expect(sendersIn(kit!.code)).toEqual([]);
   });
 
   it("forgives the add-on loader's import of a bundle by its address only while it still makes one", () => {

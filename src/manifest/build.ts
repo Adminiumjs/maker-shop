@@ -14,6 +14,7 @@ import { DOCUMENTS } from "./documents.ts";
 import { emailTemplates } from "./emails.ts";
 import { KINDS, OUTBOX } from "./outbox.ts";
 import { NAV_GROUPS, pages } from "./pages.ts";
+import { PAYMENTS } from "./payments.ts";
 import { PEOPLE } from "./people.ts";
 import { PUBLIC_ACCESS, PUBLIC_KEYS } from "./public.ts";
 import { ROLES } from "./roles.ts";
@@ -49,9 +50,17 @@ export const VERSION = "0.2.5";
  * and offers only the chosen order's lines in the proofs form's picker
  * (`reference.scope`). 0.3.54 bundles the Customiser 1.0.26, whose shop
  * editor takes a ready-made design again, and numbers at every update the
- * lines added by hand before their place was numbered.
+ * lines added by hand before their place was numbered. 0.3.60 takes an
+ * order's payment online at checkout (`payments.payables`, a create that
+ * answers its pay link, an app role that gives the money back) and works an
+ * order's post-by out again when its payment lands. 0.3.61 tells the shop
+ * how an order's payment stands when the shopper comes back from paying
+ * (`payments.state`): with the bank, did not finish, or ran out of time.
+ * 0.3.62 places an order by whether the studio takes payments online right
+ * now (`requirePayments`), as Adminium judges it, and sends the order's
+ * e-mails by the same (`producers[].payments`).
  */
-export const MIN_ADMINIUM = "0.3.54";
+export const MIN_ADMINIUM = "0.3.62";
 
 const ENV = {
   VITE_ADMINIUM_API_BASE_URL: { required: false, example: "https://admin.example.com" },
@@ -116,6 +125,7 @@ export function buildManifest(): Record<string, unknown> {
     outbox: OUTBOX,
     people: PEOPLE,
     emailTemplates: emailTemplates(KINDS),
+    payments: PAYMENTS,
     sampleData: { file: "seeds/maker.sample.json", addOns: { customiser: { file: "seeds/maker.customiser.sample.json" } } },
   };
 }

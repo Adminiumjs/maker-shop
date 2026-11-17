@@ -11,10 +11,10 @@
  */
 import type { DispatchPayload, OutboundOrder, PostalAddress, ShopClock } from "../add-ons/payloads.ts";
 import type { StudioData } from "./door.ts";
-import { isLive, linesOf, serviceOf } from "./facts.ts";
+import { isLive, linesOf, orderPostBy, serviceOf } from "./facts.ts";
 import { countryOf } from "./holidays.ts";
 import { dayIn } from "./time.ts";
-import { dayOf, num, text, type Row } from "./wire.ts";
+import { num, text, type Row } from "./wire.ts";
 
 /** The add-on whose fill the post office run mounts. */
 export const DHL = "shipping-dhl";
@@ -43,7 +43,7 @@ export function outboundOrder(data: StudioData, order: Row, currency: string): O
   const country = countryOf(currency);
   const line1 = text(order["address_line1"]);
   const total = num(order["total"]);
-  const postBy = dayOf(order["post_by"]);
+  const postBy = orderPostBy(order);
   // The parcel as the studio weighs it (pieces and packing, Adminium's stored `weight_g`): the one weight the order shows and DHL is sent.
   const weight = num(order["weight_g"]);
   return {

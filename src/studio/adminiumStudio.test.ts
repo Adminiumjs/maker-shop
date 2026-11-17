@@ -328,7 +328,7 @@ describe("the moments and yes/no columns the door reads back are the manifest's"
     it(table.ref, () => {
       const moments = table.columns.filter((c) => c.type === "timestamptz").map((c) => c.ref);
       const yesNo = table.columns.filter((c) => c.type === "bool").map((c) => c.ref);
-      const read = ["settings", "machines", "materials", "products", "options", "postage_services", "closures", "customers", "orders", "order_lines", "order_line_features", "proofs", "batches", "machine_bookings", "stock_movements"];
+      const read = ["settings", "machines", "materials", "products", "options", "postage_services", "closures", "customers", "orders", "order_lines", "order_line_features", "proofs", "batches", "machine_bookings", "stock_movements", "payments"];
       if (!read.includes(table.ref)) return;
       expect([...(MOMENTS[table.ref as keyof typeof MOMENTS] ?? [])].sort()).toEqual(moments.sort());
       expect([...(YES_NO[table.ref as keyof typeof YES_NO] ?? [])].sort()).toEqual(yesNo.sort());

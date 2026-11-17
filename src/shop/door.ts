@@ -14,7 +14,7 @@ import { createPublicClient, newClientKey, pictureUrl, PublicApiError, type Held
 import { customiserApi, REFS as CUSTOMISER_REFS, type ClientLike, type CustomiserApi } from "../../vendor/customiser/index.js";
 import { AdminiumAfter, afterRefs, type AfterPort } from "./after-port.ts";
 import { KEYS, shopRefs, type ShopRefs } from "./refs.ts";
-import { ShopError, type Catalogue, type Figures, type Id, type Material, type Option, type OptionKind, type OrderBody, type Placed, type Product, type Refused, type Row, type Service, type ShopConfig, type ShopPort } from "./port.ts";
+import { ShopError, type Catalogue, type Figures, type Id, type Material, type Option, type OptionKind, type OrderBody, type PayOffer, type Placed, type Product, type Refused, type Row, type Service, type ShopConfig, type ShopPayments, type ShopPort } from "./port.ts";
 
 export interface ShopServed {
   baseUrl: string;
@@ -23,6 +23,12 @@ export interface ShopServed {
   publicKeys?: Record<string, string>;
   /** The app's own settings, as `surface-config.json` serves them (its studio days, its cut-off). */
   settings?: Record<string, unknown>;
+  /**
+   * The write token of someone who manages payments rehearsing the checkout
+   * on this address (`rehearsal.csrfToken` of the config): their writes go as
+   * theirs, their order is sample data and no money moves. Absent for anyone else.
+   */
+  rehearsalToken?: string;
 }
 
 export interface ShopDoorOptions {
@@ -166,6 +172,14 @@ export class AdminiumShop implements ShopPort {
   /** The order key's client: the session a placed order's link opens is held here. */
   readonly orderClient: PublicClient | null;
   private config$: Promise<PublicConfig> | null = null;
+  /**
+   * Whether the studio takes payments online, as Adminium last said it: an
+   * order is priced and placed through the entry open for that (the one that
+   * asks to be paid online while it does, the one as it always was while it
+   * does not). Adminium refuses the other, so a page that guessed wrong asks
+   * again and goes through the one that is open.
+   */
+  private paying = false;
   private api: CustomiserApi | null = null;
   private afterDoor: AfterPort | null = null;
 
@@ -182,8 +196,9 @@ export class AdminiumShop implements ShopPort {
         ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
         ...(humanCheck === undefined ? {} : { humanCheck }),
         ...(held === undefined ? {} : { session: held }),
+        ...(served.rehearsalToken === undefined ? {} : { csrfToken: served.rehearsalToken }),
         onSessionChange: (session) => keepSession(purpose, session),
-      });
+      } as Parameters<typeof createPublicClient>[0]);
     };
     const after = afterRefs(served.tables);
     // Placing an order, saving a design, signing in and the two requests all ask the human check: solved before they are sent.
@@ -230,20 +245,44 @@ export class AdminiumShop implements ShopPort {
     });
   }
 
+  /** The place-order entry open now: while the studio takes payments online, the one that asks to be paid online. */
+  private placeRef(): string {
+    return this.paying ? this.refs.placeOrderPaying : this.refs.placeOrder;
+  }
+
+  /**
+   * Through the entry open now; refused as switched off, Adminium is asked
+   * again whether payments are on and, where that changed, the other entry is
+   * tried once. A shop not taking orders is refused either way.
+   */
+  private async throughOpen<T>(run: (ref: string) => Promise<T>): Promise<T> {
+    try {
+      return await run(this.placeRef());
+    } catch (error) {
+      if (!(error instanceof PublicApiError) || error.code !== "PUBLIC_SWITCHED_OFF" || this.client.payments === undefined) throw error;
+      const was = this.paying;
+      this.paying = (await this.client.payments.available().catch(() => ({ online: false }))).online === true;
+      if (this.paying === was) throw error;
+      return run(this.placeRef());
+    }
+  }
+
   quote(body: OrderBody): Promise<Figures> {
     return answer(async () => {
-      const quote = await this.client.quote<Row>(this.refs.placeOrder, { values: body.values, children: body.children as never });
+      const quote = await this.throughOpen((ref) => this.client.quote<Row>(ref, { values: body.values, children: body.children as never }));
       return { order: quote.data, lines: (quote.children["order_lines"] ?? []).map((line) => line.data) };
     });
   }
 
   place(body: OrderBody, clientKey: string, expectTotal: string): Promise<Placed> {
     return answer(async () => {
-      const made = await this.client.createTree<Row>(this.refs.placeOrder, {
-        values: { ...body.values, client_key: clientKey },
-        children: body.children as never,
-        expect: { total: expectTotal },
-      });
+      const made = await this.throughOpen((ref) =>
+        this.client.createTree<Row>(ref, {
+          values: { ...body.values, client_key: clientKey },
+          children: body.children as never,
+          expect: { total: expectTotal },
+        }),
+      );
       // The order's own link, a session on it already open: the order's page needs no claim.
       if (made.link !== null && this.orderClient !== null && made.link.session !== null && made.link.expiresAt !== null) {
         this.orderClient.adoptSession({ token: made.link.session, expiresAt: made.link.expiresAt, level: "verified" });
@@ -253,8 +292,41 @@ export class AdminiumShop implements ShopPort {
         lines: (made.children["order_lines"] ?? []).map((line) => line.data),
         replayed: made.replayed,
         link: made.link === null ? null : { token: made.link.token },
+        payUrl: made.payUrl ?? null,
       };
     });
+  }
+
+  payments(): ShopPayments | null {
+    const pays = (this.client as Partial<PublicClient>).payments;
+    if (pays === undefined) return null;
+    const refs = { link: afterRefs(this.served.tables).linkOrder, mine: afterRefs(this.served.tables).myOrders };
+    return {
+      available: async (): Promise<PayOffer> => {
+        try {
+          const said = await pays.available();
+          this.paying = said.online === true;
+          return { online: said.online === true, test: said.test === true };
+        } catch {
+          this.paying = false;
+          return { online: false, test: false };
+        }
+      },
+      // Through the client whose session reads the order: its own link's, or the shopper's sign-in.
+      start: (via, orderId) =>
+        answer(async () => {
+          const client = via === "link" ? this.orderClient : this.client;
+          if (client === null) throw new Error("This shop has no key for an order's own link.");
+          return (await client.payments.start(refs[via], String(orderId))).payUrl;
+        }),
+      // How the newest online payment stands, read through the same session (Adminium 0.3.61).
+      state: (via, orderId) =>
+        answer(async () => {
+          const client = via === "link" ? this.orderClient : this.client;
+          if (client === null) throw new Error("This shop has no key for an order's own link.");
+          return (await client.payments.state(refs[via], String(orderId))).state;
+        }),
+    };
   }
 
   after(): AfterPort {
