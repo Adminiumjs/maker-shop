@@ -27,7 +27,7 @@ import { useStudio, type Overlay, type StudioState, type View } from "./store.ts
 import { FakeDoor } from "./testing/fakeDoor.ts";
 import { FakePanels } from "./testing/fakePanels.tsx";
 import { UK_HOLIDAYS } from "./testing/fixture.ts";
-import { strings as DHL_WORDS } from "../add-ons/vendor/shipping-dhl/i18n/strings.ts";
+import { strings as DHL_WORDS } from "../add-ons/vendor/shipping-kit/i18n/strings.ts";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -102,7 +102,7 @@ async function until(selector: string): Promise<void> {
 }
 
 /** A button inside DHL's flow, pressed by its own words in the language the page is in. */
-async function pressInSlot(key: "addon.shipping-dhl.action.book" | "addon.shipping-dhl.rates.get"): Promise<void> {
+async function pressInSlot(key: "addon.shipping-kit.action.book" | "addon.shipping-kit.rates.get"): Promise<void> {
   const lang = (document.documentElement.getAttribute("lang") ?? "en-US") as keyof typeof DHL_WORDS;
   const words = (DHL_WORDS[lang] ?? DHL_WORDS["en-US"])[key];
   const found = $$("[data-add-on-slot] button").find((b) => (b.textContent ?? "").trim() === words);
@@ -271,8 +271,8 @@ const STATES: Row[] = [
     door: withDhl,
     go: async () => {
       await until("[data-add-on-slot='order.dispatch.actions'] button");
-      await pressInSlot("addon.shipping-dhl.action.book");
-      await pressInSlot("addon.shipping-dhl.rates.get");
+      await pressInSlot("addon.shipping-kit.action.book");
+      await pressInSlot("addon.shipping-kit.rates.get");
       await until("[data-add-on-slot] button[aria-pressed='true']");
     },
     shows: "[data-add-on-slot] button[aria-pressed='true']",

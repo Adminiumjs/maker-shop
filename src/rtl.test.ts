@@ -287,13 +287,13 @@ describe("the shop's and the studio's code", () => {
 });
 
 /*
- * THE ONE EXEMPTION, SAID: the vendored DHL client half (`add-ons/vendor/shipping-dhl/`) draws with inline styles.
+ * THE ONE EXEMPTION, SAID: the vendored carrier screens (`add-ons/vendor/shipping-kit/`) draw with inline styles.
  * It is the add-on's own code, a synced copy its repository's gates hold (`scripts/sync-add-ons.sh status` fails a
  * hand edit), and only the demo build draws it: a real install draws the client half Adminium serves for the app
  * (`add-ons/connected.ts`). Everything else this app ships, on either side, draws none.
  */
 describe("the vendored DHL client, the one place an inline style is drawn", () => {
-  const VENDORED = join(SRC, "add-ons", "vendor", "shipping-dhl");
+  const VENDORED = join(SRC, "add-ons", "vendor", "shipping-kit");
   const shipped = walk(SRC).filter((f) => /\.tsx?$/.test(f) && !/\.test\.tsx?$/.test(f) && !/[/\\]testing[/\\]|testing\.ts$/.test(f));
   const styled = (file: string) => readFileSync(file, "utf8").split("\n").some((line) => /\bstyle=\{|\bstyle="/.test(line));
 

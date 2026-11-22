@@ -1,7 +1,7 @@
 /*
- * VENDORED from add-ons/packages/shipping-dhl/src/seed.ts — synced by scripts/sync-add-ons.sh.
+ * VENDORED from add-ons/packages/shipping-kit/src/seed.ts — synced by scripts/sync-add-ons.sh.
  * Never hand-edit this copy: edit the monorepo and re-run `sync-add-ons.sh sync`.
- * The add-on key is `shipping-dhl`; its manifest, tests and README live in the monorepo.
+ * The screens every carrier shares; its tests live in the monorepo.
  */
 /**
  * WHAT THIS ADD-ON SEEDS, now that it has stopped seeding somebody else's shop.
@@ -136,6 +136,7 @@ function asCarrierAddress(address: PostalAddress): Address {
     lines: [...address.lines],
     city: address.city,
     postcode: address.postcode,
+    ...(address.region === undefined || address.region.trim() === "" ? {} : { region: address.region }),
     country: address.country,
   };
 }

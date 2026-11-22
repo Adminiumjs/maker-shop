@@ -54,8 +54,9 @@ const FILES = walk(VENDOR).map((path) => ({ rel: path.slice(VENDOR.length), code
 
 describe("the vendored DHL client, as text", () => {
   it("is there to be read: the contract and the client half", () => {
-    expect(FILES.filter((f) => f.rel.startsWith("shipping-dhl/")).length).toBeGreaterThan(10);
-    expect(FILES.some((f) => f.rel === "shipping-dhl/ui/DispatchAction.tsx")).toBe(true);
+    expect(FILES.filter((f) => f.rel.startsWith("shipping-dhl/")).length).toBeGreaterThan(4);
+    expect(FILES.filter((f) => f.rel.startsWith("shipping-kit/")).length).toBeGreaterThan(10);
+    expect(FILES.some((f) => f.rel === "shipping-kit/ui/DispatchAction.tsx")).toBe(true);
   });
 
   it("names no way of sending anything", () => {
@@ -71,7 +72,9 @@ describe("the vendored DHL client, as text", () => {
   });
 
   it("carries none of the server half, where the credentials live", () => {
-    for (const server of ["carrier.ts", "http.ts", "server.ts"]) expect(FILES.some((f) => f.rel === `shipping-dhl/${server}`), server).toBe(false);
+    for (const dir of ["shipping-dhl", "shipping-kit"]) {
+      for (const server of ["carrier.ts", "http.ts", "server.ts"]) expect(FILES.some((f) => f.rel === `${dir}/${server}`), `${dir}/${server}`).toBe(false);
+    }
   });
 });
 

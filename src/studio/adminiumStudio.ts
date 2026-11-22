@@ -111,6 +111,7 @@ export class AdminiumStudio implements StudioDoor {
       appKey: APP_KEY,
       origin: this.options.origin ?? window.location.origin,
       request: this.fetchImpl,
+      csrfToken: () => this.cfg.csrfToken,
       // Only this install's: the config's add-ons are those attached to it, switched on and installed.
       installId: this.cfg.installId,
       allowed: new Set(Object.keys(this.cfg.addOns)),
