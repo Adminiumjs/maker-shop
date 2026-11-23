@@ -20,7 +20,6 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ORDER_SELECT } from "../manifest/public.ts";
 import { postOrders } from "../studio/actions.ts";
 import { AdminiumStudio } from "../studio/adminiumStudio.ts";
-import type { StudioData } from "../studio/door.ts";
 import { createSessionTransport } from "../studio/transport/sessionSource.ts";
 import { loadStaffConfig } from "../studio/transport/staffConnection.ts";
 import type { Row } from "../studio/wire.ts";
@@ -63,7 +62,13 @@ describe.skipIf(why !== null)(`Maker's parcels on a built Adminium${why === null
       const rowsPath = (table: string) => `/api/v1/data/${connectionId}/${encodeURIComponent(tables[table] ?? `maker_${table}`)}`;
       const rows = async (table: string): Promise<Row[]> => ok(await admin.get<{ data: Row[] }>(`${rowsPath(table)}?limit=200`)).data;
       const patch = (caller: Caller, table: string, id: unknown, values: Record<string, unknown>) => caller.patch(`${rowsPath(table)}/${String(id)}`, { values });
-      const readyOrder = async (data: StudioData): Promise<Row> => data.orders.find((o) => o["status"] === "ready")!;
+      /** An order of its own, walked to "ready" by its allowed moves. */
+      const readyOrder = async (): Promise<Row> => {
+        const service = (await rows("postage_services"))[0]!;
+        const made = ok(await admin.post<{ data: Row }>(rowsPath("orders"), { values: { name: "Parcel P", email: SHOPPER, language: "en-US", address_line1: "2 Mill Row", town: "Colne", postcode: "BB8 9ZZ", service_id: service.id } }), 201).data;
+        for (const [from, to] of [["placed", "making"], ["making", "ready"]] as const) ok(await admin.patch(`${rowsPath("orders")}/${String(made.id)}`, { values: { status: to }, from }));
+        return made;
+      };
       const messageFor = (kind: string, order: Row) => async () => (await rows("messages")).find((m) => m["kind"] === kind && String(m["order_id"]) === String(order.id));
 
       beforeAll(async () => {
@@ -106,9 +111,8 @@ describe.skipIf(why !== null)(`Maker's parcels on a built Adminium${why === null
       it("keeps a label off the shopper's columns until it is handed over, then tells them", async () => {
         expect(ORDER_SELECT).not.toContain("label_tracking");
         expect(ORDER_SELECT).not.toContain("label_carrier");
-        const data = await packer.load();
-        const order = await readyOrder(data);
-        ok(await patch(admin, "orders", order.id, { email: SHOPPER, language: "en-US", label_tracking: "TRK-1001", label_carrier: "Evri" }));
+        const order = await readyOrder();
+        ok(await patch(admin, "orders", order.id, { label_tracking: "TRK-1001", label_carrier: "Evri" }));
         const before = (await packer.load()).orders.find((o) => String(o.id) === String(order.id))!;
         expect(before["status"]).toBe("ready");
         expect(before["tracking"] ?? null).toBeNull();
