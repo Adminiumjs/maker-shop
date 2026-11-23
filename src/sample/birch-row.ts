@@ -160,6 +160,7 @@ const SETTINGS: Row = {
   // A proof sent yesterday is worth a reminder: the comp's waiting proofs offer one.
   proof_reminder_days: 1,
   packaging_grams: 120,
+  home_country: "GB",
   taking_orders: true,
 };
 
@@ -674,6 +675,7 @@ export function sampleBundle(): SampleBundle {
           address_line1: ADDRESSES[o.town]!.line1,
           town: o.town,
           postcode: ADDRESSES[o.town]!.postcode,
+          country: "GB",
           language: "en-US",
           customer_id: { "@ref": customerLabel(o.email) },
           service_id: { "@ref": `service:${o.ship}` },

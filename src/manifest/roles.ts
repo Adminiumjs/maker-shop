@@ -279,10 +279,12 @@ export const ROLES = [
       pii("orders"),
       ...grant("orders", "update"),
       ...grant("order_lines", "update"),
+      // Buys a label inside the owner's limits, with the install asking first. Refunds and customs stay the owner's.
+      "shipping:@:book",
       view("maker-orders"),
     ],
     limits: {
-      orders: { writable: ["status", "tracking"], writableValues: { status: ["posted"] }, writableFrom: { status: ["ready"] } },
+      orders: { writable: ["status", "tracking", "carrier", "number_told_at"], writableValues: { status: ["posted"] }, writableFrom: { status: ["ready", "posted"] } },
       order_lines: { writable: ["stage"], writableValues: { stage: ["posted"] }, writableFrom: { stage: ["ready"] } },
     },
     tables: [{ addOn: CUSTOMISER, table: "designs", actions: ["read"] }],

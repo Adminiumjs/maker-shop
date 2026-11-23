@@ -51,7 +51,7 @@ const SPECS: PageSpec[] = [
     table: "orders",
     config: form(
       [title("number"), f("status", { control: "segmented" }), f("placed_at", { control: "datetime" }), f("post_by", { control: "date" })],
-      [f("name"), f("email", { control: "email" }), f("address_line1"), f("address_line2"), f("town"), f("postcode"), f("language"), wide("note", "text")],
+      [f("name"), f("email", { control: "email" }), f("address_line1"), f("address_line2"), f("town"), f("postcode"), f("country"), f("language"), wide("note", "text")],
       [
         rows("order_lines", [
           { column: "product_id", control: "reference", width: "2fr" },

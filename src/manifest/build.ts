@@ -19,6 +19,7 @@ import { PEOPLE } from "./people.ts";
 import { PUBLIC_ACCESS, PUBLIC_KEYS } from "./public.ts";
 import { ROLES } from "./roles.ts";
 import { SETTINGS } from "./settings.ts";
+import { SHIPPING } from "./shipping.ts";
 import { TABLES } from "./tables.ts";
 
 export const VERSION = "0.2.5";
@@ -58,9 +59,11 @@ export const VERSION = "0.2.5";
  * (`payments.state`): with the bank, did not finish, or ran out of time.
  * 0.3.62 places an order by whether the studio takes payments online right
  * now (`requirePayments`), as Adminium judges it, and sends the order's
- * e-mails by the same (`producers[].payments`).
+ * e-mails by the same (`producers[].payments`). 0.3.72 reads where an
+ * order's address and label live (`shipping`) and an app role's right to
+ * buy a label (`shipping:@:book`).
  */
-export const MIN_ADMINIUM = "0.3.62";
+export const MIN_ADMINIUM = "0.3.72";
 
 const ENV = {
   VITE_ADMINIUM_API_BASE_URL: { required: false, example: "https://admin.example.com" },
@@ -126,6 +129,7 @@ export function buildManifest(): Record<string, unknown> {
     people: PEOPLE,
     emailTemplates: emailTemplates(KINDS),
     payments: PAYMENTS,
+    shipping: SHIPPING,
     sampleData: { file: "seeds/maker.sample.json", addOns: { customiser: { file: "seeds/maker.customiser.sample.json" } } },
   };
 }

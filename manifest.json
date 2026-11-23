@@ -18,7 +18,7 @@
     "commerce"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.62",
+    "minAdminiumVersion": "0.3.72",
     "engines": [
       "sqlite",
       "postgres",
@@ -143,6 +143,20 @@
         }
       },
       {
+        "key": "shipping-shippo",
+        "range": "^1.0.33",
+        "reason": {
+          "en-US": "Buy a carrier's label for a parcel with your own Shippo account.",
+          "de-DE": "Das Etikett eines Versanddienstes für ein Paket über Ihr eigenes Shippo-Konto kaufen.",
+          "fr-FR": "Acheter l’étiquette d’un transporteur pour un colis avec votre propre compte Shippo.",
+          "da-DK": "Køb en fragtfirmas etiket til en pakke med din egen Shippo-konto.",
+          "cs-CZ": "Koupit štítek dopravce k balíku přes vlastní účet Shippo.",
+          "ar-EG": "اشترِ ملصق شركة شحن لطرد بحساب Shippo الخاص بك.",
+          "zh-CN": "用您自己的 Shippo 账户为包裹购买承运商面单。",
+          "zh-TW": "用您自己的 Shippo 帳戶為包裹購買貨運公司標籤。"
+        }
+      },
+      {
         "key": "barcode-labels",
         "range": "^1.0.26",
         "reason": {
@@ -215,6 +229,22 @@
         },
         "requires": [
           "shipping-dhl"
+        ]
+      },
+      {
+        "id": "carrier-labels",
+        "label": {
+          "en-US": "Carrier labels",
+          "de-DE": "Versandetiketten",
+          "fr-FR": "Étiquettes de transporteur",
+          "da-DK": "Fragtetiketter",
+          "cs-CZ": "Štítky dopravce",
+          "ar-EG": "ملصقات الشحن",
+          "zh-CN": "承运商面单",
+          "zh-TW": "貨運標籤"
+        },
+        "requires": [
+          "shipping-shippo"
         ]
       },
       {
@@ -707,6 +737,25 @@
                 "min": 0,
                 "max": 5000
               }
+            }
+          },
+          {
+            "ref": "home_country",
+            "type": "text",
+            "maxLength": 2,
+            "label": {
+              "en-US": "Studio's country",
+              "de-DE": "Land der Werkstatt",
+              "fr-FR": "Pays de l’atelier",
+              "da-DK": "Værkstedets land",
+              "cs-CZ": "Země dílny",
+              "ar-EG": "بلد الورشة",
+              "zh-CN": "工作室所在国家/地区",
+              "zh-TW": "工作室所在國家/地區"
+            },
+            "nullable": true,
+            "rules": {
+              "personal": false
             }
           },
           {
@@ -3121,7 +3170,11 @@
             ],
             "except": [
               "link_stopped",
-              "tracking"
+              "tracking",
+              "carrier",
+              "label_tracking",
+              "label_carrier",
+              "number_told_at"
             ]
           }
         },
@@ -3389,6 +3442,30 @@
               "ar-EG": "الرمز البريدي",
               "zh-CN": "邮编",
               "zh-TW": "郵遞區號"
+            }
+          },
+          {
+            "ref": "country",
+            "type": "text",
+            "maxLength": 2,
+            "label": {
+              "en-US": "Country",
+              "de-DE": "Land",
+              "fr-FR": "Pays",
+              "da-DK": "Land",
+              "cs-CZ": "Země",
+              "ar-EG": "البلد",
+              "zh-CN": "国家/地区",
+              "zh-TW": "國家/地區"
+            },
+            "nullable": true,
+            "rules": {
+              "default": {
+                "from": {
+                  "table": "settings",
+                  "column": "home_country"
+                }
+              }
             }
           },
           {
@@ -3844,6 +3921,69 @@
               "ar-EG": "رقم التتبع",
               "zh-CN": "追踪号",
               "zh-TW": "追蹤號碼"
+            },
+            "nullable": true
+          },
+          {
+            "ref": "carrier",
+            "type": "text",
+            "maxLength": 80,
+            "label": {
+              "en-US": "Carrier",
+              "de-DE": "Versanddienst",
+              "fr-FR": "Transporteur",
+              "da-DK": "Fragtfirma",
+              "cs-CZ": "Dopravce",
+              "ar-EG": "شركة الشحن",
+              "zh-CN": "承运商",
+              "zh-TW": "貨運公司"
+            },
+            "nullable": true
+          },
+          {
+            "ref": "label_tracking",
+            "type": "text",
+            "maxLength": 64,
+            "label": {
+              "en-US": "Label's tracking number",
+              "de-DE": "Sendungsnummer des Etiketts",
+              "fr-FR": "Numéro de suivi de l’étiquette",
+              "da-DK": "Etikettens sporingsnummer",
+              "cs-CZ": "Sledovací číslo štítku",
+              "ar-EG": "رقم تتبع الملصق",
+              "zh-CN": "面单的追踪号",
+              "zh-TW": "標籤的追蹤號碼"
+            },
+            "nullable": true
+          },
+          {
+            "ref": "label_carrier",
+            "type": "text",
+            "maxLength": 80,
+            "label": {
+              "en-US": "Label's carrier",
+              "de-DE": "Versanddienst des Etiketts",
+              "fr-FR": "Transporteur de l’étiquette",
+              "da-DK": "Etikettens fragtfirma",
+              "cs-CZ": "Dopravce štítku",
+              "ar-EG": "شركة شحن الملصق",
+              "zh-CN": "面单的承运商",
+              "zh-TW": "標籤的貨運公司"
+            },
+            "nullable": true
+          },
+          {
+            "ref": "number_told_at",
+            "type": "timestamptz",
+            "label": {
+              "en-US": "Told of a new number",
+              "de-DE": "Über neue Nummer informiert",
+              "fr-FR": "Informé du nouveau numéro",
+              "da-DK": "Informeret om nyt nummer",
+              "cs-CZ": "Informováno o novém čísle",
+              "ar-EG": "أُبلغ بالرقم الجديد",
+              "zh-CN": "已告知新单号",
+              "zh-TW": "已告知新單號"
             },
             "nullable": true
           },
@@ -9255,6 +9395,9 @@
                   "column": "postcode"
                 },
                 {
+                  "column": "country"
+                },
+                {
                   "column": "language"
                 },
                 {
@@ -11130,12 +11273,17 @@
             "address_line2",
             "town",
             "postcode",
+            "country",
             "note",
             "language",
             "customer_id",
             "service_id",
             "packing_g",
             "tracking",
+            "carrier",
+            "label_tracking",
+            "label_carrier",
+            "number_told_at",
             "cancel_reason",
             "link_stopped",
             "pay_online",
@@ -11149,12 +11297,17 @@
             "address_line2",
             "town",
             "postcode",
+            "country",
             "note",
             "language",
             "customer_id",
             "service_id",
             "packing_g",
             "tracking",
+            "carrier",
+            "label_tracking",
+            "label_carrier",
+            "number_told_at",
             "cancel_reason",
             "link_stopped",
             "pay_online",
@@ -12289,13 +12442,16 @@
         "table:@orders:read_pii",
         "table:@orders:update",
         "table:@order_lines:update",
+        "shipping:@:book",
         "page:@maker-orders:view"
       ],
       "limits": {
         "orders": {
           "writable": [
             "status",
-            "tracking"
+            "tracking",
+            "carrier",
+            "number_told_at"
           ],
           "writableValues": {
             "status": [
@@ -12304,7 +12460,8 @@
           },
           "writableFrom": {
             "status": [
-              "ready"
+              "ready",
+              "posted"
             ]
           }
         },
@@ -21724,6 +21881,27 @@
         "refunds": {
           "model": "column"
         }
+      }
+    ]
+  },
+  "shipping": {
+    "orders": [
+      {
+        "table": "orders",
+        "reference": "number",
+        "address": {
+          "name": "name",
+          "lines": [
+            "address_line1",
+            "address_line2"
+          ],
+          "city": "town",
+          "postcode": "postcode",
+          "country": "country",
+          "email": "email"
+        },
+        "tracking": "label_tracking",
+        "carrier": "label_carrier"
       }
     ]
   },

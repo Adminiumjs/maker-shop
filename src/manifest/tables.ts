@@ -333,6 +333,8 @@ export const TABLES: Table[] = [
       int("proof_reminder_days", "Remind about a proof after (days)", { default: 3, rules: { validation: { min: 1, max: 30 } } }),
       // What the box and its packing weigh, added to every parcel.
       int("packaging_grams", "Packing weight (g)", { default: 120, rules: { validation: { min: 0, max: 5000 } } }),
+      // The country the studio delivers inside, as a two-letter code: what a new order's country starts as. Never guessed.
+      text("home_country", 2, "Studio's country", { ...opt, rules: { personal: false } }),
       bool("taking_orders", "Taking orders", true),
       // With online payments on: a line goes on the machine only once its order is paid. The app's own admin sets it.
       bool("pay_first", "Take payment before making", false),
@@ -547,7 +549,7 @@ export const TABLES: Table[] = [
         making: ["ready", "cancelled"],
         ready: ["posted", "making"],
       },
-      lock: { when: ["posted", "cancelled"], except: ["link_stopped", "tracking"] },
+      lock: { when: ["posted", "cancelled"], except: ["link_stopped", "tracking", "carrier", "label_tracking", "label_carrier", "number_told_at"] },
     },
     columns: [
       id,
@@ -567,6 +569,8 @@ export const TABLES: Table[] = [
       text("address_line2", 120, "Address, second line", opt),
       text("town", 80, "Town"),
       text("postcode", 16, "Postcode"),
+      // Where the parcel goes, as a two-letter code: the studio's own country unless the order says otherwise.
+      text("country", 2, "Country", { ...opt, rules: { default: { from: setting("home_country") } } }),
       text("note", 200, "Note for the studio", opt),
       language("language"),
       fk("customer_id", "customers", "Customer", opt),
@@ -592,8 +596,14 @@ export const TABLES: Table[] = [
       date("post_by", "Post by", { ...opt, rules: { rollup: { from: "order_lines", via: "order_id", latest: { of: "post_by", by: "post_by" } } } }),
       at("posted_at", "Posted", { ...opt, rules: stamp("now", onState("status", "posted")) }),
       text("posted_by", 80, "Posted by", { ...opt, rules: stamp("user-name", onState("status", "posted")) }),
-      // A tracking number comes only through DHL; without it the order says the service it went by.
+      // What the shopper is told, once staff hand the parcel over: a bought label's number and company, copied here then.
       text("tracking", 64, "Tracking number", opt),
+      text("carrier", 80, "Carrier", opt),
+      // What a bought label says, written by Adminium at purchase. Staff only: buying a label tells the shopper nothing.
+      text("label_tracking", 64, "Label's tracking number", opt),
+      text("label_carrier", 80, "Label's carrier", opt),
+      // Staff told the shopper a parcel's new number: stamping it sends the short e-mail.
+      at("number_told_at", "Told of a new number", opt),
       at("cancelled_at", "Cancelled", { ...opt, rules: stamp("now", onState("status", "cancelled")) }),
       text("cancel_reason", 160, "Why it was cancelled", opt),
       // The order's own link, e-mailed to the shopper: no staff screen reads or copies it.
