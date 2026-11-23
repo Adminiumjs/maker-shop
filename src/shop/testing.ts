@@ -78,7 +78,7 @@ export function sampleCatalogue(): Catalogue {
   };
 }
 
-const POSTAGE: Record<string, number> = { "1": 3.95, "2": 7.5 };
+const POSTAGE: Record<string, number> = { "1": 3.95, "2": 7.5, "9": 18.5 };
 const cents = (n: number) => Math.round(n * 100);
 const fixed = (c: number) => (c / 100).toFixed(2);
 
