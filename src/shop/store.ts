@@ -377,6 +377,19 @@ export function detailValues(details: Details, abroad = false): Row {
   return out;
 }
 
+/**
+ * An order abroad must carry a phone number, so a dry run asked before the
+ * shopper has typed one holds this stand-in, to be priced at all. It only ever
+ * reaches a dry run, which keeps nothing: placing sends what they typed.
+ */
+const PRICE_ONLY_PHONE = "+00000";
+
+/** The values a price is asked with: the service, the language, and a phone where that service needs one. */
+function pricedValues(serviceId: Id | null): Row {
+  const abroad = get().catalogue?.abroad.some((one) => String(one.id) === String(serviceId)) === true;
+  return { ...(serviceId === null ? {} : { service_id: serviceId }), language: language(), ...(abroad ? { phone: PRICE_ONLY_PHONE } : {}) };
+}
+
 // ── the product page's prices ─────────────────────────────────────────────
 
 /** The quantities one dry run prices for a product's page: the one chosen, then each break's. */
@@ -395,7 +408,7 @@ export function requoteProduct(): void {
   const features = featureOptions(product.id, s.used);
   const quantities = productQuantities(product.id, s.choice.qty);
   const body: OrderBody = {
-    values: { ...(s.serviceId === null ? {} : { service_id: s.serviceId }), language: language() },
+    values: pricedValues(s.serviceId),
     children: {
       order_lines: quantities.map((qty) =>
         withFeatures(lineValues({ productId: product.id, qty, materialId: s.choice.materialId, sizeId: s.choice.sizeId, finishId: s.choice.finishId, lettering: null, design: null }), features),
@@ -444,7 +457,7 @@ export function requoteBasket(): void {
     set({ basketQuote: null });
     return;
   }
-  const body = orderBody({ ...(s.serviceId === null ? {} : { service_id: s.serviceId }), language: language() }, s.basket);
+  const body = orderBody(pricedValues(s.serviceId), s.basket);
   const key = JSON.stringify(body);
   if (s.basketQuote?.key === key && s.basketQuote.state !== "failed") return;
   set({ basketQuote: { key, state: "busy", figures: s.basketQuote?.figures ?? null } });
@@ -473,7 +486,7 @@ export function requoteServices(): void {
   if (s.serviceKey === key) return;
   set({ serviceKey: key, servicePostage: {} });
   for (const service of [...s.catalogue.services, ...s.catalogue.abroad]) {
-    const body: OrderBody = { values: { service_id: service.id, language: language() }, children: lines };
+    const body: OrderBody = { values: pricedValues(service.id), children: lines };
     void s.port
       .quote(body)
       .then((figures) => {

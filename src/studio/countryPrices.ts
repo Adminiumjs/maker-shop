@@ -7,19 +7,42 @@
  * only a country on the saved list is offered, so a price left behind by a
  * failed save sells nothing. Opening the panel puts right anything a failure
  * left out of step. A row is never deleted: past orders name it.
+ *
+ * TWO PANELS SAVE ONE RECORD, each from what it read when it opened. So each
+ * saves only its own part over what Adminium holds now: adding a country never
+ * puts back an old HS code, and saving the defaults never drops a country.
  */
 import type { CountryPrices } from "../add-ons/countries.ts";
-import type { EngineCarrier } from "../add-ons/vendor/host/engine-carrier.ts";
+import type { EngineCarrier, EngineInternational, EngineInternationalBody } from "../add-ons/vendor/host/engine-carrier.ts";
 import type { AbroadDoor } from "./door.ts";
 
-export function countryPrices(door: AbroadDoor, engine: EngineCarrier, nameOf: (code: string) => string): { client: EngineCarrier; prices: CountryPrices } {
+/** The kit's own merge: the record as Adminium holds it, with one panel's change on top. */
+type SavedBody = (view: EngineInternational, first: Pick<EngineInternationalBody, "currency" | "originCountry">, change?: Partial<EngineInternationalBody>) => EngineInternationalBody;
+
+export function countryPrices(
+  door: AbroadDoor,
+  engine: EngineCarrier,
+  nameOf: (code: string) => string,
+  savedBody: SavedBody,
+): { countriesClient: EngineCarrier; defaultsClient: EngineCarrier; prices: CountryPrices } {
   const follow = (listed: readonly string[]) => door.offer(listed).catch(() => undefined);
-  const client: EngineCarrier = {
+  const save = async (body: EngineInternationalBody) => {
+    const fresh = await engine.saveInternational(body);
+    await follow(fresh.settings?.countries ?? []);
+    return fresh;
+  };
+  const countriesClient: EngineCarrier = {
     ...engine,
     async saveInternational(body) {
-      const fresh = await engine.saveInternational(body);
-      await follow(fresh.settings?.countries ?? []);
-      return fresh;
+      const now = await engine.international();
+      return save(savedBody(now, { currency: body.currency, originCountry: body.originCountry }, { countries: body.countries }));
+    },
+  };
+  const defaultsClient: EngineCarrier = {
+    ...engine,
+    async saveInternational(body) {
+      const now = await engine.international();
+      return save({ ...body, countries: now.settings?.countries ?? body.countries });
     },
   };
   const prices: CountryPrices = {
@@ -37,5 +60,5 @@ export function countryPrices(door: AbroadDoor, engine: EngineCarrier, nameOf: (
       await door.offer((view.settings?.countries ?? []).filter((one) => one !== country));
     },
   };
-  return { client, prices };
+  return { countriesClient, defaultsClient, prices };
 }

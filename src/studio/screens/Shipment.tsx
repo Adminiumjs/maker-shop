@@ -416,7 +416,9 @@ export function AbroadPanels() {
     let live = true;
     void Promise.all([ship.status().catch(() => null), import("../../add-ons/countries.ts")]).then(([status, mod]) => {
       if (!live || status === null) return;
-      setCarrier(status.activeCarrier ?? "");
+      const key = status.activeCarrier ?? status.carriers[0]?.key ?? "shipping-shippo";
+      mod.connectCountries(ship.client(key));
+      setCarrier(key);
       setPieces(mod);
     });
     return () => {
@@ -427,19 +429,19 @@ export function AbroadPanels() {
   }, [ship, mayKeep]);
 
   const wired = useMemo(() => {
-    if (ship === null || abroad === null || carrier === null) return null;
+    if (ship === null || abroad === null || carrier === null || pieces === null) return null;
     const names = new Intl.DisplayNames([locale], { type: "region" });
-    return countryPrices(abroad, ship.client(carrier), (code) => names.of(code) ?? code);
+    return countryPrices(abroad, ship.client(carrier), (code) => names.of(code) ?? code, pieces.savedBody);
     // The door's objects are the same for the session; the language names a new country's row.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ship, carrier, locale]);
+  }, [ship, carrier, locale, pieces]);
 
   if (pieces === null || wired === null) return null;
   const { CountriesPanel, CustomsDefaultsPanel } = pieces;
   return (
     <>
       <CountriesPanel
-        client={wired.client}
+        client={wired.countriesClient}
         prices={wired.prices}
         currency={currency}
         onOpenCustoms={() => {
@@ -448,7 +450,7 @@ export function AbroadPanels() {
         }}
       />
       <div ref={defaults} tabIndex={-1}>
-        <CustomsDefaultsPanel client={wired.client} currency={currency} />
+        <CustomsDefaultsPanel client={wired.defaultsClient} currency={currency} />
       </div>
     </>
   );

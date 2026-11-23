@@ -5,6 +5,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { EngineCarrier, EngineInternational } from "../add-ons/vendor/host/engine-carrier.ts";
+import { savedBody } from "../add-ons/vendor/shipping-kit/ui/customsSettings.ts";
 import { countryPrices } from "./countryPrices.ts";
 import type { AbroadDoor, AbroadRow } from "./door.ts";
 
@@ -35,12 +36,12 @@ function stand(listed: string[], rows: AbroadRow[] = []) {
       return view(body.countries);
     }),
   } as unknown as EngineCarrier;
-  return { held, door, engine, ...countryPrices(door, engine, (code) => `name of ${code}`) };
+  return { held, door, engine, ...countryPrices(door, engine, (code) => `name of ${code}`, savedBody) };
 }
 
 describe("a country's price", () => {
   it("is written unoffered, and offered once the list holds it", async () => {
-    const { held, client, prices } = stand([]);
+    const { held, countriesClient: client, prices } = stand([]);
     await prices.save("DE", "12.50");
     expect(held.rows).toEqual([{ country: "DE", price: "12.50", offered: false }]);
     await client.saveInternational({ countries: ["DE"], currency: "GBP", originCountry: "GB" });
@@ -48,7 +49,7 @@ describe("a country's price", () => {
   });
 
   it("stays unoffered when the list refuses it", async () => {
-    const { held, engine, client, prices } = stand([]);
+    const { held, engine, countriesClient: client, prices } = stand([]);
     (engine.saveInternational as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("refused"));
     await prices.save("DE", "12.50");
     await expect(client.saveInternational({ countries: ["DE"], currency: "GBP", originCountry: "GB" })).rejects.toThrow("refused");
@@ -56,7 +57,7 @@ describe("a country's price", () => {
   });
 
   it("stops being offered when the country leaves the list, and keeps the row past orders name", async () => {
-    const { held, client, prices } = stand(["DE"], [{ country: "DE", price: "12.50", offered: true }]);
+    const { held, countriesClient: client, prices } = stand(["DE"], [{ country: "DE", price: "12.50", offered: true }]);
     await client.saveInternational({ countries: [], currency: "GBP", originCountry: "GB" });
     await prices.remove("DE");
     expect(held.rows).toEqual([{ country: "DE", price: "12.50", offered: false }]);
@@ -66,6 +67,21 @@ describe("a country's price", () => {
     const { held, prices } = stand(["FR"], [{ country: "DE", price: "12.50", offered: true }, { country: "FR", price: "9.00", offered: false }]);
     expect(await prices.read()).toEqual({ FR: "9.00" });
     expect(held.rows.map((r) => [r.country, r.offered])).toEqual([["DE", false], ["FR", true]]);
+  });
+
+  it("keeps a country the defaults panel never knew about", async () => {
+    const { held, defaultsClient } = stand(["DE"], [{ country: "DE", price: "12.50", offered: true }]);
+    // The panel opened before Germany was added, so it still holds an empty list.
+    await defaultsClient.saveInternational({ countries: [], currency: "GBP", originCountry: "GB", hsCode: "442090" });
+    expect(held.listed).toEqual(["DE"]);
+    expect(held.rows[0]!.offered).toBe(true);
+  });
+
+  it("adds a country without putting back defaults it read before they changed", async () => {
+    const { engine, countriesClient } = stand(["FR"]);
+    (engine.international as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ ...view(["FR"]), settings: { ...view(["FR"]).settings!, hsCode: "442090", description: "Wood" } });
+    await countriesClient.saveInternational({ countries: ["FR", "DE"], currency: "GBP", originCountry: "GB", hsCode: "111111" });
+    expect((engine.saveInternational as ReturnType<typeof vi.fn>).mock.calls[0]![0]).toMatchObject({ countries: ["FR", "DE"], hsCode: "442090", description: "Wood" });
   });
 
   it("keeps the price an exact decimal string", async () => {

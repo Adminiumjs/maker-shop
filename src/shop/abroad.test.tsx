@@ -174,6 +174,8 @@ describe("the checkout", () => {
     expect(document.querySelector('[role="radiogroup"]')).toBeNull();
     expect(document.body.textContent).toContain("Import charges may be due on delivery.");
     expect(document.querySelector(".sh-summary")!.textContent).toContain("18.50");
+    // A dry run asked before a number is typed holds a stand-in, and the stand-in never reaches a save.
+    expect(port.calls.filter((c) => c.call === "quote").at(-1)?.body.values).toMatchObject({ service_id: 9, phone: "+00000" });
     await clean("abroad");
     await fill();
     await place();
