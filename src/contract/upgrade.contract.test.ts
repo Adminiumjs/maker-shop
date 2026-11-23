@@ -41,6 +41,8 @@ const ADMIN = { email: process.env["E2E_ADMIN_EMAIL"] ?? "e2e@adminium.local", p
 const THURSDAY = Date.parse("2026-08-06T15:40:00Z");
 const REPO = fileURLToPath(new URL("../..", import.meta.url));
 const FROM = "0.2.3";
+/** The sample files 0.2.3 shipped: today's have columns it never had. */
+const FROM_SEEDS = join(REPO, "src", "contract", "released", "seeds-0.2.3");
 /**
  * The released 0.2.3's own manifest, kept beside this test
  * (`released/maker-0.2.3.manifest.json`): read the same in a shallow CI
@@ -92,7 +94,7 @@ describe.skipIf(why !== null)(`a studio on ${FROM} updated, a line added by hand
         }
       };
       const stage = async (manifest: string) => {
-        const app = appBundle({ manifest });
+        const app = appBundle({ manifest, ...(manifest === FROM_MANIFEST ? { seeds: FROM_SEEDS } : {}) });
         const staged = await staff.post(`/api/v1/apps/upload?expectedSha512=${encodeURIComponent(app.integrity)}`, app.buffer);
         if (![200, 201].includes(staged.status)) throw new Error(`upload: ${JSON.stringify(staged.body).slice(0, 600)}`);
         return app;

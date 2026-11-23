@@ -171,7 +171,7 @@ function filesUnder(root: string, into: string, files: Record<string, Buffer>): 
  * surfaces `npm run build:surface` made (`dist-surface/<key>/<side>`), as a
  * release packs them: what a browser test opens.
  */
-export function appBundle(options: { built?: boolean; manifest?: string; sample?: string } = {}): Bundle & { key: string; version: string } {
+export function appBundle(options: { built?: boolean; manifest?: string; sample?: string; seeds?: string } = {}): Bundle & { key: string; version: string } {
   const text = options.manifest ?? read(join(REPO, "manifest.json"));
   const manifest = JSON.parse(text) as { key: string; version: string; sampleData?: { file: string; addOns?: Record<string, { file: string }> } };
   const files: Record<string, Buffer> = {
@@ -190,6 +190,12 @@ export function appBundle(options: { built?: boolean; manifest?: string; sample?
   if (options.sample === undefined) for (const section of Object.values(manifest.sampleData?.addOns ?? {})) files[section.file] = readFileSync(join(REPO, section.file));
   // …and the files its rows name (`seeds/showcase/`: photos, models, cut files), packed as the release packs all of `seeds/`.
   if (options.sample === undefined && manifest.sampleData !== undefined) filesUnder(join(REPO, "seeds"), "seeds/", files);
+  // An older release installed as it shipped: its own sample files, whose rows fit its own columns (`seeds`).
+  if (options.seeds !== undefined && manifest.sampleData !== undefined) {
+    for (const file of [manifest.sampleData.file, ...Object.values(manifest.sampleData.addOns ?? {}).map((section) => section.file)]) {
+      files[file] = readFileSync(join(options.seeds, file.replace(/^seeds\//, "")));
+    }
+  }
   return { ...bundle(files), key: manifest.key, version: manifest.version };
 }
 
