@@ -11,7 +11,7 @@
  */
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { I18nProvider } from "../i18n/index.tsx";
 import { cancelOrder, HeldByPayment, moveLine, moveOrderLines } from "./actions.ts";
@@ -258,6 +258,23 @@ describe("an order that takes payment before making", () => {
     Object.assign(held, { waits_pay: true, pay_hold: 0, paid: "61.95", pay_due: "0.00", paid_post_by: "2026-08-25" });
     expect(orderPostBy(held)).toBe("2026-08-25");
     expect(linePostBy(door.data, line(door, 101))).toBe("2026-08-25");
+  });
+
+  it("takes no piece off the bench when the person goes back from a paid label", async () => {
+    const door = paying();
+    const stopped = Object.assign(new Error("The order was not moved."), { name: "PaidLabelStopped" });
+    Object.assign(door, { clearPaidLabel: async () => Promise.reject(stopped) });
+    await expect(cancelOrder(door, door.data, order(door, 10))).rejects.toBe(stopped);
+    expect(door.trail()).toEqual([]);
+  });
+
+  it("sends the answer with the order, after its pieces", async () => {
+    const door = paying();
+    const move = vi.spyOn(door, "moveOrder");
+    Object.assign(door, { clearPaidLabel: async () => ({ keep: ["b1"], moved: false }) });
+    await cancelOrder(door, door.data, order(door, 10));
+    expect(door.trail()).toEqual(["moveLine 101 make→cancelled", "moveOrder 10 placed→cancelled"]);
+    expect((move.mock.calls[0] as unknown[] | undefined)?.[3]).toEqual(["b1"]);
   });
 
   it("is cancelled from the studio, its pieces taken off the bench", async () => {

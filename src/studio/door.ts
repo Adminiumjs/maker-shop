@@ -209,7 +209,9 @@ export interface StudioDoor {
   /** A line's own columns that are not its stage: how many were spoiled and remade. */
   updateLine(line: Row, values: Record<string, unknown>): Promise<Row>;
   /** An order along its states, from the one the screen saw. */
-  moveOrder(order: Row, to: string, values?: Record<string, unknown>): Promise<Row>;
+  moveOrder(order: Row, to: string, values?: Record<string, unknown>, keep?: readonly string[]): Promise<Row>;
+  /** Asks about a paid label before a move that has other work to do first. `keep` is the answer, for `moveOrder`. */
+  clearPaidLabel?(order: Row, to: string): Promise<{ keep: readonly string[]; moved: boolean }>;
   /** A posted parcel's new number, told to the shopper: stamping it sends the short e-mail. A person presses this, never a job. */
   tellNewNumber(order: Row, label: { tracking: string; carrier: string }): Promise<Row>;
   /**

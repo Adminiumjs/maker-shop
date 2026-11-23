@@ -163,8 +163,10 @@ export async function spoil(door: StudioDoor, data: StudioData, line: Row, units
  * itself. Nothing was taken, so nothing is given back.
  */
 export async function cancelOrder(door: StudioDoor, data: StudioData, order: Row): Promise<void> {
+  // Asked before any piece comes off: Adminium may refuse the order over a paid label, and it would then stay live.
+  const cleared = await door.clearPaidLabel?.(order, "cancelled");
   for (const line of linesOf(data, order).filter(isLive)) await stepLine(door, line, "cancelled");
-  await door.moveOrder(order, "cancelled");
+  if (cleared?.moved !== true) await door.moveOrder(order, "cancelled", {}, cleared?.keep);
 }
 
 /**

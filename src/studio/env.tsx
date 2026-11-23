@@ -9,6 +9,7 @@
  * reader's words, and the rows are read again too, so the screen shows what
  * is true now.
  */
+import { isPaidLabelStopped } from "../add-ons/paid-label.tsx";
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 
 import type { StudioData, StudioDoor } from "./door.ts";
@@ -73,6 +74,7 @@ export function useRun(): { busy: boolean; run: (work: (door: StudioDoor, data: 
         if (typeof said === "string") toast(said, "pos");
         return true;
       } catch (error) {
+        if (isPaidLabelStopped(error)) return false;
         if (error instanceof HeldByPayment) toast(t("studio.pay.waiting"), "warn");
         else if (error instanceof HeldByProof) toast(t(error.lock === "waiting" ? "studio.lock.waiting" : "studio.lock.unsent"), "warn");
         // Adminium held the line at "make": its proof is not approved (the move's `requires`).

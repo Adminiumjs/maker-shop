@@ -19,6 +19,7 @@
  * wall time with no zone, and 0 or 1); every row is read back here as the
  * screens expect it, an ISO instant and a boolean.
  */
+import { askPaidLabelFirst, movePaidLabel, paidLabelHeaders } from "../add-ons/paid-label.tsx";
 import { withInstall, type StaffConfig } from "./transport/staffConnection.ts";
 import { SessionPortError, type SessionTransport } from "./transport/sessionSource.ts";
 import { momentOf } from "./time.ts";
@@ -186,9 +187,9 @@ export class AdminiumStudio implements StudioDoor {
   private async create(table: Table, values: Record<string, unknown>): Promise<Row> {
     return this.row(table, (await this.t.mutate<{ data: Row }>(await this.path(this.real(table)), "POST", { values })).data);
   }
-  private async change(table: Table, id: Id, values: Record<string, unknown>, from?: string): Promise<Row> {
+  private async change(table: Table, id: Id, values: Record<string, unknown>, from?: string, keep: readonly string[] = []): Promise<Row> {
     const body = from === undefined ? { values } : { values, from };
-    return this.row(table, (await this.t.mutate<{ data: Row }>(await this.path(this.real(table), `/${encodeURIComponent(String(id))}`), "PATCH", body)).data);
+    return this.row(table, (await this.t.mutate<{ data: Row }>(await this.path(this.real(table), `/${encodeURIComponent(String(id))}`), "PATCH", body, paidLabelHeaders(keep))).data);
   }
 
   // ── the Customiser's panels ───────────────────────────────────────────────
@@ -399,8 +400,13 @@ export class AdminiumStudio implements StudioDoor {
     return this.run(() => this.change("order_lines", line.id, values));
   }
 
-  moveOrder(order: Row, to: string, values: Record<string, unknown> = {}): Promise<Row> {
-    return this.run(() => this.change("orders", order.id, { status: to, ...values }, String(order["status"])));
+  moveOrder(order: Row, to: string, values: Record<string, unknown> = {}, keep?: readonly string[]): Promise<Row> {
+    const send = (names: readonly string[]) => this.run(() => this.change("orders", order.id, { status: to, ...values }, String(order["status"]), names));
+    return keep === undefined ? movePaidLabel({ table: "orders", id: String(order.id) }, send) : send(keep);
+  }
+
+  clearPaidLabel(order: Row, to: string): Promise<{ keep: readonly string[]; moved: boolean }> {
+    return askPaidLabelFirst({ table: "orders", id: String(order.id) }, (keep) => this.run(() => this.change("orders", order.id, { status: to }, String(order["status"]), keep)));
   }
 
   tellNewNumber(order: Row, label: { tracking: string; carrier: string }): Promise<Row> {
