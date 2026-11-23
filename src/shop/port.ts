@@ -71,6 +71,12 @@ export interface Service {
   tracked: boolean;
 }
 
+/** A delivery to one country abroad: a service of its own, with its one price. */
+export interface AbroadService extends Service {
+  /** The two-letter code of the country it goes to. */
+  country: string;
+}
+
 export interface Studio {
   name: string;
   address: string | null;
@@ -81,13 +87,20 @@ export interface Studio {
   /** What every order number starts with ("BR-"). */
   refPrefix?: string | null;
   takingOrders: boolean;
+  /** The studio's own country, as a two-letter code, once it has said. */
+  homeCountry?: string | null;
+  /** The address a shopper writes to, where the studio shows one. */
+  email?: string | null;
 }
 
 export interface Catalogue {
   products: Product[];
   options: Option[];
   materials: Material[];
+  /** The studio's own post. */
   services: Service[];
+  /** The countries it also delivers to: none until its owner lists one. */
+  abroad: AbroadService[];
   studio: Studio;
 }
 

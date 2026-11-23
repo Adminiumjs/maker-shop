@@ -14,7 +14,7 @@
  * server asks the right again. Where there is no kit (the demo), the sheet
  * takes the same two steps itself.
  */
-import { ShipFromPanel } from "./Shipment.tsx";
+import { AbroadPanels, ShipFromPanel } from "./Shipment.tsx";
 import { useEffect, useRef, useState } from "react";
 import { CircleCheck, Clock, Globe, Link2, Lock, Undo2, Wallet, X, XCircle } from "lucide-react";
 
@@ -468,6 +468,8 @@ export function SettingsScreen() {
   const { busy, run } = useRun();
   const settings = data.settings;
   const [said, setSaid] = useState("");
+  // A new Ship from is the country the panels below start from.
+  const [round, setRound] = useState(0);
   if (settings === null) return null;
   const on = paymentsOn(door);
   const first = settings["pay_first"] === true;
@@ -505,7 +507,8 @@ export function SettingsScreen() {
         </span>
       </div>
       )}
-      <ShipFromPanel />
+      <ShipFromPanel onSaved={() => setRound((n) => n + 1)} />
+      <AbroadPanels key={round} />
     </section>
   );
 }

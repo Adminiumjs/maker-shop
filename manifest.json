@@ -18,7 +18,7 @@
     "commerce"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.72",
+    "minAdminiumVersion": "0.3.74",
     "engines": [
       "sqlite",
       "postgres",
@@ -2671,6 +2671,40 @@
               "zh-TW": "排序"
             },
             "nullable": true
+          },
+          {
+            "ref": "country",
+            "type": "text",
+            "maxLength": 2,
+            "label": {
+              "en-US": "Delivers to",
+              "de-DE": "Liefert nach",
+              "fr-FR": "Livre vers",
+              "da-DK": "Leverer til",
+              "cs-CZ": "Doručuje do",
+              "ar-EG": "يوصّل إلى",
+              "zh-CN": "配送至",
+              "zh-TW": "配送至"
+            },
+            "nullable": true,
+            "rules": {
+              "personal": false
+            }
+          },
+          {
+            "ref": "abroad",
+            "type": "bool",
+            "default": false,
+            "label": {
+              "en-US": "Goes abroad",
+              "de-DE": "Geht ins Ausland",
+              "fr-FR": "Part à l’étranger",
+              "da-DK": "Går til udlandet",
+              "cs-CZ": "Jde do zahraničí",
+              "ar-EG": "يذهب إلى الخارج",
+              "zh-CN": "寄往国外",
+              "zh-TW": "寄往國外"
+            }
           }
         ]
       },
@@ -3460,11 +3494,65 @@
             },
             "nullable": true,
             "rules": {
+              "copy": {
+                "via": "service_id",
+                "from": "country",
+                "mode": "default"
+              },
               "default": {
                 "from": {
                   "table": "settings",
                   "column": "home_country"
                 }
+              }
+            }
+          },
+          {
+            "ref": "abroad",
+            "type": "bool",
+            "nullable": true,
+            "label": {
+              "en-US": "Going abroad",
+              "de-DE": "Geht ins Ausland",
+              "fr-FR": "Part à l’étranger",
+              "da-DK": "Skal til udlandet",
+              "cs-CZ": "Míří do zahraničí",
+              "ar-EG": "متجه إلى الخارج",
+              "zh-CN": "寄往国外",
+              "zh-TW": "寄往國外"
+            },
+            "rules": {
+              "copy": {
+                "via": "service_id",
+                "from": "abroad",
+                "mode": "always"
+              }
+            }
+          },
+          {
+            "ref": "phone",
+            "type": "text",
+            "maxLength": 32,
+            "label": {
+              "en-US": "Phone",
+              "de-DE": "Telefon",
+              "fr-FR": "Téléphone",
+              "da-DK": "Telefon",
+              "cs-CZ": "Telefon",
+              "ar-EG": "الهاتف",
+              "zh-CN": "电话",
+              "zh-TW": "電話"
+            },
+            "nullable": true,
+            "rules": {
+              "requiredWhen": {
+                "column": "abroad",
+                "in": [
+                  true
+                ]
+              },
+              "validation": {
+                "format": "phone"
               }
             }
           },
@@ -11288,6 +11376,7 @@
             "town",
             "postcode",
             "country",
+            "phone",
             "note",
             "language",
             "customer_id",
@@ -11312,6 +11401,7 @@
             "town",
             "postcode",
             "country",
+            "phone",
             "note",
             "language",
             "customer_id",
@@ -12767,7 +12857,8 @@
         "name",
         "detail",
         "tracked",
-        "position"
+        "position",
+        "country"
       ],
       "filters": [
         {
@@ -12850,7 +12941,8 @@
         "about_page",
         "materials_note",
         "ref_prefix",
-        "taking_orders"
+        "taking_orders",
+        "home_country"
       ]
     },
     {
@@ -12912,6 +13004,7 @@
       "writable": [
         "name",
         "email",
+        "phone",
         "address_line1",
         "address_line2",
         "town",
@@ -13378,6 +13471,7 @@
       "writable": [
         "name",
         "email",
+        "phone",
         "address_line1",
         "address_line2",
         "town",
@@ -13877,6 +13971,12 @@
         {
           "table": "orders",
           "column": "postcode",
+          "holds": "details",
+          "via": "customer_id"
+        },
+        {
+          "table": "orders",
+          "column": "phone",
           "holds": "details",
           "via": "customer_id"
         },
@@ -22348,10 +22448,27 @@
           "city": "town",
           "postcode": "postcode",
           "country": "country",
+          "phone": "phone",
           "email": "email"
         },
         "tracking": "label_tracking",
-        "carrier": "label_carrier"
+        "carrier": "label_carrier",
+        "customs": {
+          "lines": {
+            "table": "order_lines",
+            "order": "order_id",
+            "description": "product_name",
+            "quantity": "qty",
+            "unitValue": "each_with_features",
+            "product": {
+              "column": "product_id",
+              "table": "products",
+              "sku": "code"
+            },
+            "unitWeight": "grams",
+            "weightUnit": "g"
+          }
+        }
       }
     ]
   },

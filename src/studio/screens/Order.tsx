@@ -24,7 +24,7 @@ import { num, same, text, type Id, type Row } from "../wire.ts";
 import { useT, type MessageKey } from "../../i18n/index.tsx";
 import { wordsOfDesign } from "../designs.ts";
 import { mayMake, mayOpenPanel } from "../roles.ts";
-import { ShipmentCard } from "./Shipment.tsx";
+import { OrderPhone, ShipmentCard } from "./Shipment.tsx";
 
 const STAGE_LABEL: Record<string, MessageKey> = {
   make: "bench.col.to-make",
@@ -176,6 +176,7 @@ export function OrderScreen() {
           </span>
           <span className="st-service-price">{fmt.money(order["postage"])}</span>
         </div>
+        {order["abroad"] === true && <OrderPhone order={order} />}
         {posted ? (
           <div className="st-small">
             {t("studio.order.posted", { day: fmt.moment(order["posted_at"]), service: text(service?.["name"]) ?? "" })}

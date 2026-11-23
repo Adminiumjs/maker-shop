@@ -155,12 +155,20 @@ export interface CatalogueRows {
 export function catalogueFrom(rows: CatalogueRows, photo: (row: Row) => string | null): Catalogue {
   const studio = rows.settings[0] ?? {};
   const sorted = (list: Row[]) => [...list].sort(byPosition);
+  const homeCountry = text(studio["home_country"])?.toUpperCase() ?? null;
+  const posts = sorted(rows.services);
+  // A country abroad is offered beside the studio's own, so one with no own country to leave from offers none.
+  const abroad = homeCountry === null ? [] : posts.flatMap((row) => {
+    const country = text(row["country"])?.toUpperCase() ?? null;
+    return country === null || country === homeCountry ? [] : [{ ...service(row), country }];
+  });
   return {
     products: sorted(rows.products).map((row) => product(row, photo(row))),
     options: sorted(rows.options).map(option),
     materials: sorted(rows.materials).map(material),
-    services: sorted(rows.services).map(service),
-    studio: { name: String(studio["studio_name"] ?? ""), address: text(studio["address"]), about: text(studio["about"]), aboutPage: text(studio["about_page"]), materialsNote: text(studio["materials_note"]), refPrefix: text(studio["ref_prefix"]), takingOrders: studio["taking_orders"] === undefined ? true : yes(studio["taking_orders"]) },
+    services: posts.filter((row) => text(row["country"]) === null).map(service),
+    abroad,
+    studio: { name: String(studio["studio_name"] ?? ""), homeCountry, email: text(studio["email"]), address: text(studio["address"]), about: text(studio["about"]), aboutPage: text(studio["about_page"]), materialsNote: text(studio["materials_note"]), refPrefix: text(studio["ref_prefix"]), takingOrders: studio["taking_orders"] === undefined ? true : yes(studio["taking_orders"]) },
   };
 }
 

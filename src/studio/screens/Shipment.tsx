@@ -9,18 +9,19 @@
  * BUYING IS NOT SHIPPING. The order moves and the customer is mailed only when
  * staff press "Handed over", and tracking never moves an order.
  */
-import { useCallback, useEffect, useId, useState, type ComponentType } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ComponentType } from "react";
 import { PackageCheck, RefreshCw } from "lucide-react";
 
 import type { ShipFrom, ShippingDoor, ShippingStatus } from "../../add-ons/shipping-door.ts";
 import type { EngineAccess, EngineBooking } from "../../add-ons/vendor/host/engine-carrier.ts";
-import { useT } from "../../i18n/index.tsx";
+import { useI18n, useT } from "../../i18n/index.tsx";
 import { postOrders } from "../actions.ts";
 import { DispatchFill, useCarrierAttached, useShipping } from "../dispatch.tsx";
 import { useData, useEnv, useRun } from "../env.tsx";
 import { handOverOf, newNumberOf, type HandOver } from "../handover.ts";
 import { studioAddress } from "../outbound.ts";
-import { mayPost } from "../roles.ts";
+import { countryPrices } from "../countryPrices.ts";
+import { mayFixPhone, mayPost } from "../roles.ts";
 import { go, toast } from "../store.ts";
 import { text, type Row } from "../wire.ts";
 
@@ -286,7 +287,7 @@ type FormValues = { name: string; street: string; town: string; postcode: string
 
 const CODE = /^[A-Za-z]{2}$/;
 
-export function ShipFromPanel() {
+export function ShipFromPanel({ onSaved }: { onSaved?: () => void }) {
   const t = useT();
   const data = useData();
   const { door } = useEnv();
@@ -351,6 +352,7 @@ export function ShipFromPanel() {
       // A new order starts in the studio's own country, which is this one.
       if (country !== "" && data.settings !== null && text(data.settings["home_country"]) !== country) await d.saveSettings(data.settings, { home_country: country });
       setSaid(t("studio.settings.saved"));
+      onSaved?.();
       return t("studio.settings.saved");
     });
   };
@@ -388,6 +390,120 @@ export function ShipFromPanel() {
       <span className="st-visually-hidden" role="status">
         {said}
       </span>
+    </div>
+  );
+}
+
+// ── abroad ──────────────────────────────────────────────────────────────────
+
+type AbroadPieces = typeof import("../../add-ons/countries.ts");
+
+/** "Countries we deliver to" and the customs defaults, for someone who manages shipping and may keep the postage. */
+export function AbroadPanels() {
+  const { door } = useEnv();
+  const { currency } = door.facts();
+  const { locale } = useI18n();
+  const attached = useCarrierAttached();
+  const ship = attached ? door.shipping() : null;
+  const abroad = door.abroad();
+  const mayKeep = door.who().can("postage_services", "create") && door.who().can("postage_rates", "create");
+  const [carrier, setCarrier] = useState<string | null>(null);
+  const [pieces, setPieces] = useState<AbroadPieces | null>(null);
+  const defaults = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (ship === null || abroad === null || !mayKeep) return;
+    let live = true;
+    void Promise.all([ship.status().catch(() => null), import("../../add-ons/countries.ts")]).then(([status, mod]) => {
+      if (!live || status === null) return;
+      setCarrier(status.activeCarrier ?? "");
+      setPieces(mod);
+    });
+    return () => {
+      live = false;
+    };
+    // Once for the panel: the panels read and save for themselves.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ship, mayKeep]);
+
+  const wired = useMemo(() => {
+    if (ship === null || abroad === null || carrier === null) return null;
+    const names = new Intl.DisplayNames([locale], { type: "region" });
+    return countryPrices(abroad, ship.client(carrier), (code) => names.of(code) ?? code);
+    // The door's objects are the same for the session; the language names a new country's row.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ship, carrier, locale]);
+
+  if (pieces === null || wired === null) return null;
+  const { CountriesPanel, CustomsDefaultsPanel } = pieces;
+  return (
+    <>
+      <CountriesPanel
+        client={wired.client}
+        prices={wired.prices}
+        currency={currency}
+        onOpenCustoms={() => {
+          defaults.current?.scrollIntoView({ block: "start" });
+          defaults.current?.focus();
+        }}
+      />
+      <div ref={defaults} tabIndex={-1}>
+        <CustomsDefaultsPanel client={wired.client} currency={currency} />
+      </div>
+    </>
+  );
+}
+
+/** The same shape Adminium holds a phone column to. */
+const PHONE = /^\+?\(?[0-9][0-9\s().-]{4,}$/;
+
+/** The number a carrier is given for an order going abroad, where someone can put a wrong one right. */
+export function OrderPhone({ order }: { order: Row }) {
+  const t = useT();
+  const { door } = useEnv();
+  const { run, busy } = useRun();
+  const id = useId();
+  const held = text(order["phone"]) ?? "";
+  const [value, setValue] = useState(held);
+  const [bad, setBad] = useState(false);
+  useEffect(() => {
+    setValue(held);
+    setBad(false);
+  }, [held]);
+  const open = order["status"] !== "posted" && order["status"] !== "cancelled";
+  if (!open || !mayFixPhone(door.who())) {
+    return held === "" ? null : (
+      <p className="st-small">
+        {t("studio.ship.field.phone")}: <span className="st-mono" dir="ltr">{held}</span>
+      </p>
+    );
+  }
+  const save = () => {
+    const next = value.trim();
+    if (!PHONE.test(next)) {
+      setBad(true);
+      return;
+    }
+    setBad(false);
+    void run(async (d) => {
+      await d.savePhone(order, next);
+      return t("studio.settings.saved");
+    });
+  };
+  return (
+    <div className="st-settings" data-testid="order-phone">
+      <label className="st-field">
+        <span className="st-label">{t("studio.ship.customerPhone")}</span>
+        <input className="st-input st-input--mono" dir="ltr" type="tel" value={value} onChange={(event) => { setValue(event.target.value); setBad(false); }} aria-invalid={bad} aria-describedby={`${id}-line`} />
+        <span className="st-small" id={`${id}-line`}>
+          {t(bad ? "studio.ship.customerPhoneBad" : "studio.ship.customerPhoneLine")}
+        </span>
+      </label>
+      <div className="st-actions">
+        <button type="button" className="st-btn" disabled={busy || value.trim() === held} onClick={save}>
+          {t("studio.ship.customerPhoneSave")}
+        </button>
+      </div>
     </div>
   );
 }

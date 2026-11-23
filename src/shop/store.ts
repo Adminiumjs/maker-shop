@@ -20,7 +20,7 @@ import type { MessageKey } from "../i18n/index.tsx";
 import { heldDesign, type DesignForBasket, type HeldDesign, type SavedDesign } from "../../vendor/customiser/index.js";
 import { freshClientKey } from "./door.ts";
 import type { Elsewhere } from "./route.ts";
-import { isShopError, type Catalogue, type Figures, type Id, type LineValues, type Option, type OrderBody, type Placed, type Product, type Refused, type Row, type ShopConfig, type ShopPort } from "./port.ts";
+import { isShopError, type AbroadService, type Catalogue, type Figures, type Id, type LineValues, type Option, type OrderBody, type Placed, type Product, type Refused, type Row, type ShopConfig, type ShopPort } from "./port.ts";
 import { checkBack, goPay, keptConfirmation, loadOffer } from "./pay.ts";
 
 export type ShopView = "shop" | "product" | "customise" | "basket" | "checkout" | "confirm" | "missing" | Elsewhere;
@@ -56,10 +56,12 @@ export interface Details {
   line2: string;
   town: string;
   postcode: string;
+  /** Asked only for a parcel abroad, for the carrier. */
+  phone: string;
   news: boolean;
 }
 
-export type Field = "name" | "email" | "line1" | "town" | "postcode";
+export type Field = "name" | "email" | "line1" | "town" | "postcode" | "phone";
 
 /** A field's error: a message key of the shop's, said beside the field. */
 export type FieldErrors = Partial<Record<Field, ShopMessage>>;
@@ -71,6 +73,8 @@ export type ShopMessage =
   | "shop.checkout.err.line1"
   | "shop.checkout.err.town"
   | "shop.checkout.err.postcode"
+  | "shop.checkout.err.phone"
+  | "shop.checkout.err.phoneShape"
   | "shop.checkout.err.refused";
 
 export interface Quoted {
@@ -172,7 +176,7 @@ function writeSlot(slot: string, value: unknown): void {
   }
 }
 
-const NO_DETAILS: Details = { name: "", email: "", line1: "", line2: "", town: "", postcode: "", news: false };
+const NO_DETAILS: Details = { name: "", email: "", line1: "", line2: "", town: "", postcode: "", phone: "", news: false };
 const NO_CHOICE: Choice = { materialId: null, sizeId: null, finishId: null, qty: 1, lettering: "" };
 
 function initial(): Omit<ShopState, "port"> {
@@ -260,7 +264,7 @@ export async function loadShop(): Promise<void> {
     // prices are asked of the entry open for it.
     const [config, catalogue] = await Promise.all([port.config(), port.catalogue(), loadOffer(port)]);
     const serviceId = get().serviceId;
-    const known = serviceId !== null && catalogue.services.some((s) => String(s.id) === String(serviceId));
+    const known = serviceId !== null && [...catalogue.services, ...catalogue.abroad].some((s) => String(s.id) === String(serviceId));
     set({ config, catalogue, loading: "ok", serviceId: known ? serviceId : (catalogue.services[0]?.id ?? null) });
     const view = get().view;
     if (view === "product" || view === "customise") openProduct(get().productCode, view, get().editing);
@@ -356,7 +360,7 @@ function language(): string {
 }
 
 /** The shopper's own values, only those typed, trimmed. */
-export function detailValues(details: Details): Row {
+export function detailValues(details: Details, abroad = false): Row {
   const out: Row = {};
   const put = (column: string, value: string) => {
     if (value.trim() !== "") out[column] = value.trim();
@@ -367,6 +371,8 @@ export function detailValues(details: Details): Row {
   put("address_line2", details.line2);
   put("town", details.town);
   put("postcode", details.postcode);
+  // Only a parcel leaving the country needs one, so a number typed before coming home is not kept.
+  if (abroad) put("phone", details.phone);
   out["may_email"] = details.news;
   return out;
 }
@@ -466,7 +472,7 @@ export function requoteServices(): void {
   const key = JSON.stringify(lines);
   if (s.serviceKey === key) return;
   set({ serviceKey: key, servicePostage: {} });
-  for (const service of s.catalogue.services) {
+  for (const service of [...s.catalogue.services, ...s.catalogue.abroad]) {
     const body: OrderBody = { values: { service_id: service.id, language: language() }, children: lines };
     void s.port
       .quote(body)
@@ -586,12 +592,30 @@ export function chooseService(id: Id): void {
   requoteBasket();
 }
 
+/** The delivery abroad the shopper has chosen, or null while the parcel stays in the studio's country. */
+export function chosenAbroad(s: Pick<ShopState, "catalogue" | "serviceId"> = get()): AbroadService | null {
+  return s.catalogue?.abroad.find((one) => String(one.id) === String(s.serviceId)) ?? null;
+}
+
+/** The country is its delivery: choosing one chooses how the parcel goes and what that costs. */
+export function chooseCountry(country: string): void {
+  const catalogue = get().catalogue;
+  if (catalogue === null) return;
+  const next = catalogue.abroad.find((one) => one.country === country) ?? catalogue.services[0];
+  if (next === undefined) return;
+  const { phone: _phone, ...refused } = get().refusedFields;
+  set({ refusedFields: refused, failure: null });
+  chooseService(next.id);
+}
+
 // ── the checkout ──────────────────────────────────────────────────────────
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** The same shape Adminium holds a phone column to. */
+const PHONE = /^\+?\(?[0-9][0-9\s().-]{4,}$/;
 
 /** What the page itself can say of the form before anything is sent. */
-export function formErrors(details: Details): FieldErrors {
+export function formErrors(details: Details, abroad = false): FieldErrors {
   const e: FieldErrors = {};
   if (details.name.trim() === "") e.name = "shop.checkout.err.name";
   if (details.email.trim() === "") e.email = "shop.checkout.err.email";
@@ -599,6 +623,8 @@ export function formErrors(details: Details): FieldErrors {
   if (details.line1.trim() === "") e.line1 = "shop.checkout.err.line1";
   if (details.town.trim() === "") e.town = "shop.checkout.err.town";
   if (details.postcode.trim() === "") e.postcode = "shop.checkout.err.postcode";
+  if (abroad && details.phone.trim() === "") e.phone = "shop.checkout.err.phone";
+  else if (abroad && !PHONE.test(details.phone.trim())) e.phone = "shop.checkout.err.phoneShape";
   return e;
 }
 
@@ -609,7 +635,7 @@ export function setDetails(patch: Partial<Details>): void {
 }
 
 /** The column Adminium names, as the field it is typed into. */
-const FIELD_OF: Record<string, Field> = { name: "name", email: "email", address_line1: "line1", town: "town", postcode: "postcode" };
+const FIELD_OF: Record<string, Field> = { name: "name", email: "email", address_line1: "line1", town: "town", postcode: "postcode", phone: "phone" };
 
 /** Where a refusal goes: a field of the form, a line of the basket, or the summary. */
 function placeRefusal(refused: Refused): void {
@@ -637,8 +663,8 @@ function movesBetween(before: Figures | null, after: Figures): PriceMove[] {
 /** The first field with something to fix, for the page to move focus to. */
 export function firstBadField(): Field | null {
   const s = get();
-  const errors = { ...(s.tried ? formErrors(s.details) : {}), ...s.refusedFields };
-  return (["name", "email", "line1", "town", "postcode"] as const).find((f) => errors[f] !== undefined) ?? null;
+  const errors = { ...(s.tried ? formErrors(s.details, chosenAbroad(s) !== null) : {}), ...s.refusedFields };
+  return (["name", "email", "line1", "town", "postcode", "phone"] as const).find((f) => errors[f] !== undefined) ?? null;
 }
 
 /**
@@ -651,10 +677,11 @@ export async function placeOrder(): Promise<"placed" | "fix" | "moved" | "failed
   const s = get();
   if (s.checking || s.port === null || s.basket.length === 0 || s.catalogue === null || s.shownTotal === null) return "failed";
   set({ tried: true, refusedLine: null, failure: null });
-  if (Object.keys(formErrors(s.details)).length > 0 || Object.keys(s.refusedFields).length > 0) return "fix";
+  const abroad = chosenAbroad(s) !== null;
+  if (Object.keys(formErrors(s.details, abroad)).length > 0 || Object.keys(s.refusedFields).length > 0) return "fix";
   set({ checking: true });
   // While the studio takes payments online, Adminium places the order asking to be paid online: its pay link comes back with it.
-  const body = orderBody({ ...detailValues(s.details), ...(s.serviceId === null ? {} : { service_id: s.serviceId }), language: language() }, s.basket);
+  const body = orderBody({ ...detailValues(s.details, abroad), ...(s.serviceId === null ? {} : { service_id: s.serviceId }), language: language() }, s.basket);
   try {
     const quoted = await s.port.quote(body);
     const total = String(quoted.order["total"] ?? "");
@@ -691,7 +718,7 @@ export async function placeOrder(): Promise<"placed" | "fix" | "moved" | "failed
  */
 function confirm(placed: Placed, payUrl: string | null = null): void {
   const s = get();
-  const service = s.catalogue?.services.find((one) => String(one.id) === String(placed.order["service_id"] ?? s.serviceId));
+  const service = [...(s.catalogue?.services ?? []), ...(s.catalogue?.abroad ?? [])].find((one) => String(one.id) === String(placed.order["service_id"] ?? s.serviceId));
   const confirmed: Confirmed = { order: placed.order, lines: placed.lines, serviceName: service?.name ?? "", token: placed.link?.token ?? null };
   set({
     checking: false,

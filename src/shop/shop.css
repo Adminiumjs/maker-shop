@@ -1300,6 +1300,39 @@
   flex-direction: column;
   gap: 6px;
 }
+.sh-not-listed {
+  align-self: flex-start;
+  min-block-size: 32px;
+  padding-inline: 0;
+  text-decoration: underline;
+}
+.sh-not-served {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.sh-not-served p {
+  margin: 0;
+}
+.sh-not-served .sh-link {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  padding-inline: 0;
+}
+.sh-not-served-icon {
+  display: grid;
+  place-items: center;
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: 11px;
+  background: var(--surface-3);
+  color: var(--fg-muted);
+}
 .sh-form-label {
   font-size: 12px;
   font-weight: 700;

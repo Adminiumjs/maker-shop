@@ -45,6 +45,7 @@ export type Table =
   | "products"
   | "options"
   | "postage_services"
+  | "postage_rates"
   | "closures"
   | "customers"
   | "orders"
@@ -68,6 +69,23 @@ export interface Person {
   roles: string[];
   /** Whether they may do this to the app's table; true when the server does not say. */
   can(table: Table, action: Action): boolean;
+}
+
+/** A country the studio has a delivery price for. */
+export interface AbroadRow {
+  country: string;
+  /** An exact decimal, as stored. */
+  price: string | null;
+  offered: boolean;
+}
+
+/** The studio's deliveries abroad, for someone who manages shipping. */
+export interface AbroadDoor {
+  rows(): Promise<AbroadRow[]>;
+  /** Writes a country's price. A new country is not offered until `offer` names it. */
+  save(country: string, name: string, amount: string): Promise<void>;
+  /** Offers exactly these countries. */
+  offer(countries: readonly string[]): Promise<void>;
 }
 
 /** Everything the studio's screens read, at one moment. */
@@ -198,6 +216,8 @@ export interface StudioDoor {
   addOnRegistry(): Promise<AddOnRegistry>;
   /** Adminium's shipping routes for this app; null where no Adminium serves them (the demo keeps its demo carrier). */
   shipping(): ShippingDoor | null;
+  /** The deliveries abroad; null where no Adminium keeps them (the demo). */
+  abroad(): AbroadDoor | null;
   /** The server's clock, as epoch ms. */
   now(): number;
   /** Ends the person's session; absent where there is none to end (the demo). */
@@ -272,6 +292,8 @@ export interface StudioDoor {
   payLink(order: Row): Promise<{ url: string; expiresAt: number }>;
   /** The studio's own settings row (its "Take payment before making"): the app's admin's to change. */
   saveSettings(settings: Row, values: Record<string, unknown>): Promise<Row>;
+  /** Corrects the phone number a carrier is given for an order going abroad. */
+  savePhone(order: Row, phone: string): Promise<Row>;
   /**
    * The refunds of an order's online payments, as Adminium keeps them, by the
    * payment's reference: when, how much, and (for someone who may see payments

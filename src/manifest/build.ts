@@ -61,9 +61,10 @@ export const VERSION = "0.2.6";
  * now (`requirePayments`), as Adminium judges it, and sends the order's
  * e-mails by the same (`producers[].payments`). 0.3.72 reads where an
  * order's address and label live (`shipping`) and an app role's right to
- * buy a label (`shipping:@:book`).
+ * buy a label (`shipping:@:book`). 0.3.74 reads where an order's goods are for
+ * a customs form (`shipping.orders[].customs`).
  */
-export const MIN_ADMINIUM = "0.3.72";
+export const MIN_ADMINIUM = "0.3.74";
 
 const ENV = {
   VITE_ADMINIUM_API_BASE_URL: { required: false, example: "https://admin.example.com" },

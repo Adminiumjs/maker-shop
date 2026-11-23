@@ -22,6 +22,20 @@ export function signedMoney(value: string, currency: string | null, locale: stri
   return { text: `${negative ? "−" : "+"}${money(negative ? trimmed.slice(1) : trimmed, currency, locale)}`, sign: negative ? -1 : 1 };
 }
 
+/** A two-letter country code as the reader's language names it; the code itself where it has no name. */
+export function countryName(code: string, locale: string): string {
+  try {
+    return new Intl.DisplayNames([locale], { type: "region" }).of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
+
+/** Names joined as the reader's language joins a list. */
+export function listOf(names: readonly string[], locale: string): string {
+  return new Intl.ListFormat(locale, { style: "long", type: "conjunction" }).format(names);
+}
+
 /** A whole number in the reader's numerals. */
 export function count(value: number, locale: string): string {
   return new Intl.NumberFormat(locale).format(value);

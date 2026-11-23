@@ -8,18 +8,18 @@
  * then the same press places the order and takes the shopper to pay it on the
  * Stripe or PayPal page (through Adminium's pay page).
  */
-import { CircleAlert, FlaskConical, Lock, ReceiptText, TrendingUp, TriangleAlert } from "lucide-react";
+import { CircleAlert, FlaskConical, Globe, Info, Lock, Mail, ReceiptText, TrendingUp, TriangleAlert } from "lucide-react";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 
 import { NEWS_TICK } from "../../manifest/people.ts";
 import { useI18n } from "../../i18n/index.tsx";
-import { count, dayShort, money } from "../format.ts";
+import { count, countryName, dayShort, listOf, money } from "../format.ts";
 import { Mono } from "../parts.tsx";
-import { chooseService, firstBadField, formErrors, placeOrder, setDetails, useShop, type Details, type Field } from "../store.ts";
+import { chooseCountry, chooseService, chosenAbroad, firstBadField, formErrors, placeOrder, setDetails, useShop, type Details, type Field } from "../store.ts";
 import { paysOnline, usePay } from "../pay.ts";
 import { EmptyBasket } from "./Basket.tsx";
 
-const FIELD_IDS: Record<Field, string> = { name: "sh-ck-name", email: "sh-ck-email", line1: "sh-ck-line1", town: "sh-ck-town", postcode: "sh-ck-postcode" };
+const FIELD_IDS: Record<Field, string> = { name: "sh-ck-name", email: "sh-ck-email", line1: "sh-ck-line1", town: "sh-ck-town", postcode: "sh-ck-postcode", phone: "sh-ck-phone" };
 
 /** The tick's own words, in the reader's language: the sentence Adminium's consent log keeps. */
 function tickWords(locale: string): string {
@@ -33,6 +33,7 @@ export function CheckoutScreen() {
   const pay = usePay();
   const online = paysOnline(pay);
   const [pressed, setPressed] = useState(0);
+  const [notListed, setNotListed] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (pressed === 0) return;
@@ -42,8 +43,12 @@ export function CheckoutScreen() {
   if (s.catalogue === null) return null;
   const m = (value: unknown) => money(value, s.config.currency, locale);
   const figures = s.basketQuote?.figures ?? null;
-  const errors = { ...(s.tried ? formErrors(s.details) : {}), ...s.refusedFields };
+  const abroad = chosenAbroad(s);
+  const errors = { ...(s.tried ? formErrors(s.details, abroad !== null) : {}), ...s.refusedFields };
   const service = s.catalogue.services.find((one) => String(one.id) === String(s.serviceId)) ?? null;
+  // Until the owner lists a country there is no choice to make, and the page is the one it always was.
+  const home = s.catalogue.studio.homeCountry ?? null;
+  const countries = home === null || s.catalogue.abroad.length === 0 ? [] : [home, ...s.catalogue.abroad.map((one) => one.country)];
 
   const place = async () => {
     const done = await placeOrder();
@@ -51,7 +56,7 @@ export function CheckoutScreen() {
     if (done === "moved") button.current?.focus();
   };
 
-  const field = (name: Field, label: string, input: { value: string; onChange: (e: ChangeEvent<HTMLInputElement>) => void; type?: string; autoComplete: string; placeholder?: string }) => {
+  const field = (name: Field, label: string, input: { value: string; onChange: (e: ChangeEvent<HTMLInputElement>) => void; type?: string; autoComplete: string; placeholder?: string; inputMode?: "tel"; line?: string }) => {
     const error = errors[name];
     const id = FIELD_IDS[name];
     return (
@@ -67,9 +72,15 @@ export function CheckoutScreen() {
           onChange={input.onChange}
           autoComplete={input.autoComplete}
           placeholder={input.placeholder}
+          inputMode={input.inputMode}
           aria-invalid={error !== undefined}
-          aria-describedby={error === undefined ? undefined : `${id}-err`}
+          aria-describedby={[...(input.line === undefined ? [] : [`${id}-why`]), ...(error === undefined ? [] : [`${id}-err`])].join(" ") || undefined}
         />
+        {input.line !== undefined && (
+          <span id={`${id}-why`} className="sh-hint">
+            {input.line}
+          </span>
+        )}
         {error !== undefined && (
           <span id={`${id}-err`} className="sh-field-error">
             <CircleAlert size={14} aria-hidden="true" />
@@ -80,6 +91,36 @@ export function CheckoutScreen() {
     );
   };
   const typed = (key: keyof Details) => (e: ChangeEvent<HTMLInputElement>) => setDetails({ [key]: e.target.value });
+
+  if (notListed && countries.length > 0) {
+    const studioEmail = s.catalogue.studio.email ?? null;
+    return (
+      <section className="sh-screen sh-narrower" aria-labelledby="sh-checkout-title">
+        <div className="sh-card sh-not-served">
+          <span className="sh-not-served-icon" aria-hidden="true">
+            <Globe size={19} />
+          </span>
+          <h1 id="sh-checkout-title" className="sh-h1 sh-h1--page" tabIndex={-1}>
+            {t("shop.checkout.notServed")}
+          </h1>
+          <p>{t("shop.checkout.servedList", { shop: s.catalogue.studio.name, list: listOf(countries.map((code) => countryName(code, locale)), locale) })}</p>
+          {studioEmail !== null && (
+            <>
+              <p>{t("shop.checkout.writeToUs")}</p>
+              <a className="sh-link" href={`mailto:${studioEmail}`}>
+                <Mail size={15} aria-hidden="true" /> {studioEmail}
+              </a>
+            </>
+          )}
+          <div>
+            <button type="button" className="sh-button sh-button--accent" onClick={() => setNotListed(false)}>
+              {t("shop.checkout.backToCheckout")}
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="sh-screen sh-narrower" aria-labelledby="sh-checkout-title">
@@ -130,8 +171,43 @@ export function CheckoutScreen() {
               {field("town", t("shop.checkout.town"), { value: s.details.town, onChange: typed("town"), autoComplete: "address-level2" })}
               {field("postcode", t("shop.checkout.postcode"), { value: s.details.postcode, onChange: typed("postcode"), autoComplete: "postal-code" })}
             </div>
+            {countries.length > 0 && (
+              <div className="sh-form-col">
+                <div className="sh-form-field">
+                  <label className="sh-form-label" htmlFor="sh-ck-country">
+                    {t("shop.checkout.country")}
+                  </label>
+                  <select id="sh-ck-country" className="sh-input" value={abroad?.country ?? home ?? ""} onChange={(e) => chooseCountry(e.target.value)} autoComplete="country">
+                    {countries.map((code) => (
+                      <option key={code} value={code}>
+                        {countryName(code, locale)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button type="button" className="sh-link-button sh-not-listed" onClick={() => setNotListed(true)}>
+                  {t("shop.checkout.notListed")}
+                </button>
+                {abroad !== null &&
+                  field("phone", t("shop.checkout.phone"), {
+                    value: s.details.phone,
+                    onChange: typed("phone"),
+                    type: "tel",
+                    inputMode: "tel",
+                    autoComplete: "tel",
+                    line: t("shop.checkout.phoneWhy", { country: countryName(home ?? "", locale) }),
+                  })}
+                {abroad !== null && (
+                  <p className="sh-note">
+                    <Info size={16} aria-hidden="true" />
+                    <span>{t("shop.checkout.importCharges")}</span>
+                  </p>
+                )}
+              </div>
+            )}
           </fieldset>
 
+          {abroad === null && (
           <div className="sh-card sh-form">
             <h2 id="sh-ck-post" className="sh-card-title">
               {t("shop.checkout.how")}
@@ -154,6 +230,7 @@ export function CheckoutScreen() {
             </div>
             <div className="sh-hint">{t("shop.checkout.onePostage")}</div>
           </div>
+          )}
 
           {online ? (
             <div className="sh-invoice sh-pay-line">
@@ -194,7 +271,7 @@ export function CheckoutScreen() {
               <Mono>{figures === null ? "…" : m(figures.order["pieces_total"])}</Mono>
             </div>
             <div className="sh-sum-row">
-              <span>{service?.name ?? t("shop.sum.postage")}</span>
+              <span>{abroad !== null ? t("shop.sum.delivery") : (service?.name ?? t("shop.sum.postage"))}</span>
               <Mono>{figures === null ? "…" : m(figures.order["postage"])}</Mono>
             </div>
             <div className="sh-sum-total">

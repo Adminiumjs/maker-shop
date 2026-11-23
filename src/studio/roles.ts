@@ -18,6 +18,9 @@ export const mayMake = (who: Person): boolean => has(who, "owner", "maker") && w
 /** Takes the post office run. */
 export const mayPost = (who: Person): boolean => has(who, "owner", "packer") && who.can("orders", "update");
 
+/** Corrects a customer's phone number on an order: the owner's, as the role's limits say. */
+export const mayFixPhone = (who: Person): boolean => has(who, "owner") && who.can("orders", "update");
+
 /** Finds a customer and erases what the studio keeps of them, on Adminium's privacy page (the owner's `privacy:@:people`). */
 export const mayErase = (who: Person): boolean => who.roles.includes("owner");
 

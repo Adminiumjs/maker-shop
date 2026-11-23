@@ -23,7 +23,7 @@ import { askPaidLabelFirst, movePaidLabel, paidLabelHeaders } from "../add-ons/p
 import { withInstall, type StaffConfig } from "./transport/staffConnection.ts";
 import { SessionPortError, type SessionTransport } from "./transport/sessionSource.ts";
 import { momentOf } from "./time.ts";
-import type { Action, AddOnTable, PanelDoor, PanelList, PanelOpen, PanelUploaded, Person, OrderRefund, ProofPicture, SendProof, StaffKit, StaffPayments, StudioData, StudioDoor, StudioFacts, Table } from "./door.ts";
+import type { AbroadDoor, Action, AddOnTable, PanelDoor, PanelList, PanelOpen, PanelUploaded, Person, OrderRefund, ProofPicture, SendProof, StaffKit, StaffPayments, StudioData, StudioDoor, StudioFacts, Table } from "./door.ts";
 import { HOLIDAY_ADD_ON, holidayClosure, holidayPlace, inPlace } from "./holidays.ts";
 import { ApiError, type Id, type Row } from "./wire.ts";
 import { createShippingDoor, loadConnectedAddOns, loadPanelModule, type ConnectedProblem } from "../add-ons/connected.ts";
@@ -57,10 +57,10 @@ export const YES_NO: Readonly<Partial<Record<Table, readonly string[]>>> = {
   materials: ["active"],
   products: ["takes_lettering", "published"],
   options: ["active"],
-  postage_services: ["tracked", "active"],
+  postage_services: ["tracked", "active", "abroad"],
   closures: ["active"],
   customers: ["may_email"],
-  orders: ["link_stopped", "may_email", "pay_online", "waits_pay"],
+  orders: ["link_stopped", "may_email", "pay_online", "waits_pay", "abroad"],
 };
 
 const yesNo = (value: unknown): unknown =>
@@ -571,6 +571,47 @@ export class AdminiumStudio implements StudioDoor {
 
   saveSettings(settings: Row, values: Record<string, unknown>): Promise<Row> {
     return this.run(() => this.change("settings", settings.id, values));
+  }
+
+  savePhone(order: Row, phone: string): Promise<Row> {
+    return this.run(() => this.change("orders", order.id, { phone }));
+  }
+
+  /** The deliveries abroad: for each country, one postage service and one rate for any weight. */
+  abroad(): AbroadDoor {
+    const read = async () => {
+      const [services, rates] = await Promise.all([this.list("postage_services", "position.asc,id.asc"), this.list("postage_rates")]);
+      return { services, rates, abroad: services.filter((row) => typeof row["country"] === "string" && row["country"] !== "") };
+    };
+    const countryOf = (row: Row) => String(row["country"]).toUpperCase();
+    return {
+      rows: () =>
+        this.run(async () => {
+          const { rates, abroad } = await read();
+          return abroad.map((row) => {
+            const price = rates.find((rate) => String(rate["service_id"]) === String(row.id))?.["price"];
+            return { country: countryOf(row), price: price === null || price === undefined ? null : String(price), offered: row["active"] === true };
+          });
+        }),
+      save: (country, name, amount) =>
+        this.run(async () => {
+          const { services, rates, abroad } = await read();
+          const held = abroad.find((row) => countryOf(row) === country);
+          const position = Math.max(0, ...services.map((row) => Number(row["position"] ?? 0))) + 1;
+          const service = held ?? (await this.create("postage_services", { code: `abroad-${country.toLowerCase()}`, name, country, abroad: true, active: false, tracked: false, position }));
+          const rate = rates.find((row) => String(row["service_id"]) === String(service.id));
+          if (rate === undefined) await this.create("postage_rates", { service_id: service.id, min_grams: 0, price: amount });
+          else await this.change("postage_rates", rate.id, { price: amount });
+        }),
+      offer: (countries) =>
+        this.run(async () => {
+          const { abroad } = await read();
+          for (const row of abroad) {
+            const on = countries.includes(countryOf(row));
+            if ((row["active"] === true) !== on) await this.change("postage_services", row.id, { active: on });
+          }
+        }),
+    };
   }
 
   render(input: { kind: string; ref: Table; pk: Id; values?: Record<string, unknown> }): Promise<{ contentUrl: string; printUrl: string | null }> {

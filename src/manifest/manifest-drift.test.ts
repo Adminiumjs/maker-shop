@@ -45,7 +45,7 @@ describe("manifest.json is what src/manifest/ writes", () => {
     expect(manifest.requiredSchema.prefixed).toBe(true);
     expect(manifest["key"]).toBe("maker");
     expect(manifest["version"]).toBe("0.2.6");
-    expect((manifest["compatibility"] as Json)["minAdminiumVersion"]).toBe("0.3.72");
+    expect((manifest["compatibility"] as Json)["minAdminiumVersion"]).toBe("0.3.74");
     // Both sides may be installed once per database.
     expect((manifest["frontends"] as Json[]).map((f) => [f["side"], f["instances"]])).toEqual([["staff", true], ["customer", true]]);
   });
@@ -271,7 +271,8 @@ describe("the studio writes only what its work needs", () => {
           const named = (limit[list] as string[] | undefined) ?? [];
           for (const c of named) {
             const r = rules(ref, c);
-            expect(["rollup", "formula", "copy", "band", "stamp", "sequence", "format", "code", "lookup"].filter((k) => r[k] !== undefined), `${key} ${ref}.${c}`).toEqual([]);
+            // A copy that only fills what a write leaves out (a new order's country) stays a person's to correct.
+            expect(["rollup", "formula", "copy", "band", "stamp", "sequence", "format", "code", "lookup"].filter((k) => r[k] !== undefined && !(k === "copy" && (r[k] as { mode?: string }).mode === "default")), `${key} ${ref}.${c}`).toEqual([]);
           }
           if (ref === "orders") expect(named, key).not.toContain("may_email");
         }

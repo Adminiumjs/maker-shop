@@ -171,6 +171,8 @@ const decided = (ref: string): Set<string> =>
     TABLES.find((t) => t.ref === ref)!
       .columns.filter((c) => {
         const rules = c.rules ?? {};
+        // A copy that only fills what a write leaves out is still a person's to type.
+        if ((rules["copy"] as { mode?: string } | undefined)?.mode === "default") return false;
         return c.ref === "id" || ["rollup", "formula", "copy", "band", "stamp", "sequence", "format", "code", "lookup"].some((rule) => rules[rule] !== undefined);
       })
       .map((c) => c.ref),

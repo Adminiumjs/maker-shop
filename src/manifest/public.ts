@@ -150,7 +150,7 @@ export const PRODUCT_SELECT = [
 ];
 export const OPTION_SELECT = ["id", "product_id", "kind", "code", "name", "price", "material_id", "swatch", "feature_code", "feature_id", "min_qty", "percent_off", "position"];
 
-export const SETTINGS_SELECT = ["id", "studio_name", "address", "phone", "email", "about", "about_page", "materials_note", "ref_prefix", "taking_orders"];
+export const SETTINGS_SELECT = ["id", "studio_name", "address", "phone", "email", "about", "about_page", "materials_note", "ref_prefix", "taking_orders", "home_country"];
 
 /** The order key: one order, by its own link. */
 export const ORDER_KEY = "order";
@@ -180,7 +180,7 @@ function placeOrder(payments: "on" | "off") {
     humanCheck: true,
     level: "verified",
     select: PLACED_SELECT,
-    writable: ["name", "email", "address_line1", "address_line2", "town", "postcode", "note", "language", "service_id", "client_key", "may_email"],
+    writable: ["name", "email", "phone", "address_line1", "address_line2", "town", "postcode", "note", "language", "service_id", "client_key", "may_email"],
     requires: ["name", "email", "address_line1", "town", "postcode", "service_id"],
     requireSetting: [{ table: "settings", column: "taking_orders" }],
     claimedBy: { table: "customers", column: "customer_id", optional: true },
@@ -238,7 +238,7 @@ export const PUBLIC_ACCESS = [
   // ── the catalogue, the post and the calendar ─────────────────────────────────
   { table: "products", methods: ["GET"], select: PRODUCT_SELECT, filters: [{ column: "published", op: "eq", value: true }], pictures: ["photo"] },
   { table: "options", methods: ["GET"], select: OPTION_SELECT, filters: [{ column: "active", op: "eq", value: true }] },
-  { table: "postage_services", methods: ["GET"], select: ["id", "code", "name", "detail", "tracked", "position"], filters: [{ column: "active", op: "eq", value: true }] },
+  { table: "postage_services", methods: ["GET"], select: ["id", "code", "name", "detail", "tracked", "position", "country"], filters: [{ column: "active", op: "eq", value: true }] },
   { table: "postage_rates", methods: ["GET"], select: ["id", "service_id", "min_grams", "max_grams", "price"] },
   {
     table: "closures",

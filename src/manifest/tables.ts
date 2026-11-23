@@ -482,6 +482,10 @@ export const TABLES: Table[] = [
       text("dhl_product", 32, "DHL product", opt),
       bool("active", "Offered", true),
       int("position", "Position", opt),
+      // A delivery abroad: the one country it goes to, as a two-letter code. "Countries we deliver to" makes it with its
+      // one price, and an order that names it is going there. Empty, and not abroad, for the studio's own post.
+      text("country", 2, "Delivers to", { ...opt, rules: { personal: false } }),
+      bool("abroad", "Goes abroad", false),
     ],
   },
   {
@@ -569,8 +573,13 @@ export const TABLES: Table[] = [
       text("address_line2", 120, "Address, second line", opt),
       text("town", 80, "Town"),
       text("postcode", 16, "Postcode"),
-      // Where the parcel goes, as a two-letter code: the studio's own country unless the order says otherwise.
-      text("country", 2, "Country", { ...opt, rules: { default: { from: setting("home_country") } } }),
+      // Where the parcel goes, as a two-letter code: where its delivery goes, or else the studio's own country. A
+      // shopper never types it, so a parcel cannot be priced for one country and sent to another.
+      text("country", 2, "Country", { ...opt, rules: { copy: { via: "service_id", from: "country", mode: "default" }, default: { from: setting("home_country") } } }),
+      // Whether the order's delivery leaves the country: a carrier needs a phone number for those.
+      { ref: "abroad", type: "bool", nullable: true, label: l("Going abroad"), rules: { copy: { via: "service_id", from: "abroad", mode: "always" } } },
+      // Given at checkout for a parcel abroad, for the carrier and nothing else. No public read shows it.
+      text("phone", 32, "Phone", { ...opt, rules: { requiredWhen: { column: "abroad", in: [true] }, validation: { format: "phone" } } }),
       text("note", 200, "Note for the studio", opt),
       language("language"),
       fk("customer_id", "customers", "Customer", opt),

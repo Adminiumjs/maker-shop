@@ -49,6 +49,16 @@ export class DemoStudio implements StudioDoor {
     return (await import("../add-ons/registry.ts")).STUDIO_REGISTRY;
   }
   /** No Adminium here: the demo's parcels stay with its demo carrier. */
+  abroad(): null {
+    return null;
+  }
+
+  async savePhone(order: Row, phone: string): Promise<Row> {
+    this.world.update("orders", order.id, { phone });
+    this.world.changed();
+    return copy(this.world.get("orders", order.id)!);
+  }
+
   shipping(): null {
     return null;
   }

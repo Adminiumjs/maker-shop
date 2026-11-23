@@ -170,7 +170,7 @@ export function orderView(read: OrderRead, catalogue: Catalogue, today: string |
   }
   log.sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
 
-  const service = catalogue.services.find((s) => String(s.id) === String(order["service_id"]));
+  const service = [...catalogue.services, ...catalogue.abroad].find((s) => String(s.id) === String(order["service_id"]));
   return {
     number: String(order["number"] ?? ""),
     name: String(order["name"] ?? ""),

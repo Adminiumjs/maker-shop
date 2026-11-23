@@ -205,6 +205,15 @@ export class FakeDoor implements StudioDoor {
     this.record("refundsOf", { id: order.id });
     return structuredClone(this.kept ?? {});
   }
+  abroad(): null {
+    return null;
+  }
+
+  async savePhone(order: Row, phone: string): Promise<Row> {
+    this.record("savePhone", { id: order.id, phone });
+    return { ...order, phone };
+  }
+
   async saveSettings(settings: Row, values: Record<string, unknown>): Promise<Row> {
     this.record("saveSettings", { id: settings.id, values });
     this.data.settings = { ...this.data.settings!, ...values };

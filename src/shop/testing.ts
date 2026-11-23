@@ -69,6 +69,7 @@ export function sampleCatalogue(): Catalogue {
       { id: 2, code: "ply3", name: "Birch ply, 3 mm", family: "Birch ply", tint: "#c2a175" },
       { id: 3, code: "slate5", name: "Slate, 5 mm", family: "Slate", tint: "#3d4348" },
     ],
+    abroad: [],
     services: [
       { id: 1, code: "second", name: "Second class", detail: "2–3 days once it's posted", tracked: false },
       { id: 2, code: "tracked", name: "Tracked", detail: "Next day once it's posted, with a tracking number", tracked: true },
