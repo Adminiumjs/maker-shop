@@ -22,7 +22,7 @@ import { SETTINGS } from "./settings.ts";
 import { SHIPPING } from "./shipping.ts";
 import { TABLES } from "./tables.ts";
 
-export const VERSION = "0.2.5";
+export const VERSION = "0.2.6";
 
 /**
  * The Adminium release that first reads everything below: quantity breaks

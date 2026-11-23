@@ -3,7 +3,7 @@
   "manifestVersion": 1,
   "key": "maker",
   "name": "Maker Shop",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "publisher": {
     "id": "adminium",
     "name": "Adminium",
@@ -144,7 +144,7 @@
       },
       {
         "key": "shipping-shippo",
-        "range": "^1.0.33",
+        "range": "^1.0.35",
         "reason": {
           "en-US": "Buy a carrier's label for a parcel with your own Shippo account.",
           "de-DE": "Das Etikett eines Versanddienstes für ein Paket über Ihr eigenes Shippo-Konto kaufen.",
