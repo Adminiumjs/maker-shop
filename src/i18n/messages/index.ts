@@ -25,6 +25,7 @@ import { shop } from "../strings/shop.ts";
 import { studio } from "../strings/studio.ts";
 import { making } from "../strings/making.ts";
 import { pay } from "../strings/pay.ts";
+import { ship } from "../strings/ship.ts";
 
 type Area<EN extends Record<string, string>> = { "en-US": EN } & Record<
   Exclude<LocaleTag, "en-US">,
@@ -39,7 +40,8 @@ const AREAS: [
   Area<(typeof making)["en-US"]>,
   Area<(typeof after)["en-US"]>,
   Area<(typeof pay)["en-US"]>,
-] = [chrome, bench, shop, studio, making, after, pay];
+  Area<(typeof ship)["en-US"]>,
+] = [chrome, bench, shop, studio, making, after, pay, ship];
 
 export const MESSAGES = Object.fromEntries(
   LOCALE_TAGS.map((t) => [t, Object.assign({}, ...AREAS.map((a) => a[t] ?? {}))]),
@@ -53,4 +55,5 @@ export type MessageKey =
   | keyof (typeof studio)["en-US"]
   | keyof (typeof making)["en-US"]
   | keyof (typeof after)["en-US"]
-  | keyof (typeof pay)["en-US"];
+  | keyof (typeof pay)["en-US"]
+  | keyof (typeof ship)["en-US"];

@@ -24,6 +24,7 @@ import { num, same, text, type Id, type Row } from "../wire.ts";
 import { useT, type MessageKey } from "../../i18n/index.tsx";
 import { wordsOfDesign } from "../designs.ts";
 import { mayMake, mayOpenPanel } from "../roles.ts";
+import { ShipmentCard } from "./Shipment.tsx";
 
 const STAGE_LABEL: Record<string, MessageKey> = {
   make: "bench.col.to-make",
@@ -159,6 +160,8 @@ export function OrderScreen() {
         {who.can("proofs", "read") && <ProofLog order={order} lines={lines} customer={customer} />}
         <Shelf lines={lines} />
       </div>
+
+      <ShipmentCard order={order} />
 
       <div className="st-panel st-panel--pad">
         <div className="st-postage-head">

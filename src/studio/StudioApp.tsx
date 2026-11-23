@@ -24,6 +24,8 @@ import { Overlays } from "./screens/Overlays.tsx";
 import { MachinesScreen, MaterialsScreen, StockCountScreen } from "./screens/Making.tsx";
 import { BatchPageScreen, CutListScreen } from "./screens/Batches.tsx";
 import { SettingsScreen, settingsShown } from "./screens/Payments.tsx";
+import { ShipmentsScreen, shipFromShown } from "./screens/Shipment.tsx";
+import { useCarrierAttached } from "./dispatch.tsx";
 import { useI18n, useT } from "../i18n/index.tsx";
 import { text } from "./wire.ts";
 import type { Person } from "./door.ts";
@@ -254,6 +256,8 @@ function Screen({ view, reach }: { view: View; reach: string[] }) {
       return <CutListScreen />;
     case "settings":
       return <SettingsDoor reach={reach} />;
+    case "shipments":
+      return <ShipmentsDoor reach={reach} />;
     default:
       return <NotFoundScreen home={homeOf(reach)} />;
   }
@@ -263,7 +267,15 @@ function Screen({ view, reach }: { view: View; reach: string[] }) {
 function SettingsDoor({ reach }: { reach: string[] }) {
   const data = useData();
   const { door } = useEnv();
-  return settingsShown(door, data.settings) ? <SettingsScreen /> : <NotFoundScreen home={homeOf(reach)} />;
+  const attached = useCarrierAttached();
+  return settingsShown(door, data.settings) || shipFromShown(door, attached) ? <SettingsScreen /> : <NotFoundScreen home={homeOf(reach)} />;
+}
+
+/** The Shipments list, for whoever works the post, once Adminium serves a carrier for this studio. */
+function ShipmentsDoor({ reach }: { reach: string[] }) {
+  const { door } = useEnv();
+  const attached = useCarrierAttached();
+  return attached && door.shipping() !== null && reach.includes("post") ? <ShipmentsScreen /> : <NotFoundScreen home={homeOf(reach)} />;
 }
 
 function Brand({ name }: { name: string }) {
@@ -286,6 +298,7 @@ function Nav({ view, reach }: { view: View; reach: string[] }) {
   const data = useData();
   const { door } = useEnv();
   const lit = navOf(view);
+  const attached = useCarrierAttached();
   return (
     <nav className="st-nav" aria-label={t("studio.menu")}>
       {STUDIO_NAV.filter((entry) => reach.includes(entry.id)).map((entry) => (
@@ -294,8 +307,14 @@ function Nav({ view, reach }: { view: View; reach: string[] }) {
           {t(entry.labelKey)}
         </button>
       ))}
-      {/* Last, for the studio's admin once payments are on: "Take payment before making". */}
-      {settingsShown(door, data.settings) && (
+      {attached && door.shipping() !== null && reach.includes("post") && (
+        <button type="button" className="st-nav-item" aria-current={lit === "shipments" ? "page" : undefined} onClick={() => go("shipments")}>
+          <Truck size={17} aria-hidden="true" />
+          {t("studio.ship.nav")}
+        </button>
+      )}
+      {/* Last, for the studio's admin: payments once they are on, and Ship from once a carrier is attached. */}
+      {(settingsShown(door, data.settings) || shipFromShown(door, attached)) && (
         <button type="button" className="st-nav-item" aria-current={lit === "settings" ? "page" : undefined} onClick={() => go("settings")}>
           <Settings size={17} aria-hidden="true" />
           {t("studio.nav.settings")}

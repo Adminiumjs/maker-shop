@@ -19,6 +19,9 @@ import { num, text, type Row } from "./wire.ts";
 /** The add-on whose fill the post office run mounts. */
 export const DHL = "shipping-dhl";
 
+/** Every carrier this studio can ship with. A shop uses one at a time, and Adminium says which. */
+export const CARRIERS: readonly string[] = ["shipping-shippo", DHL];
+
 /** A postcode at the end of an address line: what a carrier checks the country against. */
 const POSTCODE = /\s([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})$/i;
 
@@ -40,7 +43,10 @@ export function studioAddress(settings: Row | null, country: string): PostalAddr
 }
 
 export function outboundOrder(data: StudioData, order: Row, currency: string): OutboundOrder {
-  const country = countryOf(currency);
+  // The order's own country once it keeps one. The guess is the demo carrier's alone: on a real install Adminium reads the row.
+  const country = text(order["country"])?.toUpperCase() ?? countryOf(currency);
+  const service = serviceOf(data, order);
+  const promised = text(service?.["name"]);
   const line1 = text(order["address_line1"]);
   const total = num(order["total"]);
   const postBy = orderPostBy(order);
@@ -48,6 +54,8 @@ export function outboundOrder(data: StudioData, order: Row, currency: string): O
   const weight = num(order["weight_g"]);
   return {
     ref: text(order["number"]) ?? String(order.id),
+    // The row itself: the engine reads the address, weight and value from it, so nothing on this screen decides what is bought.
+    source: { table: "orders", id: String(order.id) },
     recipient: { name: text(order["name"]) ?? "", key: String(order["customer_id"] ?? order.id) },
     items: linesOf(data, order)
       .filter(isLive)
@@ -76,6 +84,8 @@ export function outboundOrder(data: StudioData, order: Row, currency: string): O
     ...(postBy === null ? {} : { promisedFor: postBy }),
     ...(total === null ? {} : { value: { amount: Math.round(total * 100), currency } }),
     ...(weight === null ? {} : { parcelWeightGrams: weight }),
+    // What the shopper chose, in the shop's own words. A service with no stated speed asks for a deliberate confirm.
+    ...(promised === null ? {} : { deliveryPromise: { label: promised, tracked: service?.["tracked"] === true } }),
   };
 }
 
@@ -87,12 +97,13 @@ export function shopClock(now: number, zone: string): ShopClock {
 }
 
 /** The service the shopper chose, as DHL names it: the order's postage service's `dhl_product`, or null when it has none. */
-export function chosenService(data: StudioData, order: Row): DispatchPayload["chosen"] {
+export function chosenService(data: StudioData, order: Row, carrier: string = DHL): DispatchPayload["chosen"] {
+  if (carrier !== DHL) return null;
   const code = text(serviceOf(data, order)?.["dhl_product"]);
   return code === null ? null : { addOn: DHL, code };
 }
 
 /** Everything the dispatch flow is handed but the add-on's own settings. */
-export function dispatchPayload(data: StudioData, order: Row, input: { currency: string; zone: string; now: number }): Omit<DispatchPayload, "settings"> {
-  return { order: outboundOrder(data, order, input.currency), now: shopClock(input.now, input.zone), chosen: chosenService(data, order) };
+export function dispatchPayload(data: StudioData, order: Row, input: { currency: string; zone: string; now: number; carrier?: string }): Omit<DispatchPayload, "settings"> {
+  return { order: outboundOrder(data, order, input.currency), now: shopClock(input.now, input.zone), chosen: chosenService(data, order, input.carrier) };
 }

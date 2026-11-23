@@ -8,6 +8,7 @@
  * customer's orders and what they were charged in all. The door hands rows
  * back as the API answers them and never adds a figure of its own.
  */
+import type { ShippingDoor } from "../add-ons/shipping-door.ts";
 import type { Id, Row } from "./wire.ts";
 import type { AddOnRegistry } from "../add-ons/host.ts";
 import type { PanelId } from "../manifest/panels.ts";
@@ -195,6 +196,8 @@ export interface StudioDoor {
    * one compiled in, which answers from its demo carrier. Asked only once a screen needs a slot filled.
    */
   addOnRegistry(): Promise<AddOnRegistry>;
+  /** Adminium's shipping routes for this app; null where no Adminium serves them (the demo keeps its demo carrier). */
+  shipping(): ShippingDoor | null;
   /** The server's clock, as epoch ms. */
   now(): number;
   /** Ends the person's session; absent where there is none to end (the demo). */
@@ -207,6 +210,8 @@ export interface StudioDoor {
   updateLine(line: Row, values: Record<string, unknown>): Promise<Row>;
   /** An order along its states, from the one the screen saw. */
   moveOrder(order: Row, to: string, values?: Record<string, unknown>): Promise<Row>;
+  /** A posted parcel's new number, told to the shopper: stamping it sends the short e-mail. A person presses this, never a job. */
+  tellNewNumber(order: Row, label: { tracking: string; carrier: string }): Promise<Row>;
   /**
    * A proof of a line: its picture stored first, then the row that sends it. Adminium numbers it, e-mails it, and
    * moves the line's proof still out to "superseded" in the same write, so a picture or a proof refused leaves that

@@ -8,7 +8,7 @@ import { create } from "zustand";
 import type { PanelOpen, StudioData } from "./door.ts";
 import type { Id } from "./wire.ts";
 
-export type View = "today" | "order" | "orders" | "proofs" | "post" | "customers" | "products" | "product" | "materials" | "machines" | "stockcount" | "batch" | "cutlist" | "settings" | "notfound";
+export type View = "today" | "order" | "orders" | "proofs" | "post" | "customers" | "products" | "product" | "materials" | "machines" | "stockcount" | "batch" | "cutlist" | "settings" | "shipments" | "notfound";
 
 /** A sheet to batch, by its group's key (`batchGroups`). */
 export type Overlay =

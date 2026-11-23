@@ -6,6 +6,7 @@
  *
  * Tests only; nothing that ships imports it.
  */
+import type { ShippingDoor } from "../../add-ons/shipping-door.ts";
 import type { OrderRefund, PanelDoor, Person, SendProof, StaffKit, StaffPayments, StudioData, StudioDoor, StudioFacts } from "../door.ts";
 import { ApiError, same, type Id, type Row } from "../wire.ts";
 import { holidayClosure } from "../holidays.ts";
@@ -56,6 +57,11 @@ export class FakeDoor implements StudioDoor {
   async addOnRegistry(): Promise<AddOnRegistry> {
     return (await import("../../add-ons/registry.ts")).STUDIO_REGISTRY;
   }
+  /** The shipping door a test hands in; none by default, as in the demo. */
+  shippingDoor: ShippingDoor | null = null;
+  shipping(): ShippingDoor | null {
+    return this.shippingDoor;
+  }
   /** The Customiser's panels' door a test hands in; none by default, as in the demo. */
   panelDoor: PanelDoor | null = null;
   panels(): PanelDoor | null {
@@ -87,6 +93,10 @@ export class FakeDoor implements StudioDoor {
     this.record("updateLine", { id: line.id, values });
     return this.update(this.data.lines, line.id, values);
   }
+  async tellNewNumber(order: Row, label: { tracking: string; carrier: string }): Promise<Row> {
+    return this.moveOrder(order, String(order["status"]), { tracking: label.tracking, carrier: label.carrier, number_told_at: new Date(this.now()).toISOString() });
+  }
+
   async moveOrder(order: Row, to: string, values: Record<string, unknown> = {}): Promise<Row> {
     this.record("moveOrder", { id: order.id, from: order["status"], to, values });
     return this.update(this.data.orders, order.id, { status: to, ...values });

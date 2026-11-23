@@ -48,6 +48,10 @@ export class DemoStudio implements StudioDoor {
   async addOnRegistry(): Promise<AddOnRegistry> {
     return (await import("../add-ons/registry.ts")).STUDIO_REGISTRY;
   }
+  /** No Adminium here: the demo's parcels stay with its demo carrier. */
+  shipping(): null {
+    return null;
+  }
   /** No Adminium serves the Customiser's panels to the demo: the sheet says where they are drawn. */
   panels(): null {
     return null;
@@ -169,6 +173,10 @@ export class DemoStudio implements StudioDoor {
     const row = this.world.update("order_lines", line.id, values);
     this.world.changed();
     return copy(row);
+  }
+
+  async tellNewNumber(order: Row, label: { tracking: string; carrier: string }): Promise<Row> {
+    return this.moveOrder(order, String(order["status"]), { tracking: label.tracking, carrier: label.carrier, number_told_at: new Date(this.now()).toISOString() });
   }
 
   async moveOrder(order: Row, to: string, values: Record<string, unknown> = {}): Promise<Row> {

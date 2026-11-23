@@ -316,6 +316,7 @@ const STATES: Row[] = [
   { view: "cutlist", state: "a batch started", more: { cutKey: "batch-1" }, shows: "section", says: "The Pughs" },
   { view: "cutlist", state: "nothing queued", door: nothingToBatch, shows: "section", says: "Nothing is queued for a sheet." },
   // Settings, once payments are on
+  { view: "shipments", state: "no carrier attached: an address the studio has no screen for", door: paying, shows: "h1", says: "Nothing on this bench" },
   { view: "settings", state: "payments on", door: paying, shows: ".st-switch[role='switch']", says: "Take payment before making" },
   { view: "settings", state: "take payment before making, on", door: paying, go: () => click(".st-switch[role='switch']"), shows: ".st-switch[aria-checked='true']", says: "When it's on, nothing is cut until the order is paid." },
   // The 404
@@ -339,6 +340,7 @@ const VIEWS = {
   batch: true,
   cutlist: true,
   settings: true,
+  shipments: true,
   notfound: true,
 } as const satisfies Record<View, true>;
 

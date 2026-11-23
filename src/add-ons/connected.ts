@@ -52,7 +52,8 @@ import * as JsxRuntime from "react/jsx-runtime";
 import type { AddOn } from "./host.ts";
 import { installAddOnRuntime, type AddOnRuntime } from "./vendor/host/runtime/index.ts";
 import { withInstall } from "../studio/transport/staffConnection.ts";
-import { createEngineCarrier, type EngineSend } from "./vendor/host/engine-carrier.ts";
+import { createEngineCarrier, type EngineCarrier, type EngineReply, type EngineRequest } from "./vendor/host/engine-carrier.ts";
+import type { ShippingDoor, ShippingStatus } from "./shipping-door.ts";
 
 /** The panels' host API, once a screen has asked for one: kept, so a later install never takes it away. */
 let panelHost: unknown;
@@ -286,7 +287,7 @@ const ENGINE_SHIPPING_PATH = /^\/api\/v1\/apps\/[^/]+\/shipping(?:\/|$)/;
  * redirect is refused rather than followed, and nothing is retried here: a
  * purchase is asked for once.
  */
-export function engineSend(request: typeof fetch, origin: string, csrfToken: () => string | null): EngineSend {
+export function engineSend(request: typeof fetch, origin: string, csrfToken: () => string | null): (path: string, init: Omit<EngineRequest, "method"> & { method: EngineRequest["method"] | "PUT" }) => Promise<EngineReply> {
   return async (path, init) => {
     const target = new URL(path, origin);
     if (target.origin !== new URL(origin).origin || !ENGINE_SHIPPING_PATH.test(target.pathname)) {
@@ -300,7 +301,42 @@ export function engineSend(request: typeof fetch, origin: string, csrfToken: () 
       headers: { ...init.headers, ...(token === null ? {} : { "x-adminium-csrf": token }) },
       ...(init.body === undefined ? {} : { body: init.body }),
     });
-    return { status: res.status, text: () => res.text() };
+    // A label is a file: read as one, so it keeps the install header this request carried.
+    return { status: res.status, text: () => res.text(), blob: () => res.blob() };
+  };
+}
+
+export function createShippingDoor(options: { request: typeof fetch; origin: string; csrfToken: () => string | null; appKey: string }): ShippingDoor {
+  const send = engineSend(options.request, options.origin, options.csrfToken);
+  const base = `/api/v1/apps/${encodeURIComponent(options.appKey)}/shipping`;
+  const clients = new Map<string, EngineCarrier>();
+  const client = (addOnKey: string): EngineCarrier => {
+    const held = clients.get(addOnKey) ?? createEngineCarrier({ send, appKey: options.appKey, addOnKey });
+    clients.set(addOnKey, held);
+    return held;
+  };
+  const read = async (reply: EngineReply): Promise<ShippingStatus> => {
+    const body = JSON.parse(await reply.text()) as { data?: ShippingStatus };
+    if (reply.status < 200 || reply.status >= 300 || body.data === undefined) throw new Error(`Adminium answered ${String(reply.status)}`);
+    return body.data;
+  };
+  return {
+    client,
+    async access() {
+      try {
+        return await client("").access();
+      } catch (cause) {
+        if ((cause as { status?: unknown }).status === 403) return null;
+        throw cause;
+      }
+    },
+    async status() {
+      const reply = await send(base, { method: "GET", headers: { accept: "application/json" } });
+      return reply.status === 403 ? null : read(reply);
+    },
+    async saveShipFrom(values) {
+      return read(await send(`${base}/ship-from`, { method: "PUT", headers: { accept: "application/json", "content-type": "application/json" }, body: JSON.stringify(values) }));
+    },
   };
 }
 

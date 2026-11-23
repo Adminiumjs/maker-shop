@@ -14,6 +14,7 @@
  * server asks the right again. Where there is no kit (the demo), the sheet
  * takes the same two steps itself.
  */
+import { ShipFromPanel } from "./Shipment.tsx";
 import { useEffect, useRef, useState } from "react";
 import { CircleCheck, Clock, Globe, Link2, Lock, Undo2, Wallet, X, XCircle } from "lucide-react";
 
@@ -482,6 +483,7 @@ export function SettingsScreen() {
           {t("studio.settings.title")}
         </h1>
       </div>
+      {settingsShown(door, settings) && (
       <div className="st-panel st-panel--pad st-settings">
         <h2 className="st-panel-title">{t("studio.settings.payments")}</h2>
         <p className="st-small">{t(on ? "studio.settings.on" : "studio.settings.off")}</p>
@@ -502,6 +504,8 @@ export function SettingsScreen() {
           {said}
         </span>
       </div>
+      )}
+      <ShipFromPanel />
     </section>
   );
 }

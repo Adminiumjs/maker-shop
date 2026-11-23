@@ -39,6 +39,8 @@ describe("the order, as the flow reads it", () => {
     const o = { ...order(14), address_line1: "4 Fellside", address_line2: null, postcode: "LA9 4AA" };
     expect(outboundOrder(data, o, "GBP")).toEqual({
       ref: "BR-2271",
+      source: { table: "orders", id: "14" },
+      deliveryPromise: { label: expect.any(String), tracked: expect.any(Boolean) },
       recipient: { name: "Sam & Robin", key: "2" },
       items: [{ id: "141", key: "4", label: "3D-printed desk tray", quantity: 1, unitWeightGrams: 285 }],
       origin: { name: "Birch Row", lines: ["Unit 4", "Station Yard"], city: "Settle", postcode: "BD24 9AA", country: "GB" },

@@ -170,14 +170,18 @@ export async function cancelOrder(door: StudioDoor, data: StudioData, order: Row
 /**
  * The post office run: each ticked order's ready lines go in the post, then
  * the order itself (Adminium e-mails the customer when it is posted). A
- * tracking number goes with it only when DHL carried it.
+ * tracking number goes with it only when a carrier gave one.
  */
-export async function postOrders(door: StudioDoor, data: StudioData, orders: readonly Row[], tracking: Readonly<Record<string, string>> = {}): Promise<number> {
+export async function postOrders(door: StudioDoor, data: StudioData, orders: readonly Row[], tracking: Readonly<Record<string, string>> = {}, labels: Readonly<Record<string, { tracking: string | null; carrier: string | null }>> = {}): Promise<number> {
   let posted = 0;
   for (const order of orders) {
     for (const line of linesOf(data, order)) if (line["stage"] === "ready") await door.moveLine(line, "posted");
-    const number = tracking[String(order.id)]?.trim() ?? "";
-    await door.moveOrder(order, "posted", number === "" ? {} : { tracking: number });
+    const typed = tracking[String(order.id)]?.trim() ?? "";
+    const label = labels[String(order.id)];
+    // The label's number and company reach the shopper's columns here, at the hand-over, and not at purchase.
+    const number = typed !== "" ? typed : (label?.tracking ?? "");
+    const carrier = typed === "" ? (label?.carrier ?? null) : null;
+    await door.moveOrder(order, "posted", { ...(number === "" ? {} : { tracking: number }), ...(carrier === null || number === "" ? {} : { carrier }) });
     posted += 1;
   }
   return posted;

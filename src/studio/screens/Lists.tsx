@@ -19,7 +19,8 @@ import { num, text, type Row } from "../wire.ts";
 import { wordsOfDesign } from "../designs.ts";
 import { useT, type MessageKey } from "../../i18n/index.tsx";
 import { mayPost } from "../roles.ts";
-import { DispatchFill, useDhl } from "../dispatch.tsx";
+import { DispatchFill, useCarrierAttached, useShipping } from "../dispatch.tsx";
+import { checkHandOver } from "./Shipment.tsx";
 
 const STAGE_WORD: Record<string, MessageKey> = {
   make: "bench.col.to-make",
@@ -280,7 +281,10 @@ export function PostScreen() {
   const [packed, setPacked] = useState<Set<string>>(new Set());
   const [tracking, setTracking] = useState<Record<string, string>>({});
   const orders = postRun(data);
-  const dhl = useDhl();
+  const carrierOn = useCarrierAttached();
+  const { ship, access } = useShipping();
+  // A real carrier's number comes from its label. Typing one stays only where no real key is in use.
+  const typesNumber = ship === null || access === null || access.mode === null;
   const allowed = mayPost(door.who());
   const done = orders.filter((o) => packed.has(String(o.id)));
   const grams = orders.reduce((sum, o) => sum + (num(o["weight_g"]) ?? 0), 0);
@@ -291,10 +295,13 @@ export function PostScreen() {
       return;
     }
     void run(async (d, fresh) => {
-      const people = new Set(done.map((o) => text(o["email"]) ?? String(o.id)));
-      await postOrders(d, fresh, done, tracking);
-      setPacked(new Set());
-      return t("studio.post.done", { count: people.size }, people.size);
+      const checked = await checkHandOver(ship, access, done);
+      if (checked.go.length > 0) await postOrders(d, fresh, checked.go, tracking, checked.labels);
+      setPacked(new Set(checked.held.map((o) => String(o.id))));
+      if (checked.held.length > 0) toast(t("studio.ship.heldRun", { refs: checked.held.map((o) => text(o["number"]) ?? "").join(", ") }), "warn");
+      if (checked.go.length === 0) return null;
+      const told = new Set(checked.go.map((o) => text(o["email"]) ?? String(o.id)));
+      return t("studio.post.done", { count: told.size }, told.size);
     });
   };
 
@@ -371,14 +378,16 @@ export function PostScreen() {
                     {t("studio.card.open")}
                   </button>
                 </div>
-                {dhl && allowed && (
+                {carrierOn && allowed && (
                   <>
-                    {/* DHL's own flow for this parcel: closed, it is one "Book a collection" button. */}
+                    {/* The active carrier's own flow for this parcel. Which door it leaves by is the label's to say, so the row claims none. */}
                     <DispatchFill order={order} />
-                    <label className="st-field">
-                      <span className="st-label">{t("studio.post.tracking", { ref })}</span>
-                      <input className="st-input st-input--mono" value={tracking[key] ?? ""} onChange={(e) => setTracking((s) => ({ ...s, [key]: e.target.value }))} />
-                    </label>
+                    {typesNumber && (
+                      <label className="st-field">
+                        <span className="st-label">{t("studio.post.tracking", { ref })}</span>
+                        <input className="st-input st-input--mono" value={tracking[key] ?? ""} onChange={(e) => setTracking((s) => ({ ...s, [key]: e.target.value }))} />
+                      </label>
+                    )}
                   </>
                 )}
               </div>

@@ -25,7 +25,8 @@ import { momentOf } from "./time.ts";
 import type { Action, AddOnTable, PanelDoor, PanelList, PanelOpen, PanelUploaded, Person, OrderRefund, ProofPicture, SendProof, StaffKit, StaffPayments, StudioData, StudioDoor, StudioFacts, Table } from "./door.ts";
 import { HOLIDAY_ADD_ON, holidayClosure, holidayPlace, inPlace } from "./holidays.ts";
 import { ApiError, type Id, type Row } from "./wire.ts";
-import { loadConnectedAddOns, loadPanelModule, type ConnectedProblem } from "../add-ons/connected.ts";
+import { createShippingDoor, loadConnectedAddOns, loadPanelModule, type ConnectedProblem } from "../add-ons/connected.ts";
+import type { ShippingDoor } from "../add-ons/shipping-door.ts";
 import { PANEL_HOST } from "./panels/host.tsx";
 import { createRegistry, type AddOnRegistry } from "../add-ons/host.ts";
 
@@ -36,7 +37,7 @@ const PAGE = 200;
 /** The moments each table holds: SQLite hands them back without a zone. */
 export const MOMENTS: Readonly<Partial<Record<Table | AddOnTable, readonly string[]>>> = {
   customers: ["forgotten_at", "created_at"],
-  orders: ["placed_at", "posted_at", "cancelled_at", "link_expires", "paid_at"],
+  orders: ["placed_at", "posted_at", "number_told_at", "cancelled_at", "link_expires", "paid_at"],
   order_lines: ["placed_at", "started_at", "finishing_at", "made_at"],
   proofs: ["sent_at", "answered_at", "reminded_at"],
   batches: ["started_at", "done_at"],
@@ -121,6 +122,14 @@ export class AdminiumStudio implements StudioDoor {
       return createRegistry(loaded.addOns);
     });
     return this.registry;
+  }
+
+  private shippingDoor: ShippingDoor | null = null;
+
+  /** This app's shipping routes, on this origin, with this person's session and this install. */
+  shipping(): ShippingDoor {
+    this.shippingDoor ??= createShippingDoor({ request: this.fetchImpl, origin: this.options.origin ?? window.location.origin, csrfToken: () => this.cfg.csrfToken, appKey: APP_KEY });
+    return this.shippingDoor;
   }
 
   // ── the wire ──────────────────────────────────────────────────────────────
@@ -392,6 +401,10 @@ export class AdminiumStudio implements StudioDoor {
 
   moveOrder(order: Row, to: string, values: Record<string, unknown> = {}): Promise<Row> {
     return this.run(() => this.change("orders", order.id, { status: to, ...values }, String(order["status"])));
+  }
+
+  tellNewNumber(order: Row, label: { tracking: string; carrier: string }): Promise<Row> {
+    return this.run(() => this.change("orders", order.id, { tracking: label.tracking, carrier: label.carrier, number_told_at: new Date(this.now()).toISOString() }));
   }
 
   /** What the files route answers for a column: the value the row stores. */
