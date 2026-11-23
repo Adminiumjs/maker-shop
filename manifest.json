@@ -13977,7 +13977,7 @@
         {
           "table": "orders",
           "column": "phone",
-          "holds": "details",
+          "holds": "phone",
           "via": "customer_id"
         },
         {

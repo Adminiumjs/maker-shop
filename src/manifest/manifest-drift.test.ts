@@ -56,6 +56,30 @@ describe("manifest.json is what src/manifest/ writes", () => {
   });
 });
 
+describe("selling abroad", () => {
+  const publicEntries = manifest["publicAccess"] as Json[];
+  const orders = (manifest["shipping"] as { orders: Json[] }).orders[0]!;
+
+  it("declares what a customer paid a unit, which a line's quantity multiplies to its total", () => {
+    expect((orders["customs"] as { lines: Json }).lines).toMatchObject({ table: "order_lines", order: "order_id", quantity: "qty", unitValue: "each_with_features", description: "product_name" });
+    expect(rules("order_lines", "each_with_features")["formula"]).toEqual({ add: ["each", { mul: [{ coalesce: ["features_each", 0] }, { coalesce: ["pieces_per_unit", 1] }] }] });
+    expect(rules("order_lines", "line_total")["formula"]).toEqual({ add: [{ mul: ["each", "qty"] }, { coalesce: ["features_total", 0] }] });
+    expect(rules("order_lines", "features_total")["formula"]).toEqual({ mul: [{ coalesce: ["features_each", 0] }, "pieces"] });
+  });
+
+  it("takes an order's country from its delivery, and never from the shopper", () => {
+    expect(rules("orders", "country")["copy"]).toEqual({ via: "service_id", from: "country", mode: "default" });
+    expect(rules("orders", "country")["default"]).toBeDefined();
+    for (const entry of publicEntries) expect((entry["writable"] as string[] | undefined) ?? []).not.toContain("country");
+  });
+
+  it("needs a phone on a parcel abroad, and shows it on no public read", () => {
+    expect(rules("orders", "phone")["requiredWhen"]).toEqual({ column: "abroad", in: [true] });
+    expect(rules("orders", "phone")["validation"]).toEqual({ format: "phone" });
+    for (const entry of publicEntries.filter((e) => e["table"] === "orders")) expect((entry["select"] as string[] | undefined) ?? []).not.toContain("phone");
+  });
+});
+
 describe("every price, weight and date is Adminium's", () => {
   it("prices a line from its product and the product's own options", () => {
     expect(rules("order_lines", "unit_price")["copy"]).toEqual({ via: "product_id", from: "price", mode: "always" });

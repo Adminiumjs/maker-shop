@@ -74,7 +74,7 @@ export const PEOPLE = [
       { table: "orders", column: "address_line2", holds: "details", via: "customer_id" },
       { table: "orders", column: "town", holds: "details", via: "customer_id" },
       { table: "orders", column: "postcode", holds: "details", via: "customer_id" },
-      { table: "orders", column: "phone", holds: "details", via: "customer_id" },
+      { table: "orders", column: "phone", holds: "phone", via: "customer_id" },
       // The words on a piece, and the line in a few words that repeats them.
       { table: "order_lines", column: "lettering", holds: "details", via: "customer_id" },
       { table: "order_lines", column: "summary", holds: "details", via: "customer_id" },
