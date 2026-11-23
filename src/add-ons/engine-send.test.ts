@@ -148,7 +148,7 @@ describe("handing the client to a bundle", () => {
     expect(loaded.problems.map((p) => p.code)).toEqual(["NO_ENGINE_CLIENT"]);
   });
 
-  it("does not switch DHL on: with the demo off, a handed-in client still reads as not connected", async () => {
+  it("with the demo off, a handed-in client is the only way to a carrier: Adminium's own lock is what refuses DHL", async () => {
     resetRuntime();
     const addOnValue = register();
     applySettings({ demo_transport: false });
@@ -160,7 +160,7 @@ describe("handing the client to a bundle", () => {
     });
     expect(loaded.problems).toEqual([]);
     expect(engineCarrier()?.addOnKey).toBe("shipping-dhl");
-    expect(carrierState()).toBe("not-connected");
+    expect(carrierState()).toBe("connected");
     applySettings({ ...DEFAULT_SETTINGS });
     resetRuntime();
   });
