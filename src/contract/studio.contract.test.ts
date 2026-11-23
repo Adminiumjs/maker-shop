@@ -292,7 +292,7 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         expect(/letter-spacing:-\.01em;color:[^"]*">([^<]*)<\/td>/.exec(mail.html)?.[1]).toBe(studio);
       });
 
-      it("e-mails an order DHL carried with its tracking number and a link to track it", async () => {
+      it("e-mails a typed tracking number in plain text, with no link to any one carrier", async () => {
         // A piece with no words on it needs no proof: it goes straight to the bench.
         let data = await maker.load();
         const ply = data.products.find((p) => p["code"] === "coast-ply")!;
@@ -327,8 +327,8 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
           row: async () => (await rows("messages")).find((m) => m["kind"] === "order-posted" && String(m["order_id"]) === String(made.id)),
         });
         expect(plain(mail.html)).toMatch(/Tracking number[\s\S]*JD014600006281234567/);
-        expect(plain(mail.html)).toContain("Track it");
-        expect(mail.html).toContain(`tracking-id=${number}`);
+        expect(plain(mail.html)).not.toContain("Track it");
+        expect(mail.html).not.toMatch(/dhl\.com/i);
       }, 180_000);
 
       it("refuses a packer anything but the post, by the role's limit, and leaves the line where it was", async () => {
