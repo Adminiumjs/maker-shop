@@ -206,9 +206,11 @@ describe("the checkout", () => {
     await settle();
     expect(document.querySelector("#sh-ck-country")).toBeNull();
     expect(document.querySelector('a[href="mailto:hello@example.test"]')).not.toBeNull();
+    expect(document.activeElement?.id).toBe("sh-checkout-title");
     await clean(`${locale} not served`);
     await act(async () => document.querySelector<HTMLButtonElement>(".sh-not-served .sh-button")!.click());
     await settle();
     expect(document.querySelector("#sh-ck-country")).not.toBeNull();
+    expect(document.activeElement?.className).toContain("sh-not-listed");
   });
 });

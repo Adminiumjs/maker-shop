@@ -40,6 +40,13 @@ export function CheckoutScreen() {
     const bad = firstBadField();
     if (bad !== null) document.getElementById(FIELD_IDS[bad])?.focus();
   }, [pressed]);
+  // The page changes under the reader: they land on its heading, and back on the link they pressed.
+  const wasNotListed = useRef(false);
+  useEffect(() => {
+    if (notListed) document.getElementById("sh-checkout-title")?.focus();
+    else if (wasNotListed.current) document.querySelector<HTMLElement>(".sh-not-listed")?.focus();
+    wasNotListed.current = notListed;
+  }, [notListed]);
   if (s.catalogue === null) return null;
   const m = (value: unknown) => money(value, s.config.currency, locale);
   const figures = s.basketQuote?.figures ?? null;
