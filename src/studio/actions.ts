@@ -43,26 +43,41 @@ function orderStatusFor(order: Row, lines: readonly Row[]): string {
 }
 
 /** Walk an order to a status, a move at a time (placed → making → ready). */
-async function walkOrder(door: StudioDoor, order: Row, to: string): Promise<Row> {
+async function walkOrder(door: StudioDoor, order: Row, to: string, keep?: readonly string[]): Promise<Row> {
   const path = pathOf(String(order["status"]), to, ORDER_MOVES);
   if (path === null) return order;
   let at = order;
-  for (const step of path) at = await door.moveOrder(at, step);
+  for (const step of path) at = await door.moveOrder(at, step, {}, keep);
   return at;
 }
 
+/** A person's answer about a paid label, given before anything was written. */
+type PaidLabelAnswer = { keep: readonly string[]; moved: boolean };
+
+const ORDER_WAY = ["placed", "making", "ready", "posted"];
+
+/** Asks first when this piece's move would take its order back: Adminium may refuse that over a paid label. */
+async function askIfOrderGoesBack(door: StudioDoor, data: StudioData, order: Row, line: Row, to: string): Promise<PaidLabelAnswer | undefined> {
+  const lines = linesOf(data, order).map((l) => (same(l.id, line.id) ? { ...l, stage: to } : l));
+  const want = orderStatusFor(order, lines);
+  const from = ORDER_WAY.indexOf(String(order["status"]));
+  const next = ORDER_WAY.indexOf(want);
+  return from >= 0 && next >= 0 && next < from ? door.clearPaidLabel?.(order, want) : undefined;
+}
+
 /** Bring an order in step with its lines after they moved. */
-export async function follow(door: StudioDoor, data: StudioData, order: Row, moved: readonly Row[]): Promise<void> {
+export async function follow(door: StudioDoor, data: StudioData, order: Row, moved: readonly Row[], keep?: readonly string[]): Promise<void> {
   const lines = linesOf(data, order).map((l) => moved.find((m) => same(m.id, l.id)) ?? l);
   const want = orderStatusFor(order, lines);
-  if (want !== order["status"]) await walkOrder(door, order, want);
+  if (want !== order["status"]) await walkOrder(door, order, want, keep);
 }
 
 /** Move one line along the bench to a stage; the order follows. */
-export async function moveLine(door: StudioDoor, data: StudioData, line: Row, to: string): Promise<Row> {
+export async function moveLine(door: StudioDoor, data: StudioData, line: Row, to: string, asked?: PaidLabelAnswer | null): Promise<Row> {
   const order = orderOf(data, line["order_id"]);
+  const answer = asked !== undefined || order === undefined ? asked : await askIfOrderGoesBack(door, data, order, line, to);
   const moved = await stepLine(door, line, to, order);
-  if (order !== undefined) await follow(door, data, order, [moved]);
+  if (order !== undefined && answer?.moved !== true) await follow(door, data, order, [moved], answer?.keep);
   return moved;
 }
 
@@ -151,10 +166,12 @@ export async function sendProofs(door: StudioDoor, data: StudioData, order: Row,
  * the line counts them, and it goes back to "make" to be made again.
  */
 export async function spoil(door: StudioDoor, data: StudioData, line: Row, units: number): Promise<void> {
+  const order = orderOf(data, line["order_id"]);
+  const asked = order !== undefined && line["stage"] !== "make" ? ((await askIfOrderGoesBack(door, data, order, line, "make")) ?? null) : null;
   const material = lineMaterial(data, line);
   if (material !== undefined) await door.spoil({ line, materialId: material.id, units, note: null });
   const counted = await door.updateLine(line, { spoiled: (num(line["spoiled"]) ?? 0) + units });
-  if (line["stage"] !== "make") await moveLine(door, data, { ...line, ...counted, stage: line["stage"] }, "make");
+  if (line["stage"] !== "make") await moveLine(door, data, { ...line, ...counted, stage: line["stage"] }, "make", asked);
 }
 
 /**

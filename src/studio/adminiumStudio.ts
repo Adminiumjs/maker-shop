@@ -405,7 +405,10 @@ export class AdminiumStudio implements StudioDoor {
     return keep === undefined ? movePaidLabel({ table: "orders", id: String(order.id) }, send) : send(keep);
   }
 
-  clearPaidLabel(order: Row, to: string): Promise<{ keep: readonly string[]; moved: boolean }> {
+  async clearPaidLabel(order: Row, to: string): Promise<{ keep: readonly string[]; moved: boolean }> {
+    if (!["shipping-shippo", "shipping-dhl"].some((key) => key in this.cfg.addOns)) return { keep: [], moved: false };
+    // Asked only once the add-on is here: a piece must not come off while the question is still loading.
+    await this.addOnRegistry();
     return askPaidLabelFirst({ table: "orders", id: String(order.id) }, (keep) => this.run(() => this.change("orders", order.id, { status: to }, String(order["status"]), keep)));
   }
 

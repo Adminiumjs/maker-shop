@@ -14,7 +14,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { I18nProvider } from "../i18n/index.tsx";
-import { cancelOrder, HeldByPayment, moveLine, moveOrderLines } from "./actions.ts";
+import { cancelOrder, HeldByPayment, moveLine, moveOrderLines, spoil } from "./actions.ts";
 import { StudioProvider, type StudioEnv } from "./env.tsx";
 import { benchLockOf, kpis, linePostBy, orderPostBy, paymentOf, serviceName } from "./facts.ts";
 import { StudioApp } from "./StudioApp.tsx";
@@ -266,6 +266,18 @@ describe("an order that takes payment before making", () => {
     Object.assign(door, { clearPaidLabel: async () => Promise.reject(stopped) });
     await expect(cancelOrder(door, door.data, order(door, 10))).rejects.toBe(stopped);
     expect(door.trail()).toEqual([]);
+  });
+
+  it.each(["a board move", "a spoiled piece"])("writes nothing for %s that would take a ready order back, when the person goes back", async (how) => {
+    const door = paying();
+    Object.assign(order(door, 10), { status: "ready" });
+    Object.assign(line(door, 101), { stage: "ready" });
+    const stopped = Object.assign(new Error("The order was not moved."), { name: "PaidLabelStopped" });
+    Object.assign(door, { clearPaidLabel: async () => Promise.reject(stopped) });
+    const work = how === "a board move" ? moveLine(door, door.data, line(door, 101), "make") : spoil(door, door.data, line(door, 101), 1);
+    await expect(work).rejects.toBe(stopped);
+    expect(door.trail()).toEqual([]);
+    expect(line(door, 101)["stage"]).toBe("ready");
   });
 
   it("sends the answer with the order, after its pieces", async () => {

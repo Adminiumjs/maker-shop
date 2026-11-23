@@ -75,6 +75,8 @@ export async function bootStudio(mount: HTMLElement): Promise<void> {
   });
   const said = cfg.now === undefined || cfg.now === null ? Number.NaN : Date.parse(cfg.now);
   const door = new AdminiumStudio(transport, cfg, { skew: Number.isNaN(said) ? 0 : said - Date.now() });
+  // A move can be refused over a paid label from any screen, and the question comes from the add-on.
+  void door.addOnRegistry().catch(() => undefined);
   const env: StudioEnv = {
     door,
     draw: drawLettering,
