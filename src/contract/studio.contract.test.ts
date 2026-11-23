@@ -146,7 +146,7 @@ describe.skipIf(why !== null)(`the studio against a built Adminium${why === null
         const body = { key: app.key, version: app.version, connectionId };
         const plan = ok(await owner.post<{ plan: { installable: boolean; checksum: string } }>("/api/v1/apps/plan", { ...body, addOns: [customiser.key] })).plan;
         expect(plan.installable, JSON.stringify(plan).slice(0, 3000)).toBe(true);
-        const install = await owner.post<{ rules: { skipped: unknown[] } }>("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, addOns: [{ key: customiser.key, version: customiser.version }] });
+        const install = await owner.post<{ rules: { skipped: unknown[] } }>("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, shippingUnticked: [], addOns: [{ key: customiser.key, version: customiser.version }] });
         if (install.status !== 200) {
           // Said in full: what the plan the install stopped on found.
           const again = await owner.post<{ plan: { problems?: unknown } }>("/api/v1/apps/plan", body);

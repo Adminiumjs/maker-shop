@@ -214,6 +214,10 @@ export const ROLES = [
     name: "Owner",
     permissions: [
       "app:@:staff",
+      // Buying a label, asking for its refund, and customs: the install asks before giving each of them.
+      "shipping:@:book",
+      "shipping:@:cancel",
+      "shipping:@:customs",
       ...TABLE_REFS.flatMap((table) =>
         // The e-mails are the studio's record of what was sent: nobody deletes from it. The payments are Adminium's
         // record of the money a payment service took: read, never written by a role.

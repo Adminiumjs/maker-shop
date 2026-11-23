@@ -99,7 +99,7 @@ describe.skipIf(why !== null)(`the workshop against a built Adminium${why === nu
         const body = { key: app.key, version: app.version, connectionId };
         const plan = ok(await owner.post<{ plan: { installable: boolean; checksum: string } }>("/api/v1/apps/plan", { ...body, addOns: [customiser.key] })).plan;
         expect(plan.installable, JSON.stringify(plan).slice(0, 3000)).toBe(true);
-        const install = await owner.post<{ rules: { skipped: unknown[] } }>("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, addOns: [{ key: customiser.key, version: customiser.version }] });
+        const install = await owner.post<{ rules: { skipped: unknown[] } }>("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, shippingUnticked: [], addOns: [{ key: customiser.key, version: customiser.version }] });
         if (install.status !== 200) throw new Error(`install refused: ${JSON.stringify(install.body).slice(0, 3000)}`);
         expect(JSON.stringify(install.body.rules.skipped)).toBe("[]");
         ok(await owner.patch(`/api/v1/connections/${connectionId}`, { timezone: "Europe/London", currency: "GBP" }));

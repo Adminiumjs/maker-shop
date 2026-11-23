@@ -11148,6 +11148,9 @@
       "name": "Owner",
       "permissions": [
         "app:@:staff",
+        "shipping:@:book",
+        "shipping:@:cancel",
+        "shipping:@:customs",
         "table:@settings:read",
         "table:@settings:create",
         "table:@settings:update",

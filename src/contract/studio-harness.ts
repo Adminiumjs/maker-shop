@@ -409,7 +409,7 @@ export async function installStudio(server: Server, engine: Engine, at: number, 
   const body = { key: app.key, version: app.version, connectionId };
   const plan = ok(await owner.post<{ plan: { installable: boolean; checksum: string } }>("/api/v1/apps/plan", { ...body, addOns: bundles.map((addOn) => addOn.key) })).plan;
   if (!plan.installable) throw new Error(`not installable: ${JSON.stringify(plan).slice(0, 3000)}`);
-  ok(await owner.post("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, addOns: bundles.map((addOn) => ({ key: addOn.key, version: addOn.version })) }));
+  ok(await owner.post("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, shippingUnticked: [], addOns: bundles.map((addOn) => ({ key: addOn.key, version: addOn.version })) }));
   ok(await owner.patch(`/api/v1/connections/${connectionId}`, { timezone: "Europe/London", currency: "GBP" }));
   await server.setClock(at, true);
   await addSample(owner);

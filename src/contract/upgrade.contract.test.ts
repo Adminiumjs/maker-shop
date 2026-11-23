@@ -123,7 +123,7 @@ describe.skipIf(why !== null)(`a studio on ${FROM} updated, a line added by hand
         const body = { key: app.key, version: app.version, connectionId };
         const plan = ok(await staff.post<{ plan: { checksum: string; installable: boolean } }>("/api/v1/apps/plan", { ...body, addOns: [addOn.key] })).plan;
         if (!plan.installable) throw new Error(`not installable: ${JSON.stringify(plan).slice(0, 3000)}`);
-        ok(await staff.post("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, addOns: [{ key: addOn.key, version: addOn.version }] }));
+        ok(await staff.post("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, shippingUnticked: [], addOns: [{ key: addOn.key, version: addOn.version }] }));
         ok(await staff.patch(`/api/v1/connections/${connectionId}`, { timezone: "Europe/London", currency: "GBP" }));
         await server.setClock(THURSDAY, true);
         await addSample(staff);

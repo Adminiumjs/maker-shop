@@ -133,7 +133,7 @@ describe.skipIf(why !== null)(`after the order, on a built Adminium${why === nul
           const { create: _create, ...rest } = plan as Record<string, unknown>;
           throw new Error(`not installable: ${JSON.stringify(rest).slice(0, 4000)}`);
         }
-        const installed = ok(await staff.post<{ rules: { skipped: unknown[] } }>("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, addOns: [{ key: addOn.key, version: addOn.version }] }));
+        const installed = ok(await staff.post<{ rules: { skipped: unknown[] } }>("/api/v1/apps/install", { ...body, planChecksum: plan.checksum, shippingUnticked: [], addOns: [{ key: addOn.key, version: addOn.version }] }));
         if (installed.rules.skipped.length > 0) throw new Error(`the install skipped rules: ${JSON.stringify(installed.rules.skipped).slice(0, 1500)}`);
         ok(await staff.patch(`/api/v1/connections/${connectionId}`, { timezone: "Europe/London", currency: "GBP" }));
         await server.setClock(THURSDAY, true);
