@@ -252,7 +252,7 @@ function OrderCard({ view, order, lines, via }: { view: OrderView; order: Row; l
         <div className="sa-col">
           <span className="sa-strong">{view.serviceName}</span>
           <span className="sa-subtle">{t(view.dispatch === "posted" ? "after.dispatch.posted" : view.dispatch === "packed" ? "after.dispatch.packed" : "after.dispatch.later")}</span>
-          {view.tracking !== null && <span className="sa-subtle">{rich(t, "after.dispatch.tracking", { number: <Mono>{view.tracking}</Mono> })}</span>}
+          {view.tracking !== null && <span className="sa-subtle">{view.carrier !== null && `${view.carrier} · `}{rich(t, "after.dispatch.tracking", { number: <Mono>{view.tracking}</Mono> })}</span>}
         </div>
       </div>
 

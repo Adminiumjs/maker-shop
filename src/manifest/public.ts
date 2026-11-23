@@ -49,6 +49,8 @@ export const ORDER_SELECT = [
   "post_by",
   "posted_at",
   "tracking",
+  // The company moving it. Like the number, empty until staff hand the parcel over.
+  "carrier",
   "cancelled_at",
   "link_expires",
   // Paying online: whether the order was asked to, whether it waits for it before anything is made, what was paid and

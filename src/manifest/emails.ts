@@ -52,7 +52,7 @@ export type EmailWords = Record<Kind, Words> & {
   /** The posted e-mail's rows and button. */
   service: string;
   tracking: string;
-  trackIt: string;
+  carrier: string;
   /** The rows of a copy of what was sent. */
   what: string;
   material: string;
@@ -90,7 +90,7 @@ export const EMAIL_EN: EmailWords = {
   change: "Ask for a change",
   service: "Sent by",
   tracking: "Tracking number",
-  trackIt: "Track it",
+  carrier: "Carrier",
   what: "What",
   material: "Material",
   when: "When",
@@ -159,9 +159,16 @@ export const EMAIL_EN: EmailWords = {
   "order-posted": {
     name: "Order posted",
     subject: "Your order {{order.number}} is on its way",
-    preheader: "Posted {{order.posted_at.date}} · {{order.service.name}}",
+    preheader: "It left us on {{order.posted_at.date}} · {{order.service.name}}",
     heading: "Your order {{order.number}} is on its way",
-    paras: ["We posted it on {{order.posted_at.date}}.", "If anything's wrong when it arrives, reply to this e-mail and tell us."],
+    paras: ["It left us on {{order.posted_at.date}}.", "If anything's wrong when it arrives, reply to this e-mail and tell us."],
+  },
+  "order-new-number": {
+    name: "New tracking number",
+    subject: "Your parcel has a new tracking number",
+    preheader: "Your order {{order.number}}: {{order.tracking}}",
+    heading: "Your parcel has a new tracking number",
+    paras: ["The tracking number for your order {{order.number}} has changed. Please use this one from now on."],
   },
   "request-received": {
     name: "Request received",
@@ -214,7 +221,6 @@ const facts = (id: string, lines: { label: string; amount: string }[], onlyWith?
 const ORDER_LINK = "{{manage_url}}#{{order.link_token}}";
 const button = (id: string, label: string, url = ORDER_LINK, onlyWith?: string): Block => ({ block: "email.button", id, data: { label, url, ...(onlyWith === undefined ? {} : { onlyWith }) } });
 /** DHL's own page for a parcel, by its tracking number: public, so the link goes out as it is. */
-const DHL_TRACKING = "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}";
 
 /** An order's lines: the piece and how many, its options and lettering, its customising features, what the line comes to. */
 const LINES: Block = {
@@ -300,9 +306,13 @@ function layout(kind: Kind, all: EmailWords) {
     case "order-posted":
       blocks.push(facts("service", [{ label: all.service, amount: "{{order.service.name}}" }]));
       blocks.push({ block: "email.text", id: "detail", data: { paras: ["{{order.service.detail}}"], onlyWith: "order.service.detail" } });
-      // A tracking number comes only through DHL: without one the e-mail says the service and nothing more.
+      // The company and number of the label staff handed over, in plain text. With none, the service and nothing more.
+      blocks.push(facts("carrier", [{ label: all.carrier, amount: "{{order.carrier}}" }], "order.carrier"));
       blocks.push({ block: "email.box", id: "tracking", data: { label: all.tracking, value: "{{order.tracking}}", onlyWith: "order.tracking" } });
-      blocks.push(button("track", all.trackIt, DHL_TRACKING, "order.tracking"));
+      break;
+    case "order-new-number":
+      blocks.push(facts("carrier", [{ label: all.carrier, amount: "{{order.carrier}}" }], "order.carrier"));
+      blocks.push({ block: "email.box", id: "tracking", data: { label: all.tracking, value: "{{order.tracking}}", onlyWith: "order.tracking" } });
       break;
     case "request-received":
     case "request-copy":

@@ -68,6 +68,7 @@ export interface OrderView {
   log: LogEntry[];
   serviceName: string;
   tracking: string | null;
+  carrier: string | null;
   dispatch: "posted" | "packed" | "later";
 }
 
@@ -195,6 +196,7 @@ export function orderView(read: OrderRead, catalogue: Catalogue, today: string |
     log,
     serviceName: service?.name ?? "",
     tracking: text(order["tracking"]),
+    carrier: text(order["carrier"]),
     dispatch: posted ? "posted" : status === "ready" ? "packed" : "later",
   };
 }

@@ -8827,6 +8827,7 @@
               "proof-ready",
               "proof-reminder",
               "order-posted",
+              "order-new-number",
               "request-received",
               "problem-received",
               "request-copy",
@@ -8915,6 +8916,16 @@
                     "ar-EG": "أُرسل الطلب",
                     "zh-CN": "订单已寄出",
                     "zh-TW": "訂單已寄出"
+                  },
+                  "order-new-number": {
+                    "en-US": "New tracking number",
+                    "de-DE": "Neue Sendungsnummer",
+                    "fr-FR": "Nouveau numéro de suivi",
+                    "da-DK": "Nyt sporingsnummer",
+                    "cs-CZ": "Nové sledovací číslo",
+                    "ar-EG": "رقم تتبع جديد",
+                    "zh-CN": "新追踪号",
+                    "zh-TW": "新追蹤號碼"
                   },
                   "request-received": {
                     "en-US": "Request received",
@@ -12551,6 +12562,7 @@
         "post_by",
         "posted_at",
         "tracking",
+        "carrier",
         "cancelled_at",
         "link_expires",
         "pay_online",
@@ -12880,6 +12892,7 @@
         "post_by",
         "posted_at",
         "tracking",
+        "carrier",
         "cancelled_at",
         "link_expires",
         "pay_online",
@@ -13194,6 +13207,7 @@
         "post_by",
         "posted_at",
         "tracking",
+        "carrier",
         "cancelled_at",
         "link_expires",
         "pay_online",
@@ -13344,6 +13358,7 @@
         "post_by",
         "posted_at",
         "tracking",
+        "carrier",
         "cancelled_at",
         "link_expires",
         "pay_online",
@@ -13583,6 +13598,7 @@
       "proof-ready": "maker-proof-ready",
       "proof-reminder": "maker-proof-reminder",
       "order-posted": "maker-order-posted",
+      "order-new-number": "maker-order-new-number",
       "request-received": "maker-request-received",
       "problem-received": "maker-problem-received",
       "request-copy": "maker-request-copy",
@@ -13597,6 +13613,7 @@
       "proof-ready": "service",
       "proof-reminder": "service",
       "order-posted": "service",
+      "order-new-number": "service",
       "request-received": "service",
       "problem-received": "service"
     },
@@ -13727,6 +13744,21 @@
           "table": "orders",
           "column": "status",
           "to": "posted"
+        }
+      },
+      {
+        "kind": "order-new-number",
+        "link": "order_id",
+        "onChange": {
+          "table": "orders",
+          "columns": [
+            "number_told_at"
+          ],
+          "changed": true,
+          "where": {
+            "column": "number_told_at",
+            "isNull": false
+          }
         }
       },
       {
@@ -18876,6 +18908,7 @@
       },
       "vars": [
         "appName",
+        "order.carrier",
         "order.number",
         "order.posted_at.date",
         "order.service.detail",
@@ -18886,7 +18919,7 @@
       "locales": {
         "en-US": {
           "subject": "Your order {{order.number}} is on its way",
-          "preheader": "Posted {{order.posted_at.date}} · {{order.service.name}}",
+          "preheader": "It left us on {{order.posted_at.date}} · {{order.service.name}}",
           "blocks": [
             {
               "block": "email.heading",
@@ -18900,7 +18933,7 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "We posted it on {{order.posted_at.date}}.",
+                  "It left us on {{order.posted_at.date}}.",
                   "If anything's wrong when it arrives, reply to this e-mail and tell us."
                 ]
               }
@@ -18928,20 +18961,24 @@
               }
             },
             {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Carrier",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
               "block": "email.box",
               "id": "tracking",
               "data": {
                 "label": "Tracking number",
                 "value": "{{order.tracking}}",
-                "onlyWith": "order.tracking"
-              }
-            },
-            {
-              "block": "email.button",
-              "id": "track",
-              "data": {
-                "label": "Track it",
-                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
                 "onlyWith": "order.tracking"
               }
             }
@@ -18950,7 +18987,7 @@
         },
         "de-DE": {
           "subject": "Ihre Bestellung {{order.number}} ist unterwegs",
-          "preheader": "Verschickt am {{order.posted_at.date}} · {{order.service.name}}",
+          "preheader": "Sie hat uns am {{order.posted_at.date}} verlassen · {{order.service.name}}",
           "blocks": [
             {
               "block": "email.heading",
@@ -18964,7 +19001,7 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "Wir haben sie am {{order.posted_at.date}} verschickt.",
+                  "Sie hat uns am {{order.posted_at.date}} verlassen.",
                   "Falls bei der Ankunft etwas nicht stimmt, antworten Sie auf diese E-Mail und sagen Sie es uns."
                 ]
               }
@@ -18992,20 +19029,24 @@
               }
             },
             {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Versanddienst",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
               "block": "email.box",
               "id": "tracking",
               "data": {
                 "label": "Sendungsnummer",
                 "value": "{{order.tracking}}",
-                "onlyWith": "order.tracking"
-              }
-            },
-            {
-              "block": "email.button",
-              "id": "track",
-              "data": {
-                "label": "Sendung verfolgen",
-                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
                 "onlyWith": "order.tracking"
               }
             }
@@ -19014,7 +19055,7 @@
         },
         "fr-FR": {
           "subject": "Votre commande {{order.number}} est en route",
-          "preheader": "Expédiée le {{order.posted_at.date}} · {{order.service.name}}",
+          "preheader": "Elle nous a quittés le {{order.posted_at.date}} · {{order.service.name}}",
           "blocks": [
             {
               "block": "email.heading",
@@ -19028,7 +19069,7 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "Nous l’avons expédiée le {{order.posted_at.date}}.",
+                  "Elle nous a quittés le {{order.posted_at.date}}.",
                   "Si quelque chose ne va pas à l’arrivée, répondez à cet e-mail pour nous le dire."
                 ]
               }
@@ -19056,20 +19097,24 @@
               }
             },
             {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Transporteur",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
               "block": "email.box",
               "id": "tracking",
               "data": {
                 "label": "Numéro de suivi",
                 "value": "{{order.tracking}}",
-                "onlyWith": "order.tracking"
-              }
-            },
-            {
-              "block": "email.button",
-              "id": "track",
-              "data": {
-                "label": "Suivre le colis",
-                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
                 "onlyWith": "order.tracking"
               }
             }
@@ -19078,7 +19123,7 @@
         },
         "da-DK": {
           "subject": "Din bestilling {{order.number}} er på vej",
-          "preheader": "Sendt {{order.posted_at.date}} · {{order.service.name}}",
+          "preheader": "Den forlod os {{order.posted_at.date}} · {{order.service.name}}",
           "blocks": [
             {
               "block": "email.heading",
@@ -19092,7 +19137,7 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "Vi sendte den den {{order.posted_at.date}}.",
+                  "Den forlod os {{order.posted_at.date}}.",
                   "Hvis noget er galt, når den kommer, så svar på denne e-mail og fortæl os det."
                 ]
               }
@@ -19120,20 +19165,24 @@
               }
             },
             {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Fragtfirma",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
               "block": "email.box",
               "id": "tracking",
               "data": {
                 "label": "Sporingsnummer",
                 "value": "{{order.tracking}}",
-                "onlyWith": "order.tracking"
-              }
-            },
-            {
-              "block": "email.button",
-              "id": "track",
-              "data": {
-                "label": "Spor pakken",
-                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
                 "onlyWith": "order.tracking"
               }
             }
@@ -19142,7 +19191,7 @@
         },
         "cs-CZ": {
           "subject": "Vaše objednávka {{order.number}} je na cestě",
-          "preheader": "Odesláno {{order.posted_at.date}} · {{order.service.name}}",
+          "preheader": "Odešla od nás {{order.posted_at.date}} · {{order.service.name}}",
           "blocks": [
             {
               "block": "email.heading",
@@ -19156,7 +19205,7 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "Odeslali jsme ji {{order.posted_at.date}}.",
+                  "Odešla od nás {{order.posted_at.date}}.",
                   "Pokud bude po doručení něco v nepořádku, odpovězte na tento e-mail a napište nám."
                 ]
               }
@@ -19184,20 +19233,24 @@
               }
             },
             {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Dopravce",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
               "block": "email.box",
               "id": "tracking",
               "data": {
                 "label": "Sledovací číslo",
                 "value": "{{order.tracking}}",
-                "onlyWith": "order.tracking"
-              }
-            },
-            {
-              "block": "email.button",
-              "id": "track",
-              "data": {
-                "label": "Sledovat zásilku",
-                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
                 "onlyWith": "order.tracking"
               }
             }
@@ -19206,7 +19259,7 @@
         },
         "ar-EG": {
           "subject": "طلبك {{order.number}} في الطريق",
-          "preheader": "أُرسل في {{order.posted_at.date}} · {{order.service.name}}",
+          "preheader": "غادرنا الطلب في {{order.posted_at.date}} · {{order.service.name}}",
           "blocks": [
             {
               "block": "email.heading",
@@ -19220,7 +19273,7 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "أرسلناه في {{order.posted_at.date}}.",
+                  "غادرنا الطلب في {{order.posted_at.date}}.",
                   "إن وجدت فيه خطأً عند وصوله، فردّ على هذه الرسالة وأخبرنا."
                 ]
               }
@@ -19248,20 +19301,24 @@
               }
             },
             {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "شركة الشحن",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
               "block": "email.box",
               "id": "tracking",
               "data": {
                 "label": "رقم التتبع",
                 "value": "{{order.tracking}}",
-                "onlyWith": "order.tracking"
-              }
-            },
-            {
-              "block": "email.button",
-              "id": "track",
-              "data": {
-                "label": "تتبّع الشحنة",
-                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
                 "onlyWith": "order.tracking"
               }
             }
@@ -19270,7 +19327,7 @@
         },
         "zh-CN": {
           "subject": "您的订单 {{order.number}} 已在路上",
-          "preheader": "{{order.posted_at.date}} 寄出 · {{order.service.name}}",
+          "preheader": "已于 {{order.posted_at.date}} 从我们这里发出 · {{order.service.name}}",
           "blocks": [
             {
               "block": "email.heading",
@@ -19284,7 +19341,7 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "我们已于 {{order.posted_at.date}} 寄出。",
+                  "已于 {{order.posted_at.date}} 从我们这里发出。",
                   "收到时如有任何问题，请回复此邮件告诉我们。"
                 ]
               }
@@ -19312,20 +19369,24 @@
               }
             },
             {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "承运商",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
               "block": "email.box",
               "id": "tracking",
               "data": {
                 "label": "追踪号",
                 "value": "{{order.tracking}}",
-                "onlyWith": "order.tracking"
-              }
-            },
-            {
-              "block": "email.button",
-              "id": "track",
-              "data": {
-                "label": "查看物流",
-                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
                 "onlyWith": "order.tracking"
               }
             }
@@ -19334,7 +19395,7 @@
         },
         "zh-TW": {
           "subject": "您的訂單 {{order.number}} 已在路上",
-          "preheader": "{{order.posted_at.date}} 寄出 · {{order.service.name}}",
+          "preheader": "已於 {{order.posted_at.date}} 從我們這裡寄出 · {{order.service.name}}",
           "blocks": [
             {
               "block": "email.heading",
@@ -19348,7 +19409,7 @@
               "id": "body",
               "data": {
                 "paras": [
-                  "我們已於 {{order.posted_at.date}} 寄出。",
+                  "已於 {{order.posted_at.date}} 從我們這裡寄出。",
                   "收到時如有任何問題，請回覆這封郵件告訴我們。"
                 ]
               }
@@ -19376,6 +19437,19 @@
               }
             },
             {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "貨運公司",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
               "block": "email.box",
               "id": "tracking",
               "data": {
@@ -19383,13 +19457,386 @@
                 "value": "{{order.tracking}}",
                 "onlyWith": "order.tracking"
               }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}。回覆這封郵件即可直接聯絡工作室。"
+        }
+      }
+    },
+    {
+      "key": "maker-order-new-number",
+      "name": {
+        "en-US": "New tracking number",
+        "de-DE": "Neue Sendungsnummer",
+        "fr-FR": "Nouveau numéro de suivi",
+        "da-DK": "Nyt sporingsnummer",
+        "cs-CZ": "Nové sledovací číslo",
+        "ar-EG": "رقم تتبع جديد",
+        "zh-CN": "新追踪号",
+        "zh-TW": "新追蹤號碼"
+      },
+      "vars": [
+        "appName",
+        "order.carrier",
+        "order.number",
+        "order.tracking",
+        "practice.address"
+      ],
+      "locales": {
+        "en-US": {
+          "subject": "Your parcel has a new tracking number",
+          "preheader": "Your order {{order.number}}: {{order.tracking}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Your parcel has a new tracking number"
+              }
             },
             {
-              "block": "email.button",
-              "id": "track",
+              "block": "email.text",
+              "id": "body",
               "data": {
-                "label": "查詢貨態",
-                "url": "https://www.dhl.com/gb-en/home/tracking.html?tracking-id={{order.tracking}}",
+                "paras": [
+                  "The tracking number for your order {{order.number}} has changed. Please use this one from now on."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Carrier",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "Tracking number",
+                "value": "{{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Reply to this e-mail and it reaches the studio."
+        },
+        "de-DE": {
+          "subject": "Ihr Paket hat eine neue Sendungsnummer",
+          "preheader": "Ihre Bestellung {{order.number}}: {{order.tracking}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Ihr Paket hat eine neue Sendungsnummer"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Die Sendungsnummer Ihrer Bestellung {{order.number}} hat sich geändert. Bitte verwenden Sie ab jetzt diese."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Versanddienst",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "Sendungsnummer",
+                "value": "{{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Antworten Sie auf diese E-Mail, dann erreicht sie die Werkstatt."
+        },
+        "fr-FR": {
+          "subject": "Votre colis a un nouveau numéro de suivi",
+          "preheader": "Votre commande {{order.number}} : {{order.tracking}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Votre colis a un nouveau numéro de suivi"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Le numéro de suivi de votre commande {{order.number}} a changé. Utilisez désormais celui-ci."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Transporteur",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "Numéro de suivi",
+                "value": "{{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Répondez à cet e-mail : votre réponse arrive à l’atelier."
+        },
+        "da-DK": {
+          "subject": "Din pakke har fået et nyt sporingsnummer",
+          "preheader": "Din ordre {{order.number}}: {{order.tracking}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Din pakke har fået et nyt sporingsnummer"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Sporingsnummeret på din ordre {{order.number}} er ændret. Brug dette fra nu af."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Fragtfirma",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "Sporingsnummer",
+                "value": "{{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Svar på denne e-mail, så når den værkstedet."
+        },
+        "cs-CZ": {
+          "subject": "Váš balík má nové sledovací číslo",
+          "preheader": "Vaše objednávka {{order.number}}: {{order.tracking}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "Váš balík má nové sledovací číslo"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "Sledovací číslo vaší objednávky {{order.number}} se změnilo. Od teď prosím používejte toto."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "Dopravce",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "Sledovací číslo",
+                "value": "{{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. Odpovězte na tento e-mail a odpověď dorazí přímo do dílny."
+        },
+        "ar-EG": {
+          "subject": "لطردك رقم تتبع جديد",
+          "preheader": "طلبك {{order.number}}: {{order.tracking}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "لطردك رقم تتبع جديد"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "تغيّر رقم تتبع طلبك {{order.number}}. يرجى استخدام هذا الرقم من الآن."
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "شركة الشحن",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "رقم التتبع",
+                "value": "{{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}. ردّ على هذه الرسالة وسيصل ردّك إلى الورشة."
+        },
+        "zh-CN": {
+          "subject": "您的包裹有了新的追踪号",
+          "preheader": "您的订单 {{order.number}}：{{order.tracking}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "您的包裹有了新的追踪号"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "您的订单 {{order.number}} 的追踪号已更改，今后请使用这个号码。"
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "承运商",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "追踪号",
+                "value": "{{order.tracking}}",
+                "onlyWith": "order.tracking"
+              }
+            }
+          ],
+          "footer": "{{appName}} · {{practice.address|}}。回复此邮件即可直接联系工作室。"
+        },
+        "zh-TW": {
+          "subject": "您的包裹有了新的追蹤號碼",
+          "preheader": "您的訂單 {{order.number}}：{{order.tracking}}",
+          "blocks": [
+            {
+              "block": "email.heading",
+              "id": "heading",
+              "data": {
+                "text": "您的包裹有了新的追蹤號碼"
+              }
+            },
+            {
+              "block": "email.text",
+              "id": "body",
+              "data": {
+                "paras": [
+                  "您的訂單 {{order.number}} 的追蹤號碼已變更，今後請使用這個號碼。"
+                ]
+              }
+            },
+            {
+              "block": "email.tax-breakdown",
+              "id": "carrier",
+              "data": {
+                "lines": [
+                  {
+                    "label": "貨運公司",
+                    "amount": "{{order.carrier}}"
+                  }
+                ],
+                "onlyWith": "order.carrier"
+              }
+            },
+            {
+              "block": "email.box",
+              "id": "tracking",
+              "data": {
+                "label": "追蹤號碼",
+                "value": "{{order.tracking}}",
                 "onlyWith": "order.tracking"
               }
             }

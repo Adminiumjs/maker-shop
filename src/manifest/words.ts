@@ -342,4 +342,5 @@ export const WORDS: Record<string, Translation> = {
   "Label's tracking number": { "de-DE": "Sendungsnummer des Etiketts", "fr-FR": "Numéro de suivi de l’étiquette", "da-DK": "Etikettens sporingsnummer", "cs-CZ": "Sledovací číslo štítku", "ar-EG": "رقم تتبع الملصق", "zh-CN": "面单的追踪号", "zh-TW": "標籤的追蹤號碼" },
   "Studio's country": { "de-DE": "Land der Werkstatt", "fr-FR": "Pays de l’atelier", "da-DK": "Værkstedets land", "cs-CZ": "Země dílny", "ar-EG": "بلد الورشة", "zh-CN": "工作室所在国家/地区", "zh-TW": "工作室所在國家/地區" },
   "Told of a new number": { "de-DE": "Über neue Nummer informiert", "fr-FR": "Informé du nouveau numéro", "da-DK": "Informeret om nyt nummer", "cs-CZ": "Informováno o novém čísle", "ar-EG": "أُبلغ بالرقم الجديد", "zh-CN": "已告知新单号", "zh-TW": "已告知新單號" },
+  "New tracking number": { "de-DE": "Neue Sendungsnummer", "fr-FR": "Nouveau numéro de suivi", "da-DK": "Nyt sporingsnummer", "cs-CZ": "Nové sledovací číslo", "ar-EG": "رقم تتبع جديد", "zh-CN": "新追踪号", "zh-TW": "新追蹤號碼" },
 };
