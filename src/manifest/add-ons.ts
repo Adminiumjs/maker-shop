@@ -26,7 +26,7 @@ export const ADD_ONS = {
   requires: [{ key: CUSTOMISER, range: ADD_ONS_RANGE, reason: l("Shoppers make a piece their own: their words, their logo, a ready-made design.") }],
   suggests: [
     { key: "shipping-dhl", range: ADD_ONS_RANGE, reason: l("Try DHL's dispatch flow (a demo carrier this release).") },
-    { key: "shipping-shippo", range: "^1.0.35", reason: l("Buy a carrier's label for a parcel with your own Shippo account.") },
+    { key: "shipping-shippo", range: "^1.0.36", reason: l("Buy a carrier's label for a parcel with your own Shippo account.") },
     { key: "barcode-labels", range: ADD_ONS_RANGE, reason: l("Print a label for each piece and each parcel.") },
     { key: "inventory", range: ADD_ONS_RANGE, reason: l("Keep sheets, blanks, filament and glaze in stock, with what each batch takes.") },
     { key: "invoices", range: ADD_ONS_RANGE, checked: true, reason: l("Send a receipt with each order, and print one from the dashboard.") },
