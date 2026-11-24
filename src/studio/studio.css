@@ -15,7 +15,6 @@
 }
 @media (max-width: 899px) {
   .st-app { grid-template-columns: minmax(0, 1fr); }
-  .st-sidebar { display: none; }
 }
 
 /* ── sidebar ── */
@@ -28,6 +27,8 @@
   inset-block-start: 0;
   block-size: 100vh;
 }
+/* After the rule above, or its `display: flex` wins and the sidebar covers a phone's page. */
+@media (max-width: 899px) { .st-sidebar { display: none; } }
 .st-brand { padding: 16px 16px 12px; display: flex; align-items: center; gap: 10px; }
 .st-brand-mark { inline-size: 32px; block-size: 32px; border-radius: 9px; display: grid; place-items: center; background: var(--accent); color: var(--accent-fg); flex: 0 0 auto; }
 .st-brand-text { display: flex; flex-direction: column; line-height: 1.05; }
