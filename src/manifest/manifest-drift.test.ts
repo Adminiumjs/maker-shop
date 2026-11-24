@@ -76,6 +76,8 @@ describe("selling abroad", () => {
   it("needs a phone on a parcel abroad, and shows it on no public read", () => {
     expect(rules("orders", "phone")["requiredWhen"]).toEqual({ column: "abroad", in: [true] });
     expect(rules("orders", "phone")["validation"]).toEqual({ format: "phone" });
+    // Orders are kept for tax, but a phone is not part of that record: erasing the person takes it.
+    expect(manifest.people[0]!.copies.find((c) => c["table"] === "orders" && c["column"] === "phone")?.["evenIfKept"]).toBe(true);
     for (const entry of publicEntries.filter((e) => e["table"] === "orders")) expect((entry["select"] as string[] | undefined) ?? []).not.toContain("phone");
   });
 });

@@ -13978,7 +13978,8 @@
           "table": "orders",
           "column": "phone",
           "holds": "phone",
-          "via": "customer_id"
+          "via": "customer_id",
+          "evenIfKept": true
         },
         {
           "table": "order_lines",
