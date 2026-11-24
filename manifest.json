@@ -22475,7 +22475,8 @@
               ]
             }
           },
-          "refunded": "refunded"
+          "refunded": "refunded",
+          "placedAt": "placed_at"
         }
       }
     ]

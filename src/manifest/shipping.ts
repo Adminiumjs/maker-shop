@@ -37,6 +37,8 @@ export const SHIPPING = {
           unless: { column: "stage", in: ["cancelled"] },
         },
         refunded: "refunded",
+        // Once the shop changes currency, an order from before it cannot be declared in the new one.
+        placedAt: "placed_at",
       },
     },
   ],
