@@ -12,6 +12,7 @@ import type { AbroadDoor, AbroadRow } from "./door.ts";
 const view = (countries: string[]): EngineInternational => ({
   ownCountry: "GB",
   codeListUrl: null,
+  shopCurrency: "GBP",
   shipsAbroad: countries.length > 0,
   settings: { countries, currency: "GBP", originCountry: "GB", signerId: "u1", signerName: "Ada", products: [] },
 });

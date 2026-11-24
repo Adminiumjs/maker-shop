@@ -450,7 +450,7 @@ export function AbroadPanels() {
         }}
       />
       <div ref={defaults} tabIndex={-1}>
-        <CustomsDefaultsPanel client={wired.defaultsClient} currency={currency} />
+        <CustomsDefaultsPanel client={wired.defaultsClient} />
       </div>
     </>
   );

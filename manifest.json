@@ -22467,8 +22467,15 @@
               "sku": "code"
             },
             "unitWeight": "grams",
-            "weightUnit": "g"
-          }
+            "weightUnit": "g",
+            "unless": {
+              "column": "stage",
+              "in": [
+                "cancelled"
+              ]
+            }
+          },
+          "refunded": "refunded"
         }
       }
     ]

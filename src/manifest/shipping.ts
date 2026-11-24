@@ -11,6 +11,10 @@
  * quantity times `each_with_features`, exactly: the price with its options and
  * quantity break (`each`) plus its priced features. `unit_price` is the list
  * price before any of that, and `each` alone would leave the features out.
+ *
+ * A CANCELLED LINE IS NOT IN THE PARCEL, by its stage. The order's refunds sit on
+ * the order, so while one stands its values are not what the customer paid and
+ * Adminium stops the form.
  */
 export const SHIPPING = {
   orders: [
@@ -30,7 +34,9 @@ export const SHIPPING = {
           product: { column: "product_id", table: "products", sku: "code" },
           unitWeight: "grams",
           weightUnit: "g",
+          unless: { column: "stage", in: ["cancelled"] },
         },
+        refunded: "refunded",
       },
     },
   ],

@@ -108,6 +108,53 @@ describe.skipIf(why !== null)(`Maker's parcels on a built Adminium${why === null
         expect(made["tracking"] ?? null).toBeNull();
       });
 
+      it("keeps an order's country when its postage changes", async () => {
+        const home = (await rows("postage_services"))[0]!;
+        const service = async (values: Record<string, unknown>) => {
+          const made = ok(await admin.post<{ data: Row }>(rowsPath("postage_services"), { values }), 201).data;
+          ok(await admin.post(rowsPath("postage_rates"), { values: { service_id: made.id, min_grams: 0, price: "4.00" } }), 201);
+          return made;
+        };
+        const homeToo = await service({ code: "second-home", name: "Second home post" });
+        const germany = await service({ code: "post-de", name: "Germany", country: "DE", abroad: true });
+        const stored = async (id: unknown) => (await rows("orders")).find((o) => String(o.id) === String(id))!;
+        const address = { name: "Ada W", email: "ada.m@birch-row-shoppers.dev", language: "en-US", address_line1: "1 Mill Row", town: "Colne", postcode: "BB8 9ZZ" };
+
+        const atHome = ok(await admin.post<{ data: Row }>(rowsPath("orders"), { values: { ...address, service_id: home.id } }), 201).data;
+        expect(atHome["country"]).toBe("GB");
+        ok(await patch(admin, "orders", atHome.id, { service_id: homeToo.id }));
+        expect((await stored(atHome.id))["country"]).toBe("GB");
+
+        const abroad = ok(await admin.post<{ data: Row }>(rowsPath("orders"), { values: { ...address, phone: "+49 30 1234567", service_id: germany.id } }), 201).data;
+        expect(abroad["country"]).toBe("DE");
+        ok(await patch(admin, "orders", abroad.id, { service_id: home.id }));
+        const moved = await stored(abroad.id);
+        expect(moved["country"]).toBe("GB");
+        expect(Boolean(moved["abroad"])).toBe(false);
+      });
+
+      it("declares what is in the parcel: no cancelled line, and nothing at all while a refund stands", async () => {
+        const shipping = "/api/v1/apps/maker/shipping";
+        ok(await admin.send("PUT", `${shipping}/ship-from`, { name: "Birch Row", lines: ["1 Mill Row"], city: "Colne", postcode: "BB8 9ZZ", country: "GB", phone: "+44 1282 000000" }));
+        ok(await admin.send("PUT", `${shipping}/international`, { countries: ["DE"], currency: "GBP", originCountry: "GB" }));
+        const germany = (await rows("postage_services")).find((s) => s["code"] === "post-de")!;
+        const order = ok(await admin.post<{ data: Row }>(rowsPath("orders"), { values: { name: "Heidi V", email: "heidi.m@birch-row-shoppers.dev", language: "en-US", address_line1: "Hauptstr. 1", town: "Berlin", postcode: "10115", phone: "+49 30 1234567", service_id: germany.id } }), 201).data;
+        const product = (await rows("products")).find((p) => p["published"] === true || p["published"] === 1)!;
+        const line = async () => ok(await admin.post<{ data: Row }>(rowsPath("order_lines"), { values: { order_id: order.id, product_id: product.id, qty: 1 } }), 201).data;
+        const kept = await line();
+        const dropped = await line();
+        ok(await admin.patch(`${rowsPath("order_lines")}/${String(dropped.id)}`, { values: { stage: "cancelled" }, from: "make" }));
+        type Form = { data: { lines: { line: string }[]; problems: { field: string; reason?: string }[] } };
+        const form = async () => ok(await admin.get<Form>(`${shipping}/customs?table=orders&id=${String(order.id)}`)).data;
+        const first = await form();
+        expect(first.lines.map((one) => one.line)).toEqual([String(kept.id)]);
+        expect(first.problems.filter((one) => one.reason === "refunded")).toEqual([]);
+
+        ok(await admin.post(rowsPath("payments"), { values: { order_id: order.id, amount: "20.00", refunded: "5.00" } }), 201);
+        expect((await form()).problems).toContainEqual({ field: "unitValue", reason: "refunded" });
+        ok(await admin.send("PUT", `${shipping}/international`, { countries: [], currency: "GBP", originCountry: "GB" }));
+      });
+
       it("keeps a label off the shopper's columns until it is handed over, then tells them", async () => {
         expect(ORDER_SELECT).not.toContain("label_tracking");
         expect(ORDER_SELECT).not.toContain("label_carrier");

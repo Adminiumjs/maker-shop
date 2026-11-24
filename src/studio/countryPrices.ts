@@ -17,7 +17,7 @@ import type { EngineCarrier, EngineInternational, EngineInternationalBody } from
 import type { AbroadDoor } from "./door.ts";
 
 /** The kit's own merge: the record as Adminium holds it, with one panel's change on top. */
-type SavedBody = (view: EngineInternational, first: Pick<EngineInternationalBody, "currency" | "originCountry">, change?: Partial<EngineInternationalBody>) => EngineInternationalBody;
+type SavedBody = (view: EngineInternational, first: Pick<EngineInternationalBody, "originCountry">, change?: Partial<EngineInternationalBody>) => EngineInternationalBody;
 
 export function countryPrices(
   door: AbroadDoor,
@@ -35,7 +35,7 @@ export function countryPrices(
     ...engine,
     async saveInternational(body) {
       const now = await engine.international();
-      return save(savedBody(now, { currency: body.currency, originCountry: body.originCountry }, { countries: body.countries }));
+      return save(savedBody(now, { originCountry: body.originCountry }, { countries: body.countries }));
     },
   };
   const defaultsClient: EngineCarrier = {
