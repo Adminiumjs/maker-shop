@@ -3,7 +3,7 @@
   "manifestVersion": 1,
   "key": "maker",
   "name": "Maker Shop",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "publisher": {
     "id": "adminium",
     "name": "Adminium",
@@ -786,6 +786,148 @@
               "ar-EG": "استلم الدفع قبل الصنع",
               "zh-CN": "先收款再制作",
               "zh-TW": "先收款再製作"
+            }
+          },
+          {
+            "ref": "logo",
+            "type": "text",
+            "maxLength": 64,
+            "nullable": true,
+            "semantic": "image",
+            "label": {
+              "en-US": "Logo",
+              "de-DE": "Logo",
+              "fr-FR": "Logo",
+              "da-DK": "Logo",
+              "cs-CZ": "Logo",
+              "ar-EG": "الشعار",
+              "zh-CN": "标志",
+              "zh-TW": "標誌"
+            },
+            "rules": {
+              "file": {
+                "accept": [
+                  "png",
+                  "jpeg",
+                  "webp"
+                ],
+                "maxBytes": 5242880
+              }
+            }
+          },
+          {
+            "ref": "tagline",
+            "type": "text",
+            "maxLength": 60,
+            "label": {
+              "en-US": "Tagline",
+              "de-DE": "Slogan",
+              "fr-FR": "Accroche",
+              "da-DK": "Slogan",
+              "cs-CZ": "Slogan",
+              "ar-EG": "العبارة التعريفية",
+              "zh-CN": "标语",
+              "zh-TW": "標語"
+            },
+            "nullable": true
+          },
+          {
+            "ref": "accent",
+            "type": "text",
+            "maxLength": 7,
+            "label": {
+              "en-US": "Accent colour",
+              "de-DE": "Akzentfarbe",
+              "fr-FR": "Couleur d’accent",
+              "da-DK": "Accentfarve",
+              "cs-CZ": "Barva zvýraznění",
+              "ar-EG": "لون التمييز",
+              "zh-CN": "强调色",
+              "zh-TW": "強調色"
+            },
+            "nullable": true
+          },
+          {
+            "ref": "accent_dark",
+            "type": "text",
+            "maxLength": 7,
+            "label": {
+              "en-US": "Accent colour, dark theme",
+              "de-DE": "Akzentfarbe, dunkles Design",
+              "fr-FR": "Couleur d’accent, thème sombre",
+              "da-DK": "Accentfarve, mørkt tema",
+              "cs-CZ": "Barva zvýraznění, tmavý motiv",
+              "ar-EG": "لون التمييز، المظهر الداكن",
+              "zh-CN": "强调色（深色主题）",
+              "zh-TW": "強調色（深色主題）"
+            },
+            "nullable": true
+          },
+          {
+            "ref": "font",
+            "type": "enum",
+            "enum": [
+              "manrope",
+              "system",
+              "serif",
+              "rounded"
+            ],
+            "label": {
+              "en-US": "Typeface",
+              "de-DE": "Schrift",
+              "fr-FR": "Police",
+              "da-DK": "Skrifttype",
+              "cs-CZ": "Písmo",
+              "ar-EG": "الخط",
+              "zh-CN": "字体",
+              "zh-TW": "字體"
+            },
+            "nullable": true,
+            "rules": {
+              "enumLabels": {
+                "labels": {
+                  "manrope": {
+                    "en-US": "Manrope (as shipped)",
+                    "de-DE": "Manrope (wie geliefert)",
+                    "fr-FR": "Manrope (d’origine)",
+                    "da-DK": "Manrope (som leveret)",
+                    "cs-CZ": "Manrope (výchozí)",
+                    "ar-EG": "Manrope (الافتراضي)",
+                    "zh-CN": "Manrope（默认）",
+                    "zh-TW": "Manrope（預設）"
+                  },
+                  "system": {
+                    "en-US": "The device's own",
+                    "de-DE": "Die des Geräts",
+                    "fr-FR": "Celle de l’appareil",
+                    "da-DK": "Enhedens egen",
+                    "cs-CZ": "Písmo zařízení",
+                    "ar-EG": "خط الجهاز",
+                    "zh-CN": "设备自带字体",
+                    "zh-TW": "裝置內建字體"
+                  },
+                  "serif": {
+                    "en-US": "Serif",
+                    "de-DE": "Serifenschrift",
+                    "fr-FR": "À empattements",
+                    "da-DK": "Med seriffer",
+                    "cs-CZ": "Patkové",
+                    "ar-EG": "خط بزوائد",
+                    "zh-CN": "衬线体",
+                    "zh-TW": "襯線體"
+                  },
+                  "rounded": {
+                    "en-US": "Rounded",
+                    "de-DE": "Abgerundet",
+                    "fr-FR": "Arrondie",
+                    "da-DK": "Afrundet",
+                    "cs-CZ": "Zaoblené",
+                    "ar-EG": "مستدير",
+                    "zh-CN": "圆体",
+                    "zh-TW": "圓體"
+                  }
+                }
+              }
             }
           }
         ]
@@ -11224,6 +11366,30 @@
                   "control": "toggle-row"
                 }
               ]
+            },
+            {
+              "id": "s3",
+              "fields": [
+                {
+                  "column": "logo",
+                  "control": "image"
+                },
+                {
+                  "column": "tagline"
+                },
+                {
+                  "column": "accent",
+                  "control": "mono"
+                },
+                {
+                  "column": "accent_dark",
+                  "control": "mono"
+                },
+                {
+                  "column": "font",
+                  "control": "select"
+                }
+              ]
             }
           ]
         }
@@ -12942,7 +13108,15 @@
         "materials_note",
         "ref_prefix",
         "taking_orders",
-        "home_country"
+        "home_country",
+        "logo",
+        "tagline",
+        "accent",
+        "accent_dark",
+        "font"
+      ],
+      "pictures": [
+        "logo"
       ]
     },
     {

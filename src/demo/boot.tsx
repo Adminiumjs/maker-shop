@@ -68,7 +68,7 @@ export function DemoRoot() {
     <>
       <CardLocale />
       {persona === "shopper" ? (
-        <ShopApp theme={theme} onTheme={(next) => useDemo.setState({ theme: next })} />
+        <ShopApp theme={theme} onTheme={(next) => useDemo.setState({ theme: next })} ownTab={false} />
       ) : (
         <StudioProvider env={env}>
           <StudioApp />

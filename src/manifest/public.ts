@@ -150,7 +150,7 @@ export const PRODUCT_SELECT = [
 ];
 export const OPTION_SELECT = ["id", "product_id", "kind", "code", "name", "price", "material_id", "swatch", "feature_code", "feature_id", "min_qty", "percent_off", "position"];
 
-export const SETTINGS_SELECT = ["id", "studio_name", "address", "phone", "email", "about", "about_page", "materials_note", "ref_prefix", "taking_orders", "home_country"];
+export const SETTINGS_SELECT = ["id", "studio_name", "address", "phone", "email", "about", "about_page", "materials_note", "ref_prefix", "taking_orders", "home_country", "logo", "tagline", "accent", "accent_dark", "font"];
 
 /** The order key: one order, by its own link. */
 export const ORDER_KEY = "order";
@@ -250,7 +250,8 @@ export const PUBLIC_ACCESS = [
     ],
   },
   { table: "materials", methods: ["GET"], select: ["id", "code", "name", "family", "thickness_mm", "tint", "care"], filters: [{ column: "active", op: "eq", value: true }] },
-  { table: "settings", methods: ["GET"], select: SETTINGS_SELECT },
+  // The studio's own look comes with it: its logo is a picture every visitor's browser loads, as a product's photo is.
+  { table: "settings", methods: ["GET"], select: SETTINGS_SELECT, pictures: ["logo"] },
   // The machines the About page names, each with the studio's sentence about it.
   { table: "machines", methods: ["GET"], select: ["id", "name", "kind", "icon", "shop_note", "position"], filters: [{ column: "active", op: "eq", value: true }] },
 
