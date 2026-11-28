@@ -32,6 +32,8 @@ const form = (...sections: Field[][]) => ({
 
 interface PageSpec {
   ref: string;
+  /** A list of the table's rows (`page-crud`, the default), or its one row as a settings form (`page-settings`, Adminium 0.3.80). */
+  template?: "page-crud" | "page-settings";
   title: string;
   group: string;
   icon: string;
@@ -298,7 +300,10 @@ const SPECS: PageSpec[] = [
     ]),
   },
   {
+    // The studio's one settings row, drawn as a settings page: its form and Save, no list, search, New or Delete.
+    // An Adminium before 0.3.80 would draw a `page-settings` as the person's notification settings: hence the floor.
     ref: "maker-settings",
+    template: "page-settings",
     title: "Settings",
     group: "manage",
     icon: "settings",
@@ -316,7 +321,7 @@ const SPECS: PageSpec[] = [
 /** A page as the manifest carries it. */
 const pageOf = (spec: PageSpec) => ({
   ref: spec.ref,
-  template: "page-crud",
+  template: spec.template ?? "page-crud",
   title: { key: `mft.${spec.ref.replaceAll("-", ".")}`, fallback: spec.title },
   titles: titles(spec.title),
   nav: { group: spec.group, icon: spec.icon, order: spec.order },

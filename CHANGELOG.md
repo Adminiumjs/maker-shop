@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.9 (unreleased)
+
+Needs Adminium **0.3.80** (assumed to be the engine release that draws a
+settings page for a table; it is not out yet). An older Adminium would draw
+Maker Shop › Settings as the person's own notification settings, so this
+version is not offered to it.
+
+- **Maker Shop › Settings is a settings page.** It showed the studio's
+  settings as a list of one row, with search, New and Delete. It now opens
+  straight on the studio's settings with a Save button, and nothing to add or
+  delete. The fields and sections are the same as in 0.2.8, the shop's look
+  included. A studio with no settings row yet makes it by saving the form.
+
 ## 0.2.8 (unreleased)
 
 Needs Adminium **0.3.74**, as 0.2.7 does. The update adds five columns to the
