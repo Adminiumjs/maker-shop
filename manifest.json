@@ -3,7 +3,7 @@
   "manifestVersion": 1,
   "key": "maker",
   "name": "Maker Shop",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "publisher": {
     "id": "adminium",
     "name": "Adminium",
@@ -18,7 +18,7 @@
     "commerce"
   ],
   "compatibility": {
-    "minAdminiumVersion": "0.3.74",
+    "minAdminiumVersion": "0.3.80",
     "engines": [
       "sqlite",
       "postgres",
@@ -11285,7 +11285,7 @@
     },
     {
       "ref": "maker-settings",
-      "template": "page-crud",
+      "template": "page-settings",
       "title": {
         "key": "mft.maker.settings",
         "fallback": "Settings"

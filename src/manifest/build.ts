@@ -22,7 +22,7 @@ import { SETTINGS } from "./settings.ts";
 import { SHIPPING } from "./shipping.ts";
 import { TABLES } from "./tables.ts";
 
-export const VERSION = "0.2.8";
+export const VERSION = "0.2.9";
 
 /**
  * The Adminium release that first reads everything below: quantity breaks
@@ -62,9 +62,11 @@ export const VERSION = "0.2.8";
  * e-mails by the same (`producers[].payments`). 0.3.72 reads where an
  * order's address and label live (`shipping`) and an app role's right to
  * buy a label (`shipping:@:book`). 0.3.74 reads where an order's goods are for
- * a customs form (`shipping.orders[].customs`).
+ * a customs form (`shipping.orders[].customs`). 0.3.80 draws a `page-settings`
+ * bound to a table as that table's one row (the studio's settings); an older
+ * one draws it as the person's notification settings.
  */
-export const MIN_ADMINIUM = "0.3.74";
+export const MIN_ADMINIUM = "0.3.80";
 
 const ENV = {
   VITE_ADMINIUM_API_BASE_URL: { required: false, example: "https://admin.example.com" },
