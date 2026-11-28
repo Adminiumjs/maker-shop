@@ -151,8 +151,8 @@ export interface CatalogueRows {
   settings: Row[];
 }
 
-/** The catalogue the pages read, from its rows as the public API answers them, with each product's photo address. */
-export function catalogueFrom(rows: CatalogueRows, photo: (row: Row) => string | null): Catalogue {
+/** The catalogue the pages read, from its rows as the public API answers them, with each product's photo address and the studio's logo's. */
+export function catalogueFrom(rows: CatalogueRows, photo: (row: Row) => string | null, logo: (row: Row) => string | null = () => null): Catalogue {
   const studio = rows.settings[0] ?? {};
   const sorted = (list: Row[]) => [...list].sort(byPosition);
   const homeCountry = text(studio["home_country"])?.toUpperCase() ?? null;
@@ -168,7 +168,14 @@ export function catalogueFrom(rows: CatalogueRows, photo: (row: Row) => string |
     materials: sorted(rows.materials).map(material),
     services: posts.filter((row) => text(row["country"]) === null).map(service),
     abroad,
-    studio: { name: String(studio["studio_name"] ?? ""), homeCountry, email: text(studio["email"]), address: text(studio["address"]), about: text(studio["about"]), aboutPage: text(studio["about_page"]), materialsNote: text(studio["materials_note"]), refPrefix: text(studio["ref_prefix"]), takingOrders: studio["taking_orders"] === undefined ? true : yes(studio["taking_orders"]) },
+    studio: {
+      name: String(studio["studio_name"] ?? ""), homeCountry, email: text(studio["email"]), address: text(studio["address"]), about: text(studio["about"]), aboutPage: text(studio["about_page"]), materialsNote: text(studio["materials_note"]), refPrefix: text(studio["ref_prefix"]), takingOrders: studio["taking_orders"] === undefined ? true : yes(studio["taking_orders"]),
+      logo: rows.settings[0] === undefined ? null : logo(studio),
+      tagline: text(studio["tagline"])?.trim() || null,
+      accent: text(studio["accent"]),
+      accentDark: text(studio["accent_dark"]),
+      font: text(studio["font"]),
+    },
   };
 }
 
@@ -249,7 +256,8 @@ export class AdminiumShop implements ShopPort {
       );
       const config = await this.clientConfig();
       const photo = (row: Row) => pictureUrl(this.served.baseUrl, config, this.refs.products, String(row["id"]), "photo", row["photo"]);
-      return catalogueFrom({ products: products!, options: options!, materials: materials!, services: services!, settings: settings! }, photo);
+      const logo = (row: Row) => pictureUrl(this.served.baseUrl, config, this.refs.settings, String(row["id"]), "logo", row["logo"]);
+      return catalogueFrom({ products: products!, options: options!, materials: materials!, services: services!, settings: settings! }, photo, logo);
     });
   }
 

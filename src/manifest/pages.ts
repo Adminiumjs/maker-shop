@@ -307,6 +307,8 @@ const SPECS: PageSpec[] = [
     config: form(
       [title("studio_name"), f("phone", { control: "phone" }), f("email", { control: "email" }), wide("address", "text"), wide("about")],
       [f("ref_prefix"), f("first_order_number", { control: "number" }), f("proof_reminder_days", { control: "stepper" }), f("packaging_grams", { control: "number" }), toggle("taking_orders"), toggle("pay_first")],
+      // The shop's look: what the customer pages show in place of the tree, the tagline, walnut and Manrope.
+      [f("logo", { control: "image" }), f("tagline"), f("accent", { control: "mono" }), f("accent_dark", { control: "mono" }), f("font", { control: "select" })],
     ),
   },
 ];

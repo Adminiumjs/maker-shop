@@ -87,6 +87,14 @@
   background: var(--accent);
   color: var(--accent-fg);
 }
+/* The studio's own logo, in the tree's place: as tall as the mark, no wider than a short word-mark. */
+.sh-brand-logo {
+  block-size: 34px;
+  inline-size: auto;
+  max-inline-size: 120px;
+  object-fit: contain;
+  border-radius: 6px;
+}
 .sh-brand-text {
   display: flex;
   flex-direction: column;

@@ -15,6 +15,7 @@ import "./shop.css";
 import "./after.css";
 
 import { useI18n, type MessageKey } from "../i18n/index.tsx";
+import { applyBrand } from "./brand.ts";
 import { count } from "./format.ts";
 import { attachShopUrl, type Place } from "./route.ts";
 import { backFromPaying, goView, loadShop, onShopNavigate, openProduct, useShop, type ShopView } from "./store.ts";
@@ -187,9 +188,11 @@ export interface ShopAppProps {
   theme?: "light" | "dark";
   /** Told when the shopper switches the theme themselves. */
   onTheme?: (theme: "light" | "dark") => void;
+  /** Whether the tab is the shop's own, so its title and icon are the studio's; the demo keeps the page's. */
+  ownTab?: boolean;
 }
 
-export default function ShopApp({ theme: held, onTheme }: ShopAppProps = {}) {
+export default function ShopApp({ theme: held, onTheme, ownTab = true }: ShopAppProps = {}) {
   const { t, locale } = useI18n();
   const view = useShop((s) => s.view);
   const loading = useShop((s) => s.loading);
@@ -226,6 +229,9 @@ export default function ShopApp({ theme: held, onTheme }: ShopAppProps = {}) {
     };
   }, []);
 
+  // The studio's own look (Maker Shop › Settings): its colours and typeface, and the tab's title and icon.
+  useEffect(() => applyBrand(studio, { tab: ownTab }), [studio, ownTab]);
+
   // A new screen starts at its top, with the reader's place at its heading.
   useEffect(() => {
     window.scrollTo?.(0, 0);
@@ -236,12 +242,17 @@ export default function ShopApp({ theme: held, onTheme }: ShopAppProps = {}) {
       <header className="sh-header">
         <div className="sh-header-row">
           <button type="button" className="sh-brand" onClick={() => goView("shop")}>
-            <span className="sh-brand-mark">
-              <TreePine size={18} aria-hidden="true" />
-            </span>
+            {studio?.logo != null ? (
+              // The name beside it says who it is, so the picture is not read out twice.
+              <img className="sh-brand-logo" src={studio.logo} alt="" />
+            ) : (
+              <span className="sh-brand-mark">
+                <TreePine size={18} aria-hidden="true" />
+              </span>
+            )}
             <span className="sh-brand-text">
-              <span className="sh-brand-name">{studio?.name ?? t("shop.brand")}</span>
-              <span className="sh-brand-tag">{t("shop.brand.tag")}</span>
+              <span className="sh-brand-name">{studio !== null && studio.name.trim() !== "" ? studio.name : t("shop.brand")}</span>
+              <span className="sh-brand-tag">{studio?.tagline ?? t("shop.brand.tag")}</span>
             </span>
           </button>
           <form

@@ -91,6 +91,12 @@ export interface Studio {
   homeCountry?: string | null;
   /** The address a shopper writes to, where the studio shows one. */
   email?: string | null;
+  /** The studio's own look (`brand.ts`), each null where it keeps the shop's: its logo's address, the line under its name, its accent (#rrggbb) in light and dark, its typeface. */
+  logo?: string | null;
+  tagline?: string | null;
+  accent?: string | null;
+  accentDark?: string | null;
+  font?: string | null;
 }
 
 export interface Catalogue {

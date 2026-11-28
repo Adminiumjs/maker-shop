@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.2.8 (unreleased)
+
+Needs Adminium **0.3.74**, as 0.2.7 does. The update adds five columns to the
+studio's settings, all empty, so a shop looks as it did until its owner fills
+them.
+
+- **A shop can look like its studio without a build of its own.** Maker Shop ›
+  Settings has a new section for the shop's look, and the customer pages take
+  it from there:
+  - **Logo**: a PNG, JPEG or WebP picture of up to 5 MB, shown in the header in
+    place of the tree and used as the browser tab's icon. Adminium serves it to
+    visitors as it serves a product's photo. An SVG is not taken: Adminium
+    never serves one to visitors.
+  - **Tagline**: the line under the studio's name, in place of "MADE TO ORDER ·
+    TUE–SAT". It is shown as typed, in every language.
+  - **Accent colour** as `#rrggbb`, and optionally **Accent colour, dark
+    theme**. The shop keeps both readable (AA contrast) in both themes: a light
+    accent too pale for white text on it is darkened, and the dark one is
+    lightened until it reads on the dark pages. A dark accent left empty is
+    worked out from the light one. A colour that already reads is used
+    exactly as typed.
+  - **Typeface**: Manrope as shipped, the device's own sans-serif, a serif or a
+    rounded face. Each is a font the device already has, so nothing is loaded
+    from anywhere.
+- **The browser tab shows the studio's name** in place of "Maker Shop" once the
+  shop has loaded, and its logo as the icon when it has one.
+- **A studio whose name is empty** shows "Birch Row" in the header, as one
+  with no settings row does. Before, it showed nothing.
+- Birch Row, the sample studio, fills none of these, so the sample and the demo
+  look as they did.
+
 ## 0.2.5 (11 November 2026)
 
 Needs Adminium **0.3.54** and asks for the add-ons at **1.0.26**.

@@ -338,6 +338,15 @@ export const TABLES: Table[] = [
       bool("taking_orders", "Taking orders", true),
       // With online payments on: a line goes on the machine only once its order is paid. The app's own admin sets it.
       bool("pay_first", "Take payment before making", false),
+      // The shop's look (brand.ts): its logo in the header and the browser tab, the line under its name, its accent
+      // colour in each theme and its typeface. Each empty keeps what the shop is drawn with (the tree, Manrope, walnut).
+      picture("logo", "Logo"),
+      text("tagline", 60, "Tagline", opt),
+      // A colour as #rrggbb. The shop darkens it until white text on it reads (AA); the dark theme's, when left empty,
+      // is worked out from it, and one entered is lightened until it reads on the dark pages.
+      text("accent", 7, "Accent colour", opt),
+      text("accent_dark", 7, "Accent colour, dark theme", opt),
+      choice("font", "Typeface", { manrope: "Manrope (as shipped)", system: "The device's own", serif: "Serif", rounded: "Rounded" }, opt),
     ],
   },
   {
